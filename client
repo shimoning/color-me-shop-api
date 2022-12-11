@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+
+namespace Shimoning\ColorMeShopApi;
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+echo __NAMESPACE__ . " shell\n";
+echo "-----\nexample:\n";
+echo "\$oAuth = new Services\OAuth(\$options);\n";
+echo "\$uri = \$oAuth->getOAuthUrl(\$scopes);\n";
+echo "\$accessToken = \$oAuth->exchangeCode2Token(\$code);\n";
+echo "echo \$accessToken->getAccessToken();\n";
+
+// load .env
+if (\file_exists(__DIR__ . \DIRECTORY_SEPARATOR . '.env')) {
+    $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+    echo "-----\n'.env' loaded.\n-----\n";
+}
+
+$sh = new \Psy\Shell();
+$sh->addCode(sprintf("namespace %s;", __NAMESPACE__));
+
+// set default
+$options = new Entities\Input\OAuth\Options(
+    $_ENV['CLIENT_ID'],
+    $_ENV['CLIENT_SECRET'],
+    $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,
+);
+$scopes = new Values\Scopes(Constants\AuthScope::all());
+
+$sh->setScopeVariables([
+    'options' => $options,
+    'scopes' => $scopes,
+]);
+
+$sh->run();
+
+echo "\n-----\nBye.\n";

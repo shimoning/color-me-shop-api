@@ -1,0 +1,41 @@
+{
+    "name": "shimoning/color-me-shop-api",
+    "type": "library",
+    "description": "Color Me Shop API client",
+    "keywords": [
+        "ec",
+        "client",
+        "api",
+        "shop",
+        "gmo",
+        "color me"
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "version": "0.0.1",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Shimon Haga",
+            "email": "shimon.haga@shimoning.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "require-dev": {
+        "psy/psysh": "^0.11.8",
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shimoning\\ColorMeShopApi\\": "src/"
+        }
+    },
+    "scripts": {
+        "client": [
+            "@php client"
+        ]
+    }
+}
