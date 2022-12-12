@@ -23,7 +23,7 @@ $sh = new \Psy\Shell();
 $sh->addCode(sprintf("namespace %s;", __NAMESPACE__));
 
 // set default
-$options = new Entities\Input\OAuth\Options(
+$options = new Entities\OAuth\Options(
     $_ENV['CLIENT_ID'],
     $_ENV['CLIENT_SECRET'],
     $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,

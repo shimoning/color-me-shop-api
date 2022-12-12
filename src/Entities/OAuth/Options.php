@@ -1,6 +1,6 @@
 <?php
 
-namespace Shimoning\ColorMeShopApi\Entities\Input\OAuth;
+namespace Shimoning\ColorMeShopApi\Entities\OAuth;
 
 use Shimoning\ColorMeShopApi\Constants\AuthRedirectUri;
 

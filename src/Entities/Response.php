@@ -1,6 +1,6 @@
 <?php
 
-namespace Shimoning\ColorMeShopApi\Entities\Output;
+namespace Shimoning\ColorMeShopApi\Entities;
 
 use Psr\Http\Message\ResponseInterface;
 

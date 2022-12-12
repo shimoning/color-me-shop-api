@@ -3,9 +3,9 @@
 namespace Shimoning\ColorMeShopApi\Services;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Shimoning\ColorMeShopApi\Entities\Input\OAuth\Options;
-use Shimoning\ColorMeShopApi\Entities\Output\Response;
-use Shimoning\ColorMeShopApi\Entities\Output\AccessToken;
+use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
+use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
+use Shimoning\ColorMeShopApi\Entities\Response;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 class OAuth

@@ -1,16 +1,17 @@
 <?php
 
-namespace Shimoning\ColorMeShopApi\Entities\Output;
+namespace Shimoning\ColorMeShopApi\Entities\OAuth;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 
 class AccessToken extends Entity
 {
-    private string $_accessToken;
-    private string $_tokenType;
-    private string $_scope;
-    private array $_scopes = [];
+    protected string $_accessToken;
+    protected string $_tokenType;
+    protected ?string $_scope;
+    protected int $_createdAt;
+    protected array $_scopes = [];
 
     /**
      * トークンリザルト
@@ -28,7 +29,7 @@ class AccessToken extends Entity
      */
     protected function parseScopes()
     {
-        $scopes = \explode(' ', $this->_scope);
+        $scopes = \explode(' ', $this->_scope ?? '');
         foreach ($scopes as $scope) {
             $_scope = AuthScope::tryFrom($scope);
             if ($_scope) {
@@ -62,5 +63,14 @@ class AccessToken extends Entity
     public function getScopes(): array
     {
         return $this->_scopes;
+    }
+
+    /**
+     * 作成日
+     * @return int
+     */
+    public function getCreatedAt(): int
+    {
+        return $this->_createdAt;
     }
 }

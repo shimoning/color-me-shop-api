@@ -13,7 +13,7 @@ class Entity
         $objectFields = defined((static::class) . '::OBJECT_FIELDS') ? static::OBJECT_FIELDS : [];
 
         foreach ($data as $key => $value) {
-            $_key = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $_key = '_' . lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (property_exists($this, $_key)) {
                 if (isset($objectFields[$_key])) {
                     $this->{$_key} = $this->getObjectFieldValue($objectFields[$_key], $value);
@@ -82,6 +82,9 @@ class Entity
 
         $array = [];
         foreach ($properties as $key => $value) {
+            if ($key === '_raw') {
+                continue;
+            }
             $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
             $array[$_key] = $value;
         }
