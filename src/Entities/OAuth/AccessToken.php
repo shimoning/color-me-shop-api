@@ -7,11 +7,11 @@ use Shimoning\ColorMeShopApi\Constants\AuthScope;
 
 class AccessToken extends Entity
 {
-    protected string $_accessToken;
-    protected string $_tokenType;
-    protected ?string $_scope;
-    protected int $_createdAt;
-    protected array $_scopes = [];
+    protected string $accessToken;
+    protected string $tokenType;
+    protected ?string $scope;
+    protected int $createdAt;
+    protected array $scopes = [];
 
     /**
      * トークンリザルト
@@ -29,11 +29,11 @@ class AccessToken extends Entity
      */
     protected function parseScopes()
     {
-        $scopes = \explode(' ', $this->_scope ?? '');
+        $scopes = \explode(' ', $this->scope ?? '');
         foreach ($scopes as $scope) {
-            $_scope = AuthScope::tryFrom($scope);
-            if ($_scope) {
-                $this->_scopes[] = $_scope;
+            $scope = AuthScope::tryFrom($scope);
+            if ($scope) {
+                $this->scopes[] = $scope;
             }
         }
     }
@@ -44,7 +44,7 @@ class AccessToken extends Entity
      */
     public function getAccessToken(): string
     {
-        return $this->_accessToken;
+        return $this->accessToken;
     }
 
     /**
@@ -53,7 +53,7 @@ class AccessToken extends Entity
      */
     public function getTokenType(): string
     {
-        return $this->_tokenType;
+        return $this->tokenType;
     }
 
     /**
@@ -62,7 +62,7 @@ class AccessToken extends Entity
      */
     public function getScopes(): array
     {
-        return $this->_scopes;
+        return $this->scopes;
     }
 
     /**
@@ -71,6 +71,6 @@ class AccessToken extends Entity
      */
     public function getCreatedAt(): int
     {
-        return $this->_createdAt;
+        return $this->createdAt;
     }
 }

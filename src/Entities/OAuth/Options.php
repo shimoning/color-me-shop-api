@@ -8,10 +8,10 @@ class Options
 {
     const ENDPOINT_URI = 'https://api.shop-pro.jp/oauth';
 
-    private string $_endpointUri;
-    private string $_clientId;
-    private string $_clientSecret;
-    private AuthRedirectUri|string $_redirectUri;
+    private string $endpointUri;
+    private string $clientId;
+    private string $clientSecret;
+    private AuthRedirectUri|string $redirectUri;
     /**
      * @param string|null $endpointUri
      * @param string|null $clientId
@@ -24,10 +24,10 @@ class Options
         mixed $redirectUri,
         ?string $endpointUri = null,
     ) {
-        $this->_clientId = $clientId;
-        $this->_clientSecret = $clientSecret;
-        $this->_redirectUri = $redirectUri;
-        $this->_endpointUri = $endpointUri ?? self::ENDPOINT_URI;
+        $this->clientId = $clientId;
+        $this->clientSecret = $clientSecret;
+        $this->redirectUri = $redirectUri;
+        $this->endpointUri = $endpointUri ?? self::ENDPOINT_URI;
     }
 
     /**
@@ -36,7 +36,7 @@ class Options
      */
     public function getClientId(): string
     {
-        return $this->_clientId;
+        return $this->clientId;
     }
 
     /**
@@ -45,7 +45,7 @@ class Options
      */
     public function getClientSecret(): string
     {
-        return $this->_clientSecret;
+        return $this->clientSecret;
     }
 
     /**
@@ -54,7 +54,7 @@ class Options
      */
     public function setRedirectUri(AuthRedirectUri|string $uri): string
     {
-        return $this->_redirectUri = $uri;
+        return $this->redirectUri = $uri;
     }
 
     /**
@@ -63,9 +63,9 @@ class Options
      */
     public function getRedirectUri(): string
     {
-        return $this->_redirectUri instanceof AuthRedirectUri
-            ? $this->_redirectUri->value
-            : $this->_redirectUri;
+        return $this->redirectUri instanceof AuthRedirectUri
+            ? $this->redirectUri->value
+            : $this->redirectUri;
     }
 
     /**
@@ -74,6 +74,6 @@ class Options
      */
     public function getEndpointUri(): string
     {
-        return $this->_endpointUri;
+        return $this->endpointUri;
     }
 }

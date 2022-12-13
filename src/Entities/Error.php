@@ -4,9 +4,9 @@ namespace Shimoning\ColorMeShopApi\Entities;
 
 class Error extends Entity
 {
-    private string $_code;
-    private string $_message;
-    private int $_status;
+    protected string $code;
+    protected string $message;
+    protected int $status;
 
     /**
      * エラーコードを取得
@@ -14,7 +14,7 @@ class Error extends Entity
      */
     public function getCode(): string
     {
-        return $this->_code;
+        return $this->code;
     }
 
     /**
@@ -23,7 +23,7 @@ class Error extends Entity
      */
     public function getMessage(): string
     {
-        return $this->_message;
+        return $this->message;
     }
 
     /**
@@ -32,6 +32,6 @@ class Error extends Entity
      */
     public function getStatus(): int
     {
-        return $this->_status;
+        return $this->status;
     }
 }

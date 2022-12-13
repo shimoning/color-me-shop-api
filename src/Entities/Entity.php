@@ -13,7 +13,7 @@ class Entity
         $objectFields = defined((static::class) . '::OBJECT_FIELDS') ? static::OBJECT_FIELDS : [];
 
         foreach ($data as $key => $value) {
-            $_key = '_' . lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $_key = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (property_exists($this, $_key)) {
                 if (isset($objectFields[$_key])) {
                     $this->{$_key} = $this->getObjectFieldValue($objectFields[$_key], $value);
@@ -46,6 +46,9 @@ class Entity
                     }, $value);
                 }
             } else if (!empty($objectField['enum'])) {
+                if ($value === null) {
+                    return null;
+                }
                 return $entity::tryFrom($value);
             } else {
                 // 単体指定
@@ -79,14 +82,15 @@ class Entity
     public function toArray(): array
     {
         $properties = get_class_vars(static::class);
+        $values = get_object_vars($this);
 
         $array = [];
-        foreach ($properties as $key => $value) {
+        foreach ($properties as $key => $_) {
             if ($key === '_raw') {
                 continue;
             }
             $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
-            $array[$_key] = $value;
+            $array[$_key] = $values[$key] ?? null;
         }
         return $array;
     }
