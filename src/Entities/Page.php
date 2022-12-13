@@ -2,7 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities;
 
-class Pages extends Collection
+class Page extends Collection
 {
     protected Pagination $_pagination;
 

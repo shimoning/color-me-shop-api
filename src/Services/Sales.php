@@ -2,14 +2,16 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
+use DateTimeInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
 
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
-use Shimoning\ColorMeShopApi\Entities\Pages;
+use Shimoning\ColorMeShopApi\Entities\Page;
 
 class Sales
 {
@@ -20,10 +22,10 @@ class Sales
         $this->_accessToken = $accessToken;
     }
 
-    public function list(
+    public function page(
         SearchParameters $searchParameters,
         ?string $accessToken = null,
-    ): Pages | bool {
+    ): Page | bool {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
@@ -35,14 +37,13 @@ class Sales
         }
         $data = $response->getParsedBody();
 
-        return new Pages(
+        return new Page(
             Collection::cast(Sale::class, $data['sales'] ?? []),
             new Pagination($data['meta'] ?? []),
         );
     }
 
-    // TODO: implement
-    public function find(string $id)
+    public function one(string $id, ?string $accessToken = null): Sale | false
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -58,7 +59,22 @@ class Sales
     }
 
     // TODO: implement
-    public function stat() {}
+    public function stat(DateTimeInterface $dateTime, ?string $accessToken = null)
+    {
+        $response = (new Request(new RequestOption([
+            'authorization' => $accessToken ?? $this->_accessToken,
+        ])))->get(
+            'https://api.shop-pro.jp/v1/sales/stat?' . \http_build_query([
+                'make_date' => $dateTime->format('Y-m-d'),
+            ]),
+        );
+        if (! $response->isSuccess()) {
+            // TODO: return error instance
+            return false;
+        }
+        $data = $response->getParsedBody();
+        return new Stat($data['sales_stat'] ?? []);
+    }
 
     // TODO: implement
     public function update() {}

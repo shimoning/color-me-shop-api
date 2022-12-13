@@ -23,7 +23,7 @@ class DateTime
             }
             $this->_date = $date;
         } else if ($date instanceof DateTimeInterface) {
-            $this->_date = $date->format('YYYY-MM-DD hh:mm:ss');
+            $this->_date = $date->format('Y-m-d H:i:s');
         } else {
             throw new ParameterException('日付は "文字列" もしくは "DateTimeInterface を継承したオブジェクト" を入れてください。');
         }
