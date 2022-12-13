@@ -29,7 +29,8 @@ class Sales
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
-            'https://api.shop-pro.jp/v1/sales?' . \http_build_query($searchParameters->toArray()),
+            'https://api.shop-pro.jp/v1/sales',
+            $searchParameters->toArray(),
         );
         if (! $response->isSuccess()) {
             // TODO: return error instance
@@ -58,15 +59,15 @@ class Sales
         return new Sale($data['sale'] ?? []);
     }
 
-    // TODO: implement
     public function stat(DateTimeInterface $dateTime, ?string $accessToken = null)
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
-            'https://api.shop-pro.jp/v1/sales/stat?' . \http_build_query([
+            'https://api.shop-pro.jp/v1/sales/stat?',
+            [
                 'make_date' => $dateTime->format('Y-m-d'),
-            ]),
+            ],
         );
         if (! $response->isSuccess()) {
             // TODO: return error instance
@@ -79,8 +80,23 @@ class Sales
     // TODO: implement
     public function update() {}
 
-    // TODO: implement
-    public function cancel() {}
+    public function cancel(string $id, ?bool $restock = false) {
+        $response = (new Request(new RequestOption([
+            'authorization' => $accessToken ?? $this->_accessToken,
+            'json' => true,
+        ])))->put(
+            'https://api.shop-pro.jp/v1/sales/' . $id . '/cancel',
+            [
+                'restock' => $restock,
+            ],
+        );
+        if (! $response->isSuccess()) {
+            // TODO: return error instance
+            return false;
+        }
+        $data = $response->getParsedBody();
+        return new Sale($data['sale'] ?? []);
+    }
 
     // TODO: implement
     public function sendMail() {}

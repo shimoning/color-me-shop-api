@@ -7,6 +7,7 @@ class Options
     private float $_timeout = 0;
     private float $_connectTimeout = 0;
     private bool $_form = false;
+    private bool $_json = false;
     private ?string $_authorization = null;
 
     public function __construct(?array $options = [])
@@ -19,6 +20,9 @@ class Options
         }
         if (isset($options['form'])) {
             $this->_form = (bool)$options['form'];
+        }
+        if (isset($options['json'])) {
+            $this->_json = (bool)$options['json'];
         }
         if (isset($options['authorization'])) {
             $authorization = \strpos($options['authorization'], 'Bearer ') === 0
@@ -39,6 +43,10 @@ class Options
     public function isForm(): bool
     {
         return $this->_form;
+    }
+    public function isJson(): bool
+    {
+        return $this->_json;
     }
     public function getAuthorization(): ?string
     {

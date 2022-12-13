@@ -44,12 +44,21 @@ class Request
      */
     public function post(string $uri, array $data = [], array $headers = []): Response
     {
-        if (!isset($headers['Content-Type'])) {
-            $headers['Content-Type'] = $this->_options->isForm()
-                ? ['Content-Type' => 'application/x-www-form-urlencoded']
-                : ['Content-Type' => 'application/json; charset=utf-8'];
-        }
         return $this->sendRequest('POST', $uri, $headers, $data);
+    }
+
+    /**
+     * PUT リクエスト
+     * 新規作成
+     *
+     * @param string $uri
+     * @param array $data
+     * @param array $headers
+     * @return Response
+     */
+    public function put(string $uri, array $data = [], array $headers = []): Response
+    {
+        return $this->sendRequest('PUT', $uri, $headers, $data);
     }
 
     /**
@@ -70,9 +79,19 @@ class Request
                 ...$headers,
             ],
         ];
+        if (($method === 'POST' || $method === 'PUT') && !isset($headers['Content-Type'])) {
+            if ($this->_options->isForm()) {
+                $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            } else if ($this->_options->isJson()) {
+                $headers['Content-Type'] = 'application/json; charset=utf-8';
+            }
+        }
         if (!empty($data)) {
             if ($this->_options->isForm()) {
                 $options['form_params'] = $data;
+            } else
+            if ($this->_options->isJson()) {
+                $options['json'] = $data;
             } else {
                 $options['body'] = $data;
             }
