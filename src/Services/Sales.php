@@ -42,7 +42,20 @@ class Sales
     }
 
     // TODO: implement
-    public function find() {}
+    public function find(string $id)
+    {
+        $response = (new Request(new RequestOption([
+            'authorization' => $accessToken ?? $this->_accessToken,
+        ])))->get(
+            'https://api.shop-pro.jp/v1/sales/' . $id,
+        );
+        if (! $response->isSuccess()) {
+            // TODO: return error instance
+            return false;
+        }
+        $data = $response->getParsedBody();
+        return new Sale($data['sale'] ?? []);
+    }
 
     // TODO: implement
     public function stat() {}
