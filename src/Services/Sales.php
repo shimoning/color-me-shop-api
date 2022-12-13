@@ -2,13 +2,14 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use GuzzleHttp\Client as GuzzleClient;
-use Shimoning\ColorMeShopApi\Entities\Collection;
+use Shimoning\ColorMeShopApi\Communicator\Request;
+use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
+
+use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Response;
+use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Pages;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 
 class Sales
 {
@@ -19,24 +20,15 @@ class Sales
         $this->_accessToken = $accessToken;
     }
 
-    public function getList(
+    public function list(
         SearchParameters $searchParameters,
         ?string $accessToken = null,
     ): Pages | bool {
-        $result = (new GuzzleClient)->request(
-            'GET',
+        $response = (new Request(new RequestOption([
+            'authorization' => $accessToken ?? $this->_accessToken,
+        ])))->get(
             'https://api.shop-pro.jp/v1/sales?' . \http_build_query($searchParameters->toArray()),
-            [
-                'http_errors' => false,
-                'timeout' => 0,
-                'connect_timeout' => 0,
-                'headers' => [
-                    'User-Agent' => 'Shimoning ColorMeShopApi Client',
-                    'Authorization' => 'Bearer ' . ($accessToken ?? $this->_accessToken),
-                ],
-            ]
         );
-        $response = new Response($result);
         if (! $response->isSuccess()) {
             // TODO: return error instance
             return false;
@@ -48,4 +40,19 @@ class Sales
             new Pagination($data['meta'] ?? []),
         );
     }
+
+    // TODO: implement
+    public function find() {}
+
+    // TODO: implement
+    public function stat() {}
+
+    // TODO: implement
+    public function update() {}
+
+    // TODO: implement
+    public function cancel() {}
+
+    // TODO: implement
+    public function sendMail() {}
 }

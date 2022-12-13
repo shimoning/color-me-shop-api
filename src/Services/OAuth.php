@@ -2,10 +2,10 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use GuzzleHttp\Client as GuzzleClient;
+use Shimoning\ColorMeShopApi\Communicator\Request;
+use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
-use Shimoning\ColorMeShopApi\Entities\Response;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 class OAuth
@@ -42,28 +42,18 @@ class OAuth
      * @param string $code
      * @return AccessToken|bool
      */
-    public function exchangeCode2Token(string $code): AccessToken|bool
+    public function exchangeCode2Token(string $code): AccessToken | bool
     {
-        $result = (new GuzzleClient)->request(
-            'POST',
+        $response = (new Request(new RequestOption(['form' => true])))->post(
             $this->_options->getEndpointUri() . '/token',
             [
-                'http_errors' => false,
-                'timeout' => 0,
-                'connect_timeout' => 0,
-                'headers' => [
-                    'User-Agent' => 'Shimoning ColorMeShopApi Client',
-                ],
-                'form_params' => [
-                    'client_id' => $this->_options->getClientId(),
-                    'client_secret' => $this->_options->getClientSecret(),
-                    'redirect_uri' => $this->_options->getRedirectUri(),
-                    'grant_type' => 'authorization_code',
-                    'code' => $code,
-                ],
+                'client_id' => $this->_options->getClientId(),
+                'client_secret' => $this->_options->getClientSecret(),
+                'redirect_uri' => $this->_options->getRedirectUri(),
+                'grant_type' => 'authorization_code',
+                'code' => $code,
             ]
         );
-        $response = new Response($result);
         if (! $response->isSuccess()) {
             // TODO: return error instance
             return false;
