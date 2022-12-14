@@ -12,33 +12,33 @@ class SearchParameters extends Entity
 {
     const OBJECT_FIELDS = [
         'makeDateMin'=> [
-            'entity' => DateTime::class,
+            'value' => DateTime::class,
         ],
         'makeDateMax'=> [
-            'entity' => DateTime::class,
+            'value' => DateTime::class,
         ],
         'updateDateMin'=> [
-            'entity' => DateTime::class,
+            'value' => DateTime::class,
         ],
         'updateDateMax'=> [
-            'entity' => DateTime::class,
+            'value' => DateTime::class,
         ],
 
         'customerFurigana'=> [
-            'entity' => Furigana::class,
+            'value' => Furigana::class,
         ],
 
         'acceptedMailState'=> [
-            'entity' => MailState::class,
+            'enum' => MailState::class,
         ],
         'paidMailState'=> [
-            'entity' => MailState::class,
+            'enum' => MailState::class,
         ],
         'deliveredMailState'=> [
-            'entity' => MailState::class,
+            'enum' => MailState::class,
         ],
         'limit'=> [
-            'entity' => Limit::class,
+            'value' => Limit::class,
         ],
     ];
 

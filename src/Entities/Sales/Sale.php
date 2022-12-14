@@ -26,28 +26,22 @@ class Sale extends Entity
             'entity' => SaleDelivery::class,
         ],
         'acceptedMailState'=> [
-            'enum' => true,
-            'entity' => MailState::class,
+            'enum' => MailState::class,
         ],
         'paidMailState'=> [
-            'enum' => true,
-            'entity' => MailState::class,
+            'enum' => MailState::class,
         ],
         'deliveredMailState'=> [
-            'enum' => true,
-            'entity' => MailState::class,
+            'enum' => MailState::class,
         ],
         'pointState'=> [
-            'enum' => true,
-            'entity' => PointState::class,
+            'enum' => PointState::class,
         ],
         'gmoPointState'=> [
-            'enum' => true,
-            'entity' => PointState::class,
+            'enum' => PointState::class,
         ],
         'yahooPointState'=> [
-            'enum' => true,
-            'entity' => PointState::class,
+            'enum' => PointState::class,
         ],
     ];
 

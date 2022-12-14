@@ -22,15 +22,21 @@ class Sales
         $this->_accessToken = $accessToken;
     }
 
+    /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
+     * @param SearchParameters $searchParameters
+     * @param string|null $accessToken
+     * @return Page<Sale>|bool
+     */
     public function page(
         SearchParameters $searchParameters,
         ?string $accessToken = null,
-    ): Page | bool {
+    ): Page|bool {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
             'https://api.shop-pro.jp/v1/sales',
-            $searchParameters->toArray(),
+            $searchParameters->toArrayRecursive(),
         );
         if (! $response->isSuccess()) {
             // TODO: return error instance
@@ -44,7 +50,13 @@ class Sales
         );
     }
 
-    public function one(string $id, ?string $accessToken = null): Sale | false
+    /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
+     * @param string $id
+     * @param string|null $accessToken
+     * @return Sale|bool
+     */
+    public function one(string $id, ?string $accessToken = null): Sale|bool
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -59,7 +71,13 @@ class Sales
         return new Sale($data['sale'] ?? []);
     }
 
-    public function stat(DateTimeInterface $dateTime, ?string $accessToken = null)
+    /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
+     * @param DateTimeInterface $dateTime
+     * @param string|null $accessToken
+     * @return Stat|bool
+     */
+    public function stat(DateTimeInterface $dateTime, ?string $accessToken = null): Stat|bool
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -80,7 +98,14 @@ class Sales
     // TODO: implement
     public function update() {}
 
-    public function cancel(string $id, ?bool $restock = false) {
+    /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
+     * @param string $id
+     * @param boolean|null $restock
+     * @return Sale|boolean
+     */
+    public function cancel(string $id, ?bool $restock = false): Sale|bool
+    {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,

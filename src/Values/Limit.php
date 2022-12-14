@@ -7,7 +7,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 /**
  * 件数
  */
-class Limit
+class Limit implements Value
 {
     private int $_limit = 10;
 
@@ -22,22 +22,12 @@ class Limit
         $this->_limit = $limit;
     }
 
-    /**
-     * 取得
-     * @return int
-     */
     public function get(): int
     {
         return $this->_limit;
     }
 
-    /**
-     * バリデーション
-     *
-     * @param int $value
-     * @return boolean
-     */
-    public function validate(int $value): bool
+    public function validate(mixed $value): bool
     {
         return 0 < $value && $value <= 100;
     }

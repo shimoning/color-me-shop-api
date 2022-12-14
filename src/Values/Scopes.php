@@ -5,7 +5,7 @@ namespace Shimoning\ColorMeShopApi\Values;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
-class Scopes
+class Scopes implements Value
 {
     /** @var array<string> */
     private array $_scopes;
@@ -34,8 +34,14 @@ class Scopes
      * 文字列化した scope を取得
      * @return string
      */
-    public function getScopesStringified(): string
+    public function get(): string
     {
         return \implode(' ', $this->_scopes);
+    }
+
+    public function validate($scopes): bool
+    {
+        // TODO: merge construct
+        return true;
     }
 }

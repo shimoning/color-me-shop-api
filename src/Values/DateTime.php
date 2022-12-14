@@ -8,7 +8,7 @@ use DateTimeInterface;
 /**
  * 日付の型 (YYYY-MM-DD or YYYY-MM-DD hh:mm:ss)
  */
-class DateTime
+class DateTime implements Value
 {
     private string $_date;
 
@@ -29,12 +29,14 @@ class DateTime
         }
     }
 
-    /**
-     * 取得
-     * @return string
-     */
     public function get(): string
     {
         return $this->_date;
+    }
+
+    public function validate($date): bool
+    {
+        // TODO: merge construct
+        return true;
     }
 }

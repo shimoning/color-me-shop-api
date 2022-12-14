@@ -15,12 +15,10 @@ class Customer extends Entity
 {
     const OBJECT_FIELDS = [
         'sex' => [
-            'enum' => true,
-            'entity' => Sex::class,
+            'enum' => Sex::class,
         ],
         'prefId' => [
-            'enum' => true,
-            'entity' => Prefecture::class,
+            'enum' => Prefecture::class,
         ],
     ];
 

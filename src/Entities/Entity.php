@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Entities;
 
+use BackedEnum;
+use Shimoning\ColorMeShopApi\Values\Value;
+
 class Entity
 {
     private array $_raw;
@@ -16,7 +19,7 @@ class Entity
             $_key = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (property_exists($this, $_key)) {
                 if (isset($objectFields[$_key])) {
-                    $this->{$_key} = $this->getObjectFieldValue($objectFields[$_key], $value);
+                    $this->{$_key} = $this->build($objectFields[$_key], $value);
                     continue;
                 }
                 $this->{$_key} = $value;
@@ -31,28 +34,51 @@ class Entity
      * @param mixed $value
      * @return array|object
      */
-    protected function getObjectFieldValue(mixed $objectField, mixed $value): mixed
+    protected function build(mixed $objectField, mixed $value): mixed
     {
-        if (\is_array($objectField) && isset($objectField['entity'])) {
-            $entity = $objectField['entity'];
-            if (!empty($objectField['array'])) {
-                // 配列指定
-                if (static::isHash($value)) {
-                    // しかし中身は連想配列
-                    return [new $entity($value)];
-                } else {
-                    return array_map(function ($v) use ($entity) {
-                        return new $entity($v);
-                    }, $value);
+        if (\is_array($objectField)) {
+            $isArray = !empty($objectField['array']);
+            if (isset($objectField['entity'])) {
+                $class = $objectField['entity'];
+                if ($isArray) {
+                    // 配列指定
+                    if (static::isHash($value)) {
+                        // しかし中身は連想配列
+                        return [new $class($value)];
+                    } else {
+                        return array_map(function ($v) use ($class) {
+                            return new $class($v);
+                        }, $value);
+                    }
                 }
-            } else if (!empty($objectField['enum'])) {
+                return new $class($value);
+            }
+            if (isset($objectField['value'])) {
+                $class = $objectField['value'];
+                if ($isArray) {
+                    // 配列指定
+                    if (static::isHash($value)) {
+                        // しかし中身は連想配列
+                        return [new $class($value)];
+                    } else {
+                        return array_map(function ($v) use ($class) {
+                            return new $class($v);
+                        }, $value);
+                    }
+                }
+                return new $class($value);
+            }
+            if (isset($objectField['enum'])) {
+                $enum = $objectField['enum'];
                 if ($value === null) {
                     return null;
                 }
-                return $entity::tryFrom($value);
-            } else {
-                // 単体指定
-                return new $entity($value);
+                if ($isArray) {
+                    return array_map(function ($v) use ($enum) {
+                        return $enum::tryFrom($v);
+                    }, $value);
+                }
+                return $enum::tryFrom($value);
             }
         }
 
@@ -93,6 +119,47 @@ class Entity
             $array[$_key] = $values[$key] ?? null;
         }
         return $array;
+    }
+
+    /**
+     * 配列として取得する
+     * @return array
+     */
+    public function toArrayRecursive(): array
+    {
+        $properties = get_class_vars(static::class);
+        $values = get_object_vars($this);
+
+        $array = [];
+        foreach ($properties as $key => $_) {
+            if ($key === '_raw') {
+                continue;
+            }
+            $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
+            $value = $values[$key] ?? null;
+            if (\is_array($value)) {
+                $value = array_map([$this, 'parse'], $value);
+            } else {
+                $value = $this->parse($value);
+            }
+            $array[$_key] = $value;
+        }
+        return $array;
+    }
+
+    public function parse(mixed $value): mixed
+    {
+        if ($value instanceof self) {
+            return $value->toArrayRecursive();
+        }
+        if ($value instanceof BackedEnum) {
+            return $value->value;
+        }
+        if ($value instanceof Value) {
+            return $value->get();
+        }
+
+        return $value;
     }
 
     /**

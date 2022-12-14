@@ -32,7 +32,7 @@ class OAuth
             'client_id' => $this->_options->getClientId(),
             'redirect_uri' => $this->_options->getRedirectUri(),
             'response_type' => 'code', // static
-            'scope' => $scopes->getScopesStringified(),
+            'scope' => $scopes->get(),
         ], '', null, \PHP_QUERY_RFC3986);
     }
 
@@ -42,7 +42,7 @@ class OAuth
      * @param string $code
      * @return AccessToken|bool
      */
-    public function exchangeCode2Token(string $code): AccessToken | bool
+    public function exchangeCode2Token(string $code): AccessToken|bool
     {
         $response = (new Request(new RequestOption(['form' => true])))->post(
             $this->_options->getEndpointUri() . '/token',

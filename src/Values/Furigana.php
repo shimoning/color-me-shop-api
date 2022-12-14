@@ -7,7 +7,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 /**
  * フリガナ (カタカナ)
  */
-class Furigana
+class Furigana implements Value
 {
     private string $_furigana;
 
@@ -34,10 +34,10 @@ class Furigana
     /**
      * バリデーション
      *
-     * @param string $value
+     * @param mixed $value
      * @return boolean
      */
-    public function validate(string $value): bool
+    public function validate(mixed $value): bool
     {
         return preg_match('/\A[ァ-ヶー 　]+\z/u', $value);
     }
