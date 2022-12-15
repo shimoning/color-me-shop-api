@@ -6,11 +6,14 @@ namespace Shimoning\ColorMeShopApi;
 require_once __DIR__ . '/vendor/autoload.php';
 
 echo __NAMESPACE__ . " shell\n";
-echo "-----\nexample:\n";
+echo "-----\n - example1: for OAuth\n";
 echo "\$oAuth = new Services\OAuth(\$options);\n";
 echo "\$uri = \$oAuth->getOAuthUrl(\$scopes);\n";
 echo "\$accessToken = \$oAuth->exchangeCode2Token(\$code);\n";
 echo "echo \$accessToken->getAccessToken();\n";
+echo "-----\n - example2: for Sales\n";
+echo "\$salesService = new Services\Sales(\$token);";
+echo "\$salesPage = \$salesService->page(new Entities\Sales\SearchParameters([]));";
 
 // load .env
 if (\file_exists(__DIR__ . \DIRECTORY_SEPARATOR . '.env')) {
@@ -28,7 +31,7 @@ $options = new Entities\OAuth\Options(
     $_ENV['CLIENT_SECRET'],
     $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,
 );
-$scopes = new Values\Scopes(Constants\AuthScope::all());
+$scopes = new Values\Scopes(Constants\AuthScope::cases());
 
 $sh->setScopeVariables([
     'options' => $options,

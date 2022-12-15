@@ -6,16 +6,20 @@ use Psr\Http\Message\ResponseInterface;
 
 class Response
 {
+    private RequestMeta $_requestMeta;
     private array $_rawHeader = [];
     private string $_rawBody = '';
-    private array $_parsedBody;
+    private ?array $_parsedBody;
     private int $_status;
 
     /**
      * @param \Psr\Http\Message\ResponseInterface $response
      */
-    public function __construct(ResponseInterface $response)
-    {
+    public function __construct(
+        ResponseInterface $response,
+        RequestMeta $requestMeta,
+    ) {
+        $this->_requestMeta = $requestMeta;
         $this->_rawHeader = $response->getHeaders();
         $this->_status = $response->getStatusCode();
 
@@ -27,9 +31,9 @@ class Response
     /**
      * ボディをパースする
      * @param string $body
-     * @return array
+     * @return ?array
      */
-    private function parse(string $body): array
+    private function parse(string $body): ?array
     {
         // $utf8Body = \mb_convert_encoding($body, 'UTF-8', 'SJIS');
         return \json_decode($body, true);
@@ -55,9 +59,9 @@ class Response
 
     /**
      * パース後のボディ
-     * @return array
+     * @return array|null
      */
-    public function getParsedBody(): array
+    public function getParsedBody(): ?array
     {
         return $this->_parsedBody;
     }
@@ -78,5 +82,10 @@ class Response
     public function isSuccess(): bool
     {
         return 200 <= $this->_status && $this->_status < 300;
+    }
+
+    public function getRequestMeta(): RequestMeta
+    {
+        return $this->_requestMeta;
     }
 }

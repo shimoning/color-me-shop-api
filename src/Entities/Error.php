@@ -6,6 +6,7 @@ class Error extends Entity
 {
     protected string $code;
     protected string $message;
+    protected ?string $field;
     protected int $status;
 
     /**
@@ -24,6 +25,15 @@ class Error extends Entity
     public function getMessage(): string
     {
         return $this->message;
+    }
+
+    /**
+     * 対象フィールドを取得
+     * @return string|null
+     */
+    public function getField(): ?string
+    {
+        return $this->field;
     }
 
     /**

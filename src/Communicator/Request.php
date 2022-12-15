@@ -4,7 +4,6 @@ namespace Shimoning\ColorMeShopApi\Communicator;
 
 use GuzzleHttp\Client;
 
-// TODO: support PSR-7
 class Request
 {
     private Options $_options;
@@ -79,7 +78,7 @@ class Request
                 ...$headers,
             ],
         ];
-        if (($method === 'POST' || $method === 'PUT') && !isset($headers['Content-Type'])) {
+        if (!isset($headers['Content-Type']) && ($method === 'POST' || $method === 'PUT')) {
             if ($this->_options->isForm()) {
                 $headers['Content-Type'] = 'application/x-www-form-urlencoded';
             } else if ($this->_options->isJson()) {
@@ -89,8 +88,7 @@ class Request
         if (!empty($data)) {
             if ($this->_options->isForm()) {
                 $options['form_params'] = $data;
-            } else
-            if ($this->_options->isJson()) {
+            } else if ($this->_options->isJson()) {
                 $options['json'] = $data;
             } else {
                 $options['body'] = $data;
@@ -101,11 +99,14 @@ class Request
         $response = $this->_client->request(
             $method,
             $uri,
-            $options
+            $options,
         );
 
         // レスポンスを返す
-        return new Response($response);
+        return new Response(
+            $response,
+            new RequestMeta($method, $uri, $options),
+        );
     }
 
     /**

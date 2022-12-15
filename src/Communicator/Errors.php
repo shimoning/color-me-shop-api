@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Communicator;
 
 use Shimoning\ColorMeShopApi\Entities\Collection;
+use Shimoning\ColorMeShopApi\Entities\Error;
 
 class Errors extends Collection
 {
@@ -23,7 +24,9 @@ class Errors extends Collection
     {
         return new self(
             $response,
-            $response->getParsedBody()['errors'] ?? [],
+            \array_map(function ($error) {
+                return new Error($error);
+            }, $response->getParsedBody()['errors'] ?? []),
         );
     }
 }

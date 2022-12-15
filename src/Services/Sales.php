@@ -6,14 +6,14 @@ use DateTimeInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Constants\MailType;
 
 class Sales
 {
@@ -53,11 +53,11 @@ class Sales
 
     /**
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
-     * @param string $id
+     * @param int|string $id
      * @param string|null $accessToken
      * @return Sale|Errors
      */
-    public function one(string $id, ?string $accessToken = null): Sale|Errors
+    public function one(int|string $id, ?string $accessToken = null): Sale|Errors
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -75,10 +75,13 @@ class Sales
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
      * @param DateTimeInterface $dateTime
      * @param string|null $accessToken
+     * @param string|null $accessToken
      * @return Stat|Errors
      */
-    public function stat(DateTimeInterface $dateTime, ?string $accessToken = null): Stat|Errors
-    {
+    public function stat(
+        DateTimeInterface $dateTime,
+        ?string $accessToken = null,
+    ): Stat|Errors {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
@@ -97,10 +100,13 @@ class Sales
     /**
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
      * @param SaleUpdater $updater
+     * @param string|null $accessToken
      * @return Sale|Errors
      */
-    public function update(SaleUpdater $updater): Sale|Errors
-    {
+    public function update(
+        SaleUpdater $updater,
+        ?string $accessToken = null,
+    ): Sale|Errors {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
@@ -119,12 +125,16 @@ class Sales
 
     /**
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
-     * @param string $id
+     * @param int|string $id
      * @param bool|null $restock
+     * @param string|null $accessToken
      * @return Sale|Errors
      */
-    public function cancel(string $id, ?bool $restock = false): Sale|Errors
-    {
+    public function cancel(
+        int|string $id,
+        ?bool $restock = false,
+        ?string $accessToken = null,
+    ): Sale|Errors {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
@@ -141,6 +151,32 @@ class Sales
         return new Sale($data['sale'] ?? []);
     }
 
-    // TODO: implement
-    public function sendMail() {}
+    /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/sendSalesMail
+     * @param int|string $id
+     * @param MailType $mailType
+     * @param string|null $accessToken
+     * @return true|Errors
+     */
+    public function sendMail(
+        int|string $id,
+        MailType $mailType,
+        ?string $accessToken = null,
+    ): bool|Errors {
+        $response = (new Request(new RequestOption([
+            'authorization' => $accessToken ?? $this->_accessToken,
+            'json' => true,
+        ])))->post(
+            'https://api.shop-pro.jp/v1/sales/' . $id . '/mails',
+            [
+                'mail' => [
+                    'type' => $mailType->value,
+                ],
+            ],
+        );
+        if (! $response->isSuccess()) {
+            return Errors::build($response);
+        }
+        return true;
+    }
 }
