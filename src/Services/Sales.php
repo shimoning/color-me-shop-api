@@ -2,7 +2,6 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use DateTimeInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
@@ -79,7 +78,7 @@ class Sales
      * @return Stat|Errors
      */
     public function stat(
-        DateTimeInterface $dateTime,
+        \DateTimeInterface $dateTime,
         ?string $accessToken = null,
     ): Stat|Errors {
         $response = (new Request(new RequestOptions([

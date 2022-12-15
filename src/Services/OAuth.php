@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
+use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Values\Scopes;
@@ -23,7 +24,7 @@ class OAuth
      * @param Scopes $scopes
      * @return string
      */
-    public function getOAuthUrl(Scopes $scopes): string
+    public function getUrl(Scopes $scopes): string
     {
         return $this->_options->getEndpointUri() . '/authorize?' . \http_build_query([
             'client_id' => $this->_options->getClientId(),
@@ -37,9 +38,9 @@ class OAuth
      * 認可コードをアクセストークンに交換する
      *
      * @param string $code
-     * @return AccessToken|bool
+     * @return AccessToken|Errors
      */
-    public function exchangeCode2Token(string $code): AccessToken|bool
+    public function exchangeCode2Token(string $code): AccessToken|Errors
     {
         $response = (new Request(new RequestOptions(['form' => true])))->post(
             $this->_options->getEndpointUri() . '/token',
@@ -52,8 +53,7 @@ class OAuth
             ]
         );
         if (! $response->isSuccess()) {
-            // TODO: return error instance
-            return false;
+            return Errors::build($response);
         }
         return new AccessToken($response->getParsedBody());
     }
