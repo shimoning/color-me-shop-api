@@ -2,7 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Communicator;
 
-class Options
+class RequestOptions
 {
     private float $_timeout = 0;
     private float $_connectTimeout = 0;

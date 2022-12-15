@@ -4,7 +4,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 
 use DateTimeInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
-use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
+use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
@@ -34,7 +34,7 @@ class Sales
         SearchParameters $searchParameters,
         ?string $accessToken = null,
     ): Page|Errors {
-        $response = (new Request(new RequestOption([
+        $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
             'https://api.shop-pro.jp/v1/sales',
@@ -59,7 +59,7 @@ class Sales
      */
     public function one(int|string $id, ?string $accessToken = null): Sale|Errors
     {
-        $response = (new Request(new RequestOption([
+        $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
             'https://api.shop-pro.jp/v1/sales/' . $id,
@@ -82,7 +82,7 @@ class Sales
         DateTimeInterface $dateTime,
         ?string $accessToken = null,
     ): Stat|Errors {
-        $response = (new Request(new RequestOption([
+        $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
             'https://api.shop-pro.jp/v1/sales/stat?',
@@ -107,7 +107,7 @@ class Sales
         SaleUpdater $updater,
         ?string $accessToken = null,
     ): Sale|Errors {
-        $response = (new Request(new RequestOption([
+        $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
         ])))->put(
@@ -135,7 +135,7 @@ class Sales
         ?bool $restock = false,
         ?string $accessToken = null,
     ): Sale|Errors {
-        $response = (new Request(new RequestOption([
+        $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
         ])))->put(
@@ -163,7 +163,7 @@ class Sales
         MailType $mailType,
         ?string $accessToken = null,
     ): bool|Errors {
-        $response = (new Request(new RequestOption([
+        $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
         ])))->post(

@@ -6,10 +6,10 @@ use GuzzleHttp\Client;
 
 class Request
 {
-    private Options $_options;
+    private RequestOptions $_options;
     private Client $_client;
 
-    public function __construct(?Options $options = new Options)
+    public function __construct(?RequestOptions $options = new RequestOptions)
     {
         $this->_options = $options;
         $this->_client = new Client();

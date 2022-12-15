@@ -3,19 +3,16 @@
 namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Request;
-use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
+use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
+use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 class OAuth
 {
-    private Options $_options;
+    private OAuthOptions $_options;
 
-    /**
-     * @param Options $options
-     */
-    public function __construct(Options $options)
+    public function __construct(OAuthOptions $options)
     {
         $this->_options = $options;
     }
@@ -44,7 +41,7 @@ class OAuth
      */
     public function exchangeCode2Token(string $code): AccessToken|bool
     {
-        $response = (new Request(new RequestOption(['form' => true])))->post(
+        $response = (new Request(new RequestOptions(['form' => true])))->post(
             $this->_options->getEndpointUri() . '/token',
             [
                 'client_id' => $this->_options->getClientId(),
