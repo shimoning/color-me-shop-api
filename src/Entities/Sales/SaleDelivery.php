@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 
 /**
@@ -12,6 +13,15 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  */
 class SaleDelivery extends Entity
 {
+    const OBJECT_FIELDS = [
+        'furigana' => [
+            'value' => Furigana::class,
+        ],
+        'prefId' => [
+            'enum' => Prefecture::class,
+        ],
+    ];
+
     protected int $id;
     protected int $saleId;
     protected string $accountId;
@@ -19,11 +29,11 @@ class SaleDelivery extends Entity
     protected array $detailIds;
 
     protected string $name;
-    protected string $furigana;
+    protected Furigana $furigana;
 
-    protected string $postal;
-    protected int $prefId;
-    protected string $perfName;
+    protected ?string $postal;
+    protected Prefecture $prefId;
+    protected string $prefName;
     protected ?string $address1;
     protected ?string $address2;
     protected ?string $tel;
@@ -87,7 +97,7 @@ class SaleDelivery extends Entity
 
     /**
      * この配送に含まれる受注明細IDの配列
-     * @return string[]
+     * @return array<string>
      */
     public function getDetailIds(): array
     {
@@ -105,29 +115,29 @@ class SaleDelivery extends Entity
 
     /**
      * 宛名のフリガナ
-     * @return string
+     * @return Furigana
      */
-    public function getFurigana(): string
+    public function getFurigana(): Furigana
     {
         return $this->furigana;
     }
 
     /**
      * 郵便番号
-     * @return string
+     * @return string|null
      */
-    public function getPostal(): string
+    public function getPostal(): ?string
     {
         return $this->postal;
     }
 
     /**
      * 都道府県の通し番号
-     * @return Prefecture|int
+     * @return Prefecture
      */
-    public function getPrefId(): mixed
+    public function getPrefId(): Prefecture
     {
-        return Prefecture::tryFrom($this->prefId) ?? $this->prefId;
+        return $this->prefId;
     }
 
     /**
@@ -136,7 +146,7 @@ class SaleDelivery extends Entity
      */
     public function getPrefName(): string
     {
-        return $this->perfName;
+        return $this->prefName;
     }
 
     /**
@@ -168,7 +178,7 @@ class SaleDelivery extends Entity
 
     /**
      * 配送希望日
-     * @return string |null
+     * @return string|null
      */
     public function getPreferredDate(): ?string
     {

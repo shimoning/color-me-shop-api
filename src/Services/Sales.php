@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 use DateTimeInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\Options as RequestOption;
+use Shimoning\ColorMeShopApi\Communicator\Errors;
 
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
@@ -12,6 +13,7 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Page;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 
 class Sales
 {
@@ -26,12 +28,12 @@ class Sales
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
-     * @return Page<Sale>|bool
+     * @return Page<Sale>|Errors
      */
     public function page(
         SearchParameters $searchParameters,
         ?string $accessToken = null,
-    ): Page|bool {
+    ): Page|Errors {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
         ])))->get(
@@ -39,8 +41,7 @@ class Sales
             $searchParameters->toArrayRecursive(),
         );
         if (! $response->isSuccess()) {
-            // TODO: return error instance
-            return false;
+            return Errors::build($response);
         }
         $data = $response->getParsedBody();
 
@@ -54,9 +55,9 @@ class Sales
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
      * @param string $id
      * @param string|null $accessToken
-     * @return Sale|bool
+     * @return Sale|Errors
      */
-    public function one(string $id, ?string $accessToken = null): Sale|bool
+    public function one(string $id, ?string $accessToken = null): Sale|Errors
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -64,8 +65,7 @@ class Sales
             'https://api.shop-pro.jp/v1/sales/' . $id,
         );
         if (! $response->isSuccess()) {
-            // TODO: return error instance
-            return false;
+            return Errors::build($response);
         }
         $data = $response->getParsedBody();
         return new Sale($data['sale'] ?? []);
@@ -75,9 +75,9 @@ class Sales
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
      * @param DateTimeInterface $dateTime
      * @param string|null $accessToken
-     * @return Stat|bool
+     * @return Stat|Errors
      */
-    public function stat(DateTimeInterface $dateTime, ?string $accessToken = null): Stat|bool
+    public function stat(DateTimeInterface $dateTime, ?string $accessToken = null): Stat|Errors
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -88,23 +88,42 @@ class Sales
             ],
         );
         if (! $response->isSuccess()) {
-            // TODO: return error instance
-            return false;
+            return Errors::build($response);
         }
         $data = $response->getParsedBody();
         return new Stat($data['sales_stat'] ?? []);
     }
 
-    // TODO: implement
-    public function update() {}
+    /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
+     * @param SaleUpdater $updater
+     * @return Sale|Errors
+     */
+    public function update(SaleUpdater $updater): Sale|Errors
+    {
+        $response = (new Request(new RequestOption([
+            'authorization' => $accessToken ?? $this->_accessToken,
+            'json' => true,
+        ])))->put(
+            'https://api.shop-pro.jp/v1/sales/' . $updater->getId(),
+            [
+                'sale' => $updater->toArrayRecursive(),
+            ],
+        );
+        if (! $response->isSuccess()) {
+            return Errors::build($response);
+        }
+        $data = $response->getParsedBody();
+        return new Sale($data['sale'] ?? []);
+    }
 
     /**
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
      * @param string $id
-     * @param boolean|null $restock
-     * @return Sale|boolean
+     * @param bool|null $restock
+     * @return Sale|Errors
      */
-    public function cancel(string $id, ?bool $restock = false): Sale|bool
+    public function cancel(string $id, ?bool $restock = false): Sale|Errors
     {
         $response = (new Request(new RequestOption([
             'authorization' => $accessToken ?? $this->_accessToken,
@@ -116,8 +135,7 @@ class Sales
             ],
         );
         if (! $response->isSuccess()) {
-            // TODO: return error instance
-            return false;
+            return Errors::build($response);
         }
         $data = $response->getParsedBody();
         return new Sale($data['sale'] ?? []);
