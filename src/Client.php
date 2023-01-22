@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 use Shimoning\ColorMeShopApi\Services\Sales;
@@ -118,7 +119,7 @@ class Client
      * @param integer|string $id
      * @param MailType $mailType
      * @param string|null $accessToken
-     * @return boolean|Errors
+     * @return true|Errors
      */
     public function sendSalesMail(int|string $id, MailType $mailType, ?string $accessToken = null): bool|Errors
     {
