@@ -125,7 +125,7 @@ class Entity
      * 配列として取得する
      * @return array
      */
-    public function toArrayRecursive(): array
+    public function toArrayRecursive($ignoreNull = true): array
     {
         $properties = get_class_vars(static::class);
         $values = get_object_vars($this);
@@ -137,6 +137,9 @@ class Entity
             }
             $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
             $value = $values[$key] ?? null;
+            if ($ignoreNull && $value === null) {
+                continue;
+            }
             if (\is_array($value)) {
                 $value = array_map([$this, 'parse'], $value);
             } else {

@@ -8,6 +8,12 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 
+/**
+ * before/after は直感的でないためサポートしない。
+ * make_date_max/make_date_min を使用すること。
+ *
+ * TODO: fields のサポート
+ */
 class SearchParameters extends Entity
 {
     const OBJECT_FIELDS = [
@@ -43,8 +49,8 @@ class SearchParameters extends Entity
     ];
 
     protected ?array $ids;
-    protected ?DateTime $makeDateMin;
-    protected ?DateTime $makeDateMax;
+    protected ?DateTime $makeDateMin;   // after
+    protected ?DateTime $makeDateMax;   // before
     protected ?DateTime $updateDateMin;
     protected ?DateTime $updateDateMax;
     protected ?array $customerIds;
@@ -58,7 +64,7 @@ class SearchParameters extends Entity
     protected ?bool $delivered;
     protected ?bool $canceled;
     protected ?array $paymentIds;
-    protected ?array $fields;   // TODO: SalesFields
+    protected ?array $fields;   // TODO: SaleFields
     protected ?Limit $limit;
     protected ?int $offset;
 }
