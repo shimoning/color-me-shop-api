@@ -38,6 +38,10 @@ class Entity
     {
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
+            if (!empty($objectField['nullable']) && !$value) {
+                return $isArray ? [] : null;
+            }
+
             if (isset($objectField['entity'])) {
                 $class = $objectField['entity'];
                 if ($isArray) {

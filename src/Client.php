@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Entities\Page;
+use Shimoning\ColorMeShopApi\Entities\Collection;
 
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
@@ -18,8 +19,20 @@ use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 
+use Shimoning\ColorMeShopApi\Services\Payment;
+use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
+
 class Client
 {
+    protected string $accessToken;
+
+    public function __construct(?string $accessToken)
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+    }
+
     /**
      * OAuthアプリケーションの登録のための URL を取得する
      *
@@ -128,13 +141,35 @@ class Client
 
     private function salesService(?string $accessToken = null): Sales
     {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+
         static $service;
         if (!$service) {
-            if (empty($accessToken)) {
+            if (empty($this->accessToken)) {
                 throw new ParameterException('アクセストークンは必ず指定してください');
             }
-            $service = new Sales($accessToken);
+            $service = new Sales($this->accessToken);
         }
         return $service;
+    }
+
+    /**
+     * 決済設定の一覧を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
+     * @return Collection<PaymentEntity>|Errors
+     */
+    public function getPayments(?string $accessToken = null): Collection|Errors
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return (new Payment($this->accessToken))->all();
     }
 }

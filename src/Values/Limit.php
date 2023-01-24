@@ -17,7 +17,7 @@ class Limit implements Value
     public function __construct(int $limit)
     {
         if (! $this->validate($limit)) {
-            throw new ParameterException('件数は 1 ~ 100 の間で指定してください。');
+            throw new ParameterException('件数は 1 ~ 100 の間で指定してください。 : '  . $limit);
         }
         $this->_limit = $limit;
     }

@@ -15,6 +15,7 @@ class SaleDelivery extends Entity
 {
     const OBJECT_FIELDS = [
         'furigana' => [
+            'nullable' => true,
             'value' => Furigana::class,
         ],
         'prefId' => [
@@ -29,7 +30,7 @@ class SaleDelivery extends Entity
     protected array $detailIds;
 
     protected string $name;
-    protected Furigana $furigana;
+    protected ?Furigana $furigana;
 
     protected ?string $postal;
     protected Prefecture $prefId;
@@ -115,9 +116,9 @@ class SaleDelivery extends Entity
 
     /**
      * 宛名のフリガナ
-     * @return Furigana
+     * @return Furigana|null
      */
-    public function getFurigana(): Furigana
+    public function getFurigana(): ?Furigana
     {
         return $this->furigana;
     }

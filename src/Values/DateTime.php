@@ -19,7 +19,7 @@ class DateTime implements Value
     {
         if (\is_string($date)) {
             if (! \preg_match('/^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2}:\d{2})?$/', $date)) {
-                throw new ParameterException('日付は "文字列" で "YYYY-MM-DD" もしくは "YYYY-MM-DD hh:mm:ss" の形式で入力してください。');
+                throw new ParameterException('日付は "文字列" で "YYYY-MM-DD" もしくは "YYYY-MM-DD hh:mm:ss" の形式で入力してください。 : ' . $date);
             }
             $this->_date = $date;
         } else if ($date instanceof DateTimeInterface) {

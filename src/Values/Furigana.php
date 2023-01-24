@@ -17,7 +17,7 @@ class Furigana implements Value
     public function __construct(string $furigana)
     {
         if (! $this->validate($furigana)) {
-            throw new ParameterException('フリガナはカタカナで入力してください。');
+            throw new ParameterException('フリガナはカタカナで入力してください。 : ' . $furigana);
         }
         $this->_furigana = $furigana;
     }
