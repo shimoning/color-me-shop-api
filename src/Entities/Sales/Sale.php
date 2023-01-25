@@ -458,6 +458,15 @@ class Sale extends Entity
     }
 
     /**
+     * 顧客
+     * @return Customer
+     */
+    public function getCustomer(): Customer
+    {
+        return $this->customer;
+    }
+
+    /**
      * 受注明細
      * @return array<ShopDetail>
      */

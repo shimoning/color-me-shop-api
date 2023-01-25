@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Customer;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\Sex;
+use Shimoning\ColorMeShopApi\Values\Furigana;
 
 /**
  * 顧客
@@ -14,6 +15,10 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 class Customer extends Entity
 {
     const OBJECT_FIELDS = [
+        'furigana' => [
+            'nullable' => true,
+            'value' => Furigana::class,
+        ],
         'sex' => [
             'enum' => Sex::class,
         ],
@@ -25,7 +30,7 @@ class Customer extends Entity
     protected int $id;
     protected string $accountId;
     protected ?string $name;
-    protected ?string $furigana;
+    protected ?Furigana $furigana;
     protected ?string $hojin;
     protected ?string $busho;
     protected ?Sex $sex;
@@ -77,9 +82,9 @@ class Customer extends Entity
 
     /**
      * 名前のフリガナ
-     * @return string|null
+     * @return Furigana|null
      */
-    public function getFurigana(): ?string
+    public function getFurigana(): ?Furigana
     {
         return $this->furigana;
     }
