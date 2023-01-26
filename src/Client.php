@@ -22,6 +22,9 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
 
+use Shimoning\ColorMeShopApi\Services\Delivery;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
+
 class Client
 {
     protected string $accessToken;
@@ -171,5 +174,23 @@ class Client
         }
 
         return (new Payment($this->accessToken))->all();
+    }
+
+    /**
+     * 配送方法一覧を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
+     * @return Collection<DeliveryEntity>|Errors
+     */
+    public function getDeliveries(?string $accessToken = null): Collection|Errors
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return (new Delivery($this->accessToken))->all();
     }
 }
