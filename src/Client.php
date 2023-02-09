@@ -29,7 +29,7 @@ class Client
 {
     protected string $accessToken;
 
-    public function __construct(?string $accessToken)
+    public function __construct(?string $accessToken = null)
     {
         if ($accessToken) {
             $this->accessToken = $accessToken;

@@ -468,7 +468,7 @@ class Sale extends Entity
 
     /**
      * 受注明細
-     * @return array<ShopDetail>
+     * @return array<SaleDetail>
      */
     public function getDetails(): array
     {
