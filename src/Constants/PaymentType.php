@@ -6,7 +6,7 @@ enum PaymentType: int
 {
     case COD = 0;  // 商品代引
     case BANK_TRANSFER = 1;  // 銀行振込
-    case POSTAL_TRANSFER = 2;   // ちゅうちょ振替
+    case POSTAL_TRANSFER = 2;   // ゆうちょ振替
     case CREDIT_ZEUS = 3; // クレジット(ZEUS)
     case KURONEKO_PAYMENT = 4; // クロネコ@ペイメント
     case COD_NP  = 5; // NP後払い
