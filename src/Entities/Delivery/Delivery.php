@@ -46,6 +46,10 @@ class Delivery extends Entity
     protected ?int $chargeFreeLimit;
     protected DeliveryChargeType $chargeType;
     protected Charge $charge;
+    protected bool $taxIncluded;
+
+    protected bool $slipNumberUse;
+    protected ?string $slipNumberUrl;
 
     protected ?string $memo;
     protected ?string $memo2;
