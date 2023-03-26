@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Values\Scopes;
 
 use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 
@@ -24,6 +24,10 @@ use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
 
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
+
+use Shimoning\ColorMeShopApi\Services\Customer;
+use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 class Client
 {
@@ -66,13 +70,17 @@ class Client
      * 受注データのリストを取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
-     * @param SearchParameters|null $searchParameters
+     * @param SalesSearchParameters|null $searchParameters
      * @param string|null $accessToken
      * @return Page<Sale>|Errors
      */
-    public function getSales(?SearchParameters $searchParameters = null, ?string $accessToken = null): Page|Errors
-    {
-        return $this->salesService($accessToken)->page($searchParameters ?? new SearchParameters([]), $accessToken);
+    public function getSales(
+        ?SalesSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this
+            ->salesService($accessToken)
+            ->page($searchParameters ?? new SalesSearchParameters([]), $accessToken);
     }
 
     /**
@@ -123,8 +131,11 @@ class Client
      * @param string|null $accessToken
      * @return Sale|Errors
      */
-    public function cancelSale(int|string $id, ?bool $restock = false, ?string $accessToken = null): Sale|Errors
-    {
+    public function cancelSale(
+        int|string $id,
+        ?bool $restock = false,
+        ?string $accessToken = null,
+    ): Sale|Errors {
         return $this->salesService($accessToken)->cancel($id, $restock, $accessToken);
     }
 
@@ -137,8 +148,11 @@ class Client
      * @param string|null $accessToken
      * @return true|Errors
      */
-    public function sendSalesMail(int|string $id, MailType $mailType, ?string $accessToken = null): bool|Errors
-    {
+    public function sendSalesMail(
+        int|string $id,
+        MailType $mailType,
+        ?string $accessToken = null,
+    ): bool|Errors {
         return $this->salesService($accessToken)->sendMail($id, $mailType, $accessToken);
     }
 
@@ -162,6 +176,7 @@ class Client
      * 決済設定の一覧を取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
+     * @param string|null $accessToken
      * @return Collection<PaymentEntity>|Errors
      */
     public function getPayments(?string $accessToken = null): Collection|Errors
@@ -180,6 +195,7 @@ class Client
      * 配送方法一覧を取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
+     * @param string|null $accessToken
      * @return Collection<DeliveryEntity>|Errors
      */
     public function getDeliveries(?string $accessToken = null): Collection|Errors
@@ -192,5 +208,48 @@ class Client
         }
 
         return (new Delivery($this->accessToken))->all();
+    }
+
+    /**
+     * 顧客データのリストを取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
+     * @param CustomerSearchParameters|null $searchParameters
+     * @param string|null $accessToken
+     * @return Page<CustomerEntity>|Errors
+     */
+    public function getCustomers(
+        ?CustomerSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return (new Customer($this->accessToken))
+            ->page($searchParameters ?? new CustomerSearchParameters([]));
+    }
+
+    /**
+     * 顧客データの取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
+     * @param integer|string $id
+     * @param string|null $accessToken
+     * @return CustomerEntity|Errors
+     */
+    public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return (new Customer($this->accessToken))->one($id, $accessToken);
     }
 }

@@ -1,5 +1,7 @@
 # ColorMeShopApi API client
-GMOベポパが提供している ColorMeショップの API を PHP から利用するためのライブラリです。
+GMOベポパ が提供している ColorMeショップ の API を PHP から利用するためのライブラリです。
+
+現在一部のみ実装済み。
 
 ## 環境
 PHP 8.1 以上
@@ -157,6 +159,16 @@ TODO: write
 #### メールの送信
 TODO: write
 
+### 顧客
+#### 顧客データの一覧を取得
+TODO: write
+
+#### 顧客データの取得
+TODO: write
+
+### 顧客データを追加
+not implement
+
 ### 決済
 #### 決済設定の一覧を取得
 TODO: write
@@ -166,12 +178,10 @@ TODO: write
 TODO: write
 
 ### 配送日時設定を取得
-TODO: write
-
+not implement
 
 ### 未実装
 * ショップ
-* 顧客
 * 商品
 * 在庫
 * 商品グループ

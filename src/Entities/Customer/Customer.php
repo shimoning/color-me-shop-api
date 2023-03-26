@@ -3,9 +3,9 @@
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\Prefecture;
-use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Values\Furigana;
+use Shimoning\ColorMeShopApi\Constants\Sex;
+use Shimoning\ColorMeShopApi\Constants\Prefecture;
 
 /**
  * 顧客

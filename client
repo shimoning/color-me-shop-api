@@ -9,7 +9,7 @@ echo __NAMESPACE__ . " shell\n";
 echo "-----\nexample:\n";
 echo "\$client = new Client;\n\n";
 echo "// get url for OAuth\n";
-echo "\$oAuthUrl = \$client->getOAuthUrl(\$scopes);\n\n";
+echo "\$oAuthUrl = \$client->getOAuthUrl(\$options, \$scopes);\n\n";
 echo "// get sales\n";
 echo "\$sales = \$client->getSales();\n";
 
@@ -24,16 +24,22 @@ $sh = new \Psy\Shell();
 $sh->addCode(sprintf("namespace %s;", __NAMESPACE__));
 
 // set default
-$options = new Entities\OAuth\Options(
-    $_ENV['CLIENT_ID'],
-    $_ENV['CLIENT_SECRET'],
-    $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,
-);
+$options = null;
+if (!empty($_ENV['CLIENT_ID']) && !empty($_ENV['CLIENT_SECRET'])) {
+    $options = new Entities\OAuth\Options(
+        $_ENV['CLIENT_ID'],
+        $_ENV['CLIENT_SECRET'],
+        $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,
+    );
+
+}
 $scopes = new Values\Scopes(Constants\AuthScope::cases());
+$token = $_ENV['TOKEN'] ?? null;
 
 $sh->setScopeVariables([
     'options' => $options,
     'scopes' => $scopes,
+    'token' => $token,
 ]);
 
 $sh->run();

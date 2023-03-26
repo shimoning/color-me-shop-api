@@ -18,7 +18,10 @@ class Delivery
     }
 
     /**
+     * 配送方法一覧を取得
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
+     * @param string|null $accessToken
      * @return Collection<DeliveryEntity>|Errors
      */
     public function all(?string $accessToken = null): Collection|Errors
@@ -35,4 +38,7 @@ class Delivery
 
         return Collection::cast(DeliveryEntity::class, $data['deliveries'] ?? []);
     }
+
+    // TODO: 配送日時設定を取得
+    // https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting
 }

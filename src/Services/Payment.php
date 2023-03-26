@@ -18,7 +18,10 @@ class Payment
     }
 
     /**
+     * 決済設定の一覧を取得
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
+     * @param string|null $accessToken
      * @return Collection<PaymentEntity>|Errors
      */
     public function all(?string $accessToken = null): Collection|Errors

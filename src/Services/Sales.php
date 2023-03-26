@@ -10,8 +10,8 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Collection;
-use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Page;
+use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 
 class Sales
@@ -24,6 +24,8 @@ class Sales
     }
 
     /**
+     * 受注データのリストを取得
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
@@ -51,6 +53,8 @@ class Sales
     }
 
     /**
+     * 受注データの取得
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
      * @param int|string $id
      * @param string|null $accessToken
@@ -71,6 +75,8 @@ class Sales
     }
 
     /**
+     * 売上集計の取得
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
      * @param DateTimeInterface $dateTime
      * @param string|null $accessToken
@@ -97,6 +103,8 @@ class Sales
     }
 
     /**
+     * 受注データの更新
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
      * @param SaleUpdater $updater
      * @param string|null $accessToken
@@ -123,6 +131,8 @@ class Sales
     }
 
     /**
+     * 受注のキャンセル
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
      * @param int|string $id
      * @param bool|null $restock
@@ -151,6 +161,8 @@ class Sales
     }
 
     /**
+     * メールの送信
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/sendSalesMail
      * @param int|string $id
      * @param MailType $mailType
