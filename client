@@ -24,22 +24,29 @@ $sh = new \Psy\Shell();
 $sh->addCode(sprintf("namespace %s;", __NAMESPACE__));
 
 // set default
-$options = null;
+// - OAuth
+$oAuthOptions = null;
 if (!empty($_ENV['CLIENT_ID']) && !empty($_ENV['CLIENT_SECRET'])) {
-    $options = new Entities\OAuth\Options(
+    $oAuthOptions = new Entities\OAuth\Options(
         $_ENV['CLIENT_ID'],
         $_ENV['CLIENT_SECRET'],
         $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,
     );
 
 }
-$scopes = new Values\Scopes(Constants\AuthScope::cases());
+$oAuthScopes = new Values\Scopes(Constants\AuthScope::cases());
+
+// - Access token
 $token = $_ENV['TOKEN'] ?? null;
 
+// - Client
+$client = $token ?  new Client($client) : null;
+
 $sh->setScopeVariables([
-    'options' => $options,
-    'scopes' => $scopes,
+    'oAuthOptions' => $oAuthOptions,
+    'oAuthScopes' => $oAuthScopes,
     'token' => $token,
+    'client' => $client,
 ]);
 
 $sh->run();

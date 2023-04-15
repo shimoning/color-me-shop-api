@@ -3,11 +3,13 @@ GMOベポパ が提供している ColorMeショップ の API を PHP から利
 
 現在一部のみ実装済み。
 
-## 環境
-PHP 8.1 以上
+## Environment
+* PHP 8.1 以上
+* composer
 
-## Install
+## Installation
 利用するプロジェクトの `composer.json` に以下を追加する。
+
 ```composer.json
 "repositories": {
     "color-me-shop-api": {
@@ -17,34 +19,32 @@ PHP 8.1 以上
 },
 ```
 
-その後以下でインストールが可能になる。
+その後、以下のコマンドでインストールが可能になる。
 
 ```bash
 composer require shimoning/color-me-shop-api
 ```
 
-## Prepare
+## Preparation
 API を利用するためには利用登録が必要。
+
 ### デベロッパー登録
-1. [https://developer.shop-pro.jp/](開発者サイト) の「デベロッパー登録」から登録。
+1. [開発者サイト](https://developer.shop-pro.jp/) の「デベロッパー登録」から登録。
 2. アプリを作成
 3. `クライアントID` と `クライアントシークレット` を控える
 4. `リダイレクトURI` を設定し、疎通を確認しておく
 
 ### ショップ登録
-[https://shop-pro.jp/](カラーミーショップページ) の「無料お試し」から登録。
+[カラーミーショップページ](https://shop-pro.jp/) の「無料お試し」から登録。
+お試し期間は **30日** しかないので、開発は計画的に。
 
-## Usage
-### 事前準備
-以下のものをPHPで扱えるようにしておく。
-* `クライアントID`
-* `クライアントシークレット`
-* `リダイレクトURI`
-以降のコードサンプルでは、それぞれ `$clientId`, `$clientSecret`, `$redirectUri` として表現する。
+
+## How to Use
+利用方法。
 
 ### エラーハンドリング
 API からエラーが返ってきた場合 `Communicator\Errors` クラスで返却する。
-基本的には[https://developer.shop-pro.jp/docs/colorme-api#section/API/%E3%82%A8%E3%83%A9%E3%83%BC](エラー仕様書)通りの結果が返ってくるが、APIによっては仕様を無視したエラーが返ってくるので気をつけること。
+基本的には [エラー仕様書](https://developer.shop-pro.jp/docs/colorme-api#section/API/%E3%82%A8%E3%83%A9%E3%83%BC) に基づいたエラーが返ってくるが、APIによっては仕様を無視したエラーが返ってくるので気をつけること。
 
 ```php
 if ($result instanceof Communicator\Errors) {
@@ -57,30 +57,39 @@ if ($result instanceof Communicator\Errors) {
 
 ### OAuth
 #### 共通準備
+以下のものをPHPで扱えるようにしておく。
+* `クライアントID`
+* `クライアントシークレット`
+* `リダイレクトURI`
+
+以降のコードサンプルでは、それぞれ `$clientId`, `$clientSecret`, `$redirectUri` として表現する。
 OAuth に使う情報をあらかじめ作っておく。
+
 ```php
-$options = new Entities\OAuth\Options($clientId, $clientSecret, $redirectUri);
+$oAuthOptions = new Entities\OAuth\Options($clientId, $clientSecret, $redirectUri);
 ```
 
 #### OAuthアプリケーションの登録用URLの取得
 ```php
-$scopes = new Values\Scopes([
+$oAuthScopes = new Values\Scopes([
     Constants\AuthScope::READ_PRODUCTS,
     Constants\AuthScope::READ_SALES,
 ]);
-$oAuthUri = (new Client)->getOAuthUrl($options, $scopes); // https://api.shop-pro.jp/oauth/authorize?client_id=ff....
+$oAuthUri = (new Client)->getOAuthUrl($oAuthOptions, $oAuthScopes); // https://api.shop-pro.jp/oauth/authorize?client_id=ff....
 ```
 
 #### 認可コードをアクセストークンに交換
-上記で取得したURLを開くとショップのログインや認可を操作することになり、その後 `リダイレクトURI` に遷移する。
-その時クエリとして `code=....`　として `認可コード` がついてくるので、それを使う。
+上記で取得したURLを開くとショップのログインや認可を操作する画面に移動する。
+捜査を行なった後 `リダイレクトURI` に遷移する。
+その時クエリに `code=....`　として `認可コード` がついてくるので、それを使う。
+
 ```php
 $queryData = filter_input_array(INPUT_GET, $_GET); // Pure PHP
 $queryData = $request->query(); // Laravel
 
 $code = $queryData['code'];
-$options = new
-$tokenOrErrors = (new Client)->exchangeCode2Token($options, $code);
+
+$tokenOrErrors = (new Client)->exchangeCode2Token($oAuthOptions, $code);
 if ($tokenOrErrors instanceof Communicator\Errors) {
     // error...
     // エラー仕様を無視したエラーが返ってくる...
@@ -94,9 +103,11 @@ if ($tokenOrErrors instanceof Communicator\Errors) {
 ここで取得できた `$token` を保存しておく。
 以降コードサンプルでは `$token` として表現する。
 
+#### アクセストークンの有効期限について
+ドキュメントには以下の様にあるので、一度生成すれば永続するものと思われる。
 > アクセストークンに有効期限はありません
-とあるので、一度生成すれば永続と思われる。
 
+必要に応じてデータベースなどに、安全な方法で保存する。
 
 ### 受注
 #### 受注データのリストを取得
@@ -108,10 +119,10 @@ if ($tokenOrErrors instanceof Communicator\Errors) {
 ```php
 $client = new Client;
 
-// 検索条件を省略
+// 検索条件を省略パターン
 $salePageOrErrors = $client->getSales(null, $token);
 
-// 検索条件を設定し、アクセストークンを省略
+// 検索条件を設定し、アクセストークンを省略パターン
 $searchParameters = new Entities\Sales\SearchParameters([
     'make_date_min' => '2022-12-01',
     'make_date_max' => '2022-12-31 23:59:59',
@@ -119,15 +130,17 @@ $searchParameters = new Entities\Sales\SearchParameters([
 ]);
 $salePageOrErrors = $client->getSales($searchParameters);
 
-// 両方省略
+// 両方省略するパターン (インスタンス作成時に引数としてトークンを与える必要がある)
 $salePageOrErrors = $client->getSales();
 
+// 結果の処理
 if ($salePageOrErrors instanceof Communicator\Errors) {
     // error...
 } else {
     // success!
     foreach ($salePageOrErrors->all() as $sale) {
-        // sale
+        // @var Entities\Sales\Sale
+        $sale;
     }
 
     // 取得できた件数
@@ -166,8 +179,8 @@ TODO: write
 #### 顧客データの取得
 TODO: write
 
-### 顧客データを追加
-not implement
+#### 顧客データを追加
+(not implement)
 
 ### 決済
 #### 決済設定の一覧を取得
@@ -177,17 +190,21 @@ TODO: write
 #### 配送方法一覧を取得
 TODO: write
 
-### 配送日時設定を取得
-not implement
+#### 配送日時設定を取得
+(not implement)
 
-### 未実装
-* ショップ
-* 商品
-* 在庫
-* 商品グループ
-* 商品カテゴリー
-* ギフト
-* ショップクーポン
+-----
+
+## 未実装
+* [ショップ](https://developer.shop-pro.jp/docs/colorme-api#tag/shop)
+* [商品](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
+* [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
+* [商品グループ](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
+* [商品カテゴリー](https://developer.shop-pro.jp/docs/colorme-api#tag/category)
+* [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
+* [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
+
+-----
 
 ## CLI
 コマンドラインから以下で実行可能。
@@ -196,6 +213,26 @@ not implement
 ```bash
 php client
 ```
+
+### .env
+`.env` を設定することで、一部の変数が自動で生成され、確認等がしやすくなる。
+
+`.env.example` を参考に設定する。
+#### OAuth 用の 環境変数
+* CLIENT_ID
+* CLIENT_SECRET
+* REDIRECT_URI
+
+上記を設定することで、 `$oAuthOptions` を利用できる。
+これと `$oAuthScopes` (自動ですべての権限として生成される) を利用することで、 OAuth の実施ができる。
+
+#### アクセストークン
+* TOKEN
+
+を設定することで、 `$token` と `$client` が生成される。
+そのまま `$client->getSales()` の様に利用できる。
+
+-----
 
 ## ライセンスについて
 当ライブラリは *MITライセンス* です。
