@@ -9,7 +9,7 @@ echo __NAMESPACE__ . " shell\n";
 echo "-----\nexample:\n";
 echo "\$client = new Client;\n\n";
 echo "// get url for OAuth\n";
-echo "\$oAuthUrl = \$client->getOAuthUrl(\$options, \$scopes);\n\n";
+echo "\$oAuthUrl = \$client->getOAuthUrl(\$oAuthOptions, \$oAuthScopes);\n\n";
 echo "// get sales\n";
 echo "\$sales = \$client->getSales();\n";
 
@@ -40,7 +40,7 @@ $oAuthScopes = new Values\Scopes(Constants\AuthScope::cases());
 $token = $_ENV['TOKEN'] ?? null;
 
 // - Client
-$client = $token ?  new Client($client) : null;
+$client = $token ?  new Client($token) : null;
 
 $sh->setScopeVariables([
     'oAuthOptions' => $oAuthOptions,

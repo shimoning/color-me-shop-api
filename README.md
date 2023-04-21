@@ -180,7 +180,7 @@ TODO: write
 TODO: write
 
 #### 顧客データを追加
-(not implement)
+(Unimplemented)
 
 ### 決済
 #### 決済設定の一覧を取得
@@ -191,7 +191,7 @@ TODO: write
 TODO: write
 
 #### 配送日時設定を取得
-(not implement)
+(Unimplemented)
 
 -----
 
@@ -229,7 +229,7 @@ php client
 #### アクセストークン
 * TOKEN
 
-を設定することで、 `$token` と `$client` が生成される。
+上記を設定することで、 `$token` と `$client` が生成される。
 そのまま `$client->getSales()` の様に利用できる。
 
 -----
