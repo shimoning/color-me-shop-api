@@ -29,6 +29,9 @@ use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
+use Shimoning\ColorMeShopApi\Services\Product;
+use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
+
 class Client
 {
     protected string $accessToken;
@@ -251,5 +254,24 @@ class Client
         }
 
         return (new Customer($this->accessToken))->one($id, $accessToken);
+    }
+
+    /**
+     * 商品グループ一覧を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
+     * @param string|null $accessToken
+     * @return Collection<GroupEntity>|Errors
+     */
+    public function getProductGroups(?string $accessToken = null): Collection|Errors
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return (new Product($this->accessToken))->groups();
     }
 }

@@ -182,6 +182,10 @@ TODO: write
 #### 顧客データを追加
 (Unimplemented)
 
+### 商品グループ
+#### 商品グループ一覧を取得
+TODO: write
+
 ### 決済
 #### 決済設定の一覧を取得
 TODO: write
@@ -199,7 +203,6 @@ TODO: write
 * [ショップ](https://developer.shop-pro.jp/docs/colorme-api#tag/shop)
 * [商品](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
-* [商品グループ](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
 * [商品カテゴリー](https://developer.shop-pro.jp/docs/colorme-api#tag/category)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
