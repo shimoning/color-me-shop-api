@@ -274,4 +274,23 @@ class Client
 
         return (new Product($this->accessToken))->groups();
     }
+
+    /**
+     * 商品カテゴリー一覧を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
+     * @param string|null $accessToken
+     * @return Collection<GroupEntity>|Errors
+     */
+    public function getProductCategories(?string $accessToken = null): Collection|Errors
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return (new Product($this->accessToken))->categories();
+    }
 }

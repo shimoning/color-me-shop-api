@@ -17,19 +17,19 @@ use Shimoning\ColorMeShopApi\Constants\DisplayState;
 class Delivery extends Entity
 {
     const OBJECT_FIELDS = [
-        'methodType'=> [
+        'methodType' => [
             'enum' => DeliveryMethodType::class,
         ],
-        'chargeFreeType'=> [
+        'chargeFreeType' => [
             'enum' => DeliveryChargeFreeType::class,
         ],
-        'chargeType'=> [
+        'chargeType' => [
             'enum' => DeliveryChargeType::class,
         ],
-        'displayState'=> [
+        'displayState' => [
             'enum' => DisplayState::class,
         ],
-        'charge'=> [
+        'charge' => [
             'entity' => Charge::class,
         ],
     ];

@@ -17,33 +17,33 @@ use Shimoning\ColorMeShopApi\Constants\MailState;
 class SearchParameters extends Entity
 {
     const OBJECT_FIELDS = [
-        'makeDateMin'=> [
+        'makeDateMin' => [
             'value' => DateTime::class,
         ],
-        'makeDateMax'=> [
+        'makeDateMax' => [
             'value' => DateTime::class,
         ],
-        'updateDateMin'=> [
+        'updateDateMin' => [
             'value' => DateTime::class,
         ],
-        'updateDateMax'=> [
+        'updateDateMax' => [
             'value' => DateTime::class,
         ],
 
-        'customerFurigana'=> [
+        'customerFurigana' => [
             'value' => Furigana::class,
         ],
 
-        'acceptedMailState'=> [
+        'acceptedMailState' => [
             'enum' => MailState::class,
         ],
-        'paidMailState'=> [
+        'paidMailState' => [
             'enum' => MailState::class,
         ],
-        'deliveredMailState'=> [
+        'deliveredMailState' => [
             'enum' => MailState::class,
         ],
-        'limit'=> [
+        'limit' => [
             'value' => Limit::class,
         ],
     ];

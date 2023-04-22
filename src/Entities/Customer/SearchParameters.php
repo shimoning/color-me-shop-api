@@ -17,27 +17,27 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 class SearchParameters extends Entity
 {
     const OBJECT_FIELDS = [
-        'furigana'=> [
+        'furigana' => [
             'value' => Furigana::class,
         ],
         'sex' => [
             'enum' => Sex::class,
         ],
 
-        'makeDateMin'=> [
+        'makeDateMin' => [
             'value' => DateTime::class,
         ],
-        'makeDateMax'=> [
+        'makeDateMax' => [
             'value' => DateTime::class,
         ],
-        'updateDateMin'=> [
+        'updateDateMin' => [
             'value' => DateTime::class,
         ],
-        'updateDateMax'=> [
+        'updateDateMax' => [
             'value' => DateTime::class,
         ],
 
-        'limit'=> [
+        'limit' => [
             'value' => Limit::class,
         ],
     ];

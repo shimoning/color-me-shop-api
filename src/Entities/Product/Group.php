@@ -2,7 +2,6 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
-use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 
@@ -14,7 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 class Group extends Entity
 {
     const OBJECT_FIELDS = [
-        'displayState'=> [
+        'displayState' => [
             'enum' => ProductDisplayState::class,
         ],
     ];

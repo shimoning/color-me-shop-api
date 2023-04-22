@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\KouzaType;
 class Financial extends Entity
 {
     const OBJECT_FIELDS = [
-        'brands'=> [
+        'brands' => [
             'enum' => KouzaType::class,
         ],
     ];

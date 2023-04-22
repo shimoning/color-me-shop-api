@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
 class Area extends Entity
 {
     public const OBJECT_FIELDS = [
-        'prefId'=> [
+        'prefId' => [
             'enum' => Prefecture::class,
         ],
     ];

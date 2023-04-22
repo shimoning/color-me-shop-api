@@ -13,10 +13,10 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 class SaleUpdater extends Entity
 {
     const OBJECT_FIELDS = [
-        'pointState'=> [
+        'pointState' => [
             'enum' => PointState::class,
         ],
-        'saleDeliveries'=> [
+        'saleDeliveries' => [
             'array' => true,
             'entity' => SaleDeliveryUpdater::class,
         ],
