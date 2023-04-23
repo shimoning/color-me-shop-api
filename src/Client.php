@@ -31,6 +31,7 @@ use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Category as CategoryEntity;
 
 class Client
 {
@@ -280,7 +281,7 @@ class Client
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
      * @param string|null $accessToken
-     * @return Collection<GroupEntity>|Errors
+     * @return Collection<CategoryEntity>|Errors
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors
     {
