@@ -5,15 +5,15 @@ namespace Shimoning\ColorMeShopApi\Services;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 class OAuth
 {
-    private OAuthOptions $_options;
+    private Options $_options;
 
-    public function __construct(OAuthOptions $options)
+    public function __construct(Options $options)
     {
         $this->_options = $options;
     }

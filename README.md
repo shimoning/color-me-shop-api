@@ -1,11 +1,12 @@
 # ColorMeShopApi API client
 GMOベポパ が提供している ColorMeショップ の API を PHP から利用するためのライブラリです。
 
-現在一部のみ実装済み。
+現在一部のみ実装済み ( [未実装機能一覧](#未実装) )。
 
 ## Environment
 * PHP 8.1 以上
 * composer
+
 
 ## Installation
 利用するプロジェクトの `composer.json` に以下を追加する。
@@ -24,6 +25,14 @@ GMOベポパ が提供している ColorMeショップ の API を PHP から利
 ```bash
 composer require shimoning/color-me-shop-api
 ```
+
+### アップデート
+下記のコマンドでアップデートが可能。
+
+```bash
+composer update shimoning/color-me-shop-api
+```
+
 
 ## Preparation
 API を利用するためには利用登録が必要。
@@ -180,7 +189,7 @@ TODO: write
 TODO: write
 
 #### 顧客データを追加
-(Unimplemented)
+*(Unimplemented)*
 
 ### 商品グループ
 #### 商品グループ一覧を取得
@@ -199,7 +208,7 @@ TODO: write
 TODO: write
 
 #### 配送日時設定を取得
-(Unimplemented)
+*(Unimplemented)*
 
 -----
 
@@ -224,6 +233,8 @@ php client
 `.env` を設定することで、一部の変数が自動で生成され、確認等がしやすくなる。
 
 `.env.example` を参考に設定する。
+あくまで CLI のみに利用される環境変数。
+
 #### OAuth 用の 環境変数
 * CLIENT_ID
 * CLIENT_SECRET
