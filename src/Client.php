@@ -13,6 +13,9 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
+use Shimoning\ColorMeShopApi\Services\Shop;
+use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
+
 use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
@@ -68,6 +71,23 @@ class Client
     public function exchangeCode2Token(OAuthOptions $options, string $code): AccessToken|Errors
     {
         return (new OAuth($options))->exchangeCode2Token($code);
+    }
+
+
+    /**
+     * ショップ情報の取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop/operation/getShop
+     * @param string|null $accessToken
+     * @return ShopEntity|Errors
+     */
+    public function getShop(?string $accessToken = null): ShopEntity|Errors
+    {
+        if ($accessToken) {
+            $this->accessToken = $accessToken;
+        }
+
+        return (new Shop($this->accessToken))->get();
     }
 
     /**

@@ -3,7 +3,6 @@
 namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\DisplayState;
 
 /**
  * 配送料設定の詳細
@@ -20,9 +19,6 @@ class Charge extends Entity
         'chargeRangesMaxWeight' => [
             'array' => true,
             'entity' => Area::class,
-        ],
-        'displayState' => [
-            'enum' => DisplayState::class,
         ],
     ];
 

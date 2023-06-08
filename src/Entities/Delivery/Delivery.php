@@ -209,7 +209,6 @@ class Delivery extends Entity
         return $this->displayState;
     }
 
-
     /**
      * 配送希望日を指定可能か
      * @return bool

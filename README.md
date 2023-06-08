@@ -65,15 +65,15 @@ if ($result instanceof Communicator\Errors) {
 ```
 
 ### OAuth
-#### 共通準備
+#### 認証情報
 以下のものをPHPで扱えるようにしておく。
 * `クライアントID`
 * `クライアントシークレット`
 * `リダイレクトURI`
 
 以降のコードサンプルでは、それぞれ `$clientId`, `$clientSecret`, `$redirectUri` として表現する。
-OAuth に使う情報をあらかじめ作っておく。
 
+#### OAuth に使う共通情報
 ```php
 $oAuthOptions = new Entities\OAuth\Options($clientId, $clientSecret, $redirectUri);
 ```
@@ -118,6 +118,28 @@ if ($tokenOrErrors instanceof Communicator\Errors) {
 
 必要に応じてデータベースなどに、安全な方法で保存する。
 
+### ショップ
+#### ショップ情報の取得
+```php
+// アクセストークンのないインスタンス
+$client = new Client;
+
+// インスタンス作成時に引数としてアクセストークンを与えることも可能
+$client = new Client($token);
+
+// アクセストークンを設定
+$shopOrErrors = $client->getShop($token);
+// アクセストークン無し
+$shopOrErrors = $client->getShop();
+
+// 結果の処理
+if ($shopOrErrors instanceof Communicator\Errors) {
+    // error...
+} else {
+    // success!
+}
+```
+
 ### 受注
 #### 受注データのリストを取得
 * 第1引数: 検索条件 (optional)
@@ -126,8 +148,6 @@ if ($tokenOrErrors instanceof Communicator\Errors) {
 検索条件を省略した場合の条件は公式を参照。
 
 ```php
-$client = new Client;
-
 // 検索条件を省略パターン
 $salePageOrErrors = $client->getSales(null, $token);
 
@@ -139,7 +159,7 @@ $searchParameters = new Entities\Sales\SearchParameters([
 ]);
 $salePageOrErrors = $client->getSales($searchParameters);
 
-// 両方省略するパターン (インスタンス作成時に引数としてトークンを与える必要がある)
+// 両方省略するパターン
 $salePageOrErrors = $client->getSales();
 
 // 結果の処理
@@ -213,11 +233,13 @@ TODO: write
 -----
 
 ## 未実装
-* [ショップ](https://developer.shop-pro.jp/docs/colorme-api#tag/shop)
 * [商品](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
+
+## やりたいこと
+Client から OAuth を削除する (Services\OAuth をそのまま使えば良い)。
 
 -----
 
