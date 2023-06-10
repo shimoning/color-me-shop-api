@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Shop;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\ShopState;
 use Shimoning\ColorMeShopApi\Constants\DomainPlan;
