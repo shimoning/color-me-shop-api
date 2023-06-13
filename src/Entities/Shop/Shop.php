@@ -7,7 +7,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\ShopState;
 use Shimoning\ColorMeShopApi\Constants\DomainPlan;
 use Shimoning\ColorMeShopApi\Constants\ContractPlan;
-use Shimoning\ColorMeShopApi\Constants\OpenStatus;
+use Shimoning\ColorMeShopApi\Constants\OpenState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\TaxType;
 use Shimoning\ColorMeShopApi\Constants\TaxRoundingMethod;
@@ -30,10 +30,10 @@ class Shop extends Entity
             'enum' => ContractPlan::class,
         ],
         'openState' => [
-            'enum' => OpenStatus::class,
+            'enum' => OpenState::class,
         ],
         'mobileOpenState' => [
-            'enum' => OpenStatus::class,
+            'enum' => OpenState::class,
         ],
         'prefId' => [
             'enum' => Prefecture::class,
@@ -60,8 +60,8 @@ class Shop extends Entity
 
     protected string $url;
 
-    protected OpenStatus $openState;
-    protected OpenStatus $mobileOpenState;
+    protected OpenState $openState;
+    protected OpenState $mobileOpenState;
 
     protected string $loginId;
 
@@ -201,18 +201,18 @@ class Shop extends Entity
 
     /**
      * 開店状態
-     * @return OpenStatus
+     * @return OpenState
      */
-    public function getOpenStatus(): OpenStatus
+    public function getOpenState(): OpenState
     {
         return $this->openState;
     }
 
     /**
      * モバイルショップ開店状態
-     * @return OpenStatus
+     * @return OpenState
      */
-    public function getMobileOpenStatus(): OpenStatus
+    public function getMobileOpenState(): OpenState
     {
         return $this->mobileOpenState;
     }

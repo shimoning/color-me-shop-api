@@ -2,7 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
-enum OpenStatus: string
+enum OpenState: string
 {
     case OPENED     = 'opened';
     case CLOSED     = 'closed';
