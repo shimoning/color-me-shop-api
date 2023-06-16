@@ -277,7 +277,7 @@ class Shop extends Entity
      */
     public function getHojinKana(): ?string
     {
-        return $this->hojiKana;
+        return $this->hojinKana;
     }
 
     /**
