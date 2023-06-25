@@ -74,7 +74,7 @@ class SaleUpdater extends Entity
 
     /**
      * お届け先
-     * @return array<SaleDelivery>
+     * @return SaleDeliveryUpdater[]
      */
     public function getSaleDeliveries(): array
     {
@@ -83,7 +83,7 @@ class SaleUpdater extends Entity
 
     /**
      * お届け先を設定
-     * @param array<SaleDelivery>
+     * @param SaleDeliveryUpdater[]
      */
     public function setSaleDeliveries($saleDeliveries)
     {
