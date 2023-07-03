@@ -9,15 +9,10 @@ GMOベポパ が提供している ColorMeショップ の API を PHP から利
 
 
 ## Installation
-利用するプロジェクトの `composer.json` に以下を追加する。
+利用したいプロジェクトのディレクトリに移動して、以下のコマンドを実行する。
 
-```composer.json
-"repositories": {
-    "color-me-shop-api": {
-        "type": "vcs",
-        "url": "https://github.com/shimoning/color-me-shop-api.git"
-    }
-},
+```bash
+composer config repositories.shimoning/color-me-shop-api vcs git@github.com/shimoning/color-me-shop-api.git
 ```
 
 その後、以下のコマンドでインストールが可能になる。
@@ -26,7 +21,7 @@ GMOベポパ が提供している ColorMeショップ の API を PHP から利
 composer require shimoning/color-me-shop-api
 ```
 
-### アップデート
+### Update
 下記のコマンドでアップデートが可能。
 
 ```bash
@@ -89,7 +84,7 @@ $oAuthUri = (new Client)->getOAuthUrl($oAuthOptions, $oAuthScopes); // https://a
 
 #### 認可コードをアクセストークンに交換
 上記で取得したURLを開くとショップのログインや認可を操作する画面に移動する。
-捜査を行なった後 `リダイレクトURI` に遷移する。
+操作を行なった後、自動的に `リダイレクトURI` に遷移する。
 その時クエリに `code=....`　として `認可コード` がついてくるので、それを使う。
 
 ```php
@@ -238,21 +233,30 @@ TODO: write
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
 
+-----
+
 ## やりたいこと
 Client から OAuth を削除する (Services\OAuth をそのまま使えば良い)。
 
 -----
 
 ## CLI
-コマンドラインから以下で実行可能。
-終了する際は `exit` もしくは `Control + C` を入力。
+単体で `git clone` してきて、 `composer install` をした場合、プロジェクト直下でコマンドラインでの実行が可能になる。
+
+以下のコマンドで起動。
 
 ```bash
 php client
 ```
 
+対話形式の PHP として実行できる。
+空間名に気をつけること。
+
+### 終了方法
+終了する際は `exit` もしくは `Control + C` を入力。
+
 ### .env
-`.env` を設定することで、一部の変数が自動で生成され、確認等がしやすくなる。
+直下に `.env` を設定することで、一部の変数が自動で生成され、確認等がしやすくなる。
 
 `.env.example` を参考に設定する。
 あくまで CLI のみに利用される環境変数。
@@ -268,8 +272,8 @@ php client
 #### アクセストークン
 * TOKEN
 
-上記を設定することで、 `$token` と `$client` が生成される。
-そのまま `$client->getSales()` の様に利用できる。
+既に取得済みのアクセストークンを、上記として設定することで、 `$token` と、アクセストークンを設定済みの `$client` が生成される。
+そのまま `$client->getShop()` の様に利用できる。
 
 -----
 
