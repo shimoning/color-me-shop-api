@@ -22,7 +22,7 @@ class SaleDetail extends Entity
     protected ?int $option1Index;
     protected ?int $option2Index;
 
-    protected string $productModelNumber;
+    protected ?string $productModelNumber;
     protected string $productName;
     protected string $pristineProductFullName;
     protected ?int $productCost;
@@ -120,9 +120,9 @@ class SaleDetail extends Entity
 
     /**
      * 型番
-     * @return string
+     * @return string|null
      */
-    public function getProductModelNumber(): string
+    public function getProductModelNumber(): ?string
     {
         return $this->productModelNumber;
     }
