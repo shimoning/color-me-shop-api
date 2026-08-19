@@ -15,7 +15,7 @@ GMOベポパ が提供している ColorMeショップ の API を PHP から利
 composer config repositories.shimoning/color-me-shop-api vcs git@github.com/shimoning/color-me-shop-api.git
 ```
 
-その後、以下のコマンドでインストールが可能になる。
+その後、以下のコマンドでインストールが行われる。
 
 ```bash
 composer require shimoning/color-me-shop-api
@@ -280,3 +280,17 @@ php client
 ## ライセンスについて
 当ライブラリは *MITライセンス* です。
 [ライセンス](LICENSE) を読んでいただき、範囲内でご自由にご利用ください。
+
+## サポート
+### 有償サポート
+サイトへの導入や込み入った組み込みなどでお困りの際は、有償にてサポートを承っております。
+
+### 有償カスタマイズ
+当ライブラリはオープンソースですが、有償にてカスタマイズを承っております。
+
+カスタマイズしたコードは、同様にオープンソースとして公開されます。
+
+### お問い合わせ
+[GoogleForm](https://forms.gle/DK3DWstBCKdPS86X6) に必要事項ご記入の上送信してください。
+
+件名につきましては「公開ライブラリに関するお問い合わせ」を選択してください。
