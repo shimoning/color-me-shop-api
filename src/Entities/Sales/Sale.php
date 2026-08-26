@@ -137,12 +137,15 @@ class Sale extends Entity
     }
 
     /**
-     * 備考
+     * (削除) 備考
+     *
+     * https://developer.shop-pro.jp/news/releases/deprecate_v1_sales_memo_20260616
+     * @deprecated 0.7.0
      * @return string|null
      */
     public function getMemo(): ?string
     {
-        return $this->memo;
+        return $this->memo ?? null;
     }
 
     /**
