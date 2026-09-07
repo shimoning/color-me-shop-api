@@ -27,7 +27,7 @@ Color Me Shop API クライアントライブラリへの自動テスト導入�
 | --- | --- | --- | --- |
 | A | `src/Services/*.php` | 各メソッド内で `new Request(...)` を直接生成 | HTTP をモックできず Service 層をテスト不能 → **Phase 3 で解消** |
 | B | `src/Communicator/Request.php:11` | コンストラクタ内で `new Client()`（Guzzle）を生成 | ハンドラを差し替えられない → **Phase 3 で解消** |
-| C | `src/Client.php:181` `salesService()` | `static $service` がメソッドスコープ static 変数のためインスタンス間で共有される | 別トークンで2つ目の `Client` を生成しても最初の Service が再利用される既存バグ |
+| C | `src/Client.php:181` `salesService()` | `static $service` がメソッドスコープ static 変数のためインスタンス間で共有される | 別トークンで2つ目の `Client` を生成しても最初の Service が再利用される既存バグ → **Phase 4 で修正** |
 
 一方、**Values / Entities / Collection / RequestOptions / Response 層はリファクタ不要でテスト可能**。
 特に `Response` は `Psr\Http\Message\ResponseInterface` を受け取る設計のため、`GuzzleHttp\Psr7\Response` を直接渡せる。
@@ -115,10 +115,20 @@ public function __construct(Options $options, ?ClientInterface $httpClient = nul
 
 ### Phase 4: Client
 
-- [ ] `Client::salesService()` の `static $service` バグ（課題 C）の修正とリグレッションテスト
-- [ ] アクセストークン未指定時に `ParameterException` が投げられること
-- [ ] 各メソッドが対応する Service に正しく委譲すること
-- [ ] 引数で渡したアクセストークンがインスタンスの値を上書きすること
+Phase 3 と同じ方針で、`Client` にも `?ClientInterface $httpClient` を任意注入できるようにしてからテストする。
+
+```php
+// Client
+public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
+```
+
+- [x] `Client` に `ClientInterface` を任意注入可能にし、生成する各 Service に伝播させる
+- [x] `Client::salesService()` の `static $service` バグ（課題 C）の修正とリグレッションテスト
+- [x] `Client::getShop()` にアクセストークンのガードが欠落していた不具合の修正
+- [x] アクセストークン未指定時に `ParameterException` が投げられること
+- [x] 各メソッドが対応する Service に正しく委譲すること（全15メソッド）
+- [x] 引数で渡したアクセストークンがインスタンスの値を上書きし、以降の呼び出しにも引き継がれること
+- [x] エラーレスポンスが `Errors` として返ること
 
 ### Phase 5: CI・静的解析
 
@@ -150,7 +160,7 @@ tests/
 | 1 | 純粋ユニットテスト | **完了** (2026-09-07) |
 | 2 | Response / Errors | **完了** (2026-09-07) |
 | 3 | HTTP 層（要リファクタ） | **完了** (2026-09-07) |
-| 4 | Client | 未着手 |
+| 4 | Client | **完了** (2026-09-07) |
 | 5 | CI・静的解析 | 未着手 |
 
 ## 7. 決定事項・保留事項
@@ -386,3 +396,81 @@ tests/
 ```
 
 外部への通信は一切発生しない（すべて `MockHandler` 経由）。
+
+---
+
+## 11. Phase 4 の実施結果
+
+- **テスト数**: 431 / **アサーション数**: 1,092 / **結果**: 全件パス
+- Phase 3 完了時点（401 テスト）から 30 テスト追加
+
+### リファクタの内容
+
+Phase 3 と同じく、公開シグネチャは壊さず任意引数の追加のみ。
+
+| ファイル | 変更 |
+| --- | --- |
+| `Client.php` | 第2引数に `?ClientInterface $httpClient` を追加し、生成する各 Service（Shop / Sales / Payment / Delivery / Customer / Product / OAuth）に伝播させる |
+
+### 修正した不具合
+
+#### C. `Client::salesService()` の `static $service` がインスタンス間で共有される ✅ 対応済み (2026-09-07)
+
+`static $service` はメソッドスコープの static 変数のため、**PHP プロセス全体で1つ**しか存在しない。
+最初に生成された `Sales` サービスが以降ずっと再利用され、別のアクセストークンで `Client` を作っても
+最初のトークンで通信してしまう。
+
+```php
+$a = new Client('token-A');
+$b = new Client('token-B');
+$b->getSale(1001);   // token-A で通信していた
+```
+
+- **修正内容**: `static` キャッシュを廃止し、他の全メソッドと同様に呼び出しごとに `Sales` を生成するようにした。
+  `Sales` はアクセストークン以外に状態を持たず生成コストも小さいため、キャッシュの利点がない。
+  他の6メソッドはもともと都度生成しており、これで実装が統一される
+- **テスト**: `tests/ClientTest.php` にリグレッションテストを追加
+
+#### 8-9. `Client::getShop()` にアクセストークンのガードが欠落している ✅ 対応済み (2026-09-07)
+
+他のメソッドが持つ `empty($this->accessToken)` のチェックが `getShop()` にだけなく、
+アクセストークンを渡さずに呼ぶと `ParameterException` ではなく未初期化プロパティの `Error` になっていた。
+
+```
+Error: Typed property Shimoning\ColorMeShopApi\Client::$accessToken
+       must not be accessed before initialization
+```
+
+- **修正内容**: 他メソッドと同じガードを追加した
+- **テスト**: `tests/ClientTest.php`
+
+#### 8-10. `Client` のアクセストークン判定が真偽値で行われている ✅ 対応済み (2026-09-07)
+
+`Client` の9箇所（コンストラクタ含む）が `if ($accessToken)` と真偽値で「トークンが渡されたか」を
+判定していたため、空文字や `"0"` が「未指定」と誤認され、**黙って以前のトークンにフォールバック**していた。
+
+```php
+$client = new Client($tenantA->token);
+$client->getShop($tenantB->token ?? '');   // '' → テナントAのトークンで通信していた
+```
+
+`Client` はインスタンスにトークンを保持し続ける設計のため、マルチテナントで使い回すと
+別テナントの認証情報で通信してしまう危険があった。
+
+- **修正内容**: 9箇所すべてを `if ($accessToken !== null)` に統一した。
+  空文字は代入されたうえで `empty()` のガードに掛かり `ParameterException` になる。
+  黙って誤ったトークンを使うより明示的に失敗する方が安全という判断。
+  Service 側は元から `$accessToken ?? $this->_accessToken` と null 基準で解決しており、これで判定基準が揃う
+- **挙動の変更**: `getShop('')` が「以前のトークンで成功」から `ParameterException` に変わる。
+  依存すべきでない未文書の挙動であり、修正が妥当と判断した
+- **テスト**: `tests/ClientTest.php`
+
+### 追加したファイル
+
+```
+tests/ClientTest.php     Client ファサードの全メソッドのテスト
+```
+
+`tests/BackwardCompatibilityTest.php` には `Client` のコンストラクタ契約に加え、
+`ClientInterface` の注入が公開 API の一部になったことを踏まえて、
+各 Service / `Request` / `Client` の第2引数の存在・名前・nullable であることも固定している。
