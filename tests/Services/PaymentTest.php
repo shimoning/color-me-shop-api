@@ -21,8 +21,10 @@ class PaymentTest extends TestCase
         $this->assertInstanceOf(Collection::class, $payments);
         $this->assertSame(2, $payments->count());
         $this->assertContainsOnlyInstancesOf(PaymentEntity::class, $payments->all());
-        $this->assertSame('クレジットカード', $payments[0]->getName());
-        $this->assertSame(PaymentType::POSTAL_TRANSFER, $payments[0]->getType());
+        $this->assertSame('カラーミークレジット', $payments[0]->getName());
+        $this->assertSame(PaymentType::CREDIT_COLOR_ME, $payments[0]->getType());
+        $this->assertSame('代金引換', $payments[1]->getName());
+        $this->assertSame(PaymentType::COD, $payments[1]->getType());
     }
 
     public function test_正しいエンドポイントにGETする(): void

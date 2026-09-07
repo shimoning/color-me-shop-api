@@ -94,10 +94,15 @@ class HttpMock
 
     /**
      * 送信されたリクエストボディを JSON としてパースしたもの
+     *
+     * JSON であることを前提としたヘルパーのため、パースに失敗した場合は
+     * null を返さずに JsonException を投げる。
+     *
+     * @throws \JsonException
      */
     public function jsonBody(int $index = 0): mixed
     {
-        return \json_decode($this->body($index), true);
+        return \json_decode($this->body($index), true, 512, \JSON_THROW_ON_ERROR);
     }
 
     /**

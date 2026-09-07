@@ -18,7 +18,12 @@ abstract class TestCase extends BaseTestCase
         if (! \is_file($path)) {
             throw new \RuntimeException('フィクスチャが見つかりません: ' . $path);
         }
-        return \file_get_contents($path);
+
+        $contents = \file_get_contents($path);
+        if ($contents === false) {
+            throw new \RuntimeException('フィクスチャを読み込めません: ' . $path);
+        }
+        return $contents;
     }
 
     /**

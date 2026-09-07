@@ -1,6 +1,6 @@
 {
     "payments": [
-        { "id": 1, "account_id": "my-shop", "name": "クレジットカード", "type": 2, "display": true, "use_mobile": true, "make_date": 1700000000, "update_date": 1700000000 },
-        { "id": 2, "account_id": "my-shop", "name": "代金引換", "type": 1, "display": true, "use_mobile": false, "make_date": 1700000000, "update_date": 1700000000 }
+        { "id": 1, "account_id": "my-shop", "name": "カラーミークレジット", "type": 8, "display": true, "use_mobile": true, "make_date": 1700000000, "update_date": 1700000000 },
+        { "id": 2, "account_id": "my-shop", "name": "代金引換", "type": 0, "display": true, "use_mobile": false, "make_date": 1700000000, "update_date": 1700000000 }
     ]
 }

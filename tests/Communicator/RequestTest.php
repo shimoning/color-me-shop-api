@@ -179,6 +179,25 @@ class RequestTest extends TestCase
         $this->assertSame('value', $mock->header('X-Custom'));
     }
 
+    // --- テストヘルパーの契約 ------------------------------------------------
+
+    /**
+     * jsonBody() は JSON であることを前提としたヘルパーなので、
+     * パースに失敗したら黙って null を返さずに即座に失敗すること。
+     */
+    public function test_jsonBodyはJSONでないボディで例外を投げる(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['form' => true]), $mock->client()))
+            ->post('https://api.shop-pro.jp/oauth/token', ['code' => 'abc']);
+
+        $this->assertSame('code=abc', $mock->body());
+
+        $this->expectException(\JsonException::class);
+        $mock->jsonBody();
+    }
+
     // --- 仕様化テスト (既知の不具合) ----------------------------------------
 
     /**
