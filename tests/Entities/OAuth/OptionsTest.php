@@ -41,6 +41,43 @@ class OptionsTest extends TestCase
         $this->assertSame('urn:ietf:wg:oauth:2.0:oob', $options->getRedirectUri());
     }
 
+    /**
+     * 受け付ける型をシグネチャで表明する。PHPDoc だけだと型が保証されず、
+     * 不正な値を渡したときのエラーが引数ではなくプロパティ代入時のものになる。
+     */
+    public function test_リダイレクトURIの引数は型宣言されている(): void
+    {
+        $parameters = (new \ReflectionClass(Options::class))->getConstructor()->getParameters();
+
+        $this->assertSame('redirectUri', $parameters[2]->getName());
+        $this->assertSame(
+            AuthRedirectUri::class . '|string',
+            (string)$parameters[2]->getType(),
+        );
+    }
+
+    /**
+     * 引数が mixed だと、不正な値のエラーが引数ではなくプロパティ代入時のものになり、
+     * 呼び出し側にとって原因が分かりにくい。
+     */
+    public function test_リダイレクトURIに不正な型を渡すと引数の型エラーになる(): void
+    {
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Argument #3 ($redirectUri)');
+
+        new Options('id', 'secret', $this->invalidRedirectUri());
+    }
+
+    /**
+     * 意図的に型宣言に反する値を作る。
+     * 直接リテラルを書くと静的解析が到達不能と判断してしまうため、
+     * 戻り値の型を明示しないヘルパー経由で渡している。
+     */
+    private function invalidRedirectUri(): mixed
+    {
+        return [];
+    }
+
     // --- setRedirectUri ----------------------------------------------------
 
     public function test_リダイレクトURIを文字列で設定できる(): void

@@ -626,6 +626,13 @@ TypeError: ...\Options::setRedirectUri(): Return value must be of type string,
 - **影響**: `AuthRedirectUri::NO_REDIRECT` を渡すと必ず落ちる。引数の型宣言が受け付ける値の半分が使えない状態だった。
 - **修正内容**: 代入と戻り値を分離し、`getRedirectUri()` の結果（文字列化済み）を返すようにした。
   シグネチャは変えていないため後方互換性への影響はない。
+- **あわせて修正した点**: コンストラクタの `$redirectUri` が `mixed` のままで、
+  PHPDoc の `AuthRedirectUri|string` という型契約がコード上で保証されていなかった。
+  不正な値を渡してもエラーは引数ではなくプロパティ代入時のものになり、呼び出し側から原因が分かりにくい。
+  さらに整数を渡した場合は型強制で文字列になり、エラーにすらならず不正なリダイレクト URI が
+  そのまま設定されていた（`new Options('id', 'secret', 123)` → `getRedirectUri()` が `'123'`）。
+  シグネチャを `AuthRedirectUri|string` に揃えた。
+  もともと通っていた呼び出しの挙動は変わらない
 - **テスト**: `tests/Entities/OAuth/OptionsTest.php`
 
 ### あわせて修正した PHPDoc の誤り

@@ -21,7 +21,7 @@ class Options
     public function __construct(
         string $clientId,
         string $clientSecret,
-        mixed $redirectUri,
+        AuthRedirectUri|string $redirectUri,
         ?string $endpointUri = null,
     ) {
         $this->clientId = $clientId;
