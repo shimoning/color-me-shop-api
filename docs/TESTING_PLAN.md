@@ -166,8 +166,8 @@ tests/
 
 ## 8. 発見事項（Phase 1-2 のテスト作成で判明した既存の不具合）
 
-8-1・8-2・8-6・8-7・8-9 と課題 C は 2026-09-07 に対応済み。
-残りの 8-3・8-4・8-5・8-8 は未対応で、対応方針の判断が必要。
+8-1・8-2・8-6・8-7・8-8・8-9・8-10 と課題 C は 2026-09-07 に対応済み。
+残りの 8-3・8-4・8-5 は未対応で、対応方針の判断が必要。
 
 ### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる ✅ 対応済み (2026-09-07)
 
@@ -320,7 +320,7 @@ connect_timeout: 2
 - **テスト**: `tests/Communicator/RequestTest.php`。Guzzle に実際に渡ったオプションを検証するため、
   `HttpMock::options()` を追加した。
 
-### 8-8. `Request::sendRequest()` の Content-Type 設定がデッドコードになっている 🟡
+### 8-8. `Request::sendRequest()` の Content-Type 設定がデッドコードになっている ✅ 対応済み (2026-09-07)
 
 `$options['headers']` を構築した**後**に `$headers` を書き換えているため、
 この分岐で設定した Content-Type は送信内容に反映されない。
@@ -332,10 +332,12 @@ if (!isset($headers['Content-Type']) && ...) {
 }
 ```
 
-- **現状の影響**: 実際の Content-Type は Guzzle が `json` / `form_params` オプションから自動付与しているため
-  通信自体は成立しているが、意図された `charset=utf-8` は付いていない。
-- **テストでの扱い**: `tests/Communicator/RequestTest.php` に仕様化テストとして記録済み。
-- **想定される修正**: 分岐を `$options['headers']` の構築より前に移動する。
+- **影響**: 実際の Content-Type は Guzzle が `json` / `form_params` オプションから自動付与していたため
+  通信自体は成立していたが、意図された `charset=utf-8` は付いていなかった。
+- **修正内容**: 分岐を `$options['headers']` の構築より前に移動した。
+  呼び出し側が `Content-Type` を明示している場合はそちらを優先する既存の意図もそのまま機能するようになった。
+- **テスト**: `tests/Communicator/RequestTest.php`。json / form それぞれの Content-Type、
+  呼び出し側指定の優先、GET には付与しないことを検証している。
 
 ---
 
@@ -414,6 +416,5 @@ stat URI : https://api.shop-pro.jp/v1/sales/stat?make_date=2024-01-01
 timeout  : 5.0 / connect_timeout: 2.0
 ```
 
-なお 8-8（`Content-Type` 設定のデッドコード）は、修正すると送信される `Content-Type` が
-`application/json` から `application/json; charset=utf-8` に変わり、通信内容が変化する。
-今回のスコープ外として据え置いている。
+なお 8-8（`Content-Type` 設定のデッドコード）は、送信される `Content-Type` が変化するため
+この修正のスコープ外とし、別途対応した。

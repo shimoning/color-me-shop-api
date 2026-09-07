@@ -99,7 +99,49 @@ class RequestTest extends TestCase
 
         $this->assertSame('POST', $mock->request()->getMethod());
         $this->assertSame(['mail' => ['type' => 'accepted']], $mock->jsonBody());
-        $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
+        $this->assertSame('application/json; charset=utf-8', $mock->header('Content-Type'));
+    }
+
+    // --- Content-Type -----------------------------------------------------
+
+    public function test_jsonオプションのContentTypeにcharsetを付与する(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['json' => true]), $mock->client()))
+            ->post('https://api.shop-pro.jp/v1/sales/1/mails', ['a' => 1]);
+
+        $this->assertSame('application/json; charset=utf-8', $mock->header('Content-Type'));
+    }
+
+    public function test_formオプションのContentTypeを付与する(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['form' => true]), $mock->client()))
+            ->post('https://api.shop-pro.jp/oauth/token', ['a' => 1]);
+
+        $this->assertSame('application/x-www-form-urlencoded', $mock->header('Content-Type'));
+    }
+
+    public function test_呼び出し側のContentTypeを上書きしない(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['json' => true]), $mock->client()))
+            ->post('https://api.shop-pro.jp/v1/sales/1/mails', ['a' => 1], ['Content-Type' => 'application/vnd.api+json']);
+
+        $this->assertSame('application/vnd.api+json', $mock->header('Content-Type'));
+    }
+
+    public function test_GETにはContentTypeを付けない(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['json' => true]), $mock->client()))
+            ->get('https://api.shop-pro.jp/v1/shop');
+
+        $this->assertNull($mock->header('Content-Type'));
     }
 
     public function test_PUTでJSONボディを送信する(): void
@@ -237,23 +279,6 @@ class RequestTest extends TestCase
         $options = $mock->options();
         $this->assertArrayNotHasKey('timeout', $options);
         $this->assertArrayNotHasKey('connect_timeout', $options);
-    }
-
-    /**
-     * Content-Type を組み立てる分岐は、$options['headers'] を構築した「後」に
-     * $headers を書き換えているため送信内容に反映されない (デッドコード)。
-     * 実際の Content-Type は Guzzle が json / form_params オプションから
-     * 自動付与しており、意図された "charset=utf-8" は付かない。
-     */
-    public function test_JSONのContentTypeにcharsetが付かない(): void
-    {
-        $mock = HttpMock::json(200, '{}');
-
-        (new Request(new RequestOptions(['json' => true]), $mock->client()))
-            ->post('https://api.shop-pro.jp/v1/sales/1/mails', ['a' => 1]);
-
-        $this->assertSame('application/json', $mock->header('Content-Type'));
-        $this->assertStringNotContainsString('charset', $mock->header('Content-Type'));
     }
 
     // --- エラーレスポンス ---------------------------------------------------
