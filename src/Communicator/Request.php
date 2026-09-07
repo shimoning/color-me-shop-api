@@ -78,6 +78,19 @@ class Request
      */
     protected function sendRequest(string $method, string $uri, array $headers = [], $data = null): Response
     {
+        // ヘッダを組み立てる前に Content-Type を補完する
+        // (呼び出し側が明示している場合はそちらを優先する)
+        // HTTP ヘッダ名は大小文字を区別しないため、判定も大小文字を無視して行う。
+        // 表記違いを取りこぼすと既定値が追加され、値が2つ並んだ不正なヘッダになる
+        $lowerCaseHeaderNames = \array_change_key_case($headers, \CASE_LOWER);
+        if (!isset($lowerCaseHeaderNames['content-type']) && ($method === 'POST' || $method === 'PUT')) {
+            if ($this->_options->isForm()) {
+                $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            } else if ($this->_options->isJson()) {
+                $headers['Content-Type'] = 'application/json; charset=utf-8';
+            }
+        }
+
         $options = [
             'http_errors' => false,
             'headers' => [
@@ -92,13 +105,6 @@ class Request
         }
         if ($this->_options->getConnectTimeout() > 0) {
             $options['connect_timeout'] = $this->_options->getConnectTimeout();
-        }
-        if (!isset($headers['Content-Type']) && ($method === 'POST' || $method === 'PUT')) {
-            if ($this->_options->isForm()) {
-                $headers['Content-Type'] = 'application/x-www-form-urlencoded';
-            } else if ($this->_options->isJson()) {
-                $headers['Content-Type'] = 'application/json; charset=utf-8';
-            }
         }
         if (!empty($data)) {
             if ($this->_options->isForm()) {
