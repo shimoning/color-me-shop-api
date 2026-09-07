@@ -632,7 +632,21 @@ TypeError: ...\Options::setRedirectUri(): Return value must be of type string,
   さらに整数を渡した場合は型強制で文字列になり、エラーにすらならず不正なリダイレクト URI が
   そのまま設定されていた（`new Options('id', 'secret', 123)` → `getRedirectUri()` が `'123'`）。
   シグネチャを `AuthRedirectUri|string` に揃えた。
-  もともと通っていた呼び出しの挙動は変わらない
+
+  **後方互換性への影響**（実測で確認）
+
+  | 呼び出し側 | 渡した値 | 変更前 | 変更後 |
+  | --- | --- | --- | --- |
+  | 非 strict（PHP の既定） | `int` / `float` / `bool` | 受理（文字列化） | 受理（文字列化） |
+  | 非 strict（PHP の既定） | `null` / 配列 | `TypeError` | `TypeError` |
+  | `declare(strict_types=1)` | `int` / `float` / `bool` | 受理（文字列化） | **`TypeError`** |
+  | `declare(strict_types=1)` | `null` / 配列 | `TypeError` | `TypeError` |
+
+  PHP の既定である非 strict な呼び出し側では挙動が完全に一致し、影響はない。
+  変化するのは `declare(strict_types=1)` の呼び出し側が、リダイレクト URI として
+  文字列以外のスカラー値を渡していた場合のみ。これは意味的に不正な使い方であり、
+  従来は黙って文字列に変換されていた（`123` → `'123'`）。
+  本ライブラリは 0.6 系であることも踏まえ、型を明確化する側を選んだ
 - **テスト**: `tests/Entities/OAuth/OptionsTest.php`
 
 ### あわせて修正した PHPDoc の誤り
