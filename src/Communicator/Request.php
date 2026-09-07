@@ -85,6 +85,14 @@ class Request
                 ...$headers,
             ],
         ];
+        // 既定値の 0 は「未設定」を意味するため、クライアント側の設定を
+        // 上書きしないよう Guzzle のオプションには含めない
+        if ($this->_options->getTimeout() > 0) {
+            $options['timeout'] = $this->_options->getTimeout();
+        }
+        if ($this->_options->getConnectTimeout() > 0) {
+            $options['connect_timeout'] = $this->_options->getConnectTimeout();
+        }
         if (!isset($headers['Content-Type']) && ($method === 'POST' || $method === 'PUT')) {
             if ($this->_options->isForm()) {
                 $headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -125,8 +133,6 @@ class Request
     {
         $headers = [
             'User-Agent' => 'Shimoning ColorMeShopApi Client',
-            'timeout' => $this->_options->getTimeout(),
-            'connect_timeout' => $this->_options->getConnectTimeout(),
         ];
         if ($this->_options->getAuthorization()) {
             $headers['Authorization'] = $this->_options->getAuthorization();

@@ -200,22 +200,43 @@ class RequestTest extends TestCase
 
     // --- 仕様化テスト (既知の不具合) ----------------------------------------
 
-    /**
-     * Request::headers() が timeout / connect_timeout を HTTP ヘッダの配列に
-     * 入れているため、Guzzle のリクエストオプションとしてではなく、そのまま
-     * HTTP ヘッダとして送信されてしまう。結果として RequestOptions の
-     * タイムアウト設定は一切効いていない。
-     * 詳細と対処方針は docs/TESTING_PLAN.md の「発見事項」を参照。
-     */
-    public function test_タイムアウト設定がHTTPヘッダとして送信される(): void
+    public function test_タイムアウトはGuzzleのオプションとして渡される(): void
     {
         $mock = HttpMock::json(200, '{}');
 
         (new Request(new RequestOptions(['timeout' => 5, 'connect_timeout' => 2]), $mock->client()))
             ->get('https://api.shop-pro.jp/v1/shop');
 
-        $this->assertSame('5', $mock->header('timeout'));
-        $this->assertSame('2', $mock->header('connect_timeout'));
+        $options = $mock->options();
+        $this->assertSame(5.0, $options['timeout']);
+        $this->assertSame(2.0, $options['connect_timeout']);
+    }
+
+    public function test_タイムアウトはHTTPヘッダとして送信しない(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['timeout' => 5, 'connect_timeout' => 2]), $mock->client()))
+            ->get('https://api.shop-pro.jp/v1/shop');
+
+        $this->assertNull($mock->header('timeout'));
+        $this->assertNull($mock->header('connect_timeout'));
+    }
+
+    /**
+     * 既定値の 0 は「未設定」を意味するため、Guzzle のオプションに含めない。
+     * クライアント側で設定されたタイムアウトを上書きしてしまわないようにする。
+     */
+    public function test_タイムアウトが未設定ならオプションに含めない(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(), $mock->client()))
+            ->get('https://api.shop-pro.jp/v1/shop');
+
+        $options = $mock->options();
+        $this->assertArrayNotHasKey('timeout', $options);
+        $this->assertArrayNotHasKey('connect_timeout', $options);
     }
 
     /**
