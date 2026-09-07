@@ -129,8 +129,8 @@ class Delivery extends Entity
     }
 
     /**
-     * フィーチャーフォン向けショップ用の説明
-     * @return sDeliveryChargeType
+     * 送料の種別
+     * @return DeliveryChargeType
      */
     public function getChargeType(): DeliveryChargeType
     {

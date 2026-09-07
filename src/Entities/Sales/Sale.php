@@ -154,7 +154,7 @@ class Sale extends Entity
      */
     public function getPaymentId(): string
     {
-        return $this->paymentId;
+        return (string)$this->paymentId;
     }
 
     /**

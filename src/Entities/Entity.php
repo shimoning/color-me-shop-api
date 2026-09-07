@@ -7,13 +7,19 @@ use Shimoning\ColorMeShopApi\Values\Value;
 
 class Entity
 {
+    /**
+     * オブジェクトに変換するフィールドの定義。
+     * 変換が必要なサブクラスで上書きする。
+     */
+    const OBJECT_FIELDS = [];
+
     private array $_raw;
 
     public function __construct(array $data)
     {
         $this->_raw = $data;
 
-        $objectFields = defined((static::class) . '::OBJECT_FIELDS') ? static::OBJECT_FIELDS : [];
+        $objectFields = static::OBJECT_FIELDS;
 
         foreach ($data as $key => $value) {
             $_key = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
@@ -32,7 +38,7 @@ class Entity
      *
      * @param string|array $objectField
      * @param mixed $value
-     * @return array|object
+     * @return mixed
      */
     protected function build(mixed $objectField, mixed $value): mixed
     {
