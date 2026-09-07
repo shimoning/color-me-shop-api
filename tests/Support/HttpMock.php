@@ -68,6 +68,21 @@ class HttpMock
     }
 
     /**
+     * Guzzle に実際に渡されたリクエストオプション
+     *
+     * ヘッダではなくオプションとして渡すべき設定 (timeout など) の検証に使う。
+     */
+    public function options(int $index = 0): array
+    {
+        if (! isset($this->_history[$index])) {
+            throw new \OutOfRangeException(
+                \sprintf('%d 番目のリクエストは送信されていない (送信件数: %d)', $index, $this->countRequests()),
+            );
+        }
+        return $this->_history[$index]['options'];
+    }
+
+    /**
      * 送信されたリクエストの URI (クエリ文字列を含む)
      */
     public function uri(int $index = 0): string

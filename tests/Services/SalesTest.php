@@ -147,23 +147,14 @@ class SalesTest extends TestCase
         $this->assertStringContainsString('make_date=2024-01-01', $mock->uri());
     }
 
-    /**
-     * 仕様化テスト (既知の不具合)。
-     *
-     * エンドポイントの URL 末尾に余分な "?" が付いているため、Request::get() が
-     * さらに "?" を連結して "stat??make_date=..." になる。その結果、クエリの
-     * パラメータ名が "make_date" ではなく "?make_date" として送信される。
-     * 詳細と対処方針は docs/TESTING_PLAN.md の「発見事項」を参照。
-     */
-    public function test_売上集計のURLに余分なクエリ区切りが含まれる(): void
+    public function test_売上集計は日付をmake_dateとして送信する(): void
     {
         $mock = HttpMock::json(200, self::fixture('sales_stat.json'));
 
         (new Sales('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
 
-        $this->assertSame('https://api.shop-pro.jp/v1/sales/stat??make_date=2024-01-01', $mock->uri());
-        $this->assertSame(['?make_date' => '2024-01-01'], $mock->query());
-        $this->assertArrayNotHasKey('make_date', $mock->query());
+        $this->assertSame('https://api.shop-pro.jp/v1/sales/stat?make_date=2024-01-01', $mock->uri());
+        $this->assertSame(['make_date' => '2024-01-01'], $mock->query());
     }
 
     // --- update -----------------------------------------------------------

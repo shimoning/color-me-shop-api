@@ -97,7 +97,7 @@ class Sales
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
         ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/sales/stat?',
+            'https://api.shop-pro.jp/v1/sales/stat',
             [
                 'make_date' => $dateTime->format('Y-m-d'),
             ],

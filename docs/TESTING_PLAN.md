@@ -166,7 +166,8 @@ tests/
 
 ## 8. 発見事項（Phase 1-2 のテスト作成で判明した既存の不具合）
 
-8-1・8-2 は 2026-09-07 に対応済み。8-3 以降は未対応で、対応方針の判断が必要。
+8-1・8-2・8-6・8-7・8-9 と課題 C は 2026-09-07 に対応済み。
+残りの 8-3・8-4・8-5・8-8 は未対応で、対応方針の判断が必要。
 
 ### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる ✅ 対応済み (2026-09-07)
 
@@ -286,7 +287,7 @@ vendor/bin/phpunit tests/Values   # ディレクトリを指定して実行
 - テストメソッド名は日本語で記述している。`--testdox` オプションを付けると PHPUnit が `ucfirst()` でメソッド名を整形する都合上、先頭のマルチバイト文字が壊れて表示される。通常の実行および失敗時のメッセージには影響しないため、`--testdox` は使わない運用とする。
 - カバレッジ計測には Xdebug または PCOV が必要。現在のローカル環境にはどちらも入っていない。
 
-### 8-6. `Services/Sales::stat()` のエンドポイント URL に余分な `?` がある 🔴
+### 8-6. `Services/Sales::stat()` のエンドポイント URL に余分な `?` がある ✅ 対応済み (2026-09-07)
 
 `src/Services/Sales.php:100` の URL が `https://api.shop-pro.jp/v1/sales/stat?` と末尾に `?` を含んでいる。
 `Request::get()` はクエリがあるとさらに `'?' . http_build_query(...)` を連結するため、実際の送信先はこうなる。
@@ -297,11 +298,11 @@ https://api.shop-pro.jp/v1/sales/stat??make_date=2024-01-01
 
 結果としてクエリのパラメータ名が `make_date` ではなく **`?make_date`** になり、API に日付が正しく渡らない。
 
-- **現状の影響**: `Client::statSales()` / `Sales::stat()` の日付指定が機能していない可能性が高い。
-- **テストでの扱い**: `tests/Services/SalesTest.php` に仕様化テストとして現状の挙動を記録済み。
-- **想定される修正**: URL 末尾の `?` を削除する。
+- **影響**: `Client::statSales()` / `Sales::stat()` の日付指定が機能していなかった。
+- **修正内容**: URL 末尾の `?` を削除した。
+- **テスト**: `tests/Services/SalesTest.php`。仕様化テストを本来あるべき挙動に書き換えている。
 
-### 8-7. `RequestOptions` のタイムアウト設定が効いていない 🔴
+### 8-7. `RequestOptions` のタイムアウト設定が効いていない ✅ 対応済み (2026-09-07)
 
 `Request::headers()` が `timeout` / `connect_timeout` を **HTTP ヘッダの配列**に入れているため、
 Guzzle のリクエストオプションとしてではなく、そのまま HTTP ヘッダとして送信されている。
@@ -311,10 +312,13 @@ timeout: 5
 connect_timeout: 2
 ```
 
-- **現状の影響**: `RequestOptions` にタイムアウトを設定しても一切適用されない。加えて、意味のないヘッダが毎回送信される。
-- **テストでの扱い**: `tests/Communicator/RequestTest.php` に仕様化テストとして記録済み。
-- **想定される修正**: `headers()` からタイムアウト系を外し、`sendRequest()` で `$options['timeout']` /
-  `$options['connect_timeout']` として渡す（値が 0 の場合は指定しない、などの扱いも要検討）。
+- **影響**: `RequestOptions` にタイムアウトを設定しても一切適用されず、加えて意味のないヘッダが毎回送信されていた。
+- **修正内容**: `headers()` からタイムアウト系を外し、`sendRequest()` で Guzzle のリクエストオプション
+  （`$options['timeout']` / `$options['connect_timeout']`）として渡すようにした。
+  既定値の `0` は「未設定」を意味するため、クライアント側で設定されたタイムアウトを上書きしないよう、
+  `0` より大きい場合のみオプションに含めている。
+- **テスト**: `tests/Communicator/RequestTest.php`。Guzzle に実際に渡ったオプションを検証するため、
+  `HttpMock::options()` を追加した。
 
 ### 8-8. `Request::sendRequest()` の Content-Type 設定がデッドコードになっている 🟡
 
@@ -386,3 +390,30 @@ tests/
 ```
 
 外部への通信は一切発生しない（すべて `MockHandler` 経由）。
+
+---
+
+## 12. 発見事項 8-6 / 8-7 の修正結果
+
+- **テスト数**: 403 / **アサーション数**: 1,036 / **結果**: 全件パス
+  （Phase 4 のブランチとは独立に `master` から分岐しているため、テスト数は Phase 4 の 432 とは別系統）
+
+いずれも仕様化テストを本来あるべき挙動に書き換えて Red を確認してから修正している。
+
+| ファイル | 変更 |
+| --- | --- |
+| `Services/Sales.php` | `stat()` のエンドポイント URL 末尾の `?` を削除 |
+| `Communicator/Request.php` | `headers()` からタイムアウト系を外し、`sendRequest()` で Guzzle のリクエストオプションとして渡す |
+| `tests/Support/HttpMock.php` | Guzzle に実際に渡ったオプションを検証する `options()` を追加 |
+
+修正後に実際の送信内容を確認した結果。
+
+```
+stat URI : https://api.shop-pro.jp/v1/sales/stat?make_date=2024-01-01
+ヘッダ    : Host, User-Agent
+timeout  : 5.0 / connect_timeout: 2.0
+```
+
+なお 8-8（`Content-Type` 設定のデッドコード）は、修正すると送信される `Content-Type` が
+`application/json` から `application/json; charset=utf-8` に変わり、通信内容が変化する。
+今回のスコープ外として据え置いている。
