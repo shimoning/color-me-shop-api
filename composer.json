@@ -26,16 +26,28 @@
     },
     "require-dev": {
         "psy/psysh": "^0.12",
-        "vlucas/phpdotenv": "^5.5"
+        "vlucas/phpdotenv": "^5.5",
+        "phpunit/phpunit": "^10.5"
     },
     "autoload": {
         "psr-4": {
             "Shimoning\\ColorMeShopApi\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Shimoning\\ColorMeShopApi\\Tests\\": "tests/"
+        }
+    },
     "scripts": {
         "client": [
             "@php client"
+        ],
+        "test": [
+            "@php vendor/bin/phpunit"
+        ],
+        "test:coverage": [
+            "@php vendor/bin/phpunit --coverage-html coverage"
         ]
     }
 }

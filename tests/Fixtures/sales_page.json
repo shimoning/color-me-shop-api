@@ -1,0 +1,7 @@
+{
+    "sales": [
+        { "id": 1001, "account_id": "my-shop", "paid": true, "delivered": false, "canceled": false, "accepted_mail_state": "sent", "point_state": "fixed", "total_price": 3300 },
+        { "id": 1002, "account_id": "my-shop", "paid": false, "delivered": false, "canceled": false, "accepted_mail_state": "not_yet", "point_state": "assumed", "total_price": 5500 }
+    ],
+    "meta": { "total": 120, "limit": 2, "offset": 0 }
+}

@@ -1,0 +1,6 @@
+{
+    "access_token": "dummy-access-token",
+    "token_type": "bearer",
+    "scope": "read_products read_sales",
+    "created_at": 1700000000
+}

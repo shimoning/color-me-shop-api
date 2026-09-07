@@ -1,0 +1,7 @@
+{
+    "customers": [
+        { "id": 501, "account_id": "my-shop", "name": "山田太郎", "furigana": "ヤマダタロウ", "mail": "taro@example.test", "pref_id": 13, "points": 120, "member": true },
+        { "id": 502, "account_id": "my-shop", "name": "鈴木花子", "furigana": "スズキハナコ", "mail": "hanako@example.test", "pref_id": 27, "points": 0, "member": false }
+    ],
+    "meta": { "total": 2, "limit": 10, "offset": 0 }
+}

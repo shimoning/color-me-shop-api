@@ -1,0 +1,12 @@
+{
+    "sale": {
+        "id": 1001,
+        "account_id": "my-shop",
+        "paid": true,
+        "delivered": false,
+        "canceled": false,
+        "accepted_mail_state": "sent",
+        "point_state": "fixed",
+        "total_price": 3300
+    }
+}

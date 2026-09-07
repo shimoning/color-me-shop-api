@@ -1,0 +1,16 @@
+{
+    "errors": [
+        {
+            "code": "422210",
+            "message": "パラメータが指定されていません。",
+            "field": "sale.id",
+            "status": 422
+        },
+        {
+            "code": "422210",
+            "message": "パラメータが指定されていません。",
+            "field": "sale.paid",
+            "status": 422
+        }
+    ]
+}

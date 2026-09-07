@@ -1,0 +1,6 @@
+{
+    "groups": [
+        { "id": 1, "account_id": "my-shop", "name": "新着商品", "display_state": "showing", "parent_group_id": 0 },
+        { "id": 2, "account_id": "my-shop", "name": "セール", "display_state": "hidden", "parent_group_id": 1 }
+    ]
+}

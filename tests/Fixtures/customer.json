@@ -1,0 +1,12 @@
+{
+    "customer": {
+        "id": 501,
+        "account_id": "my-shop",
+        "name": "山田太郎",
+        "furigana": "ヤマダタロウ",
+        "mail": "taro@example.test",
+        "pref_id": 13,
+        "points": 120,
+        "member": true
+    }
+}
