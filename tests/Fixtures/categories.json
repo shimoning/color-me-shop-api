@@ -1,0 +1,5 @@
+{
+    "categories": [
+        { "id_big": 1, "id_small": 0, "account_id": "my-shop", "name": "トップス", "display_state": "showing", "make_date": 1700000000, "update_date": 1700000000, "children": [] }
+    ]
+}

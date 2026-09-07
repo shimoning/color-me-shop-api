@@ -1,0 +1,16 @@
+{
+    "shop": {
+        "id": "my-shop",
+        "state": "enabled",
+        "url": "https://my-shop.shop-pro.jp",
+        "login_id": "my-shop",
+        "name1": "テストショップ",
+        "user_mail": "shop@example.test",
+        "tel": "03-0000-0000",
+        "postal": "1000001",
+        "pref_id": 13,
+        "pref_name": "東京都",
+        "address1": "千代田区千代田1-1",
+        "title": "テストショップ"
+    }
+}

@@ -1,0 +1,5 @@
+{
+    "deliveries": [
+        { "id": 10, "account_id": "my-shop", "name": "宅急便", "method_type": "yamato", "charge_free_type": "not_free", "charge_type": "fixed", "tax_included": true, "slip_number_use": true, "display_state": "showing", "preferred_date_use": true, "preferred_period_use": false, "unavailable_payment_ids": [], "make_date": 1700000000, "update_date": 1700000000 }
+    ]
+}
