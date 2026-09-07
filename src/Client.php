@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi;
 
+use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -39,12 +40,18 @@ use Shimoning\ColorMeShopApi\Entities\Product\Category as CategoryEntity;
 class Client
 {
     protected string $accessToken;
+    protected ?ClientInterface $httpClient;
 
-    public function __construct(?string $accessToken = null)
+    /**
+     * @param string|null $accessToken
+     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     */
+    public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
     {
         if ($accessToken) {
             $this->accessToken = $accessToken;
         }
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -57,7 +64,7 @@ class Client
      */
     public function getOAuthUrl(OAuthOptions $options, Scopes $scopes): string
     {
-        return (new OAuth($options))->getUrl($scopes);
+        return (new OAuth($options, $this->httpClient))->getUrl($scopes);
     }
 
     /**
@@ -70,7 +77,7 @@ class Client
      */
     public function exchangeCode2Token(OAuthOptions $options, string $code): AccessToken|Errors
     {
-        return (new OAuth($options))->exchangeCode2Token($code);
+        return (new OAuth($options, $this->httpClient))->exchangeCode2Token($code);
     }
 
 
@@ -86,8 +93,11 @@ class Client
         if ($accessToken) {
             $this->accessToken = $accessToken;
         }
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
 
-        return (new Shop($this->accessToken))->get();
+        return (new Shop($this->accessToken, $this->httpClient))->get();
     }
 
     /**
@@ -185,15 +195,11 @@ class Client
         if ($accessToken) {
             $this->accessToken = $accessToken;
         }
-
-        static $service;
-        if (!$service) {
-            if (empty($this->accessToken)) {
-                throw new ParameterException('アクセストークンは必ず指定してください');
-            }
-            $service = new Sales($this->accessToken);
+        if (empty($this->accessToken)) {
+            throw new ParameterException('アクセストークンは必ず指定してください');
         }
-        return $service;
+
+        return new Sales($this->accessToken, $this->httpClient);
     }
 
     /**
@@ -212,7 +218,7 @@ class Client
             throw new ParameterException('アクセストークンは必ず指定してください');
         }
 
-        return (new Payment($this->accessToken))->all();
+        return (new Payment($this->accessToken, $this->httpClient))->all();
     }
 
     /**
@@ -231,7 +237,7 @@ class Client
             throw new ParameterException('アクセストークンは必ず指定してください');
         }
 
-        return (new Delivery($this->accessToken))->all();
+        return (new Delivery($this->accessToken, $this->httpClient))->all();
     }
 
     /**
@@ -253,7 +259,7 @@ class Client
             throw new ParameterException('アクセストークンは必ず指定してください');
         }
 
-        return (new Customer($this->accessToken))
+        return (new Customer($this->accessToken, $this->httpClient))
             ->page($searchParameters ?? new CustomerSearchParameters([]));
     }
 
@@ -274,7 +280,7 @@ class Client
             throw new ParameterException('アクセストークンは必ず指定してください');
         }
 
-        return (new Customer($this->accessToken))->one($id, $accessToken);
+        return (new Customer($this->accessToken, $this->httpClient))->one($id, $accessToken);
     }
 
     /**
@@ -293,7 +299,7 @@ class Client
             throw new ParameterException('アクセストークンは必ず指定してください');
         }
 
-        return (new Product($this->accessToken))->groups();
+        return (new Product($this->accessToken, $this->httpClient))->groups();
     }
 
     /**
@@ -312,6 +318,6 @@ class Client
             throw new ParameterException('アクセストークンは必ず指定してください');
         }
 
-        return (new Product($this->accessToken))->categories();
+        return (new Product($this->accessToken, $this->httpClient))->categories();
     }
 }

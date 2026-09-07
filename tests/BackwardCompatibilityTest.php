@@ -76,4 +76,20 @@ class BackwardCompatibilityTest extends TestCase
             new \Shimoning\ColorMeShopApi\Client(),
         );
     }
+
+    public function test_Clientはアクセストークンだけで生成できる(): void
+    {
+        $this->assertInstanceOf(
+            \Shimoning\ColorMeShopApi\Client::class,
+            new \Shimoning\ColorMeShopApi\Client('my-token'),
+        );
+    }
+
+    public function test_Clientの必須引数はない(): void
+    {
+        $constructor = (new \ReflectionClass(\Shimoning\ColorMeShopApi\Client::class))->getConstructor();
+
+        $this->assertSame(0, $constructor->getNumberOfRequiredParameters());
+        $this->assertSame('accessToken', $constructor->getParameters()[0]->getName());
+    }
 }
