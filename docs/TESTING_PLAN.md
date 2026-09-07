@@ -336,8 +336,19 @@ if (!isset($headers['Content-Type']) && ...) {
   通信自体は成立していたが、意図された `charset=utf-8` は付いていなかった。
 - **修正内容**: 分岐を `$options['headers']` の構築より前に移動した。
   呼び出し側が `Content-Type` を明示している場合はそちらを優先する既存の意図もそのまま機能するようになった。
+- **あわせて修正した点**: 有無の判定が `isset($headers['Content-Type'])` と大小文字を区別していた。
+  HTTP ヘッダ名は大小文字を区別しないため、呼び出し側が `content-type` などの表記で指定すると
+  取りこぼして既定値を追加してしまい、値が2つ並んだ不正なヘッダになる。
+
+  ```
+  Content-Type: application/vnd.api+json, application/json; charset=utf-8
+  ```
+
+  この分岐はもともとデッドコードだったため到達しなかったが、上記の修正で有効になったことで
+  顕在化する。`array_change_key_case()` を使い、大小文字を無視して判定するようにした
 - **テスト**: `tests/Communicator/RequestTest.php`。json / form それぞれの Content-Type、
-  呼び出し側指定の優先、GET には付与しないことを検証している。
+  呼び出し側指定の優先（ヘッダ名の表記違いを含む）、値が1つだけになること、
+  GET には付与しないことを検証している。
 
 ---
 

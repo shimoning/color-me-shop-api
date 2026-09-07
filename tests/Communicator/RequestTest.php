@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Tests\Communicator;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
@@ -124,14 +125,41 @@ class RequestTest extends TestCase
         $this->assertSame('application/x-www-form-urlencoded', $mock->header('Content-Type'));
     }
 
-    public function test_呼び出し側のContentTypeを上書きしない(): void
+    /**
+     * HTTP ヘッダ名は大小文字を区別しないため、呼び出し側がどの表記で指定しても
+     * 既定値を追加せずその指定を尊重すること。
+     * 追加してしまうと "a, b" のように値が2つ並んだ不正なヘッダになる。
+     */
+    #[DataProvider('contentTypeHeaderNameProvider')]
+    public function test_呼び出し側のContentTypeを上書きしない(string $headerName): void
     {
         $mock = HttpMock::json(200, '{}');
 
         (new Request(new RequestOptions(['json' => true]), $mock->client()))
-            ->post('https://api.shop-pro.jp/v1/sales/1/mails', ['a' => 1], ['Content-Type' => 'application/vnd.api+json']);
+            ->post('https://api.shop-pro.jp/v1/sales/1/mails', ['a' => 1], [$headerName => 'application/vnd.api+json']);
 
         $this->assertSame('application/vnd.api+json', $mock->header('Content-Type'));
+    }
+
+    public static function contentTypeHeaderNameProvider(): array
+    {
+        return [
+            '一般的な表記' => ['Content-Type'],
+            'すべて小文字' => ['content-type'],
+            'すべて大文字' => ['CONTENT-TYPE'],
+            '不揃いな表記' => ['CoNtEnT-tYpE'],
+        ];
+    }
+
+    #[DataProvider('contentTypeHeaderNameProvider')]
+    public function test_呼び出し側がContentTypeを指定したら値は1つだけになる(string $headerName): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        (new Request(new RequestOptions(['json' => true]), $mock->client()))
+            ->post('https://api.shop-pro.jp/v1/sales/1/mails', ['a' => 1], [$headerName => 'application/vnd.api+json']);
+
+        $this->assertCount(1, $mock->request()->getHeader('Content-Type'));
     }
 
     public function test_GETにはContentTypeを付けない(): void
