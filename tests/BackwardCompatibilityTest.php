@@ -42,6 +42,42 @@ class BackwardCompatibilityTest extends TestCase
         $this->assertSame('accessToken', $constructor->getParameters()[0]->getName());
     }
 
+    /**
+     * ClientInterface の注入は公開 API の一部になったため、
+     * 第2引数の存在と名前も固定しておく。
+     */
+    #[DataProvider('serviceProvider')]
+    public function test_サービスの第2引数はhttpClientである(string $service): void
+    {
+        $parameters = (new \ReflectionClass($service))->getConstructor()->getParameters();
+
+        $this->assertCount(2, $parameters, $service);
+        $this->assertSame('httpClient', $parameters[1]->getName(), $service);
+        $this->assertTrue($parameters[1]->allowsNull(), $service);
+    }
+
+    public function test_OAuthサービスの引数はoptionsとhttpClientである(): void
+    {
+        $parameters = (new \ReflectionClass(\Shimoning\ColorMeShopApi\Services\OAuth::class))
+            ->getConstructor()->getParameters();
+
+        $this->assertCount(2, $parameters);
+        $this->assertSame('options', $parameters[0]->getName());
+        $this->assertSame('httpClient', $parameters[1]->getName());
+        $this->assertTrue($parameters[1]->allowsNull());
+    }
+
+    public function test_Requestの引数はoptionsとclientである(): void
+    {
+        $parameters = (new \ReflectionClass(Request::class))->getConstructor()->getParameters();
+
+        $this->assertCount(2, $parameters);
+        $this->assertSame('options', $parameters[0]->getName());
+        $this->assertSame('client', $parameters[1]->getName());
+        $this->assertTrue($parameters[0]->allowsNull());
+        $this->assertTrue($parameters[1]->allowsNull());
+    }
+
     public function test_OAuthサービスはOptionsだけで生成できる(): void
     {
         $options = new \Shimoning\ColorMeShopApi\Entities\OAuth\Options('id', 'secret', 'https://example.test/callback');
@@ -91,5 +127,17 @@ class BackwardCompatibilityTest extends TestCase
 
         $this->assertSame(0, $constructor->getNumberOfRequiredParameters());
         $this->assertSame('accessToken', $constructor->getParameters()[0]->getName());
+    }
+
+    public function test_Clientの引数はaccessTokenとhttpClientである(): void
+    {
+        $parameters = (new \ReflectionClass(\Shimoning\ColorMeShopApi\Client::class))
+            ->getConstructor()->getParameters();
+
+        $this->assertCount(2, $parameters);
+        $this->assertSame('accessToken', $parameters[0]->getName());
+        $this->assertSame('httpClient', $parameters[1]->getName());
+        $this->assertTrue($parameters[0]->allowsNull());
+        $this->assertTrue($parameters[1]->allowsNull());
     }
 }

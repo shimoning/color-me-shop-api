@@ -444,10 +444,33 @@ Error: Typed property Shimoning\ColorMeShopApi\Client::$accessToken
 - **修正内容**: 他メソッドと同じガードを追加した
 - **テスト**: `tests/ClientTest.php`
 
+#### 8-10. `Client` のアクセストークン判定が真偽値で行われている ✅ 対応済み (2026-09-07)
+
+`Client` の9箇所（コンストラクタ含む）が `if ($accessToken)` と真偽値で「トークンが渡されたか」を
+判定していたため、空文字や `"0"` が「未指定」と誤認され、**黙って以前のトークンにフォールバック**していた。
+
+```php
+$client = new Client($tenantA->token);
+$client->getShop($tenantB->token ?? '');   // '' → テナントAのトークンで通信していた
+```
+
+`Client` はインスタンスにトークンを保持し続ける設計のため、マルチテナントで使い回すと
+別テナントの認証情報で通信してしまう危険があった。
+
+- **修正内容**: 9箇所すべてを `if ($accessToken !== null)` に統一した。
+  空文字は代入されたうえで `empty()` のガードに掛かり `ParameterException` になる。
+  黙って誤ったトークンを使うより明示的に失敗する方が安全という判断。
+  Service 側は元から `$accessToken ?? $this->_accessToken` と null 基準で解決しており、これで判定基準が揃う
+- **挙動の変更**: `getShop('')` が「以前のトークンで成功」から `ParameterException` に変わる。
+  依存すべきでない未文書の挙動であり、修正が妥当と判断した
+- **テスト**: `tests/ClientTest.php`
+
 ### 追加したファイル
 
 ```
 tests/ClientTest.php     Client ファサードの全メソッドのテスト
 ```
 
-`tests/BackwardCompatibilityTest.php` にも `Client` のコンストラクタ契約を追加している。
+`tests/BackwardCompatibilityTest.php` には `Client` のコンストラクタ契約に加え、
+`ClientInterface` の注入が公開 API の一部になったことを踏まえて、
+各 Service / `Request` / `Client` の第2引数の存在・名前・nullable であることも固定している。

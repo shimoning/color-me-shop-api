@@ -48,7 +48,7 @@ class Client
      */
     public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         $this->httpClient = $httpClient;
@@ -90,7 +90,7 @@ class Client
      */
     public function getShop(?string $accessToken = null): ShopEntity|Errors
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -192,7 +192,7 @@ class Client
 
     private function salesService(?string $accessToken = null): Sales
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -211,7 +211,7 @@ class Client
      */
     public function getPayments(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -230,7 +230,7 @@ class Client
      */
     public function getDeliveries(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -252,7 +252,7 @@ class Client
         ?CustomerSearchParameters $searchParameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -273,7 +273,7 @@ class Client
      */
     public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -292,7 +292,7 @@ class Client
      */
     public function getProductGroups(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {
@@ -311,7 +311,7 @@ class Client
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken) {
+        if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
         if (empty($this->accessToken)) {

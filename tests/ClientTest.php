@@ -54,6 +54,64 @@ class ClientTest extends TestCase
         (new Client())->getCustomers();
     }
 
+    /**
+     * 空文字のトークンを明示的に渡した場合、黙って以前のトークンに
+     * フォールバックせず ParameterException になること。
+     *
+     * インスタンスにトークンを保持し続ける設計のため、フォールバックすると
+     * 別テナントの認証情報で通信してしまう危険がある。
+     */
+    public function test_空文字のトークンは前のトークンにフォールバックしない(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('shop.json'));
+        $client = new Client('tenant-A-token', $mock->client());
+
+        $this->expectException(ParameterException::class);
+
+        $client->getShop('');
+    }
+
+    public function test_空文字のトークンはSales経由でもフォールバックしない(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+        $client = new Client('tenant-A-token', $mock->client());
+
+        $this->expectException(ParameterException::class);
+
+        $client->getSale(1001, '');
+    }
+
+    public function test_空文字のトークンはCustomer経由でもフォールバックしない(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('customer.json'));
+        $client = new Client('tenant-A-token', $mock->client());
+
+        $this->expectException(ParameterException::class);
+
+        $client->getCustomer(501, '');
+    }
+
+    /**
+     * "0" は PHP の真偽値判定では false になるため、真偽値でトークンの有無を
+     * 判定していると「未指定」と誤認されてしまう。
+     */
+    public function test_ゼロ文字列のトークンも前のトークンにフォールバックしない(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('shop.json'));
+        $client = new Client('tenant-A-token', $mock->client());
+
+        $this->expectException(ParameterException::class);
+
+        $client->getShop('0');
+    }
+
+    public function test_コンストラクタに空文字を渡してもトークン未指定として扱う(): void
+    {
+        $this->expectException(ParameterException::class);
+
+        (new Client(''))->getShop();
+    }
+
     // --- インスタンス間の独立性 ---------------------------------------------
 
     /**
