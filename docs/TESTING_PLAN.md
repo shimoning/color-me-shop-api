@@ -132,10 +132,11 @@ public function __construct(?string $accessToken = null, ?ClientInterface $httpC
 
 ### Phase 5: CI・静的解析
 
-- [ ] GitHub Actions ワークフロー（PHP 8.1 / 8.2 / 8.3 / 8.4 マトリクス）
-- [ ] `composer validate --strict`
-- [ ] PHPStan 導入（level 5 から開始し段階的に引き上げ）
-- [ ] カバレッジ計測（Xdebug または PCOV）
+- [x] GitHub Actions ワークフロー（PHP 8.1 / 8.2 / 8.3 / 8.4 マトリクス）
+- [x] `composer validate --strict`（`--no-check-version` 付き。後述）
+- [x] PHPStan 導入（**level 3** で無警告。計画時の level 5 からの変更理由は後述）
+- [x] カバレッジ計測（PCOV。CI でテキスト出力し clover をアーティファクトとして保存）
+- [x] `composer analyse` / `composer check` スクリプトの追加
 
 ---
 
@@ -161,7 +162,7 @@ tests/
 | 2 | Response / Errors | **完了** (2026-09-07) |
 | 3 | HTTP 層（要リファクタ） | **完了** (2026-09-07) |
 | 4 | Client | **完了** (2026-09-07) |
-| 5 | CI・静的解析 | 未着手 |
+| 5 | CI・静的解析 | **完了** (2026-09-08) |
 
 ## 7. 決定事項・保留事項
 
@@ -169,7 +170,7 @@ tests/
 | --- | --- |
 | テストフレームワーク | PHPUnit `^10.5`（導入済み） |
 | Phase 3 の DI リファクタ | 承認のうえ実施済み（`ClientInterface` 注入方式） |
-| Phase 5 の CI / 静的解析 | **保留** — 着手前に要承認 |
+| Phase 5 の CI / 静的解析 | 承認のうえ実施済み（GitHub Actions + PHPStan level 3） |
 | 実 API への結合テスト | 行わない |
 
 ---
@@ -177,6 +178,7 @@ tests/
 ## 8. 発見事項（Phase 1-2 のテスト作成で判明した既存の不具合）
 
 8-1・8-2・8-6・8-7・8-8・8-9・8-10 と課題 C は 2026-09-07 に対応済み。
+8-11 から 8-14 は Phase 5 の静的解析で発見し、2026-09-08 に対応済み。
 残りの 8-3・8-4・8-5 は未対応で、対応方針の判断が必要。
 
 ### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる ✅ 対応済み (2026-09-07)
@@ -517,3 +519,128 @@ timeout  : 5.0 / connect_timeout: 2.0
 
 なお 8-8（`Content-Type` 設定のデッドコード）は、送信される `Content-Type` が変化するため
 この修正のスコープ外とし、別途対応した。
+
+---
+
+## 13. Phase 5 の実施結果
+
+- **テスト数**: 472 / **アサーション数**: 1,167 / **結果**: 全件パス
+- **PHPStan**: level 3 で無警告（baseline / ignoreErrors は不使用）
+- ローカルの PHP 8.1 と 8.4 の双方でテストと静的解析の通過を確認済み
+
+### CI（`.github/workflows/test.yml`）
+
+| ジョブ | 内容 |
+| --- | --- |
+| `test` | PHP 8.1 / 8.2 / 8.3 / 8.4 のマトリクス。`composer validate` → 依存インストール → PHPUnit |
+| `static-analysis` | 対応最小バージョンの PHP 8.1 で PHPStan |
+| `coverage` | PCOV でカバレッジを計測し、clover をアーティファクトとして保存 |
+
+`fail-fast: false` にしているため、特定バージョンだけで失敗した場合も他の結果が得られる。
+
+#### `composer validate` について
+
+`--strict` のみでは `composer.json` の `version` フィールドに対する警告で失敗する。
+このフィールドを置くかどうかはパッケージの管理方針であり自動テストの都合で変更すべきではないため、
+`--no-check-version` を付けて当該警告のみ除外している。
+
+### PHPStan のレベル
+
+計画時は level 5 を想定していたが、実際に走らせた結果を踏まえて **level 3** から始めることにした。
+
+| level | 指摘件数（導入前） | 内容 |
+| --- | --- | --- |
+| 0-1 | 5 | **実際の不具合**（後述の 8-11〜8-13）。すべて修正済み |
+| 2 | 11 | PHPDoc の誤り。すべて修正済み |
+| 3 | 6 | 同上。すべて修正済み |
+| 4 | 17 | 「常に真/偽」の判定。テスト側の意図的なアサーションが多く含まれる |
+| 5 | 1 | 引数の型の厳密化 |
+| 6 | 110 | 配列・イテラブルのジェネリクス未指定 |
+
+level 4 以降を無理に通すと、防御的なコードやテストの意図を損なう。
+`baseline` や `ignoreErrors` での抑制は行わない方針のため、level 3 を到達点とし、
+引き上げに必要な作業を `phpstan.neon` にコメントとして記録した。
+
+とくに level 4 は、テストが契約を固定するために意図的に書いている
+「常に真のアサーション」を指摘してくる。引き上げるなら `src` と `tests` で
+level を分ける構成が必要になる。
+
+---
+
+## 14. 静的解析で発見した不具合（Phase 5）
+
+PHPStan の **level 0**、つまり最も基本的な検査だけで4件の実行時エラーが見つかった。
+いずれもテストを先に書いて Red を確認してから修正している。
+
+### 8-11. `Product/Category` の ID ゲッターが存在しないプロパティを参照している 🔴 ✅ 対応済み
+
+`getIdBig()` と `getIdSmall()` が、どちらも宣言されていない `$this->id` を返していた。
+
+```
+Warning: Undefined property: ...\Category::$id
+TypeError: ...\Category::getIdBig(): Return value must be of type int, null returned
+```
+
+- **影響**: 商品カテゴリー一覧を取得したあと、ID を参照すると必ず落ちる。
+- **修正内容**: それぞれ `$this->idBig` / `$this->idSmall` を返すようにした。
+- **テスト**: `tests/Entities/Product/CategoryTest.php`
+
+### 8-12. `Payment/Financial` の口座種別が取得できない 🔴 ✅ 対応済み
+
+3つの誤りが重なっていた。
+
+1. プロパティ名が `$kouzaTyp` と綴り誤り（`e` が欠落）
+2. そのためレスポンスの `kouza_type` がどのプロパティにも一致せず、値が取り込まれない
+3. `getKouzaType()` は存在しない `$this->kouzaType` を返していた
+4. `OBJECT_FIELDS` のキーが `brands`（別エンティティの項目名）になっており、enum 変換も効いていない
+
+```
+TypeError: ...\Financial::getKouzaType(): Return value must be of type KouzaType, null returned
+```
+
+- **影響**: 銀行振込の決済設定で口座種別を参照すると必ず落ちる。データ自体も欠落していた。
+- **修正内容**: プロパティ名を `$kouzaType` に修正し、`OBJECT_FIELDS` のキーも `kouzaType` にした。
+- **テスト**: `tests/Entities/Payment/FinancialTest.php`
+
+### 8-13. `SaleDeliveryUpdater::setTotalCharge()` の PHPDoc が誤っている ✅ 対応済み
+
+セッターなのに `@return int` になっていた（ゲッターからのコピー由来と思われる）。
+戻り値の型宣言はないため実行時の影響はないが、静的解析では戻り値の欠落として扱われる。
+
+- **修正内容**: `@param int $totalCharge` に修正した。
+
+### 8-14. `OAuth/Options::setRedirectUri()` に enum を渡すと TypeError になる 🔴 ✅ 対応済み
+
+引数は `AuthRedirectUri|string` を受け付けるが、戻り値の型宣言が `string` で、
+かつ代入式をそのまま返していたため、enum を渡すと戻り値の型検査で落ちていた。
+
+```php
+return $this->redirectUri = $uri;   // $uri が enum のとき TypeError
+```
+
+```
+TypeError: ...\Options::setRedirectUri(): Return value must be of type string,
+           ...\Constants\AuthRedirectUri returned
+```
+
+- **影響**: `AuthRedirectUri::NO_REDIRECT` を渡すと必ず落ちる。引数の型宣言が受け付ける値の半分が使えない状態だった。
+- **修正内容**: 代入と戻り値を分離し、`getRedirectUri()` の結果（文字列化済み）を返すようにした。
+  シグネチャは変えていないため後方互換性への影響はない。
+- **テスト**: `tests/Entities/OAuth/OptionsTest.php`
+
+### あわせて修正した PHPDoc の誤り
+
+実行時の影響はないが、型情報として誤っていたもの。
+
+| 箇所 | 内容 |
+| --- | --- |
+| `Communicator/Request::sendRequest()` | `@param` に変数名がない |
+| `Entities/Customer::isMember()` | `@return string|null` → 実際は `bool` |
+| `Entities/Delivery::getChargeType()` | `@return sDeliveryChargeType` という存在しない型名（説明文も別項目からのコピー） |
+| `Entities/Error::getStatus()` | `@return string` → 実際は `int` |
+| `Entities/OAuth/Options::__construct()` | `@param` の型と並び順がシグネチャと不一致 |
+| `Entities/Sales/SaleUpdater::setSaleDeliveries()` | `@param` に変数名がない |
+| `Services/Sales::stat()` | `DateTimeInterface` が名前空間解決されない／`@param` の重複 |
+| `Constants/ErrorCode::message()` | 数値のみのキーは PHP の仕様で int になるため `array<int, string>` が正しい |
+| `Entities/Entity::build()` | `@return array|object` → 実際は `mixed` |
+| `Entities/Sales/Sale::getPaymentId()` | 戻り値は `string` だがプロパティは `int`。明示的にキャストするようにした |
