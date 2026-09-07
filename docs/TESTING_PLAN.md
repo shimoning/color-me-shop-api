@@ -156,23 +156,34 @@ tests/
 
 ## 8. 発見事項（Phase 1-2 のテスト作成で判明した既存の不具合）
 
-いずれも今回のスコープ外のため**修正していない**。対応方針の判断が必要。
+🔴 の 2 件は 2026-09-07 に対応済み。🟡 の 3 件は未対応で、対応方針の判断が必要。
 
-### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる 🔴
+### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる ✅ 対応済み (2026-09-07)
 
 ```
 Fatal error: Enum case type int does not match enum backing type string
   in src/Constants/ErrorCode.php on line 7
 ```
 
-`enum ErrorCode: string` と宣言しているが、ケースの値が整数リテラル（`case UNAUTHORIZED = 401010;`）になっている。
-PHP のコンパイル時エラーのため `try/catch` で捕捉できず、このクラスを参照した時点でプロセスが停止する。
+`enum ErrorCode: string` と宣言しているが、ケースの値が整数リテラル（`case UNAUTHORIZED = 401010;`）になっていた。
+PHP のコンパイル時エラーのため `try/catch` で捕捉できず、このクラスを参照した時点でプロセスが停止していた。
 
-- **現状の影響**: `src/` 内から一切参照されていないため実害は出ていない。ただし利用者が `ErrorCode` を参照した瞬間に落ちる。
-- **テストでの扱い**: `tests/Constants/EnumContractTest.php` の `EXCLUDED` で除外している。
-- **想定される修正**: 値を文字列リテラルにする（`case UNAUTHORIZED = '401010';`）。`Entities/Error::$code` が `string` のため、文字列に揃えるのが整合的。
+さらに修正の過程で、**同一クラスの `message()` にも独立した不具合**が判明した。
+enum のケースは配列のキーにできないため、呼び出すと `TypeError: Illegal offset type` になる。
 
-### 8-2. `Entities/Error::getField()` が未初期化エラーを投げる 🔴
+```php
+// 修正前: enum ケースをキーにしているため実行時に TypeError
+return [ self::UNAUTHORIZED => '...' ];
+```
+
+- **修正内容**:
+  - ケースの値を文字列リテラルにした（`case UNAUTHORIZED = '401010';`）。`Entities/Error::$code` が `string` のため文字列に揃えている
+  - `message()` の配列キーを `self::UNAUTHORIZED->value` に変更し、戻り値の型宣言 `: array` と PHPDoc を追加した
+- **戻り値の形の変更**: `message()` はエラーコード文字列をキーとする連想配列を返す。呼び出しは `ErrorCode::message()[$code->value]` となる。
+  修正前のコードは実行不能だったため、後方互換性への影響はない
+- **テスト**: `tests/Constants/ErrorCodeTest.php`。`EnumContractTest` の `EXCLUDED` からも除外を解除済み
+
+### 8-2. `Entities/Error::getField()` が未初期化エラーを投げる ✅ 対応済み (2026-09-07)
 
 ```
 Error: Typed property Shimoning\ColorMeShopApi\Entities\Error::$field
@@ -180,11 +191,10 @@ Error: Typed property Shimoning\ColorMeShopApi\Entities\Error::$field
 ```
 
 `protected ?string $field;` にデフォルト値がなく、`Entity::__construct()` は**レスポンスに存在するキーしか代入しない**。
-API のエラーレスポンスは `field` を含まないことがある（401 / 404 など）ため、`getField()` が実行時に落ちる。
+API のエラーレスポンスは `field` を含まないことがある（401 / 404 など）ため、`getField()` が実行時に落ちていた。
 
-- **現状の影響**: エラーハンドリングで `getField()` を呼ぶと、認証エラー時などに例外が発生する。
-- **テストでの扱い**: `tests/Communicator/ErrorsTest.php` に仕様化テストとして現状の挙動を記録済み。修正時にこのテストを書き換える。
-- **想定される修正**: `protected ?string $field = null;`
+- **修正内容**: `protected ?string $field = null;`
+- **テスト**: `tests/Communicator/ErrorsTest.php`。仕様化テストを本来あるべき挙動（`null` を返す）に書き換えている
 
 ### 8-3. 未初期化 typed property は全エンティティに共通する構造的リスク 🟡
 
@@ -196,7 +206,7 @@ API のエラーレスポンスは `field` を含まないことがある（401 
 - **想定される修正の選択肢**:
   1. nullable なプロパティすべてに `= null` を付ける（機械的・安全だが差分が大きい）
   2. `Entity::__construct()` 側で、未指定の nullable プロパティを `null` で初期化する（差分は小さいが基底クラスの挙動変更）
-- **判断**: Phase 3 以降で方針を決める。
+- **判断**: Phase 3 以降で方針を決める。なお 8-2 は個別に対応済みだが、他のエンティティは未対応のまま。
 
 ### 8-4. `Values/DateTime` の正規表現が末尾の改行を許容する 🟡
 
@@ -212,7 +222,8 @@ PHP の `count($collection)` は要素数ではなく常に `1` を返す。`$co
 
 ## 9. Phase 1-2 の実施結果
 
-- **テスト数**: 285 / **アサーション数**: 794 / **結果**: 全件パス
+- **テスト数**: 298 / **アサーション数**: 827 / **結果**: 全件パス
+  （Phase 1-2 完了時点では 285 テスト / 794 アサーション。発見事項 8-1・8-2 の修正で 13 テスト追加）
 - **実行時間**: 約 0.04 秒（外部通信なし）
 
 ### 追加したファイル
@@ -246,7 +257,8 @@ tests/
 │   └── ErrorsTest.php
 ├── Constants/
 │   ├── EnumContractTest.php
-│   └── DomainEnumTest.php
+│   ├── DomainEnumTest.php
+│   └── ErrorCodeTest.php
 └── Exceptions/
     └── ExceptionTest.php
 ```

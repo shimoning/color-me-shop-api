@@ -45,20 +45,14 @@ class ErrorsTest extends TestCase
     }
 
     /**
-     * 仕様化テスト (既知の不具合)。
-     *
-     * Error::$field はデフォルト値を持たない typed property のため、API レスポンスに
-     * field が含まれない場合 (401 / 404 など) に getField() が Error を投げる。
-     * 詳細と対処方針は docs/TESTING_PLAN.md の「発見事項」を参照。
+     * API のエラーレスポンスは field を含まないことがある (401 / 404 など)。
+     * その場合でも getField() は例外を投げず null を返すこと。
      */
-    public function test_fieldがないエラーのgetFieldは未初期化エラーになる(): void
+    public function test_fieldがないエラーのgetFieldはnullを返す(): void
     {
         $errors = Errors::build($this->makeResponse(401, self::fixture('errors_401.json')));
 
-        $this->expectException(\Error::class);
-        $this->expectExceptionMessage('must not be accessed before initialization');
-
-        $errors[0]->getField();
+        $this->assertNull($errors[0]->getField());
     }
 
     public function test_fieldがあれば取得できる(): void

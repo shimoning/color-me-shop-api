@@ -6,7 +6,7 @@ class Error extends Entity
 {
     protected string $code;
     protected string $message;
-    protected ?string $field;
+    protected ?string $field = null;
     protected int $status;
 
     /**

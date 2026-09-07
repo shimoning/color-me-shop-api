@@ -14,14 +14,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class EnumContractTest extends TestCase
 {
     /**
-     * ロードした時点で fatal error になるため、対象から除外している。
-     * 詳細は docs/TESTING_PLAN.md の「発見事項」を参照。
+     * 契約テストの対象外にする enum の短縮名。
      *
      * @var array<string>
      */
-    private const EXCLUDED = [
-        'ErrorCode',
-    ];
+    private const EXCLUDED = [];
 
     public static function enumProvider(): array
     {
