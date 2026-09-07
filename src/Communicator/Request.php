@@ -3,16 +3,23 @@
 namespace Shimoning\ColorMeShopApi\Communicator;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 
 class Request
 {
     private RequestOptions $_options;
-    private Client $_client;
+    private ClientInterface $_client;
 
-    public function __construct(?RequestOptions $options = new RequestOptions)
-    {
-        $this->_options = $options;
-        $this->_client = new Client();
+    /**
+     * @param RequestOptions|null $options リクエストオプション (省略時は既定値)
+     * @param ClientInterface|null $client HTTP クライアント (省略時は Guzzle のデフォルト)
+     */
+    public function __construct(
+        ?RequestOptions $options = null,
+        ?ClientInterface $client = null,
+    ) {
+        $this->_options = $options ?? new RequestOptions();
+        $this->_client = $client ?? new Client();
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
+use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
@@ -12,10 +13,16 @@ use Shimoning\ColorMeShopApi\Entities\Product\Category;
 class Product
 {
     protected string $_accessToken;
+    protected ?ClientInterface $_httpClient;
 
-    public function __construct(string $accessToken)
+    /**
+     * @param string $accessToken
+     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     */
+    public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
         $this->_accessToken = $accessToken;
+        $this->_httpClient = $httpClient;
     }
 
     /**
@@ -29,7 +36,7 @@ class Product
     {
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
-        ])))->get(
+        ]), $this->_httpClient))->get(
             'https://api.shop-pro.jp/v1/groups',
         );
         if (! $response->isSuccess()) {
@@ -51,7 +58,7 @@ class Product
     {
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
-        ])))->get(
+        ]), $this->_httpClient))->get(
             'https://api.shop-pro.jp/v1/categories',
         );
         if (! $response->isSuccess()) {

@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
+use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
@@ -12,10 +13,16 @@ use Shimoning\ColorMeShopApi\Values\Scopes;
 class OAuth
 {
     private Options $_options;
+    private ?ClientInterface $_httpClient;
 
-    public function __construct(Options $options)
+    /**
+     * @param Options $options
+     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     */
+    public function __construct(Options $options, ?ClientInterface $httpClient = null)
     {
         $this->_options = $options;
+        $this->_httpClient = $httpClient;
     }
 
     /**
@@ -42,7 +49,7 @@ class OAuth
      */
     public function exchangeCode2Token(string $code): AccessToken|Errors
     {
-        $response = (new Request(new RequestOptions(['form' => true])))->post(
+        $response = (new Request(new RequestOptions(['form' => true]), $this->_httpClient))->post(
             $this->_options->getEndpointUri() . '/token',
             [
                 'client_id' => $this->_options->getClientId(),

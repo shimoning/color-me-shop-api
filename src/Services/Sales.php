@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
+use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
@@ -17,10 +18,16 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 class Sales
 {
     protected string $_accessToken;
+    protected ?ClientInterface $_httpClient;
 
-    public function __construct(string $accessToken)
+    /**
+     * @param string $accessToken
+     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     */
+    public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
         $this->_accessToken = $accessToken;
+        $this->_httpClient = $httpClient;
     }
 
     /**
@@ -37,7 +44,7 @@ class Sales
     ): Page|Errors {
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
-        ])))->get(
+        ]), $this->_httpClient))->get(
             'https://api.shop-pro.jp/v1/sales',
             $searchParameters->toArrayRecursive(),
         );
@@ -64,7 +71,7 @@ class Sales
     {
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
-        ])))->get(
+        ]), $this->_httpClient))->get(
             'https://api.shop-pro.jp/v1/sales/' . $id,
         );
         if (! $response->isSuccess()) {
@@ -89,7 +96,7 @@ class Sales
     ): Stat|Errors {
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
-        ])))->get(
+        ]), $this->_httpClient))->get(
             'https://api.shop-pro.jp/v1/sales/stat?',
             [
                 'make_date' => $dateTime->format('Y-m-d'),
@@ -117,7 +124,7 @@ class Sales
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
-        ])))->put(
+        ]), $this->_httpClient))->put(
             'https://api.shop-pro.jp/v1/sales/' . $updater->getId(),
             [
                 'sale' => $updater->toArrayRecursive(),
@@ -147,7 +154,7 @@ class Sales
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
-        ])))->put(
+        ]), $this->_httpClient))->put(
             'https://api.shop-pro.jp/v1/sales/' . $id . '/cancel',
             [
                 'restock' => $restock,
@@ -177,7 +184,7 @@ class Sales
         $response = (new Request(new RequestOptions([
             'authorization' => $accessToken ?? $this->_accessToken,
             'json' => true,
-        ])))->post(
+        ]), $this->_httpClient))->post(
             'https://api.shop-pro.jp/v1/sales/' . $id . '/mails',
             [
                 'mail' => [
