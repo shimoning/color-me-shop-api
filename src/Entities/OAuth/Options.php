@@ -13,10 +13,10 @@ class Options
     private string $clientSecret;
     private AuthRedirectUri|string $redirectUri;
     /**
+     * @param string $clientId
+     * @param string $clientSecret
+     * @param \Shimoning\ColorMeShopApi\Constants\AuthRedirectUri|string $redirectUri
      * @param string|null $endpointUri
-     * @param string|null $clientId
-     * @param string|null $clientSecret
-     * @param \Shimoning\ColorMeShopApi\Constants\AuthRedirectUri|string|null $redirectUri
      */
     public function __construct(
         string $clientId,
@@ -49,12 +49,15 @@ class Options
     }
 
     /**
-     * リダイレクトURI
-     * @return AuthRedirectUri|string $uri
+     * リダイレクトURIを設定し、文字列化した値を返す
+     *
+     * @param AuthRedirectUri|string $uri
+     * @return string
      */
     public function setRedirectUri(AuthRedirectUri|string $uri): string
     {
-        return $this->redirectUri = $uri;
+        $this->redirectUri = $uri;
+        return $this->getRedirectUri();
     }
 
     /**

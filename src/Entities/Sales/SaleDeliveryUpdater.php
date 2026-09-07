@@ -184,8 +184,8 @@ class SaleDeliveryUpdater extends SaleDelivery
     }
 
     /**
-     * 配送料・手数料の小計
-     * @return int
+     * 配送料・手数料の小計を設定
+     * @param int $totalCharge
      */
     public function setTotalCharge(int $totalCharge)
     {
