@@ -3,12 +3,13 @@
 namespace Shimoning\ColorMeShopApi\Entities;
 
 use ArrayAccess;
+use Countable;
 use IteratorAggregate;
 use Traversable;
 use ArrayIterator;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
-class Collection implements ArrayAccess, IteratorAggregate
+class Collection implements ArrayAccess, Countable, IteratorAggregate
 {
     protected array $_items = [];
 
@@ -40,6 +41,13 @@ class Collection implements ArrayAccess, IteratorAggregate
         return $this->_items;
     }
 
+    /**
+     * 要素数
+     *
+     * Countable の実装。これがないと PHP 8 では count() が TypeError になる。
+     *
+     * @return int
+     */
     public function count(): int
     {
         return \count($this->_items);

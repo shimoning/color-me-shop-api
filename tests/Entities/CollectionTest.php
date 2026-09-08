@@ -158,4 +158,19 @@ class CollectionTest extends TestCase
         $this->assertSame(0, (new Collection())->count());
         $this->assertSame(3, (new Collection(['a', 'b', 'c']))->count());
     }
+
+    /**
+     * Countable を実装していないと、PHP 8 では count() が TypeError になる。
+     */
+    public function test_Countableを実装している(): void
+    {
+        $this->assertInstanceOf(\Countable::class, new Collection());
+    }
+
+    public function test_count関数で要素数を取得できる(): void
+    {
+        $this->assertCount(0, new Collection());
+        $this->assertCount(3, new Collection(['a', 'b', 'c']));
+        $this->assertSame(3, \count(new Collection(['a', 'b', 'c'])));
+    }
 }
