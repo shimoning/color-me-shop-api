@@ -40,6 +40,14 @@ class PageTest extends TestCase
         $this->assertSame(['x', 'y'], \array_map(fn($i) => $i->getLabel(), $page->all()));
     }
 
+    public function test_count関数で要素数を取得できる(): void
+    {
+        $page = $this->makePage([['label' => 'x'], ['label' => 'y']]);
+
+        $this->assertInstanceOf(\Countable::class, $page);
+        $this->assertCount(2, $page);
+    }
+
     public function test_Collectionを渡しても中身を引き継ぐ(): void
     {
         $page = new Page(new Collection(['a', 'b']), new Pagination(['total' => 2, 'limit' => 10, 'offset' => 0]));

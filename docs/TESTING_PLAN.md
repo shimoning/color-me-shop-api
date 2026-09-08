@@ -179,7 +179,8 @@ tests/
 
 8-1・8-2・8-6・8-7・8-8・8-9・8-10 と課題 C は 2026-09-07 に対応済み。
 8-11 から 8-14 は Phase 5 の静的解析で発見し、2026-09-08 に対応済み。
-残りの 8-3・8-4・8-5 は未対応で、対応方針の判断が必要。
+8-4・8-5 も 2026-09-08 に対応済み。
+残るのは 8-3 のみで、対応方針の判断が必要。
 
 ### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる ✅ 対応済み (2026-09-07)
 
@@ -231,15 +232,32 @@ API のエラーレスポンスは `field` を含まないことがある（401 
   2. `Entity::__construct()` 側で、未指定の nullable プロパティを `null` で初期化する（差分は小さいが基底クラスの挙動変更）
 - **判断**: Phase 3 以降で方針を決める。なお 8-2 は個別に対応済みだが、他のエンティティは未対応のまま。
 
-### 8-4. `Values/DateTime` の正規表現が末尾の改行を許容する 🟡
+### 8-4. `Values/DateTime` の正規表現が末尾の改行を許容する ✅ 対応済み (2026-09-08)
 
-`/^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2}:\d{2})?$/` は `D` 修飾子がないため、`$` が末尾の改行にもマッチする。
-`"2024-01-01\n"` がバリデーションを通過する。実害は小さいが、`\z` または `D` 修飾子を使うのが正しい。
+`/^\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2}:\d{2})?$/` は `D` 修飾子がないため、`$` が末尾の改行にもマッチしていた。
+`"2024-01-01\n"` がバリデーションを通過し、そのまま API のクエリに渡る。
 
-### 8-5. `Entities/Collection` が `Countable` を実装していない 🟡
+- **修正内容**: `^`/`$` を文字列の先頭・終端を表す `\A`/`\z` に変更した。
+- **テスト**: `tests/Values/DateTimeTest.php`。日付のみ・日時の両方で末尾の改行を弾くことを検証している。
 
-`count()` メソッドは持つが `Countable` インターフェースを実装していないため、
-PHP の `count($collection)` は要素数ではなく常に `1` を返す。`$collection->count()` を使う必要がある。
+### 8-5. `Entities/Collection` が `Countable` を実装していない ✅ 対応済み (2026-09-08)
+
+`count()` メソッドは持つが `Countable` インターフェースを実装していなかった。
+
+当初この項目は「PHP の `count($collection)` は要素数ではなく常に `1` を返す」と記載していたが、
+これは PHP 7 以前の挙動で**誤り**だった。実際に確認したところ、PHP 8 では `TypeError` になる。
+
+```
+TypeError: count(): Argument #1 ($value) must be of type Countable|array,
+           Shimoning\ColorMeShopApi\Entities\Collection given
+```
+
+- **影響**: `Collection` を返す API（`getPayments()` / `getDeliveries()` / `getProductGroups()` /
+  `getProductCategories()`）の結果に `count()` を使うと落ちる。`Page` と `Errors` も `Collection` を
+  継承しているため同様。
+- **修正内容**: `Countable` を実装した。`count()` メソッド自体は元からあるため、追加した実装はない。
+- **後方互換性**: `count()` は従来 `TypeError` だったため、動いていたコードへの影響はない。
+- **テスト**: `tests/Entities/CollectionTest.php` と `tests/Entities/PageTest.php`。
 
 ---
 
