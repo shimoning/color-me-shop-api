@@ -180,8 +180,7 @@ tests/
 8-1・8-2・8-6・8-7・8-8・8-9・8-10 と課題 C は 2026-09-07 に対応済み。
 8-11 から 8-14 は Phase 5 の静的解析で発見し、2026-09-08 に対応済み。
 8-4・8-5 も 2026-09-08 に対応済み。
-8-3 は第1段階（null 許容プロパティの初期化）と第3段階（契約テスト）を 2026-09-08 に実施済み。
-第2段階（非 null 許容プロパティの棚卸し）は API 仕様の確認が必要なため未対応。
+8-3 は第1〜第3段階すべてを 2026-09-08 に対応済み。
 
 ### 8-1. `Constants/ErrorCode` がロード時に致命的エラーになる ✅ 対応済み (2026-09-07)
 
@@ -221,7 +220,7 @@ API のエラーレスポンスは `field` を含まないことがある（401 
 - **修正内容**: `protected ?string $field = null;`
 - **テスト**: `tests/Communicator/ErrorsTest.php`。仕様化テストを本来あるべき挙動（`null` を返す）に書き換えている
 
-### 8-3. 未初期化 typed property は全エンティティに共通する構造的リスク 🟡 第1・第3段階を対応済み (2026-09-08)
+### 8-3. 未初期化 typed property は全エンティティに共通する構造的リスク ✅ 対応済み (2026-09-08)
 
 型付きプロパティは初期化しないまま参照すると `Error` になるため、API レスポンスに
 含まれなかった項目のゲッターが実行時に落ちる。`Entities\Error::getField()`（8-2）、
@@ -259,15 +258,63 @@ API のエラーレスポンスは `field` を含まないことがある（401 
 あわせて、リフレクション結果のキャッシュ用プロパティが `toArray()` に混ざらないよう、
 アンダースコアで始まる内部プロパティを配列化の対象外とする規約にした。
 
-#### 第2段階（未対応）: 非 null 許容プロパティの棚卸し
+#### 第2段階（対応済み 2026-09-08）: 非 null 許容プロパティの棚卸し
 
-残る 168 個は「API が必ず返すフィールド」として非 null 許容で宣言されている。
-本当に必須かは **API 仕様の確認が必要**で、機械的には判断できない。
+公式の OpenAPI 仕様と突き合わせて、非 null 許容で宣言されているプロパティを検証した。
 
-影響の大きいエンティティ（`Sale` 40 件、`Shop` 37 件、`SaleDelivery` 28 件）から
-API ドキュメントと照合して個別に判断することになる。オプショナルと判明したものを
-`?T` に変更するのはゲッターの戻り値型も変わる**破壊的変更**のため、
-まとめて次のマイナーバージョンに載せる形が望ましい。
+##### 仕様の在り処
+
+ドキュメントページ（`https://developer.shop-pro.jp/docs/colorme-api`）は Nuxt + Redoc の
+SPA で本文を取得できないが、JS バンドルに仕様の URL が埋め込まれている。
+
+```
+https://api.shop-pro.jp/v1/spec/open_api.json   (OpenAPI 3.0.2 / 36 スキーマ)
+```
+
+##### 前提の訂正
+
+**全スキーマで `required` が空**だった。仕様上どのフィールドも必須と宣言されていないため、
+「非 null 許容 168 個のうちどれが本当はオプショナルか」を `required` から判定することはできない。
+
+代わりに **`nullable: true`** が明示されているフィールドを軸に、PHP 側の型と突き合わせた。
+`Entity` と同じ camelCase 変換を使い、ネストされた `payment.cod` / `card` / `financial`、
+`delivery.charge` も対象に含めている。
+
+##### 結果
+
+227 件を検査し、**要修正は 3 件**だった。
+
+| クラス | プロパティ | 修正前 | 仕様 |
+| --- | --- | --- | --- |
+| `Shop\Shop` | `$hojin` | `string` | nullable（法人名） |
+| `Shop\Shop` | `$hojinKana` | `string` | nullable（法人名カナ） |
+| `Product\Group` | `$parentGroupId` | `int` | nullable「親グループが存在しない場合は null になります」 |
+
+3 件とも**構築時の `TypeError`** で、ゲッター単体ではなくエンドポイント全体が失敗していた。
+
+```
+TypeError: Cannot assign null to property ...\Group::$parentGroupId of type int
+TypeError: Cannot assign null to property ...\Shop::$hojin of type string
+```
+
+`parent_group_id` は「親グループが存在しない場合は null」と仕様に明記されており、
+**トップレベルの商品グループが 1 つでもあれば `getProductGroups()` が丸ごと落ちる**状態だった。
+`hojin` も法人でないショップで `getShop()` が落ちる。
+
+- **後方互換性**: `Shop` のゲッターは元から `?string` を返す宣言だったためシグネチャの変更はない。
+  `Group::getParentGroupId()` は `int` → `?int` の**破壊的変更**にあたるが、
+  修正前は該当ケースで必ず落ちていたため実質的な影響は小さい。
+- **あわせて修正**: `getParentGroupId()` の PHPDoc の説明文が「配送希望日を指定可能か」と
+  別項目からのコピーになっていた。
+- **テスト**: `tests/Entities/Shop/ShopTest.php`、`tests/Entities/Product/GroupTest.php`
+
+##### 対象外とした項目
+
+- `Sales\Sale::$memo` は仕様に存在しない。API から削除されたフィールドの残骸だが
+  （`8fc25a1 Backward-Compatibility: Sales->getMemo() removed` と整合）、
+  後方互換性のため残す判断とした。
+- 残る 224 件は仕様と型が整合していた。`required` が空である以上、
+  仕様からこれ以上の判定はできない。
 
 #### 第3段階（対応済み）: 再発防止の契約テスト
 

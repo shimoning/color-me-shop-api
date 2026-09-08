@@ -29,7 +29,7 @@ class Group extends Entity
     protected ?int $sort;
     protected ProductDisplayState $displayState;
 
-    protected int $parentGroupId;
+    protected ?int $parentGroupId;
 
     /**
      * 商品グループID
@@ -95,10 +95,13 @@ class Group extends Entity
     }
 
     /**
-     * 配送希望日を指定可能か
-     * @return int
+     * 親の商品グループID
+     *
+     * 親グループが存在しない場合は null になる。
+     *
+     * @return int|null
      */
-    public function getParentGroupId(): int
+    public function getParentGroupId(): ?int
     {
         return $this->parentGroupId;
     }

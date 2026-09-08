@@ -70,8 +70,8 @@ class Shop extends Entity
     protected string $name1Kana;
     protected string $name2Kana;
 
-    protected string $hojin;
-    protected string $hojinKana;
+    protected ?string $hojin;
+    protected ?string $hojinKana;
 
     protected string $userMail;
     protected string $tel;
