@@ -15,6 +15,17 @@ class Entity
     const OBJECT_FIELDS = [];
 
     /**
+     * 自動変換では表現できない API のフィールド名の対応表。
+     *
+     * プロパティ名をキー、API のフィールド名を値として、必要なものだけ定義する。
+     * 取り込み時は「アンダースコア区切り → camelCase」、配列化時は「大文字の前に
+     * アンダースコアを挿入」という変換を行うが、この2つは対称ではない。
+     * 例えば shop_mail_1 は shopMail1 として取り込まれるが、配列化すると
+     * shop_mail1 となり元のフィールド名に戻らない。そうした項目をここで補う。
+     */
+    const FIELD_NAMES = [];
+
+    /**
      * null 許容かつ既定値を持たないプロパティ名のキャッシュ (クラス単位)
      *
      * @var array<string, array<string>>
@@ -29,8 +40,11 @@ class Entity
 
         $objectFields = static::OBJECT_FIELDS;
 
+        $propertyNames = \array_flip(static::FIELD_NAMES);
+
         foreach ($data as $key => $value) {
-            $_key = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $_key = $propertyNames[$key]
+                ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (property_exists($this, $_key)) {
                 if (isset($objectFields[$_key])) {
                     $this->{$_key} = $this->build($objectFields[$_key], $value);
@@ -156,6 +170,18 @@ class Entity
     }
 
     /**
+     * プロパティ名に対応する API のフィールド名を取得する
+     *
+     * @param string $property
+     * @return string
+     */
+    public static function apiFieldName(string $property): string
+    {
+        return static::FIELD_NAMES[$property]
+            ?? ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $property)), '_');
+    }
+
+    /**
      * 配列化の対象外とする内部プロパティかどうか
      *
      * 生データの保持やリフレクション結果のキャッシュに使うプロパティは
@@ -198,7 +224,7 @@ class Entity
             if (self::isInternalProperty($key)) {
                 continue;
             }
-            $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
+            $_key = static::apiFieldName($key);
             $array[$_key] = $values[$key] ?? null;
         }
         return $array;
@@ -218,7 +244,7 @@ class Entity
             if (self::isInternalProperty($key)) {
                 continue;
             }
-            $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
+            $_key = static::apiFieldName($key);
             $value = $values[$key] ?? null;
             if ($ignoreNull && $value === null) {
                 continue;
