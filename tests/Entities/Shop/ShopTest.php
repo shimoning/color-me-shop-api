@@ -48,11 +48,23 @@ class ShopTest extends TestCase
         $this->assertSame(ShopState::ENABLED, $shop->getState());
     }
 
-    public function test_連絡先メールアドレスはshop_mail_1から取り込まれる(): void
+    /**
+     * 数字で終わるフィールド名 (shop_mail_1) が正しく camelCase に変換され、
+     * 対応するプロパティに取り込まれること。
+     */
+    public function test_連絡先メールアドレスを取得する(): void
     {
         $shop = $this->makeShop(['shop_mail_1' => 'a@example.test', 'shop_mail_2' => 'b@example.test']);
 
-        $this->assertSame('a@example.test', $shop->toArray()['shop_mail1']);
-        $this->assertSame('b@example.test', $shop->toArray()['shop_mail2']);
+        $this->assertSame('a@example.test', $shop->getShopMail1());
+        $this->assertSame('b@example.test', $shop->getShopMail2());
+    }
+
+    public function test_2つ目の連絡先メールアドレスは省略できる(): void
+    {
+        $shop = $this->makeShop(['shop_mail_1' => 'a@example.test']);
+
+        $this->assertSame('a@example.test', $shop->getShopMail1());
+        $this->assertNull($shop->getShopMail2());
     }
 }
