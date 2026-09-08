@@ -550,9 +550,9 @@ timeout  : 5.0 / connect_timeout: 2.0
 
 | level | 指摘件数（導入前） | 内容 |
 | --- | --- | --- |
-| 0-1 | 5 | **実際の不具合**（後述の 8-11〜8-13）。すべて修正済み |
-| 2 | 11 | PHPDoc の誤り。すべて修正済み |
-| 3 | 6 | 同上。すべて修正済み |
+| 0-1 | 5 | 実行時エラーになる不具合 3件（8-11 が 2件・8-12 が 1件）、PHPDoc の誤り 1件（8-13）、誤検出 1件。すべて対応済み |
+| 2 | 11 | PHPDoc の誤り。すべて修正済み。**うち 1件を調べる過程で実行時エラー（8-14）を発見** |
+| 3 | 6 | PHPDoc の誤り。すべて修正済み |
 | 4 | 17 | 「常に真/偽」の判定。テスト側の意図的なアサーションが多く含まれる |
 | 5 | 1 | 引数の型の厳密化 |
 | 6 | 110 | 配列・イテラブルのジェネリクス未指定 |
@@ -569,8 +569,20 @@ level を分ける構成が必要になる。
 
 ## 14. 静的解析で発見した不具合（Phase 5）
 
-PHPStan の **level 0**、つまり最も基本的な検査だけで4件の実行時エラーが見つかった。
+PHPStan の導入により、**実行時エラーになる不具合が 3件**（8-11・8-12・8-14）と、
+PHPDoc の誤り 1件（8-13）が見つかった。
 いずれもテストを先に書いて Red を確認してから修正している。
+
+| 発見事項 | 検出したレベル | 実行時の影響 |
+| --- | --- | --- |
+| 8-11 `Category` の ID ゲッター | level 0 | 🔴 参照すると必ず `TypeError` |
+| 8-12 `Financial` の口座種別 | level 0 | 🔴 参照すると必ず `TypeError`。データも欠落 |
+| 8-13 `setTotalCharge()` の PHPDoc | level 0 | なし（戻り値の型宣言がないため） |
+| 8-14 `Options::setRedirectUri()` | level 2 の PHPDoc 指摘を調べる過程で発見 | 🔴 enum を渡すと必ず `TypeError` |
+
+なお level 0 の指摘 5件のうち 1件は `Entity::OBJECT_FIELDS` に対する誤検出だった。
+`defined()` で存在を確認してから参照していたため実行時の問題はなく、
+基底クラスに空の既定値を宣言することで解消している。
 
 ### 8-11. `Product/Category` の ID ゲッターが存在しないプロパティを参照している 🔴 ✅ 対応済み
 
@@ -602,7 +614,7 @@ TypeError: ...\Financial::getKouzaType(): Return value must be of type KouzaType
 - **修正内容**: プロパティ名を `$kouzaType` に修正し、`OBJECT_FIELDS` のキーも `kouzaType` にした。
 - **テスト**: `tests/Entities/Payment/FinancialTest.php`
 
-### 8-13. `SaleDeliveryUpdater::setTotalCharge()` の PHPDoc が誤っている ✅ 対応済み
+### 8-13. `SaleDeliveryUpdater::setTotalCharge()` の PHPDoc が誤っている 🟡 ✅ 対応済み
 
 セッターなのに `@return int` になっていた（ゲッターからのコピー由来と思われる）。
 戻り値の型宣言はないため実行時の影響はないが、静的解析では戻り値の欠落として扱われる。
