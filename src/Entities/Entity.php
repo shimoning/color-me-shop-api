@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities;
 
 use BackedEnum;
+use ReflectionClass;
 use Shimoning\ColorMeShopApi\Values\Value;
 
 class Entity
@@ -12,6 +13,13 @@ class Entity
      * 変換が必要なサブクラスで上書きする。
      */
     const OBJECT_FIELDS = [];
+
+    /**
+     * null 許容かつ既定値を持たないプロパティ名のキャッシュ (クラス単位)
+     *
+     * @var array<string, array<string>>
+     */
+    private static array $_optionalProperties = [];
 
     private array $_raw;
 
@@ -31,6 +39,57 @@ class Entity
                 $this->{$_key} = $value;
             }
         }
+
+        $this->initializeOptionalProperties();
+    }
+
+    /**
+     * レスポンスに含まれていなかった null 許容プロパティを null で初期化する
+     *
+     * 型付きプロパティは初期化しないまま参照すると Error になるため、
+     * API が返さなかった項目のゲッターが実行時に落ちるのを防ぐ。
+     *
+     * @return void
+     */
+    private function initializeOptionalProperties(): void
+    {
+        foreach ($this->optionalPropertyNames() as $name) {
+            if (! isset($this->{$name})) {
+                $this->{$name} = null;
+            }
+        }
+    }
+
+    /**
+     * null 許容かつ既定値を持たないプロパティ名を取得する
+     *
+     * リフレクションの結果はクラス単位でキャッシュする。
+     *
+     * @return array<string>
+     */
+    private function optionalPropertyNames(): array
+    {
+        if (isset(self::$_optionalProperties[static::class])) {
+            return self::$_optionalProperties[static::class];
+        }
+
+        $names = [];
+        foreach ((new ReflectionClass(static::class))->getProperties() as $property) {
+            if ($property->isStatic() || $property->hasDefaultValue()) {
+                continue;
+            }
+            // 基底クラス以外で宣言された private プロパティはここからは代入できない
+            if ($property->isPrivate() && $property->getDeclaringClass()->getName() !== self::class) {
+                continue;
+            }
+            $type = $property->getType();
+            if ($type === null || ! $type->allowsNull()) {
+                continue;
+            }
+            $names[] = $property->getName();
+        }
+
+        return self::$_optionalProperties[static::class] = $names;
     }
 
     /**
@@ -97,6 +156,20 @@ class Entity
     }
 
     /**
+     * 配列化の対象外とする内部プロパティかどうか
+     *
+     * 生データの保持やリフレクション結果のキャッシュに使うプロパティは
+     * アンダースコアで始める規約とし、配列化の対象から外す。
+     *
+     * @param string $name
+     * @return bool
+     */
+    private static function isInternalProperty(string $name): bool
+    {
+        return \str_starts_with($name, '_');
+    }
+
+    /**
      * 連想配列かどうか
      * @param array $array
      * @return bool
@@ -122,7 +195,7 @@ class Entity
 
         $array = [];
         foreach ($properties as $key => $_) {
-            if ($key === '_raw') {
+            if (self::isInternalProperty($key)) {
                 continue;
             }
             $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
@@ -142,7 +215,7 @@ class Entity
 
         $array = [];
         foreach ($properties as $key => $_) {
-            if ($key === '_raw') {
+            if (self::isInternalProperty($key)) {
                 continue;
             }
             $_key = ltrim(strtolower(preg_replace('/[A-Z]/', '_\0', $key)), '_');
