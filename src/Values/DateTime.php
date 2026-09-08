@@ -18,8 +18,9 @@ class DateTime implements Value
     public function __construct(string|DateTimeInterface $date)
     {
         if (\is_string($date)) {
-            // $ は末尾の改行にもマッチするため、文字列の終端を表す \z を使う
-            if (! \preg_match('/\A\d{4}-\d{2}-\d{2}(\s\d{2}:\d{2}:\d{2})?\z/', $date)) {
+            // $ は末尾の改行にもマッチするため、文字列の終端を表す \z を使う。
+            // 日付と時刻の区切りは半角スペースのみ (\s だと改行やタブも通ってしまう)
+            if (! \preg_match('/\A\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?\z/', $date)) {
                 throw new ParameterException('日付は "文字列" で "YYYY-MM-DD" もしくは "YYYY-MM-DD hh:mm:ss" の形式で入力してください。 : ' . $date);
             }
             $this->_date = $date;
