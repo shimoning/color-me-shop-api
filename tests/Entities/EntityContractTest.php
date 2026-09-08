@@ -121,10 +121,13 @@ class EntityContractTest extends TestCase
         $entity = new $class([]);
 
         $undefined = [];
+        // 「未宣言プロパティの参照」だけを捕捉する。それ以外は false を返して
+        // 通常のエラー処理に委ね、想定外の警告が握りつぶされないようにする
         \set_error_handler(static function (int $severity, string $message) use (&$undefined): bool {
-            if (\str_contains($message, 'Undefined property')) {
-                $undefined[] = $message;
+            if (! \str_contains($message, 'Undefined property')) {
+                return false;
             }
+            $undefined[] = $message;
             return true;
         });
 

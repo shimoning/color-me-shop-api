@@ -4,7 +4,6 @@ namespace Shimoning\ColorMeShopApi\Entities;
 
 use BackedEnum;
 use ReflectionClass;
-use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Values\Value;
 
 class Entity
