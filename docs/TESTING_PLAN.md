@@ -664,4 +664,29 @@ TypeError: ...\Options::setRedirectUri(): Return value must be of type string,
 | `Services/Sales::stat()` | `DateTimeInterface` が名前空間解決されない／`@param` の重複 |
 | `Constants/ErrorCode::message()` | 数値のみのキーは PHP の仕様で int になるため `array<int, string>` が正しい |
 | `Entities/Entity::build()` | `@return array|object` → 実際は `mixed` |
-| `Entities/Sales/Sale::getPaymentId()` | 戻り値は `string` だがプロパティは `int`。明示的にキャストするようにした |
+| `Entities/Sales/Sale::getPaymentId()` | 戻り値の型宣言が `string` だがプロパティは `int`。**戻り値を `int` に変更した**（後述） |
+
+### `Sale::getPaymentId()` の戻り値を int に変更 ⚠️ 破壊的変更
+
+PHPStan が「戻り値の型宣言は `string` だがプロパティは `int`」と指摘した箇所。
+当初は暗黙の型変換に頼らないよう明示的にキャストする形で揃えたが、
+**正しいのは `int` を返すこと**であるため、戻り値の型宣言側を変更した。
+
+このライブラリの数値 ID のゲッターは他がすべて `int` を返しており、
+`getPaymentId()` だけが `string` になっていた。
+
+| ゲッター | 戻り値 |
+| --- | --- |
+| `Sale::getId()` | `int` |
+| `Payment::getId()`（対応する決済方法そのもの） | `int` |
+| `SaleDelivery::getDeliveryId()` | `int` |
+| `SaleDetail::getProductId()` | `int` |
+| `Sale::getPaymentId()` | ~~`string`~~ → **`int`** |
+
+`string` を返していたのは `getAccountId()` や `Shop::getId()` など、
+本来文字列である ID に限られる。
+
+- **後方互換性への影響**: 戻り値が `'42'` から `42` に変わる。
+  緩やかな比較（`==`）や文字列連結では差が出ないが、厳密比較（`===`）や
+  `is_string()` による判定を行っている場合は影響を受ける
+- **テスト**: `tests/Entities/Sales/SaleTest.php`
