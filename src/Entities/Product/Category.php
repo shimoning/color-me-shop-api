@@ -46,7 +46,7 @@ class Category extends Entity
      */
     public function getIdBig(): int
     {
-        return $this->id;
+        return $this->idBig;
     }
     /**
      * 小カテゴリーID。大カテゴリーのことを表している場合は0
@@ -54,7 +54,7 @@ class Category extends Entity
      */
     public function getIdSmall(): int
     {
-        return $this->id;
+        return $this->idSmall;
     }
 
     /**

@@ -150,9 +150,9 @@ class Sale extends Entity
 
     /**
      * 使用された決済方法ID
-     * @return string
+     * @return int
      */
-    public function getPaymentId(): string
+    public function getPaymentId(): int
     {
         return $this->paymentId;
     }

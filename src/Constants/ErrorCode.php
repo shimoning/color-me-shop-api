@@ -12,7 +12,9 @@ enum ErrorCode: string
     /**
      * エラーコードをキーにしたメッセージの一覧
      *
-     * @return array<string, string>
+     * エラーコードは数値のみで構成されるため、PHP の仕様により配列のキーは int になる。
+     *
+     * @return array<int, string>
      */
     static public function message(): array
     {

@@ -38,7 +38,7 @@ class Error extends Entity
 
     /**
      * ステータスコードを取得
-     * @return string
+     * @return int
      */
     public function getStatus(): int
     {

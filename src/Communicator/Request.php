@@ -73,7 +73,7 @@ class Request
      * @param string $method
      * @param string $uri
      * @param array $headers
-     * @param string|array|null
+     * @param string|array|null $data
      * @return Response
      */
     protected function sendRequest(string $method, string $uri, array $headers = [], $data = null): Response

@@ -13,14 +13,14 @@ use Shimoning\ColorMeShopApi\Constants\KouzaType;
 class Financial extends Entity
 {
     const OBJECT_FIELDS = [
-        'brands' => [
+        'kouzaType' => [
             'enum' => KouzaType::class,
         ],
     ];
 
     protected string $name;
     protected string $branchName;
-    protected KouzaType $kouzaTyp;
+    protected KouzaType $kouzaType;
     protected string $kouzaNumber;
     protected string $kouzaName;
 

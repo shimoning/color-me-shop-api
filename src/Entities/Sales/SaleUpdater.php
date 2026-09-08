@@ -83,7 +83,7 @@ class SaleUpdater extends Entity
 
     /**
      * お届け先を設定
-     * @param SaleDeliveryUpdater[]
+     * @param SaleDeliveryUpdater[] $saleDeliveries
      */
     public function setSaleDeliveries($saleDeliveries)
     {

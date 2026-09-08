@@ -1,0 +1,18 @@
+parameters:
+    level: 3
+    paths:
+        - src
+        - tests
+    #
+    # レベルについて
+    #
+    # baseline や ignoreErrors を使わず、検出された指摘は実際に修正する方針とする。
+    # 現在は level 3 まで無警告。level 4 以降は下記の対応が必要なため段階的に引き上げる。
+    #
+    # level 4: 「常に真/偽」の判定に関する指摘が中心。
+    #          - src: 到達しない null チェック (Page の nullsafe、Response の ?? など) の整理
+    #          - tests: 契約を固定するための意図的なアサーションが指摘される。
+    #            src と tests で level を分ける構成の検討が必要
+    # level 5: 引数の型の厳密化
+    # level 6: 配列やイテラブルのジェネリクス指定 (未指定箇所が多数)
+    #

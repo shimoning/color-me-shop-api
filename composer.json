@@ -27,7 +27,8 @@
     "require-dev": {
         "psy/psysh": "^0.12",
         "vlucas/phpdotenv": "^5.5",
-        "phpunit/phpunit": "^10.5"
+        "phpunit/phpunit": "^10.5",
+        "phpstan/phpstan": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -48,6 +49,14 @@
         ],
         "test:coverage": [
             "@php vendor/bin/phpunit --coverage-html coverage"
+        ],
+        "analyse": [
+            "@php vendor/bin/phpstan analyse --no-progress"
+        ],
+        "check": [
+            "@composer validate --strict --no-check-version",
+            "@analyse",
+            "@test"
         ]
     }
 }

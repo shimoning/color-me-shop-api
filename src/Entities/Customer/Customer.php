@@ -226,7 +226,7 @@ class Customer extends Entity
 
     /**
      * 会員登録済みであるか否か
-     * @return string|null
+     * @return bool
      */
     public function isMember(): bool
     {

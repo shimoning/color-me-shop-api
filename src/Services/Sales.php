@@ -85,8 +85,7 @@ class Sales
      * 売上集計の取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
-     * @param DateTimeInterface $dateTime
-     * @param string|null $accessToken
+     * @param \DateTimeInterface $dateTime
      * @param string|null $accessToken
      * @return Stat|Errors
      */

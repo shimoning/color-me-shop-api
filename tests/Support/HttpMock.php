@@ -19,7 +19,7 @@ class HttpMock
 {
     private Client $_client;
 
-    /** @var array<array{request: RequestInterface}> */
+    /** @var list<array{request: RequestInterface, response: mixed, error: mixed, options: array}> */
     private array $_history = [];
 
     /**
