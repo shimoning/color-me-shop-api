@@ -10,14 +10,19 @@ use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
 
+/**
+ * 商品関連 API を操作するサービス。
+ */
 class Product
 {
     protected string $_accessToken;
     protected ?ClientInterface $_httpClient;
 
     /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group
      * @param string $accessToken
      * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
      */
     public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
@@ -31,6 +36,7 @@ class Product
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
      * @param string|null $accessToken
      * @return Collection<Group>|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function groups(?string $accessToken = null): Collection|Errors
     {
@@ -48,11 +54,12 @@ class Product
     }
 
     /**
-     * 商品グループ一覧を取得
+     * 商品カテゴリー一覧を取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
      * @param string|null $accessToken
      * @return Collection<Category>|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function categories(?string $accessToken = null): Collection|Errors
     {

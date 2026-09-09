@@ -2,74 +2,82 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * 都道府県および海外を表す通し番号。
+ */
 enum Prefecture: int
 {
     // 北海道
-    case HOKKAIDO  = 1;
+    case HOKKAIDO  = 1; // 北海道
 
     // 東北
-    case AOMORI    = 2;
-    case IWATE     = 3;
-    case AKITA     = 4;
-    case MIYAGI    = 5;
-    case YAMAGATA  = 6;
-    case FUKUSIMA  = 7;
+    case AOMORI    = 2; // 青森県
+    case IWATE     = 3; // 岩手県
+    case AKITA     = 4; // 秋田県
+    case MIYAGI    = 5; // 宮城県
+    case YAMAGATA  = 6; // 山形県
+    case FUKUSIMA  = 7; // 福島県
 
     // 関東
-    case IBARAKI   = 8;
-    case TOCHIGI   = 9;
-    case GUNMMA    = 10;
-    case SAITAMA   = 11;
-    case CHIBA     = 12;
-    case TOKYO     = 13;
-    case KANAGAWA  = 14;
+    case IBARAKI   = 8; // 茨城県
+    case TOCHIGI   = 9; // 栃木県
+    case GUNMMA    = 10; // 群馬県
+    case SAITAMA   = 11; // 埼玉県
+    case CHIBA     = 12; // 千葉県
+    case TOKYO     = 13; // 東京都
+    case KANAGAWA  = 14; // 神奈川県
 
     // 中部
-    case NIIGATA   = 15;
-    case FUKUI     = 16;
-    case ISHIKAWA  = 17;
-    case TOYAMA    = 18;
-    case SHIZUOKA  = 19;
-    case YAMANASHI = 20;
-    case NAGANO    = 21;
-    case AICHI     = 22;
-    case GIFU      = 23;
+    case NIIGATA   = 15; // 新潟県
+    case FUKUI     = 16; // 福井県
+    case ISHIKAWA  = 17; // 石川県
+    case TOYAMA    = 18; // 富山県
+    case SHIZUOKA  = 19; // 静岡県
+    case YAMANASHI = 20; // 山梨県
+    case NAGANO    = 21; // 長野県
+    case AICHI     = 22; // 愛知県
+    case GIFU      = 23; // 岐阜県
 
     // 近畿
-    case MIE       = 24;
-    case WAKAYAMA  = 25;
-    case SHIGA     = 26;
-    case NARA      = 27;
-    case KYOTO     = 28;
-    case OSAKA     = 29;
-    case HYOGO     = 30;
+    case MIE       = 24; // 三重県
+    case WAKAYAMA  = 25; // 和歌山県
+    case SHIGA     = 26; // 滋賀県
+    case NARA      = 27; // 奈良県
+    case KYOTO     = 28; // 京都府
+    case OSAKA     = 29; // 大阪府
+    case HYOGO     = 30; // 兵庫県
 
     // 中国
-    case OKAYAMA   = 31;
-    case HIROSHIMA = 32;
-    case TOTTORI   = 33;
-    case SHIMANE   = 34;
-    case YAMAGUCHI = 35;
+    case OKAYAMA   = 31; // 岡山県
+    case HIROSHIMA = 32; // 広島県
+    case TOTTORI   = 33; // 鳥取県
+    case SHIMANE   = 34; // 島根県
+    case YAMAGUCHI = 35; // 山口県
 
     // 四国
-    case KAGAWA    = 36;
-    case TOKUSHIMA = 37;
-    case EHIME     = 38;
-    case KOCHI     = 39;
+    case KAGAWA    = 36; // 香川県
+    case TOKUSHIMA = 37; // 徳島県
+    case EHIME     = 38; // 愛媛県
+    case KOCHI     = 39; // 高知県
 
     // 九州
-    case FUKUOKA   = 40;
-    case SAGA      = 41;
-    case NAGASAKI  = 42;
-    case OITA      = 43;
-    case KUMAMOTO  = 44;
-    case MIYAZAKI  = 45;
-    case KAGOSHIMA = 46;
-    case OKINAWA   = 47;
+    case FUKUOKA   = 40; // 福岡県
+    case SAGA      = 41; // 佐賀県
+    case NAGASAKI  = 42; // 長崎県
+    case OITA      = 43; // 大分県
+    case KUMAMOTO  = 44; // 熊本県
+    case MIYAZAKI  = 45; // 宮崎県
+    case KAGOSHIMA = 46; // 鹿児島県
+    case OKINAWA   = 47; // 沖縄県
 
-    case FOREIGN   = 48;
+    case FOREIGN   = 48; // 海外
 
 
+    /**
+     * 都道府県の日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {
@@ -132,6 +140,11 @@ enum Prefecture: int
         };
     }
 
+    /**
+     * 海外を表す値かを判定する。
+     *
+     * @return bool
+     */
     public function isForeign(): bool
     {
         return $this === self::FOREIGN;

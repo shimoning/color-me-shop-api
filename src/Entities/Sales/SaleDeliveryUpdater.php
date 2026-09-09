@@ -15,6 +15,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 宛名を設定
      * @param string $name
+     * @return void
      */
     public function setName(string $name)
     {
@@ -24,6 +25,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 宛名のフリガナを設定
      * @param Furigana $furigana
+     * @return void
      */
     public function setFurigana(Furigana $furigana)
     {
@@ -43,6 +45,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 都道府県の通し番号
      * @param Prefecture $prefId
+     * @return void
      */
     public function setPrefId(Prefecture $prefId)
     {
@@ -52,6 +55,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 都道府県名を設定
      * @param string $prefName
+     * @return void
      */
     public function setPrefName(string $prefName)
     {
@@ -61,6 +65,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 住所1を設定
      * @param string $address1
+     * @return void
      */
     public function setAddress1(string $address1)
     {
@@ -69,6 +74,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 住所2を設定
      * @param string $address2
+     * @return void
      */
     public function setAddress2(string $address2)
     {
@@ -78,6 +84,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 電話番号を設定
      * @param string $tel
+     * @return void
      */
     public function setTel(string $tel)
     {
@@ -87,6 +94,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 配送希望日を設定
      * @param string $preferredDate
+     * @return void
      */
     public function setPreferredDate(string $preferredDate)
     {
@@ -96,6 +104,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 配送希望時間帯を設定
      * @param string $preferredPeriod
+     * @return void
      */
     public function setPreferredPeriod(string $preferredPeriod)
     {
@@ -105,6 +114,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 配送伝票番号を設定
      * @param string $slipNumber
+     * @return void
      */
     public function setSlipNumber(string $slipNumber)
     {
@@ -114,6 +124,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 熨斗の文言の設定
      * @param string $noshiText
+     * @return void
      */
     public function setNoshiText(string $noshiText)
     {
@@ -123,6 +134,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 熨斗の料金の設定
      * @param integer $noshiCharge
+     * @return void
      */
     public function setNoshiCharge(int $noshiCharge)
     {
@@ -132,6 +144,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * メッセージカードの表示名の設定
      * @param string $cardName
+     * @return void
      */
     public function setCardName(string $cardName)
     {
@@ -141,6 +154,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * メッセージカードのテキストの設定
      * @param string $cardText
+     * @return void
      */
     public function setCardText(string $cardText)
     {
@@ -150,6 +164,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * メッセージカードの料金の設定
      * @param integer $cardCharge
+     * @return void
      */
     public function setCardCharge(int $cardCharge)
     {
@@ -159,6 +174,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * ラッピングの表示名の設定
      * @param string $wrappingName
+     * @return void
      */
     public function setWrappingName(string $wrappingName)
     {
@@ -168,6 +184,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * ラッピングの料金の設定
      * @param integer $wrappingCharge
+     * @return void
      */
     public function setWrappingCharge(int $wrappingCharge)
     {
@@ -177,6 +194,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 配送料の設定
      * @param integer $deliveryCharge
+     * @return void
      */
     public function setDeliveryCharge(int $deliveryCharge)
     {
@@ -186,6 +204,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 配送料・手数料の小計を設定
      * @param int $totalCharge
+     * @return void
      */
     public function setTotalCharge(int $totalCharge)
     {
@@ -195,6 +214,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 配送状況確認URLの設定
      * @param string $trackingUrl
+     * @return void
      */
     public function setTrackingUrl(string $trackingUrl)
     {
@@ -204,6 +224,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 備考の設定
      * @param string $memo
+     * @return void
      */
     public function setMemo(string $memo) {
         $this->memo = $memo;
@@ -212,6 +233,7 @@ class SaleDeliveryUpdater extends SaleDelivery
     /**
      * 発送済みであるか否かの設定
      * @param bool $delivered
+     * @return void
      */
     public function setDelivered(bool $delivered)
     {

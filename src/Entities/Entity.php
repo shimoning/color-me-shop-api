@@ -6,6 +6,9 @@ use BackedEnum;
 use ReflectionClass;
 use Shimoning\ColorMeShopApi\Values\Value;
 
+/**
+ * API レスポンスを型付きプロパティへ変換するエンティティの基底クラス。
+ */
 class Entity
 {
     /**
@@ -23,6 +26,12 @@ class Entity
 
     private array $_raw;
 
+    /**
+     * API レスポンスからエンティティを生成する。
+     *
+     * @param array<string, mixed> $data API レスポンスデータ
+     * @return void
+     */
     public function __construct(array $data)
     {
         $this->_raw = $data;
@@ -95,7 +104,7 @@ class Entity
     /**
      * オブジェクトのフィールド
      *
-     * @param string|array $objectField
+     * @param class-string|array<string, mixed> $objectField
      * @param mixed $value
      * @return mixed
      */
@@ -186,7 +195,7 @@ class Entity
 
     /**
      * 配列として取得する
-     * @return array
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
@@ -206,7 +215,8 @@ class Entity
 
     /**
      * 配列として取得する
-     * @return array
+     * @param bool $ignoreNull null の値を除外するか
+     * @return array<string, mixed>
      */
     public function toArrayRecursive($ignoreNull = true): array
     {
@@ -233,6 +243,12 @@ class Entity
         return $array;
     }
 
+    /**
+     * 配列化に適した値へ変換する。
+     *
+     * @param mixed $value 変換する値
+     * @return mixed
+     */
     public function parse(mixed $value): mixed
     {
         if ($value instanceof self) {

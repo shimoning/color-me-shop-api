@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * 決済方法の種別。
+ */
 enum PaymentType: int
 {
     case COD = 0;  // 商品代引

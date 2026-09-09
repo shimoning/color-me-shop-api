@@ -5,6 +5,9 @@ namespace Shimoning\ColorMeShopApi\Communicator;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 
+/**
+ * カラーミーショップ API への HTTP リクエストを実行するクライアント。
+ */
 class Request
 {
     private RequestOptions $_options;
@@ -13,6 +16,7 @@ class Request
     /**
      * @param RequestOptions|null $options リクエストオプション (省略時は既定値)
      * @param ClientInterface|null $client HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
      */
     public function __construct(
         ?RequestOptions $options = null,
@@ -30,6 +34,7 @@ class Request
      * @param array $data
      * @param array $headers
      * @return Response
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function get(string $uri, array $data = [], array $headers = []): Response
     {
@@ -47,6 +52,7 @@ class Request
      * @param array $data
      * @param array $headers
      * @return Response
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function post(string $uri, array $data = [], array $headers = []): Response
     {
@@ -55,12 +61,13 @@ class Request
 
     /**
      * PUT リクエスト
-     * 新規作成
+     * 更新
      *
      * @param string $uri
      * @param array $data
      * @param array $headers
      * @return Response
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function put(string $uri, array $data = [], array $headers = []): Response
     {
@@ -75,6 +82,7 @@ class Request
      * @param array $headers
      * @param string|array|null $data
      * @return Response
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     protected function sendRequest(string $method, string $uri, array $headers = [], $data = null): Response
     {

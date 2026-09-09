@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * 配送料の算出方法。
+ */
 enum DeliveryChargeType: string
 {
     case FIXED      = 'fixed'; // 固定額
@@ -9,6 +12,11 @@ enum DeliveryChargeType: string
     case BY_AREA    = 'by_area'; // 配送先都道府県によって決定
     case BY_WEIGHT  = 'by_weight'; // 商品重量によって決定
 
+    /**
+     * 算出方法の日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {

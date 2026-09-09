@@ -14,6 +14,8 @@ class DateTime implements Value
 
     /**
      * @param string|DateTimeInterface $date
+     * @return void
+     * @throws ParameterException 日付の形式が不正な場合
      */
     public function __construct(string|DateTimeInterface $date)
     {
@@ -31,11 +33,22 @@ class DateTime implements Value
         }
     }
 
+    /**
+     * 日付文字列を取得する。
+     *
+     * @return string
+     */
     public function get(): string
     {
         return $this->_date;
     }
 
+    /**
+     * 日付を検証する。
+     *
+     * @param mixed $date 検証する値
+     * @return bool
+     */
     public function validate($date): bool
     {
         // TODO: merge construct

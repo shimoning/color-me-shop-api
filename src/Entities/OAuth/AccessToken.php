@@ -5,6 +5,9 @@ namespace Shimoning\ColorMeShopApi\Entities\OAuth;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 
+/**
+ * OAuth 認証で発行されたアクセストークン情報。
+ */
 class AccessToken extends Entity
 {
     protected string $accessToken;
@@ -16,7 +19,8 @@ class AccessToken extends Entity
     /**
      * トークンリザルト
      *
-     * @param array{access_token: string, token_type: string, scope: string} $accessToken
+     * @param array{access_token: string, token_type: string, scope?: string|null, created_at: int} $accessToken
+     * @return void
      */
     public function __construct(array $accessToken)
     {
@@ -26,6 +30,8 @@ class AccessToken extends Entity
 
     /**
      * scope をパースする
+     *
+     * @return void
      */
     protected function parseScopes()
     {
@@ -58,7 +64,7 @@ class AccessToken extends Entity
 
     /**
      * アプリが利用したい機能
-     * @return array
+     * @return array<AuthScope>
      */
     public function getScopes(): array
     {

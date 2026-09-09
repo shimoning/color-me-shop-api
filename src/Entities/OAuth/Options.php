@@ -4,6 +4,9 @@ namespace Shimoning\ColorMeShopApi\Entities\OAuth;
 
 use Shimoning\ColorMeShopApi\Constants\AuthRedirectUri;
 
+/**
+ * OAuth 認証に必要なアプリケーション設定。
+ */
 class Options
 {
     const ENDPOINT_URI = 'https://api.shop-pro.jp/oauth';
@@ -17,6 +20,7 @@ class Options
      * @param string $clientSecret
      * @param \Shimoning\ColorMeShopApi\Constants\AuthRedirectUri|string $redirectUri
      * @param string|null $endpointUri
+     * @return void
      */
     public function __construct(
         string $clientId,

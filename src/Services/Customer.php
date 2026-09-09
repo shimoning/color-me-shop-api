@@ -12,14 +12,19 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
+/**
+ * 顧客 API を操作するサービス。
+ */
 class Customer
 {
     protected string $_accessToken;
     protected ?ClientInterface $_httpClient;
 
     /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer
      * @param string $accessToken
      * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
      */
     public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
@@ -30,10 +35,11 @@ class Customer
     /**
      * 顧客データのリストを取得
      *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/Customer/operation/getCustomers
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
      * @return Page<CustomerEntity>|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function page(
         SearchParameters $searchParameters,
@@ -63,6 +69,7 @@ class Customer
      * @param int|string $id
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function one(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {

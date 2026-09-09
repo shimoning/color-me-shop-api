@@ -13,6 +13,8 @@ class Furigana implements Value
 
     /**
      * @param string $furigana
+     * @return void
+     * @throws ParameterException フリガナの形式が不正な場合
      */
     public function __construct(string $furigana)
     {
