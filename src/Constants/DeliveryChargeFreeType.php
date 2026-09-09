@@ -2,12 +2,20 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * 配送料を無料にする条件。
+ */
 enum DeliveryChargeFreeType: string
 {
     case NOT_FREE       = 'not_free'; // 有料
     case FREE_TO_LIMIT  = 'free_to_limit'; // 注文金額が一定以上の場合は無料
     case FREE           = 'free'; // 無料
 
+    /**
+     * 無料条件の日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {

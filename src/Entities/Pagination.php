@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Entities;
 
+/**
+ * API レスポンスのページネーション情報。
+ */
 class Pagination extends Entity
 {
     protected int $total;

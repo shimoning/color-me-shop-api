@@ -33,6 +33,12 @@ class Charge extends Entity
     protected array $chargeRangesByWeight;
     protected array $chargeRangesMaxWeight;
 
+    /**
+     * 配送料設定を生成する。
+     *
+     * @param array<string, mixed> $data API レスポンスデータ
+     * @return void
+     */
     public function __construct(array $data)
     {
         parent::__construct($data);
@@ -48,7 +54,7 @@ class Charge extends Entity
     }
 
     /**
-     * 決済方法ID
+     * 配送方法ID
      * @return int
      */
     public function getDeliveryId(): int

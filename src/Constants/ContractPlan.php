@@ -2,24 +2,32 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * ショップの契約プラン。
+ */
 enum ContractPlan: string
 {
-    case UNKNOWN    = 'unknown';
+    case UNKNOWN    = 'unknown'; // 不明
 
-    case REGULAR    = 'regular';
-    case LARGE      = 'large';
-    case PREMIUM    = 'premium';
+    case REGULAR    = 'regular'; // レギュラー
+    case LARGE      = 'large'; // ラージ
+    case PREMIUM    = 'premium'; // プレミアム
 
-    case FREE       = 'free';
-    case ECONOMY    = 'economy';
-    case SMALL      = 'small';
-    case PLATINUM   = 'platinum';
-    case DORMANT    = 'dormant';
+    case FREE       = 'free'; // 無料プラン
+    case ECONOMY    = 'economy'; // エコノミー
+    case SMALL      = 'small'; // スモール
+    case PLATINUM   = 'platinum'; // プラチナ
+    case DORMANT    = 'dormant'; // 休眠
 
-    case LOLIPOP    = 'lolipop';
-    case HETEML     = 'heteml';
-    case GOOPE      = 'goope';
+    case LOLIPOP    = 'lolipop'; // ロリポップ
+    case HETEML     = 'heteml'; // Heteml
+    case GOOPE      = 'goope'; // GOOPE
 
+    /**
+     * 契約プランの日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {

@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Entities;
 
+/**
+ * API が返したエラーの詳細。
+ */
 class Error extends Entity
 {
     protected string $code;

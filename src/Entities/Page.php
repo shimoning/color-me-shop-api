@@ -2,10 +2,23 @@
 
 namespace Shimoning\ColorMeShopApi\Entities;
 
+/**
+ * ページネーション情報を持つ型付きコレクション。
+ *
+ * @template T
+ * @extends Collection<T>
+ */
 class Page extends Collection
 {
     protected Pagination $_pagination;
 
+    /**
+     * ページを生成する。
+     *
+     * @param mixed $items ページに格納する要素
+     * @param Pagination $pagination ページネーション情報
+     * @return void
+     */
     public function __construct(mixed $items, Pagination $pagination)
     {
         parent::__construct($items);

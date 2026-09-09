@@ -1,18 +1,44 @@
 # ColorMeShopApi API client
-GMOベポパ が提供している ColorMeショップ の API を PHP から利用するためのライブラリです。
 
-現在一部のみ実装済み ( [未実装機能一覧](#未実装) )。
+GMOペパボが提供しているカラーミーショップの API を PHP から利用するためのライブラリです。
+
+現在一部のみ実装済みです。対応状況は [未実装](#未実装) を参照してください。
+
+## 目次
+
+* [Environment](#environment)
+* [Installation](#installation)
+* [Preparation](#preparation)
+* [How to Use](#how-to-use)
+  * [コードサンプルの前提](#コードサンプルの前提)
+  * [エラーハンドリング](#エラーハンドリング)
+  * [値オブジェクト](#値オブジェクト)
+  * [OAuth](#oauth)
+  * [ショップ](#ショップ)
+  * [受注](#受注)
+  * [顧客](#顧客)
+  * [商品グループ](#商品グループ)
+  * [商品カテゴリー](#商品カテゴリー)
+  * [決済](#決済)
+  * [配送](#配送)
+  * [ページネーション](#ページネーション)
+* [未実装](#未実装)
+* [開発者向け](#開発者向け)
+* [CLI](#cli)
+* [ライセンスについて](#ライセンスについて)
+* [サポート](#サポート)
 
 ## Environment
-* PHP 8.1 以上
-* composer
 
+* PHP 8.1 以上
+* Composer
 
 ## Installation
+
 利用したいプロジェクトのディレクトリに移動して、以下のコマンドを実行する。
 
 ```bash
-composer config repositories.shimoning/color-me-shop-api vcs git@github.com/shimoning/color-me-shop-api.git
+composer config repositories.shimoning/color-me-shop-api vcs git@github.com:shimoning/color-me-shop-api.git
 ```
 
 その後、以下のコマンドでインストールが行われる。
@@ -22,46 +48,130 @@ composer require shimoning/color-me-shop-api
 ```
 
 ### Update
+
 下記のコマンドでアップデートが可能。
 
 ```bash
 composer update shimoning/color-me-shop-api
 ```
 
-
 ## Preparation
+
 API を利用するためには利用登録が必要。
 
 ### デベロッパー登録
-1. [開発者サイト](https://developer.shop-pro.jp/) の「デベロッパー登録」から登録。
+
+1. [開発者サイト](https://developer.shop-pro.jp/) の「デベロッパー登録」から登録
 2. アプリを作成
 3. `クライアントID` と `クライアントシークレット` を控える
 4. `リダイレクトURI` を設定し、疎通を確認しておく
 
 ### ショップ登録
-[カラーミーショップページ](https://shop-pro.jp/) の「無料お試し」から登録。
-お試し期間は **30日** しかないので、開発は計画的に。
 
+[カラーミーショップ](https://shop-pro.jp/) から、API の動作確認に使うショップを登録しておく。
 
 ## How to Use
+
 利用方法。
 
-### エラーハンドリング
-API からエラーが返ってきた場合 `Communicator\Errors` クラスで返却する。
-基本的には [エラー仕様書](https://developer.shop-pro.jp/docs/colorme-api#section/API/%E3%82%A8%E3%83%A9%E3%83%BC) に基づいたエラーが返ってくるが、APIによっては仕様を無視したエラーが返ってくるので気をつけること。
+### コードサンプルの前提
+
+以降のコードサンプルでは、必要に応じて以下のクラスをインポートする。
 
 ```php
-if ($result instanceof Communicator\Errors) {
-    foreach ($tokenOrErrors->all() as $error) {
-        // @var Entities\Error
+require __DIR__ . '/vendor/autoload.php';
+
+use Shimoning\ColorMeShopApi\Client;
+use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\MailType;
+use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
+use Shimoning\ColorMeShopApi\Values\DateTime as ApiDateTime;
+use Shimoning\ColorMeShopApi\Values\Furigana;
+use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Scopes;
+```
+
+OAuth で取得したアクセストークンを `$token` として扱う。API を複数回呼び出す場合は、最初に `Client` へ設定しておくと各メソッドで省略できる。
+
+```php
+$client = new Client($token);
+```
+
+### エラーハンドリング
+API が 2xx 以外のレスポンスを返した場合、各 API メソッドは `Communicator\Errors` を返す。`Errors` は `Collection` を継承しているため、`foreach` で個々の `Entities\Error` を取得できる。
+
+```php
+$result = $client->getShop();
+
+if ($result instanceof Errors) {
+    $response = $result->getResponse();
+    $response->getStatus();  // HTTP ステータス
+    $response->getRawBody(); // API の生レスポンス
+
+    foreach ($result as $error) {
+        $error->getCode();
         $error->getMessage();
+        $error->getField();
+        $error->getStatus();
     }
 }
 ```
 
+一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。`ParameterException` は `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
+
+```php
+try {
+    $client->getShop();
+} catch (ParameterException $e) {
+    // アクセストークンや引数を確認する
+} catch (ColorMeApiException $e) {
+    // その他のライブラリ例外
+}
+```
+
+API 固有のエラーコードや内容は [エラー仕様書](https://developer.shop-pro.jp/docs/colorme-api#section/API/%E3%82%A8%E3%83%A9%E3%83%BC) も参照すること。
+
+### 値オブジェクト
+検索条件や OAuth スコープの値を検証し、API 用の文字列や整数へ変換するクラス。
+
+```php
+$date = new ApiDateTime('2024-01-01 12:34:56');
+$date->get(); // 2024-01-01 12:34:56
+
+$dateFromObject = new ApiDateTime(new \DateTimeImmutable('2024-01-01'));
+$dateFromObject->get(); // 2024-01-01 00:00:00
+
+$furigana = new Furigana('ヤマダ タロウ');
+$furigana->get(); // ヤマダ タロウ
+
+$scopes = new Scopes([
+    AuthScope::READ_PRODUCTS,
+    AuthScope::READ_SALES,
+]);
+$scopes->get(); // read_products read_sales
+
+$limit = new Limit(50);
+$limit->get(); // 50
+```
+
+* `Values\DateTime`: `YYYY-MM-DD` または `YYYY-MM-DD hh:mm:ss` 形式の文字列、もしくは `DateTimeInterface` を受け付ける
+* `Values\Furigana`: 全角カタカナ、長音符、半角・全角スペースを受け付ける
+* `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
+* `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
+
+`SalesSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
+
 ### OAuth
 #### 認証情報
-以下のものをPHPで扱えるようにしておく。
+以下のものを PHP で扱えるようにしておく。
+
 * `クライアントID`
 * `クライアントシークレット`
 * `リダイレクトURI`
@@ -70,218 +180,395 @@ if ($result instanceof Communicator\Errors) {
 
 #### OAuth に使う共通情報
 ```php
-$oAuthOptions = new Entities\OAuth\Options($clientId, $clientSecret, $redirectUri);
+$oAuthOptions = new OAuthOptions($clientId, $clientSecret, $redirectUri);
 ```
 
-#### OAuthアプリケーションの登録用URLの取得
+#### OAuth アプリケーションの登録用 URL の取得
 ```php
-$oAuthScopes = new Values\Scopes([
-    Constants\AuthScope::READ_PRODUCTS,
-    Constants\AuthScope::READ_SALES,
+$oAuthScopes = new Scopes([
+    AuthScope::READ_PRODUCTS,
+    AuthScope::READ_SALES,
 ]);
-$oAuthUri = (new Client)->getOAuthUrl($oAuthOptions, $oAuthScopes); // https://api.shop-pro.jp/oauth/authorize?client_id=ff....
+$oAuthUri = (new Client())->getOAuthUrl($oAuthOptions, $oAuthScopes);
 ```
 
 #### 認可コードをアクセストークンに交換
-上記で取得したURLを開くとショップのログインや認可を操作する画面に移動する。
-操作を行なった後、自動的に `リダイレクトURI` に遷移する。
-その時クエリに `code=....`　として `認可コード` がついてくるので、それを使う。
+上記で取得した URL を開くと、ショップへのログインと認可を行う画面に移動する。認可後は `リダイレクトURI` へ遷移し、クエリ文字列の `code` に認可コードが設定される。
 
 ```php
-$queryData = filter_input_array(INPUT_GET, $_GET); // Pure PHP
-$queryData = $request->query(); // Laravel
+$code = filter_input(INPUT_GET, 'code');
+if (! is_string($code)) {
+    throw new \RuntimeException('認可コードを取得できませんでした。');
+}
 
-$code = $queryData['code'];
-
-$tokenOrErrors = (new Client)->exchangeCode2Token($oAuthOptions, $code);
-if ($tokenOrErrors instanceof Communicator\Errors) {
-    // error...
-    // エラー仕様を無視したエラーが返ってくる...
-    // おそらく oauth は厳密には api ではないので、規格が違うと思われる。
-    // 追って対応予定 (OAuthError)
+$tokenOrErrors = (new Client())->exchangeCode2Token($oAuthOptions, $code);
+if ($tokenOrErrors instanceof Errors) {
+    // エラー処理
 } else {
-    // success!
-    $token = $tokenOrErrors->getAccessToken(); // d461ab8XXXXXXXXXXXXXXXXXXXXXXXXX
+    $token = $tokenOrErrors->getAccessToken();
 }
 ```
-ここで取得できた `$token` を保存しておく。
-以降コードサンプルでは `$token` として表現する。
 
-#### アクセストークンの有効期限について
-ドキュメントには以下の様にあるので、一度生成すれば永続するものと思われる。
-> アクセストークンに有効期限はありません
-
-必要に応じてデータベースなどに、安全な方法で保存する。
+ここで取得した `$token` は、安全な方法で保存する。アクセストークンの有効期限については公式ドキュメントを確認すること。
 
 ### ショップ
 #### ショップ情報の取得
 ```php
-// アクセストークンのないインスタンス
-$client = new Client;
-
-// インスタンス作成時に引数としてアクセストークンを与えることも可能
+// インスタンス作成時にアクセストークンを設定する
 $client = new Client($token);
-
-// アクセストークンを設定
-$shopOrErrors = $client->getShop($token);
-// アクセストークン無し
 $shopOrErrors = $client->getShop();
 
-// 結果の処理
-if ($shopOrErrors instanceof Communicator\Errors) {
-    // error...
+// または、メソッドの引数として設定する
+$shopOrErrors = (new Client())->getShop($token);
+
+if ($shopOrErrors instanceof Errors) {
+    // エラー処理
 } else {
-    // success!
+    $shopOrErrors->getId();
+    $shopOrErrors->getName1();
 }
 ```
 
 ### 受注
 #### 受注データのリストを取得
-* 第1引数: 検索条件 (optional)
-* 第2引数: アクセストークン (optional *)
-両方とも省略可能だが、初回利用時はアクセストークンは必須。
-検索条件を省略した場合の条件は公式を参照。
+検索条件とアクセストークンはどちらも省略可能。ただし、`Client` にアクセストークンを設定していない場合は、メソッドの第2引数へ指定する必要がある。
 
 ```php
-// 検索条件を省略パターン
-$salePageOrErrors = $client->getSales(null, $token);
-
-// 検索条件を設定し、アクセストークンを省略パターン
-$searchParameters = new Entities\Sales\SearchParameters([
-    'make_date_min' => '2022-12-01',
-    'make_date_max' => '2022-12-31 23:59:59',
+$searchParameters = new SalesSearchParameters([
+    'make_date_min' => '2024-01-01',
+    'make_date_max' => '2024-01-31 23:59:59',
     'accepted_mail_state' => 'not_yet',
+    'limit' => 50,
+    'offset' => 0,
 ]);
-$salePageOrErrors = $client->getSales($searchParameters);
+$salesOrErrors = $client->getSales($searchParameters);
 
-// 両方省略するパターン
-$salePageOrErrors = $client->getSales();
+// 検索条件を省略し、メソッドの引数でアクセストークンを設定する場合
+$salesOrErrors = (new Client())->getSales(null, $token);
 
-// 結果の処理
-if ($salePageOrErrors instanceof Communicator\Errors) {
-    // error...
+if ($salesOrErrors instanceof Errors) {
+    // エラー処理
 } else {
-    // success!
-    foreach ($salePageOrErrors->all() as $sale) {
-        // @var Entities\Sales\Sale
-        $sale;
+    foreach ($salesOrErrors as $sale) {
+        $sale->getId();
     }
 
-    // 取得できた件数
-    $salePageOrErrors->count();
-
-    // 全ての件数
-    $salePageOrErrors->getTotal();
-
-    // 指定した件数
-    $salePageOrErrors->getTotal();
-
-    // 取得開始位置
-    $salePageOrErrors->getTotal();
+    $salesOrErrors->count();
+    $salesOrErrors->getTotal();
+    $salesOrErrors->getLimit();
+    $salesOrErrors->getOffset();
 }
 ```
 
 #### 売上集計の取得
-TODO: write
+```php
+$statOrErrors = $client->statSales(new \DateTimeImmutable('2024-01-01'));
+
+if ($statOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $statOrErrors->getAmountToday();
+    $statOrErrors->getCountToday();
+}
+```
 
 #### 受注データの取得
-TODO: write
+```php
+$saleId = 1001;
+$saleOrErrors = $client->getSale($saleId);
+
+if ($saleOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $saleOrErrors->getId();
+    $saleOrErrors->getSaleDeliveries();
+}
+```
 
 #### 受注データの更新
-TODO: write
+既存の受注から更新用エンティティを生成すると、API が必要とする現在値を引き継げる。
+
+```php
+$saleOrErrors = $client->getSale($saleId);
+if (! $saleOrErrors instanceof Errors) {
+    $updater = SaleUpdater::convert($saleOrErrors);
+    $updater->setPaid(true);
+    $updater->setPointState(PointState::FIXED);
+
+    $updatedSaleOrErrors = $client->updateSale($updater);
+}
+```
 
 #### 受注のキャンセル
-TODO: write
+第2引数の `$restock` を `true` にすると、キャンセルした商品の在庫を戻す。
+
+```php
+$canceledSaleOrErrors = $client->cancelSale($saleId, true);
+
+if ($canceledSaleOrErrors instanceof Errors) {
+    // エラー処理
+}
+```
 
 #### メールの送信
-TODO: write
+送信できるメール種別は `MailType::ACCEPTED`、`MailType::PAID`、`MailType::DELIVERED`。
+
+```php
+$sentOrErrors = $client->sendSalesMail($saleId, MailType::DELIVERED);
+
+if ($sentOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    // 成功時は true
+}
+```
 
 ### 顧客
 #### 顧客データの一覧を取得
-TODO: write
+```php
+$searchParameters = new CustomerSearchParameters([
+    'name' => '山田太郎',
+    'furigana' => 'ヤマダ タロウ',
+    'member' => true,
+    'limit' => 50,
+    'offset' => 0,
+]);
+$customersOrErrors = $client->getCustomers($searchParameters);
+
+// 検索条件を省略する場合
+$customersOrErrors = $client->getCustomers();
+
+if ($customersOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($customersOrErrors as $customer) {
+        $customer->getId();
+        $customer->getName();
+        $customer->getMail();
+    }
+
+    $customersOrErrors->getTotal();
+    $customersOrErrors->getLimit();
+    $customersOrErrors->getOffset();
+}
+```
+
+`Client::getCustomers()` は、内部で `Services\Customer::page(SearchParameters $searchParameters, ?string $accessToken = null)` を呼び出す。
 
 #### 顧客データの取得
-TODO: write
+```php
+$customerId = 501;
+$customerOrErrors = $client->getCustomer($customerId);
+
+if ($customerOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $customerOrErrors->getId();
+    $customerOrErrors->getName();
+    $customerOrErrors->getFurigana();
+}
+```
+
+`Client::getCustomer()` は、内部で `Services\Customer::one(int|string $id, ?string $accessToken = null)` を呼び出す。
 
 #### 顧客データを追加
-*(Unimplemented)*
+現在は未実装。`Services\Customer` に追加用のメソッドはまだ存在しない。
 
 ### 商品グループ
 #### 商品グループ一覧を取得
-TODO: write
+```php
+$groupsOrErrors = $client->getProductGroups();
+
+if ($groupsOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($groupsOrErrors as $group) {
+        $group->getId();
+        $group->getName();
+        $group->getParentGroupId();
+    }
+}
+```
+
+`Client::getProductGroups()` は、内部で `Services\Product::groups(?string $accessToken = null)` を呼び出す。
 
 ### 商品カテゴリー
 #### 商品カテゴリー一覧を取得
-TODO: write
+```php
+$categoriesOrErrors = $client->getProductCategories();
+
+if ($categoriesOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($categoriesOrErrors as $category) {
+        $category->getIdBig();
+        $category->getIdSmall();
+        $category->getName();
+        $category->getChildren();
+    }
+}
+```
+
+`Client::getProductCategories()` は、内部で `Services\Product::categories(?string $accessToken = null)` を呼び出す。
 
 ### 決済
 #### 決済設定の一覧を取得
-TODO: write
+```php
+$paymentsOrErrors = $client->getPayments();
+
+if ($paymentsOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($paymentsOrErrors as $payment) {
+        $payment->getId();
+        $payment->getName();
+        $payment->getType();
+        $payment->getFee();
+    }
+}
+```
+
+`Client::getPayments()` は、内部で `Services\Payment::all(?string $accessToken = null)` を呼び出す。
 
 ### 配送
 #### 配送方法一覧を取得
-TODO: write
+```php
+$deliveriesOrErrors = $client->getDeliveries();
+
+if ($deliveriesOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($deliveriesOrErrors as $delivery) {
+        $delivery->getId();
+        $delivery->getName();
+        $delivery->getMethodType();
+        $delivery->getPreferredDateUse();
+        $delivery->getPreferredPeriodUse();
+    }
+}
+```
+
+`Client::getDeliveries()` は、内部で `Services\Delivery::all(?string $accessToken = null)` を呼び出す。
 
 #### 配送日時設定を取得
-*(Unimplemented)*
+現在は未実装。`Services\Delivery` に配送日時設定取得用のメソッドはまだ存在しない。
+
+### ページネーション
+受注一覧と顧客一覧は `Entities\Page` を返す。`Page` は `Entities\Collection` を継承しているため、`foreach`、`count()`、`all()`、配列アクセスが利用できる。
+
+* `getTotal()`: 合計数
+* `getLimit()`: 取得件数
+* `getOffset()`: 取得開始位置
+
+```php
+$customersOrErrors = $client->getCustomers(new CustomerSearchParameters([
+    'limit' => 50,
+    'offset' => 100,
+]));
+
+if (! $customersOrErrors instanceof Errors) {
+    count($customersOrErrors);
+    $customersOrErrors->all();
+    $customersOrErrors[0] ?? null;
+    $customersOrErrors->getTotal();
+    $customersOrErrors->getLimit();
+    $customersOrErrors->getOffset();
+
+    $nextOffset = $customersOrErrors->getOffset() + $customersOrErrors->getLimit();
+}
+```
+
+`Services\Sales::page()` と `Services\Customer::page()` は API レスポンスの `meta` から `Pagination` を生成し、`Page` に保持する。`Page` の各 getter は内部の `Pagination` に処理を委譲する。
+
+`Pagination` を直接生成する場合は `total`、`limit`、`offset` を指定する。
+
+```php
+use Shimoning\ColorMeShopApi\Entities\Pagination;
+
+$pagination = new Pagination([
+    'total' => 250,
+    'limit' => 50,
+    'offset' => 100,
+]);
+
+$pagination->getTotal();
+$pagination->getLimit();
+$pagination->getOffset();
+```
 
 -----
 
 ## 未実装
+
+* [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
 * [商品](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
+* [配送日時設定の取得](https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting)
 
 -----
 
-## やりたいこと
-Client から OAuth を削除する (Services\OAuth をそのまま使えば良い)。
+## 開発者向け
 
------
-
-## CLI
-単体で `git clone` してきて、 `composer install` をした場合、プロジェクト直下でコマンドラインでの実行が可能になる。
-
-以下のコマンドで起動。
+リポジトリを `git clone` し、`composer install` を実行した後に以下のコマンドを利用できる。
 
 ```bash
-php client
+# PHPUnit を実行
+composer test
+
+# PHPStan を実行
+composer analyse
+
+# composer.json の検証、PHPStan、PHPUnit をまとめて実行
+composer check
+
+# HTML のカバレッジレポートを coverage/ に出力
+composer test:coverage
+
+# 対話形式の API クライアントを起動
+composer client
 ```
 
-対話形式の PHP として実行できる。
-空間名に気をつけること。
+## CLI
+
+単体で `git clone` して `composer install` を実行した場合、プロジェクト直下で対話形式の PHP クライアントを利用できる。
+
+```bash
+composer client
+```
+
+クラスを直接参照する場合は名前空間に注意すること。
 
 ### 終了方法
-終了する際は `exit` もしくは `Control + C` を入力。
+終了する際は `exit` もしくは `Control + C` を入力する。
 
 ### .env
-直下に `.env` を設定することで、一部の変数が自動で生成され、確認等がしやすくなる。
+プロジェクト直下に `.env` を作成すると、CLI 上で一部の変数が自動生成される。`.env.example` を参考に設定すること。これらの環境変数は CLI のみに利用される。
 
-`.env.example` を参考に設定する。
-あくまで CLI のみに利用される環境変数。
+#### OAuth 用の環境変数
 
-#### OAuth 用の 環境変数
-* CLIENT_ID
-* CLIENT_SECRET
-* REDIRECT_URI
+* `CLIENT_ID`
+* `CLIENT_SECRET`
+* `REDIRECT_URI`
 
-上記を設定することで、 `$oAuthOptions` を利用できる。
-これと `$oAuthScopes` (自動ですべての権限として生成される) を利用することで、 OAuth の実施ができる。
+設定すると `$oAuthOptions` を利用できる。`$oAuthScopes` はすべての権限を指定した状態で自動生成される。
 
 #### アクセストークン
-* TOKEN
 
-既に取得済みのアクセストークンを、上記として設定することで、 `$token` と、アクセストークンを設定済みの `$client` が生成される。
-そのまま `$client->getShop()` の様に利用できる。
+* `TOKEN`
+
+設定すると `$token` と、アクセストークンを設定済みの `$client` が生成される。そのまま `$client->getShop()` のように利用できる。
 
 -----
 
 ## ライセンスについて
+
 当ライブラリは *MITライセンス* です。
 [ライセンス](LICENSE) を読んでいただき、範囲内でご自由にご利用ください。
 
 ## サポート
+
 ### 有償サポート
 サイトへの導入や込み入った組み込みなどでお困りの際は、有償にてサポートを承っております。
 
@@ -291,6 +578,6 @@ php client
 カスタマイズしたコードは、同様にオープンソースとして公開されます。
 
 ### お問い合わせ
-[GoogleForm](https://forms.gle/DK3DWstBCKdPS86X6) に必要事項ご記入の上送信してください。
+[GoogleForm](https://forms.gle/DK3DWstBCKdPS86X6) に必要事項をご記入の上送信してください。
 
 件名につきましては「公開ライブラリに関するお問い合わせ」を選択してください。

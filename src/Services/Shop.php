@@ -8,14 +8,19 @@ use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
 
+/**
+ * ショップ情報 API を操作するサービス。
+ */
 class Shop
 {
     protected string $_accessToken;
     protected ?ClientInterface $_httpClient;
 
     /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop
      * @param string $accessToken
      * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
      */
     public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
@@ -29,6 +34,7 @@ class Shop
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop/operation/getShop
      * @param string|null $accessToken
      * @return ShopEntity|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function get(?string $accessToken = null): ShopEntity|Errors
     {

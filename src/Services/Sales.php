@@ -15,14 +15,19 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 
+/**
+ * 受注 API を操作するサービス。
+ */
 class Sales
 {
     protected string $_accessToken;
     protected ?ClientInterface $_httpClient;
 
     /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale
      * @param string $accessToken
      * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
      */
     public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
@@ -37,6 +42,7 @@ class Sales
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
      * @return Page<Sale>|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function page(
         SearchParameters $searchParameters,
@@ -66,6 +72,7 @@ class Sales
      * @param int|string $id
      * @param string|null $accessToken
      * @return Sale|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function one(int|string $id, ?string $accessToken = null): Sale|Errors
     {
@@ -88,6 +95,7 @@ class Sales
      * @param \DateTimeInterface $dateTime
      * @param string|null $accessToken
      * @return Stat|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function stat(
         \DateTimeInterface $dateTime,
@@ -115,6 +123,7 @@ class Sales
      * @param SaleUpdater $updater
      * @param string|null $accessToken
      * @return Sale|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function update(
         SaleUpdater $updater,
@@ -144,6 +153,7 @@ class Sales
      * @param bool|null $restock
      * @param string|null $accessToken
      * @return Sale|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function cancel(
         int|string $id,
@@ -174,6 +184,7 @@ class Sales
      * @param MailType $mailType
      * @param string|null $accessToken
      * @return true|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function sendMail(
         int|string $id,

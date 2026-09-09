@@ -2,12 +2,20 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * ショップで利用するドメインのプラン。
+ */
 enum DomainPlan: string
 {
-    case COLORME_SHOP_SUB_DOMAIN    = 'cmsp_sub_domain';
-    case OWN_DOMAIN                 = 'own_domain';
-    case OWN_SUB_DOMAIN             = 'own_sub_domain';
+    case COLORME_SHOP_SUB_DOMAIN    = 'cmsp_sub_domain'; // shop-pro サブドメイン
+    case OWN_DOMAIN                 = 'own_domain'; // 独自ドメイン
+    case OWN_SUB_DOMAIN             = 'own_sub_domain'; // 独自サブドメイン
 
+    /**
+     * ドメインプランの日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {

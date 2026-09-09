@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * 配送業者の種別。
+ */
 enum DeliveryMethodType: string
 {
     case OTHER          = 'other';  // そのほか
@@ -10,6 +13,11 @@ enum DeliveryMethodType: string
     case SAGAWA         = 'sagawa';  // 佐川急便
     case JP             = 'jp';  // 日本郵便
 
+    /**
+     * 配送業者の日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {

@@ -2,6 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Values;
 
+/**
+ * API パラメータ用の値オブジェクトが実装するインターフェース。
+ */
 interface Value
 {
     /**

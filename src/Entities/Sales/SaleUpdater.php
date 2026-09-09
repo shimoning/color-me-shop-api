@@ -48,6 +48,7 @@ class SaleUpdater extends Entity
     /**
      * 入金済みであるか否かを設定
      * @param bool $paid
+     * @return void
      */
     public function setPaid(bool $paid)
     {
@@ -66,6 +67,7 @@ class SaleUpdater extends Entity
     /**
      * ショップポイント付与状態を設定
      * @param PointState $pointState
+     * @return void
      */
     public function setPointState(PointState $pointState)
     {
@@ -84,12 +86,19 @@ class SaleUpdater extends Entity
     /**
      * お届け先を設定
      * @param SaleDeliveryUpdater[] $saleDeliveries
+     * @return void
      */
     public function setSaleDeliveries($saleDeliveries)
     {
         $this->saleDeliveries = $saleDeliveries;
     }
 
+    /**
+     * 受注データを更新用データへ変換する。
+     *
+     * @param Sale $sale 変換元の受注データ
+     * @return self
+     */
     static public function convert(Sale $sale): self
     {
         return new self([

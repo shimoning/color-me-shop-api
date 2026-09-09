@@ -4,6 +4,9 @@ namespace Shimoning\ColorMeShopApi\Communicator;
 
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * HTTP レスポンスとリクエスト情報を保持するオブジェクト。
+ */
 class Response
 {
     private RequestMeta $_requestMeta;
@@ -13,7 +16,9 @@ class Response
     private int $_status;
 
     /**
-     * @param \Psr\Http\Message\ResponseInterface $response
+     * @param ResponseInterface $response PSR-7 レスポンス
+     * @param RequestMeta $requestMeta リクエストメタデータ
+     * @return void
      */
     public function __construct(
         ResponseInterface $response,
@@ -84,6 +89,11 @@ class Response
         return 200 <= $this->_status && $this->_status < 300;
     }
 
+    /**
+     * リクエストメタデータを取得する。
+     *
+     * @return RequestMeta
+     */
     public function getRequestMeta(): RequestMeta
     {
         return $this->_requestMeta;

@@ -10,14 +10,19 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
+/**
+ * OAuth 認証 API を操作するサービス。
+ */
 class OAuth
 {
     private Options $_options;
     private ?ClientInterface $_httpClient;
 
     /**
+     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86
      * @param Options $options
      * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
      */
     public function __construct(Options $options, ?ClientInterface $httpClient = null)
     {
@@ -28,6 +33,7 @@ class OAuth
     /**
      * 認可のための URL を取得する
      *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86
      * @param Scopes $scopes
      * @return string
      */
@@ -44,8 +50,10 @@ class OAuth
     /**
      * 認可コードをアクセストークンに交換する
      *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86
      * @param string $code
      * @return AccessToken|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function exchangeCode2Token(string $code): AccessToken|Errors
     {

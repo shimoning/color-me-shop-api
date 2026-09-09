@@ -2,12 +2,20 @@
 
 namespace Shimoning\ColorMeShopApi\Constants;
 
+/**
+ * 送信する受注メールの種別。
+ */
 enum MailType: string
 {
-    case ACCEPTED   = 'accepted';
-    case PAID       = 'paid';
-    case DELIVERED  = 'delivered';
+    case ACCEPTED   = 'accepted'; // 受注メール
+    case PAID       = 'paid'; // 入金確認メール
+    case DELIVERED  = 'delivered'; // 商品発送メール
 
+    /**
+     * メール種別の日本語名を取得する。
+     *
+     * @return string
+     */
     public function name(): string
     {
         return match ($this) {
