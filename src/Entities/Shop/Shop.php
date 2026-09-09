@@ -19,6 +19,15 @@ use Shimoning\ColorMeShopApi\Constants\TaxRoundingMethod;
  */
 class Shop extends Entity
 {
+    /**
+     * shop_mail_1 / shop_mail_2 は数字の前にアンダースコアが入るため、
+     * プロパティ名からの自動変換では元のフィールド名に戻せない。
+     */
+    const FIELD_NAMES = [
+        'shopMail1' => 'shop_mail_1',
+        'shopMail2' => 'shop_mail_2',
+    ];
+
     const OBJECT_FIELDS = [
         'state' => [
             'enum' => ShopState::class,
