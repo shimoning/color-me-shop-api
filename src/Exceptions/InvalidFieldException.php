@@ -19,11 +19,27 @@ class InvalidFieldException extends ColorMeApiException
                 $class,
                 $apiField,
                 $expected,
-                $previous->getMessage(),
+                self::arrayElementCause($previous),
             ),
             0,
             $previous,
         );
+    }
+
+    private static function arrayElementCause(\Throwable $previous): string
+    {
+        if (
+            $previous instanceof \UnexpectedValueException
+            && $previous->getMessage() === '未知の enum 値です。'
+        ) {
+            return '未知の enum 値です。';
+        }
+
+        if ($previous instanceof \TypeError) {
+            return '配列要素の型が不正です。';
+        }
+
+        return '配列要素を変換できませんでした。';
     }
 
     public static function for(

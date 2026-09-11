@@ -237,6 +237,51 @@ class EntityTest extends TestCase
         $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
+    public function test_array指定のenumフィールドの要素型が不正でも内部メソッド名を露出しない(): void
+    {
+        try {
+            new ComplexEntity(['states' => [1]]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ComplexEntity::class . ' の API フィールド『states』が不正です。'
+                . '配列要素を ' . MailState::class . ' に変換できませんでした。'
+                . '原因: 配列要素の型が不正です。',
+                $exception->getMessage(),
+            );
+            $this->assertStringNotContainsString('tryFrom', $exception->getMessage());
+            $this->assertInstanceOf(\TypeError::class, $exception->getPrevious());
+            $this->assertStringContainsString('tryFrom', $exception->getPrevious()->getMessage());
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
+    public function test_array指定のentityフィールドの要素形状が不正でも内部パスを露出しない(): void
+    {
+        try {
+            new ComplexEntity(['children' => ['string']]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ComplexEntity::class . ' の API フィールド『children』が不正です。'
+                . '配列要素を ' . NestedEntity::class . ' に変換できませんでした。'
+                . '原因: 配列要素の型が不正です。',
+                $exception->getMessage(),
+            );
+            $this->assertStringNotContainsString('__construct', $exception->getMessage());
+            $this->assertStringNotContainsString(\dirname(__DIR__, 2), $exception->getMessage());
+            $this->assertStringNotContainsString('.php', $exception->getMessage());
+            $this->assertInstanceOf(\TypeError::class, $exception->getPrevious());
+            $this->assertStringContainsString('__construct', $exception->getPrevious()->getMessage());
+            $this->assertStringContainsString(\dirname(__DIR__, 2), $exception->getPrevious()->getMessage());
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
     // --- 欠損・不正フィールド ---------------------------------------------
 
     public function test_非nullableフィールドの欠損はgetter呼び出し時に汎用例外を投げる(): void

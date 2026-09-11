@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Exceptions;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -36,5 +37,25 @@ class ExceptionTest extends TestCase
         }
 
         $this->fail('ColorMeApiException で捕捉できなかった');
+    }
+
+    public function test_配列要素の原因を分類できない場合は内部メッセージを露出しない(): void
+    {
+        $previous = new \RuntimeException('sensitive method at /tmp/internal.php:123');
+
+        $exception = InvalidFieldException::forArrayElement(
+            self::class,
+            'items',
+            \stdClass::class,
+            $previous,
+        );
+
+        $this->assertSame(
+            self::class . ' の API フィールド『items』が不正です。'
+            . '配列要素を ' . \stdClass::class . ' に変換できませんでした。'
+            . '原因: 配列要素を変換できませんでした。',
+            $exception->getMessage(),
+        );
+        $this->assertSame($previous, $exception->getPrevious());
     }
 }
