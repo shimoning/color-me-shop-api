@@ -103,7 +103,7 @@ class Entity
         mixed $objectField,
     ): void {
         $reflection = self::property(static::class, $property);
-        $expected = self::expectedType($reflection->getType());
+        $expected = self::expectedType($reflection->getType(), $reflection);
 
         try {
             $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
@@ -111,7 +111,7 @@ class Entity
             throw InvalidFieldException::for(static::class, $apiField, $expected, $value, $error);
         }
 
-        if (! self::accepts($reflection->getType(), $hydrated)) {
+        if (! self::accepts($reflection->getType(), $hydrated, $reflection)) {
             throw InvalidFieldException::for(static::class, $apiField, $expected, $value);
         }
 
@@ -124,30 +124,45 @@ class Entity
             ??= new ReflectionProperty($class, $property);
     }
 
-    private static function expectedType(?ReflectionType $type): string
+    private static function expectedType(?ReflectionType $type, ReflectionProperty $property): string
     {
         if ($type === null) {
             return 'mixed';
         }
         if ($type instanceof ReflectionNamedType) {
-            return $type->getName();
+            return self::resolveNamedType($type, $property);
         }
         if ($type instanceof ReflectionUnionType) {
             $types = \array_filter(
                 $type->getTypes(),
-                static fn(ReflectionNamedType $named): bool => $named->getName() !== 'null',
+                static fn(ReflectionType $nested): bool => ! ($nested instanceof ReflectionNamedType)
+                    || $nested->getName() !== 'null',
             );
 
             return \implode('|', \array_map(
-                static fn(ReflectionNamedType $named): string => $named->getName(),
+                static function (ReflectionType $nested) use ($property): string {
+                    $name = self::expectedType($nested, $property);
+
+                    return $nested instanceof ReflectionIntersectionType ? '(' . $name . ')' : $name;
+                },
                 $types,
+            ));
+        }
+        if ($type instanceof ReflectionIntersectionType) {
+            return \implode('&', \array_map(
+                static fn(ReflectionType $nested): string => self::expectedType($nested, $property),
+                $type->getTypes(),
             ));
         }
 
         return (string) $type;
     }
 
-    private static function accepts(?ReflectionType $type, mixed $value): bool
+    private static function accepts(
+        ?ReflectionType $type,
+        mixed $value,
+        ReflectionProperty $property,
+    ): bool
     {
         if ($type === null) {
             return true;
@@ -158,26 +173,30 @@ class Entity
         if ($type instanceof ReflectionUnionType) {
             return \array_reduce(
                 $type->getTypes(),
-                static fn(bool $accepted, ReflectionNamedType $named): bool =>
-                    $accepted || self::acceptsNamedType($named, $value),
+                static fn(bool $accepted, ReflectionType $nested): bool =>
+                    $accepted || self::accepts($nested, $value, $property),
                 false,
             );
         }
         if ($type instanceof ReflectionIntersectionType) {
             return \array_reduce(
                 $type->getTypes(),
-                static fn(bool $accepted, ReflectionNamedType $named): bool =>
-                    $accepted && self::acceptsNamedType($named, $value),
+                static fn(bool $accepted, ReflectionType $nested): bool =>
+                    $accepted && self::accepts($nested, $value, $property),
                 true,
             );
         }
 
-        return self::acceptsNamedType($type, $value);
+        return self::acceptsNamedType($type, $value, $property);
     }
 
-    private static function acceptsNamedType(ReflectionNamedType $type, mixed $value): bool
+    private static function acceptsNamedType(
+        ReflectionNamedType $type,
+        mixed $value,
+        ReflectionProperty $property,
+    ): bool
     {
-        $name = $type->getName();
+        $name = self::resolveNamedType($type, $property);
         if (! $type->isBuiltin()) {
             return $value instanceof $name;
         }
@@ -196,6 +215,26 @@ class Entity
             'true' => $value === true,
             default => false,
         };
+    }
+
+    private static function resolveNamedType(
+        ReflectionNamedType $type,
+        ReflectionProperty $property,
+    ): string
+    {
+        $name = $type->getName();
+        $declaringClass = $property->getDeclaringClass();
+
+        if ($name === 'self' || $name === 'static') {
+            return $declaringClass->getName();
+        }
+        if ($name === 'parent') {
+            $parent = $declaringClass->getParentClass();
+
+            return $parent === false ? $name : $parent->getName();
+        }
+
+        return $name;
     }
 
     /**

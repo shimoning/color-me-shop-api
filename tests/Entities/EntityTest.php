@@ -15,6 +15,9 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\PlainEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeParentEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\DnfIntersectionValue;
 
 class EntityTest extends TestCase
 {
@@ -240,6 +243,35 @@ class EntityTest extends TestCase
                 'string',
             ],
         ];
+    }
+
+    public function test_self型はプロパティの宣言クラスとして検証する(): void
+    {
+        $sameType = new RelativeTypeEntity([]);
+        $entity = new RelativeTypeEntity(['same_type' => $sameType]);
+
+        $this->assertSame($sameType, $entity->getSameType());
+    }
+
+    public function test_parent型はプロパティの宣言クラスの親として検証する(): void
+    {
+        $parentType = new RelativeTypeParentEntity([]);
+        $entity = new RelativeTypeEntity(['parent_type' => $parentType]);
+
+        $this->assertSame($parentType, $entity->getParentType());
+    }
+
+    public function test_DNF型は交差型を含めて再帰的に検証する(): void
+    {
+        if (\PHP_VERSION_ID < 80200) {
+            $this->markTestSkipped('DNF 型の構文は PHP 8.2 以降でのみ利用できます。');
+        }
+
+        $class = 'Shimoning\\ColorMeShopApi\\Tests\\Doubles\\DnfTypeEntity';
+        $subject = new DnfIntersectionValue();
+        $entity = (new \ReflectionClass($class))->newInstance(['subject' => $subject]);
+
+        $this->assertSame($subject, (new \ReflectionMethod($class, 'getSubject'))->invoke($entity));
     }
 
     public function test_ページネーション固有例外は汎用例外としても捕捉できる(): void
