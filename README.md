@@ -482,9 +482,9 @@ if (! $customersOrErrors instanceof Errors) {
 
 `Services\Sales::page()` と `Services\Customer::page()` は API レスポンスの `meta` から `Pagination` を生成し、`Page` に保持する。`meta` が完全な整数値で揃っている場合、`Page` の各 getter は従来どおり内部の `Pagination` に処理を委譲する。
 
-`meta` キーが欠損しているか `null` の場合も、レスポンスの要素は `Page` に保持され、`foreach`、`count()`、`all()` で利用できる。ただしページング値を `0` などで代替はせず、`getTotal()`、`getLimit()`、`getOffset()` を呼ぶと `MissingPaginationException` が投げられる。例外メッセージには欠損したキーと対象エンドポイントが含まれる。
+`meta` キーが欠損している場合も、レスポンスの要素は `Page` に保持され、`foreach`、`count()`、`all()`、配列アクセスで利用できる。ただしページング値を `0` などで代替はせず、`getTotal()`、`getLimit()`、`getOffset()` を呼ぶと `MissingPaginationException` が投げられる。例外メッセージには欠損したキーと対象エンドポイントが含まれる。
 
-`meta` が存在する場合は `total`、`limit`、`offset` の各値が PHP の `int` でなければならない。空配列や一部キーが欠損した `meta` も生成自体は可能だが、欠損値の getter を呼ぶと `MissingPaginationException` が投げられる。存在する値が数値文字列、真偽値、浮動小数点数などの場合は、ページ生成時に `InvalidPaginationException` として早期に報告される。負数は API が返した整数値を改変せず保持する。
+`meta` が存在する場合は配列であり、`total`、`limit`、`offset` の各値が PHP の `int` でなければならない。空配列や一部キーが欠損した `meta` も生成自体は可能だが、欠損値の getter を呼ぶと `MissingPaginationException` が投げられる。`meta` 自体が `null`、または存在する値が `null`、数値文字列、真偽値、浮動小数点数などの場合は、ページ生成時に `InvalidPaginationException` として早期に報告される。負数は API が返した整数値を改変せず保持する。
 
 `Pagination` を直接生成する場合は `total`、`limit`、`offset` を指定する。
 

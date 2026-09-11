@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 
@@ -187,8 +188,21 @@ class PageTest extends TestCase
     {
         return [
             'metaキー欠損' => [['items' => [['label' => 'x']]]],
-            'metaがnull' => [['items' => [['label' => 'x']], 'meta' => null]],
         ];
+    }
+
+    public function test_metaがnullなら固有例外で早期に失敗する(): void
+    {
+        $this->expectException(InvalidPaginationException::class);
+        $this->expectExceptionMessage(
+            'API レスポンスのページネーション情報「meta」が不正です。array を期待しましたが null でした。',
+        );
+
+        Page::build(
+            NestedEntity::class,
+            ['items' => [['label' => 'x']], 'meta' => null],
+            'items',
+        );
     }
 
     #[DataProvider('incompleteMetaProvider')]

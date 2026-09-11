@@ -35,11 +35,11 @@ class Page extends Collection
         string $metaKey = 'meta',
         string $responseContext = 'API レスポンス',
     ): static {
-        $meta = $data[$metaKey] ?? null;
+        $hasMeta = \is_array($data) && \array_key_exists($metaKey, $data);
 
         return new static(
             Collection::cast($class, $data[$key] ?? []),
-            $meta === null ? null : new Pagination($meta, $metaKey, $responseContext),
+            $hasMeta ? new Pagination($data[$metaKey], $metaKey, $responseContext) : null,
             $responseContext,
             $metaKey,
         );
