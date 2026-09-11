@@ -92,17 +92,17 @@ class ClientTest extends TestCase
     }
 
     /**
-     * "0" は PHP の真偽値判定では false になるため、真偽値でトークンの有無を
-     * 判定していると「未指定」と誤認されてしまう。
+     * アクセストークンは不透明な文字列であり、空文字の定義は厳密に "" のみとするため、
+     * PHP の真偽値判定では false になる "0" も有効な値として扱う。
      */
-    public function test_ゼロ文字列のトークンも前のトークンにフォールバックしない(): void
+    public function test_ゼロ文字列のトークンを有効として送信する(): void
     {
         $mock = HttpMock::json(200, self::fixture('shop.json'));
         $client = new Client('tenant-A-token', $mock->client());
 
-        $this->expectException(ParameterException::class);
-
         $client->getShop('0');
+
+        $this->assertSame('Bearer 0', $mock->header('Authorization'));
     }
 
     public function test_コンストラクタに空文字を渡してもトークン未指定として扱う(): void
