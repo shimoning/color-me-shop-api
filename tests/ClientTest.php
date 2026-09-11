@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
@@ -22,73 +23,99 @@ class ClientTest extends TestCase
     // --- アクセストークン未指定 ---------------------------------------------
 
     /**
-     * アクセストークンを渡さずに API を呼んだ場合、未初期化プロパティの Error ではなく
-     * 意味のある ParameterException になること。
+     * @return array<string, array{\Closure(Client, ?string): void}>
      */
-    public function test_トークンなしでgetShopするとParameterExceptionになる(): void
+    public static function accessTokenApiProvider(): array
     {
-        $this->expectException(ParameterException::class);
-        $this->expectExceptionMessage('アクセストークンは必ず指定してください');
-
-        (new Client())->getShop();
+        return [
+            'getShop' => [static function (Client $client, ?string $accessToken): void {
+                $client->getShop($accessToken);
+            }],
+            'getSales' => [static function (Client $client, ?string $accessToken): void {
+                $client->getSales(null, $accessToken);
+            }],
+            'statSales' => [static function (Client $client, ?string $accessToken): void {
+                $client->statSales(new \DateTimeImmutable('2024-01-01'), $accessToken);
+            }],
+            'getSale' => [static function (Client $client, ?string $accessToken): void {
+                $client->getSale(1001, $accessToken);
+            }],
+            'updateSale' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateSale(new SaleUpdater(['id' => 1001]), $accessToken);
+            }],
+            'cancelSale' => [static function (Client $client, ?string $accessToken): void {
+                $client->cancelSale(1001, false, $accessToken);
+            }],
+            'sendSalesMail' => [static function (Client $client, ?string $accessToken): void {
+                $client->sendSalesMail(1001, MailType::PAID, $accessToken);
+            }],
+            'getPayments' => [static function (Client $client, ?string $accessToken): void {
+                $client->getPayments($accessToken);
+            }],
+            'getDeliveries' => [static function (Client $client, ?string $accessToken): void {
+                $client->getDeliveries($accessToken);
+            }],
+            'getCustomers' => [static function (Client $client, ?string $accessToken): void {
+                $client->getCustomers(null, $accessToken);
+            }],
+            'getCustomer' => [static function (Client $client, ?string $accessToken): void {
+                $client->getCustomer(501, $accessToken);
+            }],
+            'getProductGroups' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductGroups($accessToken);
+            }],
+            'getProductCategories' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductCategories($accessToken);
+            }],
+        ];
     }
 
-    public function test_トークンなしでgetSalesするとParameterExceptionになる(): void
-    {
-        $this->expectException(ParameterException::class);
-
-        (new Client())->getSales();
-    }
-
-    public function test_トークンなしでgetPaymentsするとParameterExceptionになる(): void
-    {
-        $this->expectException(ParameterException::class);
-
-        (new Client())->getPayments();
-    }
-
-    public function test_トークンなしでgetCustomersするとParameterExceptionになる(): void
-    {
-        $this->expectException(ParameterException::class);
-
-        (new Client())->getCustomers();
+    /**
+     * @param \Closure(Client, ?string): void $callApi
+     */
+    private function assertAccessTokenRejectedWithoutHttpRequest(
+        Client $client,
+        HttpMock $mock,
+        \Closure $callApi,
+        ?string $accessToken,
+    ): void {
+        try {
+            $callApi($client, $accessToken);
+            $this->fail('アクセストークンなしで API 呼び出しが受理された');
+        } catch (ParameterException $exception) {
+            $this->assertSame('アクセストークンは必ず指定してください', $exception->getMessage());
+            $this->assertSame(0, $mock->countRequests());
+        }
     }
 
     /**
      * 空文字のトークンを明示的に渡した場合、黙って以前のトークンに
-     * フォールバックせず ParameterException になること。
+     * フォールバックせず、HTTP 送信前に ParameterException になること。
      *
-     * インスタンスにトークンを保持し続ける設計のため、フォールバックすると
-     * 別テナントの認証情報で通信してしまう危険がある。
+     * @param \Closure(Client, ?string): void $callApi
      */
-    public function test_空文字のトークンは前のトークンにフォールバックしない(): void
+    #[DataProvider('accessTokenApiProvider')]
+    public function test_全公開APIで空文字のトークンは送信前に拒否される(\Closure $callApi): void
     {
-        $mock = HttpMock::json(200, self::fixture('shop.json'));
+        $mock = HttpMock::json(200, '{}');
         $client = new Client('tenant-A-token', $mock->client());
 
-        $this->expectException(ParameterException::class);
-
-        $client->getShop('');
+        $this->assertAccessTokenRejectedWithoutHttpRequest($client, $mock, $callApi, '');
     }
 
-    public function test_空文字のトークンはSales経由でもフォールバックしない(): void
+    /**
+     * アクセストークンを持たない Client で API を呼んだ場合、PHP の Error ではなく
+     * HTTP 送信前に意味のある ParameterException になること。
+     *
+     * @param \Closure(Client, ?string): void $callApi
+     */
+    #[DataProvider('accessTokenApiProvider')]
+    public function test_全公開APIでトークン未指定は送信前に拒否される(\Closure $callApi): void
     {
-        $mock = HttpMock::json(200, self::fixture('sale.json'));
-        $client = new Client('tenant-A-token', $mock->client());
+        $mock = HttpMock::json(200, '{}');
+        $client = new Client(null, $mock->client());
 
-        $this->expectException(ParameterException::class);
-
-        $client->getSale(1001, '');
-    }
-
-    public function test_空文字のトークンはCustomer経由でもフォールバックしない(): void
-    {
-        $mock = HttpMock::json(200, self::fixture('customer.json'));
-        $client = new Client('tenant-A-token', $mock->client());
-
-        $this->expectException(ParameterException::class);
-
-        $client->getCustomer(501, '');
+        $this->assertAccessTokenRejectedWithoutHttpRequest($client, $mock, $callApi, null);
     }
 
     /**
