@@ -2,9 +2,6 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use GuzzleHttp\ClientInterface;
-use Shimoning\ColorMeShopApi\Communicator\Request;
-use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Collection;
@@ -15,23 +12,8 @@ use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 /**
  * 顧客 API を操作するサービス。
  */
-class Customer
+class Customer extends Service
 {
-    protected string $_accessToken;
-    protected ?ClientInterface $_httpClient;
-
-    /**
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer
-     * @param string $accessToken
-     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
-     * @return void
-     */
-    public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
-    {
-        $this->_accessToken = $accessToken;
-        $this->_httpClient = $httpClient;
-    }
-
     /**
      * 顧客データのリストを取得
      *
@@ -45,10 +27,8 @@ class Customer
         SearchParameters $searchParameters,
         ?string $accessToken = null,
     ): Page|Errors {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/customers',
+        $response = $this->request([], $accessToken)->get(
+            $this->endpoint('/customers'),
             $searchParameters->toArrayRecursive(),
         );
         if (! $response->isSuccess()) {
@@ -73,10 +53,8 @@ class Customer
      */
     public function one(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/customers/' . $id,
+        $response = $this->request([], $accessToken)->get(
+            $this->endpoint('/customers/' . $id),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);

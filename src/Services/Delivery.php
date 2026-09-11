@@ -2,9 +2,6 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use GuzzleHttp\ClientInterface;
-use Shimoning\ColorMeShopApi\Communicator\Request;
-use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
@@ -12,23 +9,8 @@ use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
 /**
  * 配送方法 API を操作するサービス。
  */
-class Delivery
+class Delivery extends Service
 {
-    protected string $_accessToken;
-    protected ?ClientInterface $_httpClient;
-
-    /**
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery
-     * @param string $accessToken
-     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
-     * @return void
-     */
-    public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
-    {
-        $this->_accessToken = $accessToken;
-        $this->_httpClient = $httpClient;
-    }
-
     /**
      * 配送方法一覧を取得
      *
@@ -39,10 +21,8 @@ class Delivery
      */
     public function all(?string $accessToken = null): Collection|Errors
     {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/deliveries',
+        $response = $this->request([], $accessToken)->get(
+            $this->endpoint('/deliveries'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);
