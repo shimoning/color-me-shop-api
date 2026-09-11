@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -67,6 +68,30 @@ class CustomerTest extends TestCase
         $errors = (new Customer('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertInstanceOf(Errors::class, $errors);
+    }
+
+    public function test_顧客一覧の200応答でmetaがnullなら固有例外で早期に失敗する(): void
+    {
+        $mock = HttpMock::json(200, '{"customers":[{"id":501}],"meta":null}');
+
+        $this->expectException(InvalidPaginationException::class);
+        $this->expectExceptionMessage(
+            'GET /v1/customers のレスポンスのページネーション情報「meta」が不正です。array を期待しましたが null でした。',
+        );
+
+        (new Customer('my-token', $mock->client()))->page(new SearchParameters([]));
+    }
+
+    public function test_顧客一覧の200応答でmetaの型が不正なら固有例外で早期に失敗する(): void
+    {
+        $mock = HttpMock::json(200, '{"customers":[],"meta":{"total":0,"limit":10,"offset":false}}');
+
+        $this->expectException(InvalidPaginationException::class);
+        $this->expectExceptionMessage(
+            'GET /v1/customers のレスポンスのページネーション情報「meta.offset」が不正です。int を期待しましたが bool でした。',
+        );
+
+        (new Customer('my-token', $mock->client()))->page(new SearchParameters([]));
     }
 
     // --- one --------------------------------------------------------------

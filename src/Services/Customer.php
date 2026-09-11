@@ -32,7 +32,13 @@ class Customer extends Service
 
         return $this->_handle(
             $response,
-            fn(?array $data): Page => Page::build(CustomerEntity::class, $data, 'customers'),
+            fn(?array $data): Page => Page::build(
+                CustomerEntity::class,
+                $data,
+                'customers',
+                'meta',
+                'GET /v1/customers のレスポンス',
+            ),
         );
     }
 
