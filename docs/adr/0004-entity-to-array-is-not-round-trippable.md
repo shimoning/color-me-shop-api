@@ -7,7 +7,9 @@
 
 `Entity::toArray()` は配列化対象の宣言済みプロパティを出力し、API レスポンスになかった項目も
 `null` として含める。アンダースコアで始まる内部プロパティは対象外である。出力を同じ Entity の
-コンストラクタへ渡すと、非 null 許容プロパティへの `null` 代入によって `TypeError` になる。
+コンストラクタへ渡すと、非 null 許容プロパティへの `null` 代入によって `TypeError` になる。また、
+設定済みのネストした Entity や value オブジェクトもそのまま出力する一方、コンストラクタは raw な
+配列やスカラーから再構築するため、値が揃っていても再入力できない場合がある。
 
 ## 判断
 
@@ -32,6 +34,10 @@ API 名を優先する。例えば `shop_mail1` は `shop_mail_1` に変わる�
 この制約は未解決である。現行の `Entity::toArray()` も未設定値へ `null` を補い、コンストラクタは
 入力に含まれる `null` を非 null 許容プロパティへ代入する。例えば空データから作った `Sale` の
 `toArray()` を `Sale` へ再入力すると、`$id` への代入で `TypeError` になる。
+
+設定済みのオブジェクトも再帰変換されない。例えば `Card::toArray()` の `brands` には `Brand` が
+そのまま残るが、再入力時は raw な配列を想定して各値を `Brand` のコンストラクタへ渡すため、
+`Entity::__construct(array $data)` の型と一致せず `TypeError` になる。
 
 非対称なフィールド名への対応は現行実装でも有効である。`Entity` のコンストラクタと
 `apiFieldName()` は `FIELD_NAMES` を自動変換より優先し、`Shop` が `shop_mail_1` と
