@@ -14,7 +14,7 @@ use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
  */
 abstract class Service
 {
-    protected const _API_BASE_URL = 'https://api.shop-pro.jp/v1';
+    protected const API_BASE_URL = 'https://api.shop-pro.jp/v1';
 
     protected string $_accessToken;
     protected ?ClientInterface $_httpClient;
@@ -35,7 +35,7 @@ abstract class Service
      */
     protected function _endpoint(string $path): string
     {
-        return \rtrim(self::_API_BASE_URL, '/') . '/' . \ltrim($path, '/');
+        return \rtrim(self::API_BASE_URL, '/') . '/' . \ltrim($path, '/');
     }
 
     /**
