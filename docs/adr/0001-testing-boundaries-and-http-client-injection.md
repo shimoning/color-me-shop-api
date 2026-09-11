@@ -41,9 +41,10 @@ HTTP オブジェクトを内部で直接生成していたため、Service 層�
 
 ## 現在の状態
 
-HTTP クライアントの保持と `Request` 生成は `Services\Service` に集約された。各 Service が
-同じ処理を個別に持つという当初の記述は古いが、注入境界そのものは維持されている。
-`OAuth` は基底 Service の対象外だが、同じく `ClientInterface` を任意注入できる。
+基底 `Services\Service` を継承する 6 サービス（`Customer` / `Delivery` / `Payment` / `Product` /
+`Sales` / `Shop`）では、HTTP クライアントの保持と `Request` 生成が集約されている。
+`OAuth` は基底クラスの対象外で、現在も自クラス内で直接 `Request` を生成するが、同じく
+`ClientInterface` を任意注入できるため、テスト時の注入境界は維持されている。
 出典: `3cfe677`、`1f7520f`。
 
 公開ファサードも、注入された HTTP クライアントを全 Service へ伝播し、Service を都度生成する。
