@@ -157,8 +157,15 @@ class PageTest extends TestCase
             'getLimit' => static fn(Page $page): int => $page->getLimit(),
             'getOffset' => static fn(Page $page): int => $page->getOffset(),
         ];
+        $iteratedLabels = [];
+        foreach ($actual as $item) {
+            $iteratedLabels[] = $item->getLabel();
+        }
 
         $this->assertSame(['x'], \array_map(fn($item) => $item->getLabel(), $actual->all()));
+        $this->assertCount(1, $actual);
+        $this->assertSame(['x'], $iteratedLabels);
+        $this->assertSame('x', $actual[0]->getLabel());
 
         // 生の Error を固定していた旧 characterization test を、欠損を明示する新仕様の契約へ更新する。
         foreach ($getters as $method => $getter) {

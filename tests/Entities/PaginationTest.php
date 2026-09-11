@@ -114,6 +114,18 @@ class PaginationTest extends TestCase
                 null,
                 'API レスポンスのページネーション情報「meta」が不正です。array を期待しましたが null でした。',
             ],
+            'totalがnull' => [
+                ['total' => null, 'limit' => 10, 'offset' => 0],
+                'API レスポンスのページネーション情報「meta.total」が不正です。int を期待しましたが null でした。',
+            ],
+            'limitがnull' => [
+                ['total' => 1, 'limit' => null, 'offset' => 0],
+                'API レスポンスのページネーション情報「meta.limit」が不正です。int を期待しましたが null でした。',
+            ],
+            'offsetがnull' => [
+                ['total' => 1, 'limit' => 10, 'offset' => null],
+                'API レスポンスのページネーション情報「meta.offset」が不正です。int を期待しましたが null でした。',
+            ],
             '数値文字列' => [
                 ['total' => '1', 'limit' => 10, 'offset' => 0],
                 'API レスポンスのページネーション情報「meta.total」が不正です。int を期待しましたが string でした。',
