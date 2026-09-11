@@ -258,7 +258,7 @@ class Entity
     {
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
-            if (!empty($objectField['nullable']) && $value === null) {
+            if (!empty($objectField['nullable']) && !$value) {
                 return $isArray ? [] : null;
             }
 
