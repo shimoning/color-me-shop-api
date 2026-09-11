@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 /**
  * src/Entities 配下の全エンティティが満たすべき共通契約を検証する。
@@ -135,8 +136,19 @@ class EntityContractTest extends TestCase
             foreach (self::getters($reflection) as $getter) {
                 try {
                     $getter->invoke($entity);
-                } catch (\Throwable) {
-                    // 未初期化プロパティによる失敗はここでは対象外
+                } catch (MissingFieldException) {
+                    // 基底の欠損検証を適用済みの getter は汎用例外を正常系として扱う。
+                } catch (\Error $error) {
+                    // 個別 Entity への適用は PR2〜PR4 のため、生の未初期化 Error のみ暫定許容する。
+                    $isUninitialized = \str_contains(
+                        $error->getMessage(),
+                        'must not be accessed before initialization',
+                    );
+                    $isNullableReturnMismatch = $error instanceof \TypeError
+                        && \str_contains($error->getMessage(), 'null returned');
+                    if (! $isUninitialized && ! $isNullableReturnMismatch) {
+                        throw $error;
+                    }
                 }
             }
         } finally {

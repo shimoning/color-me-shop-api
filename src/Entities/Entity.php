@@ -1,9 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Entities;
 
 use BackedEnum;
 use ReflectionClass;
+use ReflectionIntersectionType;
+use ReflectionNamedType;
+use ReflectionProperty;
+use ReflectionType;
+use ReflectionUnionType;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Values\Value;
 
 /**
@@ -35,6 +44,13 @@ class Entity
      */
     private static array $_optionalProperties = [];
 
+    /**
+     * 宣言プロパティのキャッシュ (クラス・プロパティ単位)
+     *
+     * @var array<class-string, array<string, ReflectionProperty>>
+     */
+    private static array $_properties = [];
+
     private array $_raw;
 
     /**
@@ -55,15 +71,131 @@ class Entity
             $_key = $propertyNames[$key]
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (property_exists($this, $_key)) {
-                if (isset($objectFields[$_key])) {
-                    $this->{$_key} = $this->build($objectFields[$_key], $value);
-                    continue;
-                }
-                $this->{$_key} = $value;
+                $this->hydrateField($_key, $key, $value, $objectFields[$_key] ?? null);
             }
         }
 
         $this->initializeOptionalProperties();
+    }
+
+    /**
+     * フィールドが初期化済みであることを保証する。
+     *
+     * @throws MissingFieldException API レスポンスにフィールドが存在しない場合
+     */
+    protected function assertFieldInitialized(string $property): void
+    {
+        if (! self::property(static::class, $property)->isInitialized($this)) {
+            throw MissingFieldException::for(static::class, static::apiFieldName($property));
+        }
+    }
+
+    /**
+     * API フィールドを変換・検証して宣言プロパティへ格納する。
+     *
+     * @param class-string|array<string, mixed>|null $objectField
+     * @throws InvalidFieldException 存在する値の変換または型が不正な場合
+     */
+    private function hydrateField(
+        string $property,
+        string $apiField,
+        mixed $value,
+        mixed $objectField,
+    ): void {
+        $reflection = self::property(static::class, $property);
+        $expected = self::expectedType($reflection->getType());
+
+        try {
+            $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
+        } catch (\Throwable $error) {
+            throw InvalidFieldException::for(static::class, $apiField, $expected, $value, $error);
+        }
+
+        if (! self::accepts($reflection->getType(), $hydrated)) {
+            throw InvalidFieldException::for(static::class, $apiField, $expected, $value);
+        }
+
+        $reflection->setValue($this, $hydrated);
+    }
+
+    private static function property(string $class, string $property): ReflectionProperty
+    {
+        return self::$_properties[$class][$property]
+            ??= new ReflectionProperty($class, $property);
+    }
+
+    private static function expectedType(?ReflectionType $type): string
+    {
+        if ($type === null) {
+            return 'mixed';
+        }
+        if ($type instanceof ReflectionNamedType) {
+            return $type->getName();
+        }
+        if ($type instanceof ReflectionUnionType) {
+            $types = \array_filter(
+                $type->getTypes(),
+                static fn(ReflectionNamedType $named): bool => $named->getName() !== 'null',
+            );
+
+            return \implode('|', \array_map(
+                static fn(ReflectionNamedType $named): string => $named->getName(),
+                $types,
+            ));
+        }
+
+        return (string) $type;
+    }
+
+    private static function accepts(?ReflectionType $type, mixed $value): bool
+    {
+        if ($type === null) {
+            return true;
+        }
+        if ($value === null) {
+            return $type->allowsNull();
+        }
+        if ($type instanceof ReflectionUnionType) {
+            return \array_reduce(
+                $type->getTypes(),
+                static fn(bool $accepted, ReflectionNamedType $named): bool =>
+                    $accepted || self::acceptsNamedType($named, $value),
+                false,
+            );
+        }
+        if ($type instanceof ReflectionIntersectionType) {
+            return \array_reduce(
+                $type->getTypes(),
+                static fn(bool $accepted, ReflectionNamedType $named): bool =>
+                    $accepted && self::acceptsNamedType($named, $value),
+                true,
+            );
+        }
+
+        return self::acceptsNamedType($type, $value);
+    }
+
+    private static function acceptsNamedType(ReflectionNamedType $type, mixed $value): bool
+    {
+        $name = $type->getName();
+        if (! $type->isBuiltin()) {
+            return $value instanceof $name;
+        }
+
+        return match ($name) {
+            'array' => \is_array($value),
+            'bool' => \is_bool($value),
+            'callable' => \is_callable($value),
+            'false' => $value === false,
+            'float' => \is_float($value),
+            'int' => \is_int($value),
+            'iterable' => \is_iterable($value),
+            'mixed' => true,
+            'object' => \is_object($value),
+            'string' => \is_string($value),
+            'true' => $value === true,
+            default => false,
+        };
     }
 
     /**
@@ -126,7 +258,7 @@ class Entity
     {
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
-            if (!empty($objectField['nullable']) && !$value) {
+            if (!empty($objectField['nullable']) && $value === null) {
                 return $isArray ? [] : null;
             }
 
@@ -167,15 +299,28 @@ class Entity
                 }
                 if ($isArray) {
                     return array_map(function ($v) use ($enum) {
-                        return $enum::tryFrom($v);
+                        return self::buildEnum($enum, $v);
                     }, $value);
                 }
-                return $enum::tryFrom($value);
+                return self::buildEnum($enum, $value);
             }
         }
 
         // 単体
         return new $objectField($value);
+    }
+
+    /**
+     * @param class-string<BackedEnum> $enum
+     */
+    private static function buildEnum(string $enum, mixed $value): BackedEnum
+    {
+        $case = $enum::tryFrom($value);
+        if ($case === null) {
+            throw new \UnexpectedValueException('未知の enum 値です。');
+        }
+
+        return $case;
     }
 
     /**

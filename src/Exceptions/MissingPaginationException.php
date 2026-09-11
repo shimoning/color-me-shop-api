@@ -8,4 +8,4 @@ namespace Shimoning\ColorMeShopApi\Exceptions;
  * meta キー自体が存在しない場合、または meta 内の必須キー
  * (total / limit / offset) が欠損している場合に getter から投げられる。
  */
-class MissingPaginationException extends ColorMeApiException {}
+class MissingPaginationException extends MissingFieldException {}

@@ -6,10 +6,15 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\MailState;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PlainEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 
 class EntityTest extends TestCase
 {
@@ -143,18 +148,104 @@ class EntityTest extends TestCase
         $this->assertNull($entity->getState());
     }
 
-    public function test_enumに存在しない値はnullになる(): void
+    public function test_enumに存在しない値は汎用例外で早期に失敗する(): void
     {
-        $entity = new ComplexEntity(['state' => 'unknown']);
+        // 未知の enum を null として扱っていた旧仕様を、不正値として扱う契約へ更新する。
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            ComplexEntity::class . ' の API フィールド『state』が不正です。'
+            . MailState::class . ' を期待しましたが string でした。',
+        );
 
-        $this->assertNull($entity->getState());
+        new ComplexEntity(['state' => 'unknown']);
+    }
+
+    public function test_enumのbacking型と異なる値は汎用例外で早期に失敗する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            ComplexEntity::class . ' の API フィールド『state』が不正です。'
+            . MailState::class . ' を期待しましたが int でした。',
+        );
+
+        new ComplexEntity(['state' => 1]);
     }
 
     public function test_array指定のenumフィールドはenumの配列に変換される(): void
     {
-        $entity = new ComplexEntity(['states' => ['sent', 'not_yet', 'unknown']]);
+        $entity = new ComplexEntity(['states' => ['sent', 'not_yet']]);
 
-        $this->assertSame([MailState::SENT, MailState::NOT_YET, null], $entity->getStates());
+        $this->assertSame([MailState::SENT, MailState::NOT_YET], $entity->getStates());
+    }
+
+    // --- 欠損・不正フィールド ---------------------------------------------
+
+    public function test_非nullableフィールドの欠損はgetter呼び出し時に汎用例外を投げる(): void
+    {
+        $entity = new RequiredEntity([]);
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            RequiredEntity::class . ' の API フィールド『name』が欠損しています。',
+        );
+
+        $entity->getName();
+    }
+
+    public function test_nullableフィールドの欠損はnullを返す(): void
+    {
+        $entity = new RequiredEntity([]);
+
+        $this->assertNull($entity->getDescription());
+    }
+
+    #[DataProvider('invalidFieldProvider')]
+    public function test_存在する不正値は汎用例外で早期に失敗する(
+        string $class,
+        array $data,
+        string $field,
+        string $expected,
+        string $actual,
+    ): void {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            $class . " の API フィールド『{$field}』が不正です。"
+            . "{$expected} を期待しましたが {$actual} でした。",
+        );
+
+        new $class($data);
+    }
+
+    /**
+     * @return array<string, array{class-string<Entity>, array<string, mixed>, string, string, string}>
+     */
+    public static function invalidFieldProvider(): array
+    {
+        return [
+            'null' => [RequiredEntity::class, ['name' => null], 'name', 'string', 'null'],
+            '型違い' => [RequiredEntity::class, ['count' => '1'], 'count', 'int', 'string'],
+            '不正なネスト形状' => [
+                ComplexEntity::class,
+                ['child' => 'invalid'],
+                'child',
+                NestedEntity::class,
+                'string',
+            ],
+            '値オブジェクトの変換失敗' => [ComplexEntity::class, ['limit' => 0], 'limit', Limit::class, 'int'],
+            '値オブジェクトの引数型違い' => [
+                ComplexEntity::class,
+                ['limit' => '1'],
+                'limit',
+                Limit::class,
+                'string',
+            ],
+        ];
+    }
+
+    public function test_ページネーション固有例外は汎用例外としても捕捉できる(): void
+    {
+        $this->assertInstanceOf(MissingFieldException::class, new MissingPaginationException());
+        $this->assertInstanceOf(InvalidFieldException::class, new InvalidPaginationException());
     }
 
     // --- isHash -----------------------------------------------------------
