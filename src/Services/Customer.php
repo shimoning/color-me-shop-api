@@ -4,9 +4,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 /**
@@ -34,10 +32,7 @@ class Customer extends Service
 
         return $this->_handle(
             $response,
-            fn(?array $data): Page => new Page(
-                Collection::cast(CustomerEntity::class, $data['customers'] ?? []),
-                new Pagination($data['meta'] ?? []),
-            ),
+            fn(?array $data): Page => Page::build(CustomerEntity::class, $data, 'customers'),
         );
     }
 
