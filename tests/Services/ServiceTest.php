@@ -14,7 +14,7 @@ class ServiceTest extends TestCase
         $this->assertTrue((new \ReflectionClass(Service::class))->isAbstract());
     }
 
-    public function test_endpointはベースURLとパスをスラッシュ重複なしで結合する(): void
+    public function test__endpointはベースURLとパスをスラッシュ重複なしで結合する(): void
     {
         $service = new ServiceStub('my-token');
 
@@ -22,7 +22,7 @@ class ServiceTest extends TestCase
         $this->assertSame('https://api.shop-pro.jp/v1/sales', $service->endpointForTest('sales'));
     }
 
-    public function test_requestは既定のアクセストークンと指定オプションを使う(): void
+    public function test__requestは既定のアクセストークンと指定オプションを使う(): void
     {
         $mock = HttpMock::json(200, '{}');
         $service = new ServiceStub('my-token', $mock->client());
@@ -37,7 +37,7 @@ class ServiceTest extends TestCase
         $this->assertSame(['value' => 1], $mock->jsonBody());
     }
 
-    public function test_requestは引数のアクセストークンを優先する(): void
+    public function test__requestは引数のアクセストークンを優先する(): void
     {
         $mock = HttpMock::json(200, '{}');
         $service = new ServiceStub('my-token', $mock->client());
@@ -52,11 +52,11 @@ final class ServiceStub extends Service
 {
     public function endpointForTest(string $path): string
     {
-        return $this->endpoint($path);
+        return $this->_endpoint($path);
     }
 
     public function requestForTest(array $options = [], ?string $accessToken = null): Request
     {
-        return $this->request($options, $accessToken);
+        return $this->_request($options, $accessToken);
     }
 }

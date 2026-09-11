@@ -8,10 +8,13 @@ use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 
 /**
  * カラーミーショップ API サービスの基底クラス。
+ *
+ * protected 定数・メソッドは内部実装用 API です。利用者によるオーバーライドは想定しておらず、
+ * 将来予告なく変更される場合があります。
  */
 abstract class Service
 {
-    protected const API_BASE_URL = 'https://api.shop-pro.jp/v1';
+    protected const _API_BASE_URL = 'https://api.shop-pro.jp/v1';
 
     protected string $_accessToken;
     protected ?ClientInterface $_httpClient;
@@ -30,15 +33,15 @@ abstract class Service
     /**
      * API のベース URL とパスを結合する。
      */
-    protected function endpoint(string $path): string
+    protected function _endpoint(string $path): string
     {
-        return \rtrim(self::API_BASE_URL, '/') . '/' . \ltrim($path, '/');
+        return \rtrim(self::_API_BASE_URL, '/') . '/' . \ltrim($path, '/');
     }
 
     /**
      * 認証情報を設定したリクエストを生成する。
      */
-    protected function request(array $options = [], ?string $accessToken = null): Request
+    protected function _request(array $options = [], ?string $accessToken = null): Request
     {
         return new Request(new RequestOptions([
             ...$options,

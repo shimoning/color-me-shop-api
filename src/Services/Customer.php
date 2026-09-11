@@ -27,8 +27,8 @@ class Customer extends Service
         SearchParameters $searchParameters,
         ?string $accessToken = null,
     ): Page|Errors {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/customers'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/customers'),
             $searchParameters->toArrayRecursive(),
         );
         if (! $response->isSuccess()) {
@@ -53,8 +53,8 @@ class Customer extends Service
      */
     public function one(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/customers/' . $id),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/customers/' . $id),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);

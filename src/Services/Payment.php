@@ -21,8 +21,8 @@ class Payment extends Service
      */
     public function all(?string $accessToken = null): Collection|Errors
     {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/payments'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/payments'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);

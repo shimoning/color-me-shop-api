@@ -30,8 +30,8 @@ class Sales extends Service
         SearchParameters $searchParameters,
         ?string $accessToken = null,
     ): Page|Errors {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/sales'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/sales'),
             $searchParameters->toArrayRecursive(),
         );
         if (! $response->isSuccess()) {
@@ -56,8 +56,8 @@ class Sales extends Service
      */
     public function one(int|string $id, ?string $accessToken = null): Sale|Errors
     {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/sales/' . $id),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/sales/' . $id),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);
@@ -79,8 +79,8 @@ class Sales extends Service
         \DateTimeInterface $dateTime,
         ?string $accessToken = null,
     ): Stat|Errors {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/sales/stat'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/sales/stat'),
             [
                 'make_date' => $dateTime->format('Y-m-d'),
             ],
@@ -105,10 +105,10 @@ class Sales extends Service
         SaleUpdater $updater,
         ?string $accessToken = null,
     ): Sale|Errors {
-        $response = $this->request([
+        $response = $this->_request([
             'json' => true,
         ], $accessToken)->put(
-            $this->endpoint('/sales/' . $updater->getId()),
+            $this->_endpoint('/sales/' . $updater->getId()),
             [
                 'sale' => $updater->toArrayRecursive(),
             ],
@@ -135,10 +135,10 @@ class Sales extends Service
         ?bool $restock = false,
         ?string $accessToken = null,
     ): Sale|Errors {
-        $response = $this->request([
+        $response = $this->_request([
             'json' => true,
         ], $accessToken)->put(
-            $this->endpoint('/sales/' . $id . '/cancel'),
+            $this->_endpoint('/sales/' . $id . '/cancel'),
             [
                 'restock' => $restock,
             ],
@@ -165,10 +165,10 @@ class Sales extends Service
         MailType $mailType,
         ?string $accessToken = null,
     ): bool|Errors {
-        $response = $this->request([
+        $response = $this->_request([
             'json' => true,
         ], $accessToken)->post(
-            $this->endpoint('/sales/' . $id . '/mails'),
+            $this->_endpoint('/sales/' . $id . '/mails'),
             [
                 'mail' => [
                     'type' => $mailType->value,

@@ -22,8 +22,8 @@ class Product extends Service
      */
     public function groups(?string $accessToken = null): Collection|Errors
     {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/groups'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/groups'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);
@@ -43,8 +43,8 @@ class Product extends Service
      */
     public function categories(?string $accessToken = null): Collection|Errors
     {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/categories'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/categories'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);

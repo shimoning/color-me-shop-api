@@ -20,8 +20,8 @@ class Shop extends Service
      */
     public function get(?string $accessToken = null): ShopEntity|Errors
     {
-        $response = $this->request([], $accessToken)->get(
-            $this->endpoint('/shop'),
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/shop'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);
