@@ -49,13 +49,27 @@ class InvalidFieldException extends ColorMeApiException
         mixed $actual,
         ?\Throwable $previous = null,
     ): self {
+        $actualType = \get_debug_type($actual);
+        if ($expected === $actualType) {
+            return new self(
+                \sprintf(
+                    '%s の API フィールド『%s』が不正です。%s として扱える値に変換できませんでした。',
+                    $class,
+                    $apiField,
+                    $expected,
+                ),
+                0,
+                $previous,
+            );
+        }
+
         return new self(
             \sprintf(
                 '%s の API フィールド『%s』が不正です。%s を期待しましたが %s でした。',
                 $class,
                 $apiField,
                 $expected,
-                \get_debug_type($actual),
+                $actualType,
             ),
             0,
             $previous,

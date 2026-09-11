@@ -122,7 +122,7 @@ class Entity
         }
 
         if (! self::accepts($reflection->getType(), $hydrated, $reflection)) {
-            throw InvalidFieldException::for(static::class, $apiField, $expected, $value);
+            throw InvalidFieldException::for(static::class, $apiField, $expected, $hydrated);
         }
 
         $reflection->setValue($this, $hydrated);

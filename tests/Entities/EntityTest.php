@@ -19,6 +19,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeParentEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\DnfIntersectionValue;
+use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
 
 class EntityTest extends TestCase
 {
@@ -351,6 +352,17 @@ class EntityTest extends TestCase
                 'string',
             ],
         ];
+    }
+
+    public function test_変換後の型不一致は変換後の実型を示す(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            HydratedTypeMismatchEntity::class . ' の API フィールド『child』が不正です。'
+            . 'array を期待しましたが ' . NestedEntity::class . ' でした。',
+        );
+
+        new HydratedTypeMismatchEntity(['child' => ['label' => 'child']]);
     }
 
     public function test_self型はプロパティの宣言クラスとして検証する(): void

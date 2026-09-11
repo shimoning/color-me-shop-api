@@ -58,4 +58,28 @@ class ExceptionTest extends TestCase
         );
         $this->assertSame($previous, $exception->getPrevious());
     }
+
+    public function test_期待型と実型の表示が同じ場合も矛盾したメッセージを生成しない(): void
+    {
+        $previous = new \RuntimeException('conversion failed');
+
+        $exception = InvalidFieldException::for(
+            self::class,
+            'items',
+            'array',
+            [],
+            $previous,
+        );
+
+        $this->assertSame(
+            self::class . ' の API フィールド『items』が不正です。'
+            . 'array として扱える値に変換できませんでした。',
+            $exception->getMessage(),
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/(.+) を期待しましたが \1 でした。/u',
+            $exception->getMessage(),
+        );
+        $this->assertSame($previous, $exception->getPrevious());
+    }
 }
