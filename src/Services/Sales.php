@@ -34,14 +34,13 @@ class Sales extends Service
             $this->_endpoint('/sales'),
             $searchParameters->toArrayRecursive(),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return new Page(
-            Collection::cast(Sale::class, $data['sales'] ?? []),
-            new Pagination($data['meta'] ?? []),
+        return $this->_handle(
+            $response,
+            fn(?array $data): Page => new Page(
+                Collection::cast(Sale::class, $data['sales'] ?? []),
+                new Pagination($data['meta'] ?? []),
+            ),
         );
     }
 
@@ -59,11 +58,8 @@ class Sales extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/sales/' . $id),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
-        return new Sale($data['sale'] ?? []);
+
+        return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
     }
 
     /**
@@ -85,11 +81,8 @@ class Sales extends Service
                 'make_date' => $dateTime->format('Y-m-d'),
             ],
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
-        return new Stat($data['sales_stat'] ?? []);
+
+        return $this->_handle($response, fn(?array $data): Stat => new Stat($data['sales_stat'] ?? []));
     }
 
     /**
@@ -113,11 +106,8 @@ class Sales extends Service
                 'sale' => $updater->toArrayRecursive(),
             ],
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
-        return new Sale($data['sale'] ?? []);
+
+        return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
     }
 
     /**
@@ -143,11 +133,8 @@ class Sales extends Service
                 'restock' => $restock,
             ],
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
-        return new Sale($data['sale'] ?? []);
+
+        return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
     }
 
     /**
@@ -175,9 +162,7 @@ class Sales extends Service
                 ],
             ],
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        return true;
+
+        return $this->_handle($response, fn(?array $_data): bool => true);
     }
 }

@@ -23,11 +23,7 @@ class Shop extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/shop'),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return new ShopEntity($data['shop'] ?? []);
+        return $this->_handle($response, fn(?array $data): ShopEntity => new ShopEntity($data['shop'] ?? []));
     }
 }

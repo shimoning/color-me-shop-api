@@ -24,12 +24,11 @@ class Delivery extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/deliveries'),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return Collection::cast(DeliveryEntity::class, $data['deliveries'] ?? []);
+        return $this->_handle(
+            $response,
+            fn(?array $data): Collection => Collection::cast(DeliveryEntity::class, $data['deliveries'] ?? []),
+        );
     }
 
     // TODO: 配送日時設定を取得
