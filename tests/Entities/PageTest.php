@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Collection;
@@ -102,5 +103,85 @@ class PageTest extends TestCase
         );
 
         $this->assertSame(['x'], \array_map(fn($item) => $item->getLabel(), $page->all()));
+    }
+
+    #[DataProvider('buildCompatibilityProvider')]
+    public function test_buildは旧生成処理と同じPageを生成する(array $data, string $key, string $metaKey): void
+    {
+        $expected = new Page(
+            Collection::cast(NestedEntity::class, $data[$key] ?? []),
+            new Pagination($data[$metaKey] ?? []),
+        );
+
+        $actual = Page::build(NestedEntity::class, $data, $key, $metaKey);
+
+        $this->assertSame(\serialize($expected), \serialize($actual));
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>, string, string}>
+     */
+    public static function buildCompatibilityProvider(): array
+    {
+        return [
+            'metaが存在しない' => [
+                ['items' => [['label' => 'x']]],
+                'items',
+                'meta',
+            ],
+            '要素キーの値が空配列' => [
+                [
+                    'items' => [],
+                    'meta' => ['total' => 0, 'limit' => 10, 'offset' => 0],
+                ],
+                'items',
+                'meta',
+            ],
+            'metaキーをpaginationへ差し替える' => [
+                [
+                    'items' => [['label' => 'x']],
+                    'pagination' => ['total' => 1, 'limit' => 20, 'offset' => 5],
+                ],
+                'items',
+                'pagination',
+            ],
+        ];
+    }
+
+    public function test_meta欠損時のページング取得は旧生成処理と同じErrorになる(): void
+    {
+        $data = ['items' => [['label' => 'x']]];
+        $expected = new Page(
+            Collection::cast(NestedEntity::class, $data['items']),
+            new Pagination([]),
+        );
+        $actual = Page::build(NestedEntity::class, $data, 'items');
+        $getters = [
+            'getTotal' => static fn(Page $page): int => $page->getTotal(),
+            'getLimit' => static fn(Page $page): int => $page->getLimit(),
+            'getOffset' => static fn(Page $page): int => $page->getOffset(),
+        ];
+
+        // Pagination に初期値を追加する場合は、この現状互換性テストも更新する。
+        foreach ($getters as $method => $getter) {
+            $expectedError = null;
+            try {
+                $getter($expected);
+            } catch (\Error $error) {
+                $expectedError = $error;
+            }
+
+            $actualError = null;
+            try {
+                $getter($actual);
+            } catch (\Error $error) {
+                $actualError = $error;
+            }
+
+            $this->assertInstanceOf(\Error::class, $expectedError, $method);
+            $this->assertInstanceOf(\Error::class, $actualError, $method);
+            $this->assertSame($expectedError::class, $actualError::class, $method);
+            $this->assertSame($expectedError->getMessage(), $actualError->getMessage(), $method);
+        }
     }
 }
