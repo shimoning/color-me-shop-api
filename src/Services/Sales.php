@@ -35,7 +35,13 @@ class Sales extends Service
 
         return $this->_handle(
             $response,
-            fn(?array $data): Page => Page::build(Sale::class, $data, 'sales'),
+            fn(?array $data): Page => Page::build(
+                Sale::class,
+                $data,
+                'sales',
+                'meta',
+                'GET /v1/sales のレスポンス',
+            ),
         );
     }
 
