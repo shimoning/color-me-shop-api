@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PlainEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
@@ -181,6 +182,25 @@ class EntityTest extends TestCase
         $this->assertSame([MailState::SENT, MailState::NOT_YET], $entity->getStates());
     }
 
+    public function test_array指定のenumフィールドに未知の値があると要素型と原因を示す(): void
+    {
+        try {
+            new ComplexEntity(['states' => ['sent', 'unknown']]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ComplexEntity::class . ' の API フィールド『states』が不正です。'
+                . '配列要素を ' . MailState::class . ' に変換できませんでした。'
+                . '原因: 未知の enum 値です。',
+                $exception->getMessage(),
+            );
+            $this->assertInstanceOf(\UnexpectedValueException::class, $exception->getPrevious());
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
     // --- 欠損・不正フィールド ---------------------------------------------
 
     public function test_非nullableフィールドの欠損はgetter呼び出し時に汎用例外を投げる(): void
@@ -200,6 +220,13 @@ class EntityTest extends TestCase
         $entity = new RequiredEntity([]);
 
         $this->assertNull($entity->getDescription());
+    }
+
+    public function test_private宣言のフィールドを検証して初期化する(): void
+    {
+        $entity = new PrivateFieldEntity(['name' => '山田']);
+
+        $this->assertSame('山田', $entity->getName());
     }
 
     #[DataProvider('invalidFieldProvider')]

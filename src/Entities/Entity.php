@@ -108,6 +108,16 @@ class Entity
         try {
             $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
         } catch (\Throwable $error) {
+            $elementType = self::arrayElementType($objectField);
+            if ($elementType !== null) {
+                throw InvalidFieldException::forArrayElement(
+                    static::class,
+                    $apiField,
+                    $elementType,
+                    $error,
+                );
+            }
+
             throw InvalidFieldException::for(static::class, $apiField, $expected, $value, $error);
         }
 
@@ -116,6 +126,21 @@ class Entity
         }
 
         $reflection->setValue($this, $hydrated);
+    }
+
+    private static function arrayElementType(mixed $objectField): ?string
+    {
+        if (! \is_array($objectField) || empty($objectField['array'])) {
+            return null;
+        }
+
+        foreach (['entity', 'value', 'enum'] as $key) {
+            if (isset($objectField[$key]) && \is_string($objectField[$key])) {
+                return $objectField[$key];
+            }
+        }
+
+        return null;
     }
 
     private static function property(string $class, string $property): ReflectionProperty

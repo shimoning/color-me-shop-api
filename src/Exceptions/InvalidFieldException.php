@@ -7,6 +7,25 @@ namespace Shimoning\ColorMeShopApi\Exceptions;
  */
 class InvalidFieldException extends ColorMeApiException
 {
+    public static function forArrayElement(
+        string $class,
+        string $apiField,
+        string $expected,
+        \Throwable $previous,
+    ): self {
+        return new self(
+            \sprintf(
+                '%s の API フィールド『%s』が不正です。配列要素を %s に変換できませんでした。原因: %s',
+                $class,
+                $apiField,
+                $expected,
+                $previous->getMessage(),
+            ),
+            0,
+            $previous,
+        );
+    }
+
     public static function for(
         string $class,
         string $apiField,
