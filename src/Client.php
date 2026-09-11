@@ -5,7 +5,6 @@ namespace Shimoning\ColorMeShopApi;
 use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\MailType;
-use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 
@@ -92,7 +91,7 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop/operation/getShop
      * @param string|null $accessToken
      * @return ShopEntity|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getShop(?string $accessToken = null): ShopEntity|Errors
@@ -100,11 +99,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Shop($this->accessToken, $this->httpClient))->get();
+        return (new Shop($this->accessToken ?? '', $this->httpClient))->get();
     }
 
     /**
@@ -114,7 +109,7 @@ class Client
      * @param SalesSearchParameters|null $searchParameters
      * @param string|null $accessToken
      * @return Page<Sale>|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getSales(
@@ -133,7 +128,7 @@ class Client
      * @param \DateTimeInterface $dateTime
      * @param string|null $accessToken
      * @return SaleStat|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function statSales(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
@@ -148,7 +143,7 @@ class Client
      * @param integer|string $id
      * @param string|null $accessToken
      * @return Sale|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getSale(int|string $id, ?string $accessToken = null): Sale|Errors
@@ -163,7 +158,7 @@ class Client
      * @param SaleUpdater $updater
      * @param string|null $accessToken
      * @return Sale|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateSale(SaleUpdater $updater, ?string $accessToken = null): Sale|Errors
@@ -179,7 +174,7 @@ class Client
      * @param boolean|null $restock
      * @param string|null $accessToken
      * @return Sale|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function cancelSale(
@@ -198,7 +193,7 @@ class Client
      * @param MailType $mailType
      * @param string|null $accessToken
      * @return true|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function sendSalesMail(
@@ -214,11 +209,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return new Sales($this->accessToken, $this->httpClient);
+        return new Sales($this->accessToken ?? '', $this->httpClient);
     }
 
     /**
@@ -227,7 +218,7 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
      * @param string|null $accessToken
      * @return Collection<PaymentEntity>|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getPayments(?string $accessToken = null): Collection|Errors
@@ -235,11 +226,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Payment($this->accessToken, $this->httpClient))->all();
+        return (new Payment($this->accessToken ?? '', $this->httpClient))->all();
     }
 
     /**
@@ -248,7 +235,7 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
      * @param string|null $accessToken
      * @return Collection<DeliveryEntity>|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getDeliveries(?string $accessToken = null): Collection|Errors
@@ -256,11 +243,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Delivery($this->accessToken, $this->httpClient))->all();
+        return (new Delivery($this->accessToken ?? '', $this->httpClient))->all();
     }
 
     /**
@@ -270,7 +253,7 @@ class Client
      * @param CustomerSearchParameters|null $searchParameters
      * @param string|null $accessToken
      * @return Page<CustomerEntity>|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getCustomers(
@@ -280,11 +263,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Customer($this->accessToken, $this->httpClient))
+        return (new Customer($this->accessToken ?? '', $this->httpClient))
             ->page($searchParameters ?? new CustomerSearchParameters([]));
     }
 
@@ -295,7 +274,7 @@ class Client
      * @param integer|string $id
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
@@ -303,11 +282,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Customer($this->accessToken, $this->httpClient))->one($id, $accessToken);
+        return (new Customer($this->accessToken ?? '', $this->httpClient))->one($id, $accessToken);
     }
 
     /**
@@ -316,7 +291,7 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
      * @param string|null $accessToken
      * @return Collection<GroupEntity>|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getProductGroups(?string $accessToken = null): Collection|Errors
@@ -324,11 +299,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Product($this->accessToken, $this->httpClient))->groups();
+        return (new Product($this->accessToken ?? '', $this->httpClient))->groups();
     }
 
     /**
@@ -337,7 +308,7 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
      * @param string|null $accessToken
      * @return Collection<CategoryEntity>|Errors
-     * @throws ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors
@@ -345,10 +316,6 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        if (empty($this->accessToken)) {
-            throw new ParameterException('アクセストークンは必ず指定してください');
-        }
-
-        return (new Product($this->accessToken, $this->httpClient))->categories();
+        return (new Product($this->accessToken ?? '', $this->httpClient))->categories();
     }
 }
