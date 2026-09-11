@@ -11,6 +11,8 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -91,6 +93,34 @@ class SalesTest extends TestCase
         $errors = (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertInstanceOf(Errors::class, $errors);
+    }
+
+    public function test_受注一覧の200応答でmetaが欠損しても要素を保持する(): void
+    {
+        $mock = HttpMock::json(200, '{"sales":[{"id":1001}]}');
+
+        $page = (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+
+        $this->assertInstanceOf(Page::class, $page);
+        $this->assertSame([1001], \array_map(fn($sale) => $sale->getId(), $page->all()));
+        $this->expectException(MissingPaginationException::class);
+        $this->expectExceptionMessage(
+            'GET /v1/sales のレスポンスにページネーション情報「meta」がありません。ページング値を取得できません。',
+        );
+
+        $page->getTotal();
+    }
+
+    public function test_受注一覧の200応答でmetaが不正なら固有例外で早期に失敗する(): void
+    {
+        $mock = HttpMock::json(200, '{"sales":[],"meta":{"total":"0","limit":10,"offset":0}}');
+
+        $this->expectException(InvalidPaginationException::class);
+        $this->expectExceptionMessage(
+            'GET /v1/sales のレスポンスのページネーション情報「meta.total」が不正です。int を期待しましたが string でした。',
+        );
+
+        (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
     }
 
     // --- one --------------------------------------------------------------
