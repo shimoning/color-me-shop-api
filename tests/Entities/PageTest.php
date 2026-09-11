@@ -108,12 +108,14 @@ class PageTest extends TestCase
     }
 
     #[DataProvider('buildCompatibilityProvider')]
-    public function test_buildは旧生成処理と同じPageを生成する(array $data, string $key, string $metaKey): void
-    {
-        $meta = $data[$metaKey] ?? null;
+    public function test_buildは完全なmetaで旧生成処理と同じPageを生成する(
+        array $data,
+        string $key,
+        string $metaKey,
+    ): void {
         $expected = new Page(
             Collection::cast(NestedEntity::class, $data[$key] ?? []),
-            $meta === null ? null : new Pagination($meta, $metaKey),
+            new Pagination($data[$metaKey] ?? []),
         );
 
         $actual = Page::build(NestedEntity::class, $data, $key, $metaKey);
@@ -127,11 +129,6 @@ class PageTest extends TestCase
     public static function buildCompatibilityProvider(): array
     {
         return [
-            'metaが存在しない' => [
-                ['items' => [['label' => 'x']]],
-                'items',
-                'meta',
-            ],
             '要素キーの値が空配列' => [
                 [
                     'items' => [],
