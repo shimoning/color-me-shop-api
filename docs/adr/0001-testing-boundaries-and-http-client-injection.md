@@ -21,8 +21,23 @@ HTTP オブジェクトを内部で直接生成していたため、Service 層�
 - Service に単一の `Request` を注入せず、Guzzle の `ClientInterface` を任意注入する。
   認証や本文形式を含む `RequestOptions` は呼び出しごとに異なり、`Request` の共有では
   正しい境界を作れないためである。既存の必須引数は変えない。出典: `68ab63d`、`1556f38`。
+- 公開ファサードの `Client` にも `ClientInterface` を任意注入し、そこから生成する全 Service
+  へ同じインスタンスを伝播する。既存の呼び出しを壊さず、ファサード経由の通信も外部通信なしで
+  検証可能にするため、第2引数として追加する。出典: `8fce5a9`、`1b68f8d`。
+- `Client` は Service をキャッシュせず、呼び出しごとに生成する。Service はトークン以外の状態を
+  持たず生成コストも小さい一方、キャッシュすると別の `Client` が以前のトークンを持つ Service を
+  共有し得るためである。出典: `8fce5a9`。
+- トークン引数は `null` のみを「未指定」とし、空文字を含む非 `null` 値は明示指定として扱う。
+  空文字は検証で `ParameterException` とし、保持中の旧トークンへフォールバックさせない。
+  マルチテナント利用で別テナントの認証情報を黙って使うより、安全に失敗させるためである。
+  出典: `1b68f8d`。
 - CI と PHPStan level 3 による静的解析を継続し、`composer check` を共通の検証入口とする。
-  出典: `7db9ad1`、`b5ab9ed`、`4293def`。
+  level 4 以降を一律に満たすために、契約を固定する意図的なテストのアサーションや防御コードを
+  損なわず、`baseline` や `ignoreErrors` で指摘を隠さないためである。レベルを引き上げる場合は、
+  `src` と `tests` で解析レベルを分ける構成を選択肢とする。出典: `7db9ad1`、`4293def`。
+- `composer validate` は `--strict --no-check-version` で実行する。`composer.json` の `version`
+  フィールドを置くかはパッケージ管理方針であり、自動テストを通すために変更すべきではないので、
+  その警告だけを検査対象外とする。出典: `b5ab9ed`、`4293def`。
 
 ## 現在の状態
 
@@ -30,6 +45,10 @@ HTTP クライアントの保持と `Request` 生成は `Services\Service` に�
 同じ処理を個別に持つという当初の記述は古いが、注入境界そのものは維持されている。
 `OAuth` は基底 Service の対象外だが、同じく `ClientInterface` を任意注入できる。
 出典: `3cfe677`、`1f7520f`。
+
+公開ファサードも、注入された HTTP クライアントを全 Service へ伝播し、Service を都度生成する。
+トークンの `null` と空文字を区別する挙動、および PHPStan level 3 と抑制を使わない方針も、
+現行の `Client`、`phpstan.neon`、`composer.json` で維持されている。
 
 ページ形式のレスポンス生成は `Page::build()` に集約され、ページネーションの欠損と不正値は
 `MissingPaginationException` と `InvalidPaginationException` で区別する。これにより、固定すべき
