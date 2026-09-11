@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * ショップ情報 API を操作するサービス。
@@ -16,6 +17,7 @@ class Shop extends Service
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop/operation/getShop
      * @param string|null $accessToken
      * @return ShopEntity|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function get(?string $accessToken = null): ShopEntity|Errors

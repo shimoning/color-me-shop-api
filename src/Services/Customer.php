@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * 顧客 API を操作するサービス。
@@ -19,6 +20,7 @@ class Customer extends Service
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
      * @return Page<CustomerEntity>|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function page(
@@ -49,6 +51,7 @@ class Customer extends Service
      * @param int|string $id
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function one(int|string $id, ?string $accessToken = null): CustomerEntity|Errors

@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Constants\MailType;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * 受注 API を操作するサービス。
@@ -22,6 +23,7 @@ class Sales extends Service
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
      * @return Page<Sale>|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function page(
@@ -52,6 +54,7 @@ class Sales extends Service
      * @param int|string $id
      * @param string|null $accessToken
      * @return Sale|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function one(int|string $id, ?string $accessToken = null): Sale|Errors
@@ -70,6 +73,7 @@ class Sales extends Service
      * @param \DateTimeInterface $dateTime
      * @param string|null $accessToken
      * @return Stat|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function stat(
@@ -93,6 +97,7 @@ class Sales extends Service
      * @param SaleUpdater $updater
      * @param string|null $accessToken
      * @return Sale|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function update(
@@ -119,6 +124,7 @@ class Sales extends Service
      * @param bool|null $restock
      * @param string|null $accessToken
      * @return Sale|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function cancel(
@@ -146,6 +152,7 @@ class Sales extends Service
      * @param MailType $mailType
      * @param string|null $accessToken
      * @return true|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function sendMail(
