@@ -7,10 +7,29 @@ namespace Shimoning\ColorMeShopApi\Entities;
  *
  * @template T
  * @extends Collection<T>
+ * @phpstan-consistent-constructor
  */
 class Page extends Collection
 {
     protected Pagination $_pagination;
+
+    /**
+     * API レスポンスからページを生成する。
+     *
+     * @template TEntity of object
+     * @param class-string<TEntity> $class 要素として生成するエンティティクラス
+     * @param mixed $data API レスポンスの配列
+     * @param string $key 要素が格納されているキー
+     * @param string $metaKey ページネーション情報が格納されているキー
+     * @return static<TEntity>
+     */
+    public static function build(string $class, mixed $data, string $key, string $metaKey = 'meta'): static
+    {
+        return new static(
+            Collection::cast($class, $data[$key] ?? []),
+            new Pagination($data[$metaKey] ?? []),
+        );
+    }
 
     /**
      * ページを生成する。

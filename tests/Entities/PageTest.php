@@ -55,4 +55,52 @@ class PageTest extends TestCase
         $this->assertSame(['a', 'b'], $page->all());
         $this->assertSame(2, $page->getTotal());
     }
+
+    public function test_APIレスポンスからPageを生成する(): void
+    {
+        $page = Page::build(
+            NestedEntity::class,
+            [
+                'items' => [['label' => 'x'], ['label' => 'y']],
+                'meta' => ['total' => 2, 'limit' => 10, 'offset' => 0],
+            ],
+            'items',
+        );
+
+        $this->assertSame(Page::class, $page::class);
+        $this->assertSame(['x', 'y'], \array_map(fn($item) => $item->getLabel(), $page->all()));
+        $this->assertSame(2, $page->getTotal());
+        $this->assertSame(10, $page->getLimit());
+        $this->assertSame(0, $page->getOffset());
+    }
+
+    public function test_要素のキーが存在しない場合は空のPageを生成する(): void
+    {
+        $page = Page::build(
+            NestedEntity::class,
+            ['meta' => ['total' => 0, 'limit' => 10, 'offset' => 0]],
+            'items',
+        );
+
+        $this->assertSame([], $page->all());
+    }
+
+    public function test_レスポンスがnullの場合は空のPageを生成する(): void
+    {
+        $page = Page::build(NestedEntity::class, null, 'items');
+
+        $this->assertSame(Page::class, $page::class);
+        $this->assertSame([], $page->all());
+    }
+
+    public function test_metaが存在しない場合もPageを生成する(): void
+    {
+        $page = Page::build(
+            NestedEntity::class,
+            ['items' => [['label' => 'x']]],
+            'items',
+        );
+
+        $this->assertSame(['x'], \array_map(fn($item) => $item->getLabel(), $page->all()));
+    }
 }

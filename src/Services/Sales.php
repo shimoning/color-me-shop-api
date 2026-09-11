@@ -7,9 +7,7 @@ use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
-use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 
 /**
@@ -37,10 +35,7 @@ class Sales extends Service
 
         return $this->_handle(
             $response,
-            fn(?array $data): Page => new Page(
-                Collection::cast(Sale::class, $data['sales'] ?? []),
-                new Pagination($data['meta'] ?? []),
-            ),
+            fn(?array $data): Page => Page::build(Sale::class, $data, 'sales'),
         );
     }
 
