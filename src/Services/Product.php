@@ -2,9 +2,6 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use GuzzleHttp\ClientInterface;
-use Shimoning\ColorMeShopApi\Communicator\Request;
-use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
@@ -13,23 +10,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\Category;
 /**
  * 商品関連 API を操作するサービス。
  */
-class Product
+class Product extends Service
 {
-    protected string $_accessToken;
-    protected ?ClientInterface $_httpClient;
-
-    /**
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group
-     * @param string $accessToken
-     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
-     * @return void
-     */
-    public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
-    {
-        $this->_accessToken = $accessToken;
-        $this->_httpClient = $httpClient;
-    }
-
     /**
      * 商品グループ一覧を取得
      *
@@ -40,10 +22,8 @@ class Product
      */
     public function groups(?string $accessToken = null): Collection|Errors
     {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/groups',
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/groups'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);
@@ -63,10 +43,8 @@ class Product
      */
     public function categories(?string $accessToken = null): Collection|Errors
     {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/categories',
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/categories'),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);

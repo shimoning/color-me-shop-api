@@ -2,9 +2,6 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use GuzzleHttp\ClientInterface;
-use Shimoning\ColorMeShopApi\Communicator\Request;
-use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
@@ -18,23 +15,8 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 /**
  * 受注 API を操作するサービス。
  */
-class Sales
+class Sales extends Service
 {
-    protected string $_accessToken;
-    protected ?ClientInterface $_httpClient;
-
-    /**
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale
-     * @param string $accessToken
-     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
-     * @return void
-     */
-    public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
-    {
-        $this->_accessToken = $accessToken;
-        $this->_httpClient = $httpClient;
-    }
-
     /**
      * 受注データのリストを取得
      *
@@ -48,10 +30,8 @@ class Sales
         SearchParameters $searchParameters,
         ?string $accessToken = null,
     ): Page|Errors {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/sales',
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/sales'),
             $searchParameters->toArrayRecursive(),
         );
         if (! $response->isSuccess()) {
@@ -76,10 +56,8 @@ class Sales
      */
     public function one(int|string $id, ?string $accessToken = null): Sale|Errors
     {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/sales/' . $id,
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/sales/' . $id),
         );
         if (! $response->isSuccess()) {
             return Errors::build($response);
@@ -101,10 +79,8 @@ class Sales
         \DateTimeInterface $dateTime,
         ?string $accessToken = null,
     ): Stat|Errors {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
-        ]), $this->_httpClient))->get(
-            'https://api.shop-pro.jp/v1/sales/stat',
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/sales/stat'),
             [
                 'make_date' => $dateTime->format('Y-m-d'),
             ],
@@ -129,11 +105,10 @@ class Sales
         SaleUpdater $updater,
         ?string $accessToken = null,
     ): Sale|Errors {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
+        $response = $this->_request([
             'json' => true,
-        ]), $this->_httpClient))->put(
-            'https://api.shop-pro.jp/v1/sales/' . $updater->getId(),
+        ], $accessToken)->put(
+            $this->_endpoint('/sales/' . $updater->getId()),
             [
                 'sale' => $updater->toArrayRecursive(),
             ],
@@ -160,11 +135,10 @@ class Sales
         ?bool $restock = false,
         ?string $accessToken = null,
     ): Sale|Errors {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
+        $response = $this->_request([
             'json' => true,
-        ]), $this->_httpClient))->put(
-            'https://api.shop-pro.jp/v1/sales/' . $id . '/cancel',
+        ], $accessToken)->put(
+            $this->_endpoint('/sales/' . $id . '/cancel'),
             [
                 'restock' => $restock,
             ],
@@ -191,11 +165,10 @@ class Sales
         MailType $mailType,
         ?string $accessToken = null,
     ): bool|Errors {
-        $response = (new Request(new RequestOptions([
-            'authorization' => $accessToken ?? $this->_accessToken,
+        $response = $this->_request([
             'json' => true,
-        ]), $this->_httpClient))->post(
-            'https://api.shop-pro.jp/v1/sales/' . $id . '/mails',
+        ], $accessToken)->post(
+            $this->_endpoint('/sales/' . $id . '/mails'),
             [
                 'mail' => [
                     'type' => $mailType->value,
