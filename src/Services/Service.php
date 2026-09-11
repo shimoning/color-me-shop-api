@@ -3,8 +3,10 @@
 namespace Shimoning\ColorMeShopApi\Services;
 
 use GuzzleHttp\ClientInterface;
+use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
+use Shimoning\ColorMeShopApi\Communicator\Response;
 
 /**
  * カラーミーショップ API サービスの基底クラス。
@@ -47,5 +49,22 @@ abstract class Service
             ...$options,
             'authorization' => $accessToken ?? $this->_accessToken,
         ]), $this->_httpClient);
+    }
+
+    /**
+     * API レスポンスのエラーを処理し、成功時のボディを変換する。
+     *
+     * @template T
+     * @param Response $response API レスポンス
+     * @param callable(?array): T $mapper 成功時のパース済みボディを変換する関数
+     * @return T|Errors
+     */
+    protected function _handle(Response $response, callable $mapper): mixed
+    {
+        if (! $response->isSuccess()) {
+            return Errors::build($response);
+        }
+
+        return $mapper($response->getParsedBody());
     }
 }

@@ -24,11 +24,10 @@ class Payment extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/payments'),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return Collection::cast(PaymentEntity::class, $data['payments'] ?? []);
+        return $this->_handle(
+            $response,
+            fn(?array $data): Collection => Collection::cast(PaymentEntity::class, $data['payments'] ?? []),
+        );
     }
 }

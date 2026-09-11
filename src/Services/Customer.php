@@ -31,14 +31,13 @@ class Customer extends Service
             $this->_endpoint('/customers'),
             $searchParameters->toArrayRecursive(),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return new Page(
-            Collection::cast(CustomerEntity::class, $data['customers'] ?? []),
-            new Pagination($data['meta'] ?? []),
+        return $this->_handle(
+            $response,
+            fn(?array $data): Page => new Page(
+                Collection::cast(CustomerEntity::class, $data['customers'] ?? []),
+                new Pagination($data['meta'] ?? []),
+            ),
         );
     }
 
@@ -56,11 +55,11 @@ class Customer extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/customers/' . $id),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
-        return new CustomerEntity($data['customer'] ?? []);
+
+        return $this->_handle(
+            $response,
+            fn(?array $data): CustomerEntity => new CustomerEntity($data['customer'] ?? []),
+        );
     }
 
     // TODO: create

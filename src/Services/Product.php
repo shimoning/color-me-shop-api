@@ -25,12 +25,11 @@ class Product extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/groups'),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return Collection::cast(Group::class, $data['groups'] ?? []);
+        return $this->_handle(
+            $response,
+            fn(?array $data): Collection => Collection::cast(Group::class, $data['groups'] ?? []),
+        );
     }
 
     /**
@@ -46,11 +45,10 @@ class Product extends Service
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/categories'),
         );
-        if (! $response->isSuccess()) {
-            return Errors::build($response);
-        }
-        $data = $response->getParsedBody();
 
-        return Collection::cast(Category::class, $data['categories'] ?? []);
+        return $this->_handle(
+            $response,
+            fn(?array $data): Collection => Collection::cast(Category::class, $data['categories'] ?? []),
+        );
     }
 }
