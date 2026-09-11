@@ -53,6 +53,9 @@ HTTP オブジェクトを内部で直接生成していたため、Service 層�
 として採用したものではなく、未対応の現状である。PHPStan level 3 と抑制を使わない方針も、現行の
 `phpstan.neon`、`composer.json` で維持されている。
 
+アクセストークン検証に関するこの判断は、[ADR 0005](0005-consolidate-access-token-validation-into-service.md)
+により更新された。
+
 ページ形式のレスポンス生成は `Page::build()` に集約され、ページネーションの欠損と不正値は
 `MissingPaginationException` と `InvalidPaginationException` で区別する。これにより、固定すべき
 HTTP 応答契約が明示された。出典: `ae36b5a`、`2e13412`、`ead46f7`。

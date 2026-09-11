@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * 決済設定 API を操作するサービス。
@@ -17,6 +18,7 @@ class Payment extends Service
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
      * @param string|null $accessToken
      * @return Collection<PaymentEntity>|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function all(?string $accessToken = null): Collection|Errors

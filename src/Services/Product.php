@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * 商品関連 API を操作するサービス。
@@ -18,6 +19,7 @@ class Product extends Service
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
      * @param string|null $accessToken
      * @return Collection<Group>|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function groups(?string $accessToken = null): Collection|Errors
@@ -38,6 +40,7 @@ class Product extends Service
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
      * @param string|null $accessToken
      * @return Collection<Category>|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function categories(?string $accessToken = null): Collection|Errors
