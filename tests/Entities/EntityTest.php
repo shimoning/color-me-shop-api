@@ -94,6 +94,24 @@ class EntityTest extends TestCase
         $this->assertSame('solo', $entity->getChildren()[0]->getLabel());
     }
 
+    public function test_array指定のentityフィールドに非配列が来たらフィールドの型不一致を示す(): void
+    {
+        try {
+            new ComplexEntity(['children' => 'invalid']);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ComplexEntity::class . ' の API フィールド『children』が不正です。array を期待しましたが string でした。',
+                $exception->getMessage(),
+            );
+            $this->assertStringNotContainsString('Entity::isHash()', $exception->getMessage());
+            $this->assertStringNotContainsString(\dirname(__DIR__, 2), $exception->getMessage());
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
     public function test_配列指定でないobjectFieldは単体のエンティティを生成する(): void
     {
         $entity = new ComplexEntity(['bare' => ['label' => 'b']]);
@@ -180,6 +198,24 @@ class EntityTest extends TestCase
         $entity = new ComplexEntity(['states' => ['sent', 'not_yet']]);
 
         $this->assertSame([MailState::SENT, MailState::NOT_YET], $entity->getStates());
+    }
+
+    public function test_array指定のenumフィールドに非配列が来たらフィールドの型不一致を示す(): void
+    {
+        try {
+            new ComplexEntity(['states' => 'sent']);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ComplexEntity::class . ' の API フィールド『states』が不正です。array を期待しましたが string でした。',
+                $exception->getMessage(),
+            );
+            $this->assertStringNotContainsString('array_map()', $exception->getMessage());
+            $this->assertStringNotContainsString(\dirname(__DIR__, 2), $exception->getMessage());
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
     public function test_array指定のenumフィールドに未知の値があると要素型と原因を示す(): void

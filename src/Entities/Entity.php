@@ -109,7 +109,7 @@ class Entity
             $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
         } catch (\Throwable $error) {
             $elementType = self::arrayElementType($objectField);
-            if ($elementType !== null) {
+            if ($elementType !== null && \is_array($value)) {
                 throw InvalidFieldException::forArrayElement(
                     static::class,
                     $apiField,
