@@ -5,9 +5,9 @@ namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * private 宣言フィールドの hydrate 検証用テストダブル。
+ * 継承された private フィールドの検証用テストダブル。
  */
-class PrivateFieldEntity extends Entity
+class InheritedPrivateFieldParentEntity extends Entity
 {
     private string $name;
 
@@ -16,5 +16,10 @@ class PrivateFieldEntity extends Entity
         $this->assertFieldInitialized('name');
 
         return $this->name;
+    }
+
+    public function assertUnknownField(): void
+    {
+        $this->assertFieldInitialized('unknownField');
     }
 }
