@@ -51,15 +51,21 @@ class Errors extends Collection
             $items = [];
         }
 
-        // 配列でない要素は除外する。元の Response は保持するため、
-        // 呼び出し側は HTTP ステータスと生のレスポンスから詳細を確認できる。
-        $items = \array_values(\array_filter($items, static fn(mixed $item): bool => \is_array($item)));
+        $errors = [];
+        foreach ($items as $item) {
+            if (! \is_array($item)) {
+                continue;
+            }
 
-        return new self(
-            $response,
-            \array_map(function (array $error) {
-                return new Error($error);
-            }, $items),
-        );
+            try {
+                $errors[] = new Error($item);
+            } catch (\Throwable) {
+                // 構築できない要素だけを除外する。元の Response は保持するため、
+                // 呼び出し側は HTTP ステータスと生のレスポンスから詳細を確認できる。
+                continue;
+            }
+        }
+
+        return new self($response, $errors);
     }
 }

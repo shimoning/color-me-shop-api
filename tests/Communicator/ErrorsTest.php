@@ -143,6 +143,47 @@ class ErrorsTest extends TestCase
         $this->assertSame($body, $errors->getResponse()->getRawBody());
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function invalidArrayElementProvider(): array
+    {
+        return [
+            '数値キーを持つネスト配列' => ['{"errors":[[["nested"]]]}'],
+            'message が配列' => ['{"errors":[{"message":["nested"]}]}'],
+            'status が null' => ['{"errors":[{"status":null}]}'],
+        ];
+    }
+
+    /**
+     * Error の構築中に Throwable となる要素はスキップし、
+     * 呼び出し側が元レスポンスから障害内容を確認できること。
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidArrayElementProvider')]
+    public function test_構築できない配列要素は無視して元レスポンスを保持する(string $body): void
+    {
+        $response = $this->makeResponse(502, $body);
+
+        $errors = Errors::build($response);
+
+        $this->assertSame([], $errors->all());
+        $this->assertSame($response, $errors->getResponse());
+        $this->assertSame(502, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    public function test_構築できない要素だけをスキップして正常な要素を保持する(): void
+    {
+        $body = '{"errors":[[["nested"]],{"code":"422210","message":"invalid","status":422}]}';
+        $response = $this->makeResponse(422, $body);
+
+        $errors = Errors::build($response);
+
+        $this->assertSame(1, $errors->count());
+        $this->assertSame('422210', $errors[0]->getCode());
+        $this->assertSame($response, $errors->getResponse());
+    }
+
     // --- Response の保持 ---------------------------------------------------
 
     public function test_元のレスポンスを保持している(): void

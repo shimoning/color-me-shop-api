@@ -9,6 +9,7 @@ use ReflectionMethod;
 use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 
 /**
  * src/Entities 配下の全エンティティが満たすべき共通契約を検証する。
@@ -184,8 +185,14 @@ class EntityContractTest extends TestCase
                 $getter->invoke($entity);
             } catch (MissingFieldException $error) {
                 $apiField = $class::apiFieldName($property->getName());
-                $this->assertStringContainsString(
-                    $apiField,
+                $expectedMessage = $error instanceof MissingPaginationException
+                    ? \sprintf(
+                        'API レスポンスにページネーション情報「meta.%s」がありません。ページング値を取得できません。',
+                        $apiField,
+                    )
+                    : MissingFieldException::for($class, $apiField)->getMessage();
+                $this->assertSame(
+                    $expectedMessage,
                     $error->getMessage(),
                     \sprintf(
                         '%s::%s() が期待する API フィールド『%s』を報告しない',
