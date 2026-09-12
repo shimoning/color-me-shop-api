@@ -27,6 +27,8 @@ class Weight extends Entity
      */
     public function getWeight(): int
     {
+        $this->assertFieldInitialized('weight');
+
         return $this->weight;
     }
 
@@ -36,6 +38,8 @@ class Weight extends Entity
      */
     public function getAreas(): array
     {
+        $this->assertFieldInitialized('areas');
+
         return $this->areas;
     }
 }

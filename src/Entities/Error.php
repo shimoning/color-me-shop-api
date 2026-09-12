@@ -18,6 +18,8 @@ class Error extends Entity
      */
     public function getCode(): string
     {
+        $this->assertFieldInitialized('code');
+
         return $this->code;
     }
 
@@ -27,6 +29,8 @@ class Error extends Entity
      */
     public function getMessage(): string
     {
+        $this->assertFieldInitialized('message');
+
         return $this->message;
     }
 
@@ -45,6 +49,8 @@ class Error extends Entity
      */
     public function getStatus(): int
     {
+        $this->assertFieldInitialized('status');
+
         return $this->status;
     }
 }

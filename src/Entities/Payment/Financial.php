@@ -30,6 +30,8 @@ class Financial extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
+
         return $this->name;
     }
 
@@ -39,6 +41,8 @@ class Financial extends Entity
      */
     public function getBranchName(): string
     {
+        $this->assertFieldInitialized('branchName');
+
         return $this->branchName;
     }
 
@@ -48,6 +52,8 @@ class Financial extends Entity
      */
     public function getKouzaType(): KouzaType
     {
+        $this->assertFieldInitialized('kouzaType');
+
         return $this->kouzaType;
     }
 
@@ -57,6 +63,8 @@ class Financial extends Entity
      */
     public function getKouzaNumber(): string
     {
+        $this->assertFieldInitialized('kouzaNumber');
+
         return $this->kouzaNumber;
     }
 
@@ -66,6 +74,8 @@ class Financial extends Entity
      */
     public function getKouzaName(): string
     {
+        $this->assertFieldInitialized('kouzaName');
+
         return $this->kouzaName;
     }
 }
