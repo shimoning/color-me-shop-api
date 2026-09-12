@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleTest extends TestCase
 {
@@ -52,5 +53,21 @@ class SaleTest extends TestCase
         $this->assertFalse($sale->isCanceled());
         $this->assertSame(MailState::SENT, $sale->getAcceptedMailState());
         $this->assertSame(PointState::FIXED, $sale->getPointState());
+    }
+
+    public function test_IDだけの部分応答で顧客が欠損していれば固有例外になる(): void
+    {
+        $sale = new Sale(['id' => 1001]);
+
+        $this->expectException(MissingFieldException::class);
+
+        $sale->getCustomer();
+    }
+
+    public function test_顧客がある応答ではCustomerに変換して取得できる(): void
+    {
+        $sale = new Sale(['customer' => ['id' => 501]]);
+
+        $this->assertSame(501, $sale->getCustomer()->getId());
     }
 }
