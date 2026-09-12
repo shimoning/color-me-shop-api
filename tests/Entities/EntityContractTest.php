@@ -19,51 +19,6 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 class EntityContractTest extends TestCase
 {
     /**
-     * PR2 以降で MissingFieldException へ移行するまで暫定許容する未初期化フィールド。
-     *
-     * @var array<class-string, array<string>>
-     */
-    private const TEMPORARILY_UNINITIALIZED_FIELDS = [
-        \Shimoning\ColorMeShopApi\Entities\Delivery\Area::class => [
-            'prefId', 'prefName', 'charge',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Delivery\Weight::class => [
-            'weight', 'areas',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Error::class => [
-            'code', 'message', 'status',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken::class => [
-            'accessToken', 'tokenType', 'createdAt',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Payment\Brand::class => [
-            'id', 'name',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Payment\Card::class => [
-            'brands',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Payment\Cod::class => [
-            'changeable', 'fees', 'feeMax', 'changeableByTotal',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Payment\Financial::class => [
-            'name', 'branchName', 'kouzaType', 'kouzaNumber', 'kouzaName',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Payment\Payment::class => [
-            'id', 'accountId', 'name', 'type', 'display', 'useMobile', 'makeDate', 'updateDate',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Product\Group::class => [
-            'id', 'accountId', 'name', 'displayState',
-        ],
-    ];
-
-    /**
-     * PR2 以降で MissingFieldException へ移行するまで暫定許容する null 戻り値フィールド。
-     *
-     * @var array<class-string, array<string>>
-     */
-    private const TEMPORARILY_NULL_RETURN_FIELDS = [];
-
-    /**
      * @return array<string, array{class-string}>
      */
     public static function entityProvider(): array
@@ -167,8 +122,6 @@ class EntityContractTest extends TestCase
         $entity = new $class([]);
 
         $undefined = [];
-        $uninitialized = [];
-        $nullReturns = [];
         // 「未宣言プロパティの参照」だけを捕捉する。それ以外は false を返して
         // 通常のエラー処理に委ね、想定外の警告が握りつぶされないようにする
         \set_error_handler(static function (int $severity, string $message) use (&$undefined): bool {
@@ -184,24 +137,7 @@ class EntityContractTest extends TestCase
                 try {
                     $getter->invoke($entity);
                 } catch (MissingFieldException) {
-                    // 基底の欠損検証を適用済みの getter は汎用例外を正常系として扱う。
-                } catch (\Error $error) {
-                    // 個別 Entity への適用は PR2〜PR4 のため、既知のケースだけ暫定許容する。
-                    if (\preg_match(
-                        '/::\$([A-Za-z0-9_]+) must not be accessed before initialization/',
-                        $error->getMessage(),
-                        $matches,
-                    ) === 1) {
-                        $uninitialized[] = $matches[1];
-                        continue;
-                    }
-
-                    if ($error instanceof \TypeError && \str_contains($error->getMessage(), 'null returned')) {
-                        $nullReturns[] = self::propertyNameFor($getter);
-                        continue;
-                    }
-
-                    throw $error;
+                    // 欠損契約を適用済みの getter は固有例外を正常系として扱う。
                 }
             }
         } finally {
@@ -209,52 +145,51 @@ class EntityContractTest extends TestCase
         }
 
         $this->assertSame([], $undefined, $reflection->getShortName() . ' に未宣言のプロパティ参照がある');
-        $this->assertAllowedFailures(
-            $class,
-            '未初期化 Error',
-            self::TEMPORARILY_UNINITIALIZED_FIELDS[$class] ?? [],
-            $uninitialized,
-        );
-        $this->assertAllowedFailures(
-            $class,
-            'null return TypeError',
-            self::TEMPORARILY_NULL_RETURN_FIELDS[$class] ?? [],
-            $nullReturns,
-        );
-    }
-
-    private static function propertyNameFor(ReflectionMethod $getter): string
-    {
-        return \lcfirst((string) \preg_replace('/^(get|is)/', '', $getter->getName()));
     }
 
     /**
-     * @param array<string> $expected
-     * @param array<string> $actual
+     * 既定値のない非 null 許容プロパティは、空のレスポンスで getter を呼ぶと
+     * PHP の未初期化 Error ではなく MissingFieldException を投げること。
      */
-    private function assertAllowedFailures(
-        string $class,
-        string $failure,
-        array $expected,
-        array $actual,
-    ): void {
-        \sort($expected);
-        \sort($actual);
-
-        $this->assertSame(
-            $expected,
-            $actual,
-            $class . ' の暫定許容していない ' . $failure . '、または解消済みの許容があります',
-        );
-    }
-
-    public function test_暫定許容件数が固定されている(): void
+    #[DataProvider('entityProvider')]
+    public function test_非nullableのプロパティは空のレスポンスで固有例外を投げる(string $class): void
     {
-        $uninitialized = \array_sum(\array_map('count', self::TEMPORARILY_UNINITIALIZED_FIELDS));
-        $nullReturns = \array_sum(\array_map('count', self::TEMPORARILY_NULL_RETURN_FIELDS));
+        $reflection = new ReflectionClass($class);
+        $entity = new $class([]);
 
-        $this->assertSame(35, $uninitialized);
-        $this->assertSame(0, $nullReturns);
+        $checked = 0;
+        foreach ($reflection->getProperties() as $property) {
+            if (! self::isRequired($property)) {
+                continue;
+            }
+            $getter = self::findGetter($reflection, $property);
+            if ($getter === null) {
+                continue;
+            }
+
+            $checked++;
+            try {
+                $getter->invoke($entity);
+            } catch (MissingFieldException) {
+                continue;
+            } catch (\Throwable $error) {
+                $this->fail(\sprintf(
+                    '%s::%s() が %s を投げた: %s',
+                    $reflection->getShortName(),
+                    $getter->getName(),
+                    $error::class,
+                    $error->getMessage(),
+                ));
+            }
+
+            $this->fail(\sprintf(
+                '%s::%s() が MissingFieldException を投げない',
+                $reflection->getShortName(),
+                $getter->getName(),
+            ));
+        }
+
+        $this->addToAssertionCount($checked === 0 ? 1 : $checked);
     }
 
     /**
@@ -298,6 +233,16 @@ class EntityContractTest extends TestCase
         $type = $property->getType();
 
         return $type !== null && $type->allowsNull();
+    }
+
+    private static function isRequired(ReflectionProperty $property): bool
+    {
+        if ($property->isStatic() || $property->isPrivate() || $property->hasDefaultValue()) {
+            return false;
+        }
+        $type = $property->getType();
+
+        return $type !== null && ! $type->allowsNull();
     }
 
     private static function findGetter(ReflectionClass $reflection, ReflectionProperty $property): ?ReflectionMethod

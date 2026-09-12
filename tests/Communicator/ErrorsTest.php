@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Error;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class ErrorsTest extends TestCase
@@ -82,6 +83,25 @@ class ErrorsTest extends TestCase
         $errors = Errors::build($this->makeResponse(400, '{"errors":[]}'));
 
         $this->assertSame(0, $errors->count());
+    }
+
+    public function test_部分的なエラー要素でも利用可能な情報を保持して組み立てられる(): void
+    {
+        $errors = Errors::build($this->makeResponse(422, '{"errors":[{"message":"invalid"}]}'));
+
+        $this->assertSame(1, $errors->count());
+        $this->assertSame('invalid', $errors[0]->getMessage());
+        $this->assertNull($errors[0]->getField());
+    }
+
+    public function test_部分的なエラー要素の欠損フィールドはgetter時に固有例外になる(): void
+    {
+        $errors = Errors::build($this->makeResponse(422, '{"errors":[{"message":"invalid"}]}'));
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(Error::class . ' の API フィールド『code』が欠損しています。');
+
+        $errors[0]->getCode();
     }
 
     // --- Response の保持 ---------------------------------------------------
