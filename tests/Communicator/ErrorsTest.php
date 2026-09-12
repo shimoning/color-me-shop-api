@@ -104,6 +104,45 @@ class ErrorsTest extends TestCase
         $errors[0]->getCode();
     }
 
+    public function test_errorsの文字列要素は無視して元レスポンスを保持する(): void
+    {
+        $body = '{"errors":["upstream error"]}';
+        $response = $this->makeResponse(502, $body);
+
+        $errors = Errors::build($response);
+
+        $this->assertSame([], $errors->all());
+        $this->assertSame($response, $errors->getResponse());
+        $this->assertSame(502, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    public function test_errorsのnull要素は無視して元レスポンスを保持する(): void
+    {
+        $body = '{"errors":[null]}';
+        $response = $this->makeResponse(503, $body);
+
+        $errors = Errors::build($response);
+
+        $this->assertSame([], $errors->all());
+        $this->assertSame($response, $errors->getResponse());
+        $this->assertSame(503, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    public function test_errorsがスカラーなら空として扱って元レスポンスを保持する(): void
+    {
+        $body = '{"errors":"upstream error"}';
+        $response = $this->makeResponse(500, $body);
+
+        $errors = Errors::build($response);
+
+        $this->assertSame([], $errors->all());
+        $this->assertSame($response, $errors->getResponse());
+        $this->assertSame(500, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
     // --- Response の保持 ---------------------------------------------------
 
     public function test_元のレスポンスを保持している(): void

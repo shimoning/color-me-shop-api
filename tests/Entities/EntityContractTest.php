@@ -108,6 +108,18 @@ class EntityContractTest extends TestCase
         $this->assertEqualsCanonicalizing(self::entityClasses(), \array_values($provided));
     }
 
+    public function test_privateインスタンスプロパティも必須とnullableの判定対象に含める(): void
+    {
+        $entity = new class([]) extends Entity {
+            private string $requiredValue;
+            private ?string $optionalValue;
+        };
+        $reflection = new ReflectionClass($entity);
+
+        $this->assertTrue(self::isRequired($reflection->getProperty('requiredValue')));
+        $this->assertTrue(self::isOptional($reflection->getProperty('optionalValue')));
+    }
+
     /**
      * 宣言されていないプロパティを参照しているゲッターがないこと。
      *
@@ -170,7 +182,18 @@ class EntityContractTest extends TestCase
             $checked++;
             try {
                 $getter->invoke($entity);
-            } catch (MissingFieldException) {
+            } catch (MissingFieldException $error) {
+                $apiField = $class::apiFieldName($property->getName());
+                $this->assertStringContainsString(
+                    $apiField,
+                    $error->getMessage(),
+                    \sprintf(
+                        '%s::%s() が期待する API フィールド『%s』を報告しない',
+                        $reflection->getShortName(),
+                        $getter->getName(),
+                        $apiField,
+                    ),
+                );
                 continue;
             } catch (\Throwable $error) {
                 $this->fail(\sprintf(
@@ -227,7 +250,7 @@ class EntityContractTest extends TestCase
 
     private static function isOptional(ReflectionProperty $property): bool
     {
-        if ($property->isStatic() || $property->isPrivate()) {
+        if ($property->isStatic()) {
             return false;
         }
         $type = $property->getType();
@@ -237,7 +260,7 @@ class EntityContractTest extends TestCase
 
     private static function isRequired(ReflectionProperty $property): bool
     {
-        if ($property->isStatic() || $property->isPrivate() || $property->hasDefaultValue()) {
+        if ($property->isStatic() || $property->hasDefaultValue()) {
             return false;
         }
         $type = $property->getType();

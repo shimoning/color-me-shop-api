@@ -45,11 +45,21 @@ class Errors extends Collection
      */
     static public function build(Response $response): self
     {
+        $parsedBody = $response->getParsedBody();
+        $items = \is_array($parsedBody) ? ($parsedBody['errors'] ?? []) : [];
+        if (! \is_array($items)) {
+            $items = [];
+        }
+
+        // 配列でない要素は除外する。元の Response は保持するため、
+        // 呼び出し側は HTTP ステータスと生のレスポンスから詳細を確認できる。
+        $items = \array_values(\array_filter($items, static fn(mixed $item): bool => \is_array($item)));
+
         return new self(
             $response,
-            \array_map(function ($error) {
+            \array_map(function (array $error) {
                 return new Error($error);
-            }, $response->getParsedBody()['errors'] ?? []),
+            }, $items),
         );
     }
 }
