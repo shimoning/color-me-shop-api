@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  */
 class Errors extends Collection
 {
-    private const REQUIRED_ERROR_KEYS = ['code', 'message', 'status'];
+    private const ERROR_KEYS = ['code', 'message', 'status', 'field'];
 
     private Response $_response;
 
@@ -60,7 +60,7 @@ class Errors extends Collection
             }
 
             try {
-                $errors[] = new Error($item);
+                $errors[] = new Error(self::normalizeErrorData($item));
             } catch (\Throwable) {
                 // 構築できない要素だけを除外する。元の Response は保持するため、
                 // 呼び出し側は HTTP ステータスと生のレスポンスから詳細を確認できる。
@@ -72,10 +72,10 @@ class Errors extends Collection
     }
 
     /**
-     * 全必須 getter を安全に利用できる Error の構築候補か判定する。
+     * Error の構築候補となる連想配列か判定する。
      *
      * 数値キーを含む配列は API のエラーオブジェクトではなくリスト形状として除外する。
-     * 必須キーが揃わない要素も、不完全な Error が利用時に二次例外を起こすため除外する。
+     * 公式 API では各フィールドが必須ではないため、既知フィールドが1つでもあれば保持する。
      *
      * @param array<array-key, mixed> $item
      */
@@ -87,12 +87,27 @@ class Errors extends Collection
             }
         }
 
-        foreach (self::REQUIRED_ERROR_KEYS as $key) {
-            if (! \array_key_exists($key, $item)) {
-                return false;
+        foreach (self::ERROR_KEYS as $key) {
+            if (\array_key_exists($key, $item)) {
+                return true;
             }
         }
 
-        return true;
+        return false;
+    }
+
+    /**
+     * API 契約上 integer の code を公開 getter の string 契約へ正規化する。
+     *
+     * @param array<string, mixed> $item
+     * @return array<string, mixed>
+     */
+    private static function normalizeErrorData(array $item): array
+    {
+        if (\array_key_exists('code', $item) && \is_int($item['code'])) {
+            $item['code'] = (string) $item['code'];
+        }
+
+        return $item;
     }
 }

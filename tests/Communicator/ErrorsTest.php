@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Error;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class ErrorsTest extends TestCase
@@ -23,12 +24,53 @@ class ErrorsTest extends TestCase
     private function assertAllErrorGettersAreSafe(Errors $errors): void
     {
         foreach ($errors->all() as $error) {
-            $this->assertIsString($error->getMessage());
-            $this->assertIsString($error->getCode());
-            $this->assertIsInt($error->getStatus());
+            try {
+                $this->assertIsString($error->getCode());
+            } catch (MissingFieldException) {
+                $this->addToAssertionCount(1);
+            }
+
+            try {
+                $this->assertIsString($error->getMessage());
+            } catch (MissingFieldException) {
+                $this->addToAssertionCount(1);
+            }
+
+            try {
+                $this->assertIsInt($error->getStatus());
+            } catch (MissingFieldException) {
+                $this->addToAssertionCount(1);
+            }
+
+            $this->assertTrue(\is_string($error->getField()) || $error->getField() === null);
+            $this->assertIsArray($error->getRaw());
+            $this->assertIsArray($error->toArray());
+            $this->assertIsArray($error->toArrayRecursive());
+        }
+    }
+
+    /**
+     * @return array{code?: string, message?: string, field?: string|null, status?: int}
+     */
+    private function availableErrorValues(Error $error): array
+    {
+        $values = [];
+        $raw = $error->getRaw();
+
+        if (\array_key_exists('code', $raw)) {
+            $values['code'] = $error->getCode();
+        }
+        if (\array_key_exists('message', $raw)) {
+            $values['message'] = $error->getMessage();
+        }
+        if (\array_key_exists('field', $raw)) {
+            $values['field'] = $error->getField();
+        }
+        if (\array_key_exists('status', $raw)) {
+            $values['status'] = $error->getStatus();
         }
 
-        $this->addToAssertionCount(1);
+        return $values;
     }
 
     // --- build ------------------------------------------------------------
@@ -95,17 +137,49 @@ class ErrorsTest extends TestCase
         $this->assertSame(0, $errors->count());
     }
 
-    public function test_必須フィールドが欠けたエラー要素はコレクションに追加しない(): void
+    public function test_既知フィールドが1つでもあればコレクションに追加する(): void
     {
         $errors = Errors::build($this->makeResponse(422, '{"errors":[{"message":"invalid"}]}'));
 
-        $this->assertSame([], $errors->all());
+        $this->assertCount(1, $errors);
+        $this->assertSame('invalid', $errors[0]->getMessage());
     }
 
-    public function test_必須フィールドが欠けたエラー要素から利用時の二次例外を発生させない(): void
+    public function test_欠損フィールドを持つエラー要素でも全getterと配列化を安全に試行できる(): void
     {
         $errors = Errors::build($this->makeResponse(422, '{"errors":[{"message":"invalid"}]}'));
 
+        $this->assertCount(1, $errors);
+        $this->assertAllErrorGettersAreSafe($errors);
+    }
+
+    public function test_fieldとmessageのみの公式準拠エラーを保持する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"field":"group.name","message":"is invalid"}]}',
+        ));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(
+            ['message' => 'is invalid', 'field' => 'group.name'],
+            $this->availableErrorValues($errors[0]),
+        );
+        $this->assertAllErrorGettersAreSafe($errors);
+    }
+
+    public function test_integerのcodeを持つ公式準拠エラーをstringへ正規化して保持する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            401,
+            '{"errors":[{"code":401010,"message":"unauthorized","status":401}]}',
+        ));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(
+            ['code' => '401010', 'message' => 'unauthorized', 'status' => 401],
+            $this->availableErrorValues($errors[0]),
+        );
         $this->assertAllErrorGettersAreSafe($errors);
     }
 
@@ -200,59 +274,92 @@ class ErrorsTest extends TestCase
     }
 
     /**
-     * @return array<string, array{string}>
+     * @return array<string, array{
+     *     string,
+     *     list<array{code?: string, message?: string, field?: string|null, status?: int}>
+     * }>
      */
     public static function getterSafeBodyProvider(): array
     {
         return [
-            'errors なし' => ['{}'],
-            'errors が null' => ['{"errors":null}'],
-            'errors が文字列' => ['{"errors":"error"}'],
-            'errors が整数' => ['{"errors":1}'],
-            'errors が小数' => ['{"errors":1.5}'],
-            'errors が真偽値' => ['{"errors":true}'],
-            'errors がオブジェクト' => ['{"errors":{"message":"invalid"}}'],
-            'errors が空配列' => ['{"errors":[]}'],
-            '要素が文字列' => ['{"errors":["error"]}'],
-            '要素が整数' => ['{"errors":[1]}'],
-            '要素が小数' => ['{"errors":[1.5]}'],
-            '要素が真偽値' => ['{"errors":[false]}'],
-            '要素が null' => ['{"errors":[null]}'],
-            '要素が空配列' => ['{"errors":[[]]}'],
-            '一段のリスト' => ['{"errors":[["nested"]]}'],
-            '二段のリスト' => ['{"errors":[[["nested"]]]}'],
-            '深いリスト' => ['{"errors":[[[[[["nested"]]]]]]}'],
-            '未知キーのみ' => ['{"errors":[{"unknown":"x"}]}'],
-            '未知キーがネスト配列' => ['{"errors":[{"unknown":{"nested":["x"]}}]}'],
-            'code のみ' => ['{"errors":[{"code":"422210"}]}'],
-            'message のみ' => ['{"errors":[{"message":"invalid"}]}'],
-            'status のみ' => ['{"errors":[{"status":422}]}'],
-            'code と message のみ' => ['{"errors":[{"code":"422210","message":"invalid"}]}'],
-            'code と status のみ' => ['{"errors":[{"code":"422210","status":422}]}'],
-            'message と status のみ' => ['{"errors":[{"message":"invalid","status":422}]}'],
-            'code が整数' => ['{"errors":[{"code":422210,"message":"invalid","status":422}]}'],
-            'message が整数' => ['{"errors":[{"code":"422210","message":1,"status":422}]}'],
-            'status が文字列' => ['{"errors":[{"code":"422210","message":"invalid","status":"422"}]}'],
+            'errors なし' => ['{}', []],
+            'errors が null' => ['{"errors":null}', []],
+            'errors が文字列' => ['{"errors":"error"}', []],
+            'errors が整数' => ['{"errors":1}', []],
+            'errors が小数' => ['{"errors":1.5}', []],
+            'errors が真偽値' => ['{"errors":true}', []],
+            'errors がオブジェクト' => ['{"errors":{"message":"invalid"}}', []],
+            'errors が空配列' => ['{"errors":[]}', []],
+            '要素が文字列' => ['{"errors":["error"]}', []],
+            '要素が整数' => ['{"errors":[1]}', []],
+            '要素が小数' => ['{"errors":[1.5]}', []],
+            '要素が真偽値' => ['{"errors":[false]}', []],
+            '要素が null' => ['{"errors":[null]}', []],
+            '要素が空配列' => ['{"errors":[[]]}', []],
+            '一段のリスト' => ['{"errors":[["nested"]]}', []],
+            '二段のリスト' => ['{"errors":[[["nested"]]]}', []],
+            '深いリスト' => ['{"errors":[[[[[["nested"]]]]]]}', []],
+            '未知キーのみ' => ['{"errors":[{"unknown":"x"}]}', []],
+            '未知キーがネスト配列' => ['{"errors":[{"unknown":{"nested":["x"]}}]}', []],
+            'code のみ' => ['{"errors":[{"code":"422210"}]}', [['code' => '422210']]],
+            'message のみ' => ['{"errors":[{"message":"invalid"}]}', [['message' => 'invalid']]],
+            'status のみ' => ['{"errors":[{"status":422}]}', [['status' => 422]]],
+            'code と message のみ' => [
+                '{"errors":[{"code":"422210","message":"invalid"}]}',
+                [['code' => '422210', 'message' => 'invalid']],
+            ],
+            'code と status のみ' => [
+                '{"errors":[{"code":"422210","status":422}]}',
+                [['code' => '422210', 'status' => 422]],
+            ],
+            'message と status のみ' => [
+                '{"errors":[{"message":"invalid","status":422}]}',
+                [['message' => 'invalid', 'status' => 422]],
+            ],
+            'code が整数' => [
+                '{"errors":[{"code":422210,"message":"invalid","status":422}]}',
+                [['code' => '422210', 'message' => 'invalid', 'status' => 422]],
+            ],
+            'message が整数' => [
+                '{"errors":[{"code":"422210","message":1,"status":422}]}',
+                [],
+            ],
+            'status が文字列' => [
+                '{"errors":[{"code":"422210","message":"invalid","status":"422"}]}',
+                [],
+            ],
             'field が整数' => [
                 '{"errors":[{"code":"422210","message":"invalid","field":1,"status":422}]}',
+                [],
             ],
             '数値キーと必須キーが混在' => [
                 '{"errors":[{"0":"nested","code":"422210","message":"invalid","status":422}]}',
+                [],
             ],
             '正常要素とスカラーの混在' => [
                 '{"errors":[{"code":"422210","message":"invalid","status":422},"error"]}',
+                [['code' => '422210', 'message' => 'invalid', 'status' => 422]],
             ],
             '正常要素とリストの混在' => [
                 '{"errors":[[["nested"]],{"code":"422210","message":"invalid","status":422}]}',
+                [['code' => '422210', 'message' => 'invalid', 'status' => 422]],
             ],
             'field なし正常要素' => [
                 '{"errors":[{"code":"401010","message":"unauthorized","status":401}]}',
+                [['code' => '401010', 'message' => 'unauthorized', 'status' => 401]],
             ],
             'field あり正常要素' => [
                 '{"errors":[{"code":"422210","message":"invalid","field":"sale.id","status":422}]}',
+                [[
+                    'code' => '422210',
+                    'message' => 'invalid',
+                    'field' => 'sale.id',
+                    'status' => 422,
+                ]],
             ],
             '未知キー付き正常要素' => [
                 '{"errors":[{"code":"422210","message":"invalid","status":422,"unknown":"x"}]}',
+                [['code' => '422210', 'message' => 'invalid', 'status' => 422]],
             ],
         ];
     }
@@ -261,10 +368,17 @@ class ErrorsTest extends TestCase
      * build 自体だけでなく、返された Error を通常利用しても二次例外にならないことを保証する。
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('getterSafeBodyProvider')]
-    public function test_どのようなレスポンス形状でもコレクション内の全getterを安全に呼べる(string $body): void
-    {
+    public function test_どのようなレスポンス形状でも期待要素を保持し全getterを安全に試行できる(
+        string $body,
+        array $expected,
+    ): void {
         $errors = Errors::build($this->makeResponse(502, $body));
 
+        $this->assertCount(\count($expected), $errors);
+        $this->assertSame(
+            $expected,
+            \array_map(fn(Error $error): array => $this->availableErrorValues($error), $errors->all()),
+        );
         $this->assertAllErrorGettersAreSafe($errors);
     }
 
