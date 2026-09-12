@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 /**
  * 受注データ
@@ -96,7 +97,7 @@ class Sale extends Entity
 
     protected string $externalOrderId;
 
-    protected Customer $customer;
+    protected $customer;
     protected array $details;
     protected array $saleDeliveries;
 
@@ -498,7 +499,10 @@ class Sale extends Entity
      */
     public function getCustomer(): Customer
     {
-        $this->assertFieldInitialized('customer');
+        if ($this->customer === null) {
+            throw MissingFieldException::for(static::class, static::apiFieldName('customer'));
+        }
+
         return $this->customer;
     }
 
