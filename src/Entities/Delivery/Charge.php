@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 配送料設定の詳細
@@ -43,13 +44,33 @@ class Charge extends Entity
     {
         parent::__construct($data);
 
-        // chargeRangesByWeight
+        if (! \array_key_exists('charge_ranges_by_weight', $data)) {
+            return;
+        }
+
         $this->chargeRangesByWeight = [];
-        foreach ($data['charge_ranges_by_weight'] ?? [] as $weight) {
-            $this->chargeRangesByWeight[] = new Weight([
-                'weight' => $weight[0],
-                'areas' => $weight[1],
-            ]);
+        foreach ($data['charge_ranges_by_weight'] as $index => $weight) {
+            try {
+                if (
+                    ! \is_array($weight)
+                    || ! \array_key_exists(0, $weight)
+                    || ! \array_key_exists(1, $weight)
+                ) {
+                    throw new \UnexpectedValueException('重量別配送料の行形式が不正です。');
+                }
+
+                $this->chargeRangesByWeight[] = new Weight([
+                    'weight' => $weight[0],
+                    'areas' => $weight[1],
+                ]);
+            } catch (\Throwable $error) {
+                throw InvalidFieldException::forArrayElement(
+                    static::class,
+                    \sprintf('charge_ranges_by_weight[%s]', $index),
+                    Weight::class,
+                    $error,
+                );
+            }
         }
     }
 
@@ -59,6 +80,7 @@ class Charge extends Entity
      */
     public function getDeliveryId(): int
     {
+        $this->assertFieldInitialized('deliveryId');
         return $this->deliveryId;
     }
 
@@ -68,6 +90,7 @@ class Charge extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -87,6 +110,7 @@ class Charge extends Entity
      */
     public function getChargeRangesByPrice(): array
     {
+        $this->assertFieldInitialized('chargeRangesByPrice');
         return $this->chargeRangesByPrice;
     }
 
@@ -105,6 +129,7 @@ class Charge extends Entity
      */
     public function getChargeRangesByArea(): array
     {
+        $this->assertFieldInitialized('chargeRangesByArea');
         return $this->chargeRangesByArea;
     }
 
@@ -114,6 +139,7 @@ class Charge extends Entity
      */
     public function getChargeRangesByWeight(): array
     {
+        $this->assertFieldInitialized('chargeRangesByWeight');
         return $this->chargeRangesByWeight;
     }
 
@@ -123,6 +149,7 @@ class Charge extends Entity
      */
     public function getChargeRangesMaxWeight(): array
     {
+        $this->assertFieldInitialized('chargeRangesMaxWeight');
         return $this->chargeRangesMaxWeight;
     }
 }

@@ -43,6 +43,7 @@ class SaleDetail extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -52,6 +53,7 @@ class SaleDetail extends Entity
      */
     public function getSaleId(): int
     {
+        $this->assertFieldInitialized('saleId');
         return $this->saleId;
     }
 
@@ -61,6 +63,7 @@ class SaleDetail extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -70,6 +73,7 @@ class SaleDetail extends Entity
      */
     public function getProductId(): int
     {
+        $this->assertFieldInitialized('productId');
         return $this->productId;
     }
 
@@ -133,6 +137,7 @@ class SaleDetail extends Entity
      */
     public function getProductName(): string
     {
+        $this->assertFieldInitialized('productName');
         return $this->productName;
     }
 
@@ -142,6 +147,7 @@ class SaleDetail extends Entity
      */
     public function getPristineProductFullName(): string
     {
+        $this->assertFieldInitialized('pristineProductFullName');
         return $this->pristineProductFullName;
     }
 
@@ -187,6 +193,7 @@ class SaleDetail extends Entity
      */
     public function getPrice(): int
     {
+        $this->assertFieldInitialized('price');
         return $this->price;
     }
 
@@ -196,6 +203,7 @@ class SaleDetail extends Entity
      */
     public function getPriceWithTax(): int
     {
+        $this->assertFieldInitialized('priceWithTax');
         return $this->priceWithTax;
     }
 
@@ -205,6 +213,7 @@ class SaleDetail extends Entity
      */
     public function getProductNum(): int
     {
+        $this->assertFieldInitialized('productNum');
         return $this->productNum;
     }
 
@@ -223,6 +232,7 @@ class SaleDetail extends Entity
      */
     public function getSubtotalPrice(): int
     {
+        $this->assertFieldInitialized('subtotalPrice');
         return $this->subtotalPrice;
     }
 }

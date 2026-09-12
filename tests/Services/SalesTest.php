@@ -198,6 +198,18 @@ class SalesTest extends TestCase
         $this->assertSame(['make_date' => '2024-01-01'], $mock->query());
     }
 
+    public function test_sales_statキーがない成功応答は参照時に固有例外になる(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+        $stat = (new Sales('my-token', $mock->client()))
+            ->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
+
+        $this->assertInstanceOf(Stat::class, $stat);
+        $this->expectException(MissingFieldException::class);
+
+        $stat->getAmountToday();
+    }
+
     // --- update -----------------------------------------------------------
 
     public function test_受注を更新する(): void
@@ -224,6 +236,20 @@ class SalesTest extends TestCase
             $mock->jsonBody(),
         );
         $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
+    }
+
+    public function test_受注更新は指定した項目だけを送信できる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+
+        $updater = new SaleUpdater(['id' => 1001]);
+        $updater->setPaid(true);
+        (new Sales('my-token', $mock->client()))->update($updater);
+
+        $this->assertSame(
+            ['sale' => ['id' => 1001, 'paid' => true]],
+            $mock->jsonBody(),
+        );
     }
 
     public function test_受注更新のエラーレスポンス(): void
