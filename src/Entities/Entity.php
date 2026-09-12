@@ -38,14 +38,7 @@ class Entity
     const FIELD_NAMES = [];
 
     /**
-     * null 許容かつ既定値を持たないプロパティ名のキャッシュ (クラス単位)
-     *
-     * @var array<string, array<string>>
-     */
-    private static array $_optionalProperties = [];
-
-    /**
-     * 宣言プロパティのキャッシュ (クラス・プロパティ単位)
+     * 通常のインスタンスプロパティのキャッシュ (クラス単位)
      *
      * @var array<class-string, array<string, ReflectionProperty>>
      */
@@ -85,7 +78,15 @@ class Entity
      */
     protected function assertFieldInitialized(string $property): void
     {
-        if (! self::property(static::class, $property)->isInitialized($this)) {
+        $trace = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $scope = $trace[1]['class'] ?? static::class;
+        if (! \is_a($scope, self::class, true)) {
+            $scope = static::class;
+        }
+
+        /** @var class-string<Entity> $scope */
+        $reflection = self::findProperty($scope, $property);
+        if ($reflection === null || ! $reflection->isInitialized($this)) {
             throw MissingFieldException::for(static::class, static::apiFieldName($property));
         }
     }
@@ -171,22 +172,46 @@ class Entity
      */
     private static function findProperty(string $class, string $property): ?ReflectionProperty
     {
-        if (isset(self::$_properties[$class][$property])) {
-            return self::$_properties[$class][$property];
+        return self::resolveProperties($class)[$property] ?? null;
+    }
+
+    /**
+     * 通常のインスタンスプロパティを実行時クラスに近い宣言から解決する。
+     *
+     * 同名プロパティは最も近い宣言だけを採用する。最も近い宣言が契約外でも
+     * 祖先の同名宣言へフォールスルーせず、その名前自体を対象外とする。
+     *
+     * @param class-string<Entity> $class
+     * @return array<string, ReflectionProperty>
+     */
+    private static function resolveProperties(string $class): array
+    {
+        if (isset(self::$_properties[$class])) {
+            return self::$_properties[$class];
         }
 
+        $properties = [];
+        $declaredNames = [];
         $reflection = new ReflectionClass($class);
         do {
-            if ($reflection->hasProperty($property)) {
-                $candidate = $reflection->getProperty($property);
-                if (self::isOrdinaryInstanceProperty($candidate)) {
-                    return self::$_properties[$class][$property] = $candidate;
+            foreach ($reflection->getProperties() as $property) {
+                if ($property->getDeclaringClass()->getName() !== $reflection->getName()) {
+                    continue;
+                }
+                $name = $property->getName();
+                if (isset($declaredNames[$name])) {
+                    continue;
+                }
+
+                $declaredNames[$name] = true;
+                if (self::isOrdinaryInstanceProperty($property)) {
+                    $properties[$name] = $property;
                 }
             }
             $reflection = $reflection->getParentClass();
         } while ($reflection !== false);
 
-        return null;
+        return self::$_properties[$class] = $properties;
     }
 
     /**
@@ -324,44 +349,18 @@ class Entity
      */
     private function initializeOptionalProperties(): void
     {
-        foreach ($this->optionalPropertyNames() as $name) {
-            $property = self::property(static::class, $name);
-            if (! $property->isInitialized($this)) {
-                $property->setValue($this, null);
-            }
-        }
-    }
-
-    /**
-     * null 許容かつ既定値を持たないプロパティ名を取得する
-     *
-     * リフレクションの結果はクラス単位でキャッシュする。
-     *
-     * @return array<string>
-     */
-    private function optionalPropertyNames(): array
-    {
-        if (isset(self::$_optionalProperties[static::class])) {
-            return self::$_optionalProperties[static::class];
-        }
-
-        $names = [];
-        foreach ((new ReflectionClass(static::class))->getProperties() as $property) {
-            if (! self::isOrdinaryInstanceProperty($property) || $property->hasDefaultValue()) {
-                continue;
-            }
-            // 基底クラス以外で宣言された private プロパティはここからは代入できない
-            if ($property->isPrivate() && $property->getDeclaringClass()->getName() !== self::class) {
+        foreach (self::resolveProperties(static::class) as $property) {
+            if ($property->hasDefaultValue()) {
                 continue;
             }
             $type = $property->getType();
             if ($type === null || ! $type->allowsNull()) {
                 continue;
             }
-            $names[] = $property->getName();
+            if (! $property->isInitialized($this)) {
+                $property->setValue($this, null);
+            }
         }
-
-        return self::$_optionalProperties[static::class] = $names;
     }
 
     /**
@@ -487,19 +486,15 @@ class Entity
      */
     public function toArray(): array
     {
-        $properties = get_class_vars(static::class);
-        $values = get_object_vars($this);
-
         $array = [];
-        foreach ($properties as $key => $_) {
-            if (
-                self::isInternalProperty($key)
-                || self::findProperty(static::class, $key) === null
-            ) {
+        foreach (self::resolveProperties(static::class) as $key => $property) {
+            if (self::isInternalProperty($key)) {
                 continue;
             }
             $_key = static::apiFieldName($key);
-            $array[$_key] = $values[$key] ?? null;
+            $array[$_key] = $property->isInitialized($this)
+                ? $property->getValue($this)
+                : null;
         }
         return $array;
     }
@@ -511,19 +506,15 @@ class Entity
      */
     public function toArrayRecursive($ignoreNull = true): array
     {
-        $properties = get_class_vars(static::class);
-        $values = get_object_vars($this);
-
         $array = [];
-        foreach ($properties as $key => $_) {
-            if (
-                self::isInternalProperty($key)
-                || self::findProperty(static::class, $key) === null
-            ) {
+        foreach (self::resolveProperties(static::class) as $key => $property) {
+            if (self::isInternalProperty($key)) {
                 continue;
             }
             $_key = static::apiFieldName($key);
-            $value = $values[$key] ?? null;
+            $value = $property->isInitialized($this)
+                ? $property->getValue($this)
+                : null;
             if ($ignoreNull && $value === null) {
                 continue;
             }

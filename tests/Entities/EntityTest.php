@@ -25,7 +25,10 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\SecondInheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\StaticFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedStaticFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\ProtectedShadowingPrivateFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\StaticShadowingPrivateFieldEntity;
 
 class EntityTest extends TestCase
 {
@@ -191,6 +194,17 @@ class EntityTest extends TestCase
     public function test_PHP81から84で欠損したnullable_readonlyをnullで初期化する(): void
     {
         $class = 'Shimoning\\ColorMeShopApi\\Tests\\Doubles\\ReadonlyFieldEntity';
+        $reflection = new ReflectionClass($class);
+        $entity = $this->requireEntity($reflection->newInstance([]));
+
+        $this->assertNull($reflection->getMethod('getName')->invoke($entity));
+        $this->assertSame(['name' => null], $entity->toArray());
+        $this->assertSame(['name' => null], $entity->toArrayRecursive(false));
+    }
+
+    public function test_PHP81から84で欠損したprivate_nullable_readonlyをnullで初期化する(): void
+    {
+        $class = 'Shimoning\\ColorMeShopApi\\Tests\\Doubles\\PrivateReadonlyFieldEntity';
         $reflection = new ReflectionClass($class);
         $entity = $this->requireEntity($reflection->newInstance([]));
 
@@ -507,6 +521,8 @@ class EntityTest extends TestCase
         $entity = new PrivateFieldEntity(['name' => '山田']);
 
         $this->assertSame('山田', $entity->getName());
+        $this->assertSame(['name' => '山田'], $entity->toArray());
+        $this->assertSame(['name' => '山田'], $entity->toArrayRecursive(false));
     }
 
     public function test_private宣言のフィールド欠損はgetterで汎用例外を投げる(): void
@@ -590,6 +606,92 @@ class EntityTest extends TestCase
         );
 
         $entity->assertUnknownField();
+    }
+
+    public function test_子privateが親privateを隠すと最も近い宣言だけをhydrateして配列化する(): void
+    {
+        $entity = new PrivateShadowingPrivateFieldEntity(['name' => 'child']);
+
+        $this->assertSame('child', $entity->getChildName());
+        $this->assertSame(['name' => 'child'], $entity->toArray());
+        $this->assertSame(['name' => 'child'], $entity->toArrayRecursive(false));
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage('name');
+
+        $entity->getParentName();
+    }
+
+    public function test_子protectedが親privateを隠しても親getterは子を初期化済みと誤認しない(): void
+    {
+        $entity = new ProtectedShadowingPrivateFieldEntity(['name' => 'child']);
+
+        $this->assertSame('child', $entity->getChildName());
+        $this->assertSame(['name' => 'child'], $entity->toArray());
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage('name');
+
+        $entity->getParentName();
+    }
+
+    public function test_子staticが親privateを隠すと未知キーとして祖先探索を打ち切る(): void
+    {
+        StaticShadowingPrivateFieldEntity::$name = 'original';
+        $entity = new StaticShadowingPrivateFieldEntity(['name' => 'api']);
+
+        $this->assertSame('original', StaticShadowingPrivateFieldEntity::$name);
+        $this->assertSame([], $entity->toArray());
+        $this->assertSame([], $entity->toArrayRecursive(false));
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage('name');
+
+        $entity->getParentName();
+    }
+
+    public function test_PHP84の子virtualが親privateを隠すと未知キーとして祖先探索を打ち切る(): void
+    {
+        if (\PHP_VERSION_ID < 80400) {
+            $this->markTestSkipped('virtual property は PHP 8.4 以降でのみ利用できます。');
+        }
+
+        $class = 'Shimoning\\ColorMeShopApi\\Tests\\Doubles\\VirtualShadowingPrivateFieldEntity';
+        $reflection = new ReflectionClass($class);
+        $reflection->getMethod('resetHookCalls')->invoke(null);
+        $entity = $this->requireEntity($reflection->newInstance(['name' => 'api']));
+
+        $this->assertSame(['get' => 0, 'set' => 0], $reflection->getMethod('hookCalls')->invoke(null));
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage('name');
+
+        $reflection->getMethod('getParentName')->invoke($entity);
+    }
+
+    #[DataProvider('serializationMethodProvider')]
+    public function test_PHP84の配列化は除外対象virtualのthrowing_get_hookを実行しない(
+        string $method,
+        array $arguments,
+    ): void {
+        if (\PHP_VERSION_ID < 80400) {
+            $this->markTestSkipped('virtual property は PHP 8.4 以降でのみ利用できます。');
+        }
+
+        $class = 'Shimoning\\ColorMeShopApi\\Tests\\Doubles\\VirtualShadowingPrivateFieldEntity';
+        $reflection = new ReflectionClass($class);
+        $reflection->getMethod('resetHookCalls')->invoke(null);
+        $entity = $this->requireEntity($reflection->newInstance([]));
+
+        $this->assertSame([], $entity->{$method}(...$arguments));
+        $this->assertSame(['get' => 0, 'set' => 0], $reflection->getMethod('hookCalls')->invoke(null));
+    }
+
+    /**
+     * @return array<string, array{string, array<mixed>}>
+     */
+    public static function serializationMethodProvider(): array
+    {
+        return [
+            'toArray' => ['toArray', []],
+            'toArrayRecursive' => ['toArrayRecursive', [false]],
+        ];
     }
 
     #[DataProvider('invalidFieldProvider')]
