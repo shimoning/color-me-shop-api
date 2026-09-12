@@ -8,7 +8,6 @@ use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Error;
-use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class ErrorsTest extends TestCase
@@ -19,6 +18,17 @@ class ErrorsTest extends TestCase
             new Psr7Response($status, [], $body),
             new RequestMeta('GET', 'https://api.shop-pro.jp/v1/sales', []),
         );
+    }
+
+    private function assertAllErrorGettersAreSafe(Errors $errors): void
+    {
+        foreach ($errors->all() as $error) {
+            $this->assertIsString($error->getMessage());
+            $this->assertIsString($error->getCode());
+            $this->assertIsInt($error->getStatus());
+        }
+
+        $this->addToAssertionCount(1);
     }
 
     // --- build ------------------------------------------------------------
@@ -85,23 +95,18 @@ class ErrorsTest extends TestCase
         $this->assertSame(0, $errors->count());
     }
 
-    public function test_部分的なエラー要素でも利用可能な情報を保持して組み立てられる(): void
+    public function test_必須フィールドが欠けたエラー要素はコレクションに追加しない(): void
     {
         $errors = Errors::build($this->makeResponse(422, '{"errors":[{"message":"invalid"}]}'));
 
-        $this->assertSame(1, $errors->count());
-        $this->assertSame('invalid', $errors[0]->getMessage());
-        $this->assertNull($errors[0]->getField());
+        $this->assertSame([], $errors->all());
     }
 
-    public function test_部分的なエラー要素の欠損フィールドはgetter時に固有例外になる(): void
+    public function test_必須フィールドが欠けたエラー要素から利用時の二次例外を発生させない(): void
     {
         $errors = Errors::build($this->makeResponse(422, '{"errors":[{"message":"invalid"}]}'));
 
-        $this->expectException(MissingFieldException::class);
-        $this->expectExceptionMessage(Error::class . ' の API フィールド『code』が欠損しています。');
-
-        $errors[0]->getCode();
+        $this->assertAllErrorGettersAreSafe($errors);
     }
 
     public function test_errorsの文字列要素は無視して元レスポンスを保持する(): void
@@ -149,14 +154,20 @@ class ErrorsTest extends TestCase
     public static function invalidArrayElementProvider(): array
     {
         return [
+            // 数値キーだけの配列は既知フィールドを持たない空 Error になり得るため、
+            // getter の二次例外を防ぐ目的でコレクションには混入させない。
             '数値キーを持つネスト配列' => ['{"errors":[[["nested"]]]}'],
+            '数値キーと既知キーが混在する配列' => [
+                '{"errors":[{"0":"nested","code":"422210","message":"invalid","status":422}]}',
+            ],
+            '未知キーだけの連想配列' => ['{"errors":[{"unknown":"x"}]}'],
             'message が配列' => ['{"errors":[{"message":["nested"]}]}'],
             'status が null' => ['{"errors":[{"status":null}]}'],
         ];
     }
 
     /**
-     * Error の構築中に Throwable となる要素はスキップし、
+     * Error として全必須 getter を安全に利用できない要素はスキップし、
      * 呼び出し側が元レスポンスから障害内容を確認できること。
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('invalidArrayElementProvider')]
@@ -166,6 +177,7 @@ class ErrorsTest extends TestCase
 
         $errors = Errors::build($response);
 
+        $this->assertCount(0, $errors);
         $this->assertSame([], $errors->all());
         $this->assertSame($response, $errors->getResponse());
         $this->assertSame(502, $errors->getResponse()->getStatus());
@@ -181,7 +193,97 @@ class ErrorsTest extends TestCase
 
         $this->assertSame(1, $errors->count());
         $this->assertSame('422210', $errors[0]->getCode());
+        $this->assertSame('invalid', $errors[0]->getMessage());
+        $this->assertSame(422, $errors[0]->getStatus());
+        $this->assertAllErrorGettersAreSafe($errors);
         $this->assertSame($response, $errors->getResponse());
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function getterSafeBodyProvider(): array
+    {
+        return [
+            'errors なし' => ['{}'],
+            'errors が null' => ['{"errors":null}'],
+            'errors が文字列' => ['{"errors":"error"}'],
+            'errors が整数' => ['{"errors":1}'],
+            'errors が小数' => ['{"errors":1.5}'],
+            'errors が真偽値' => ['{"errors":true}'],
+            'errors がオブジェクト' => ['{"errors":{"message":"invalid"}}'],
+            'errors が空配列' => ['{"errors":[]}'],
+            '要素が文字列' => ['{"errors":["error"]}'],
+            '要素が整数' => ['{"errors":[1]}'],
+            '要素が小数' => ['{"errors":[1.5]}'],
+            '要素が真偽値' => ['{"errors":[false]}'],
+            '要素が null' => ['{"errors":[null]}'],
+            '要素が空配列' => ['{"errors":[[]]}'],
+            '一段のリスト' => ['{"errors":[["nested"]]}'],
+            '二段のリスト' => ['{"errors":[[["nested"]]]}'],
+            '深いリスト' => ['{"errors":[[[[[["nested"]]]]]]}'],
+            '未知キーのみ' => ['{"errors":[{"unknown":"x"}]}'],
+            '未知キーがネスト配列' => ['{"errors":[{"unknown":{"nested":["x"]}}]}'],
+            'code のみ' => ['{"errors":[{"code":"422210"}]}'],
+            'message のみ' => ['{"errors":[{"message":"invalid"}]}'],
+            'status のみ' => ['{"errors":[{"status":422}]}'],
+            'code と message のみ' => ['{"errors":[{"code":"422210","message":"invalid"}]}'],
+            'code と status のみ' => ['{"errors":[{"code":"422210","status":422}]}'],
+            'message と status のみ' => ['{"errors":[{"message":"invalid","status":422}]}'],
+            'code が整数' => ['{"errors":[{"code":422210,"message":"invalid","status":422}]}'],
+            'message が整数' => ['{"errors":[{"code":"422210","message":1,"status":422}]}'],
+            'status が文字列' => ['{"errors":[{"code":"422210","message":"invalid","status":"422"}]}'],
+            'field が整数' => [
+                '{"errors":[{"code":"422210","message":"invalid","field":1,"status":422}]}',
+            ],
+            '数値キーと必須キーが混在' => [
+                '{"errors":[{"0":"nested","code":"422210","message":"invalid","status":422}]}',
+            ],
+            '正常要素とスカラーの混在' => [
+                '{"errors":[{"code":"422210","message":"invalid","status":422},"error"]}',
+            ],
+            '正常要素とリストの混在' => [
+                '{"errors":[[["nested"]],{"code":"422210","message":"invalid","status":422}]}',
+            ],
+            'field なし正常要素' => [
+                '{"errors":[{"code":"401010","message":"unauthorized","status":401}]}',
+            ],
+            'field あり正常要素' => [
+                '{"errors":[{"code":"422210","message":"invalid","field":"sale.id","status":422}]}',
+            ],
+            '未知キー付き正常要素' => [
+                '{"errors":[{"code":"422210","message":"invalid","status":422,"unknown":"x"}]}',
+            ],
+        ];
+    }
+
+    /**
+     * build 自体だけでなく、返された Error を通常利用しても二次例外にならないことを保証する。
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getterSafeBodyProvider')]
+    public function test_どのようなレスポンス形状でもコレクション内の全getterを安全に呼べる(string $body): void
+    {
+        $errors = Errors::build($this->makeResponse(502, $body));
+
+        $this->assertAllErrorGettersAreSafe($errors);
+    }
+
+    public function test_循環参照を含む要素でも正常要素だけを保持して全getterを安全に呼べる(): void
+    {
+        $cyclic = [];
+        $cyclic['unknown'] = &$cyclic;
+        $response = $this->createStub(Response::class);
+        $response->method('getParsedBody')->willReturn([
+            'errors' => [
+                $cyclic,
+                ['code' => '422210', 'message' => 'invalid', 'status' => 422],
+            ],
+        ]);
+
+        $errors = Errors::build($response);
+
+        $this->assertSame(1, $errors->count());
+        $this->assertAllErrorGettersAreSafe($errors);
     }
 
     // --- Response の保持 ---------------------------------------------------
