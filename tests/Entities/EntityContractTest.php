@@ -27,10 +27,6 @@ class EntityContractTest extends TestCase
         \Shimoning\ColorMeShopApi\Entities\Delivery\Area::class => [
             'prefId', 'prefName', 'charge',
         ],
-        \Shimoning\ColorMeShopApi\Entities\Delivery\Charge::class => [
-            'deliveryId', 'accountId', 'chargeRangesByPrice', 'chargeRangesByArea',
-            'chargeRangesMaxWeight',
-        ],
         \Shimoning\ColorMeShopApi\Entities\Delivery\Weight::class => [
             'weight', 'areas',
         ],
@@ -57,25 +53,6 @@ class EntityContractTest extends TestCase
         ],
         \Shimoning\ColorMeShopApi\Entities\Product\Group::class => [
             'id', 'accountId', 'name', 'displayState',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Sales\SaleDelivery::class => [
-            'id', 'saleId', 'accountId', 'deliveryId', 'detailIds', 'name', 'prefId',
-            'prefName', 'deliveryCharge', 'totalCharge', 'delivered',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater::class => [
-            'id', 'saleId', 'accountId', 'deliveryId', 'detailIds', 'name', 'prefId',
-            'prefName', 'deliveryCharge', 'totalCharge', 'delivered',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Sales\SaleDetail::class => [
-            'id', 'saleId', 'accountId', 'productId', 'productName', 'pristineProductFullName',
-            'price', 'priceWithTax', 'productNum', 'subtotalPrice',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater::class => [
-            'id', 'paid', 'pointState', 'saleDeliveries',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Sales\Stat::class => [
-            'accountId', 'date', 'amountToday', 'countToday', 'amountLast7days',
-            'countLast7days', 'amountThisMonth', 'countThisMonth',
         ],
     ];
 
@@ -276,7 +253,7 @@ class EntityContractTest extends TestCase
         $uninitialized = \array_sum(\array_map('count', self::TEMPORARILY_UNINITIALIZED_FIELDS));
         $nullReturns = \array_sum(\array_map('count', self::TEMPORARILY_NULL_RETURN_FIELDS));
 
-        $this->assertSame(84, $uninitialized);
+        $this->assertSame(35, $uninitialized);
         $this->assertSame(0, $nullReturns);
     }
 

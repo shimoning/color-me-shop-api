@@ -26,6 +26,7 @@ class Stat extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -35,6 +36,7 @@ class Stat extends Entity
      */
     public function getDate(): int
     {
+        $this->assertFieldInitialized('date');
         return $this->date;
     }
 
@@ -44,6 +46,7 @@ class Stat extends Entity
      */
     public function getAmountToday(): int
     {
+        $this->assertFieldInitialized('amountToday');
         return $this->amountToday;
     }
 
@@ -53,6 +56,7 @@ class Stat extends Entity
      */
     public function getCountToday(): int
     {
+        $this->assertFieldInitialized('countToday');
         return $this->countToday;
     }
 
@@ -62,6 +66,7 @@ class Stat extends Entity
      */
     public function getAmountLast7days(): int
     {
+        $this->assertFieldInitialized('amountLast7days');
         return $this->amountLast7days;
     }
 
@@ -71,6 +76,7 @@ class Stat extends Entity
      */
     public function getCountLast7days(): int
     {
+        $this->assertFieldInitialized('countLast7days');
         return $this->countLast7days;
     }
 
@@ -80,6 +86,7 @@ class Stat extends Entity
      */
     public function getAmountThisMonth(): int
     {
+        $this->assertFieldInitialized('amountThisMonth');
         return $this->amountThisMonth;
     }
 
@@ -89,6 +96,7 @@ class Stat extends Entity
      */
     public function getCountThisMonth(): int
     {
+        $this->assertFieldInitialized('countThisMonth');
         return $this->countThisMonth;
     }
 }
