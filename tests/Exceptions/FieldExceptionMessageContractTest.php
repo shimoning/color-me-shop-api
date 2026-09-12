@@ -14,11 +14,19 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 
 class FieldExceptionMessageContractTest extends TestCase
 {
+    /*
+     * 限界: 同一型検査と禁止句検査は、現行の日本語書式とブラックリストに依存する。
+     * 句読点の変更や英語化などの書式変更、Undefined array key、Class not found、UNC パスは見逃しうる。
+     * 恒久的には構造化したケースで expected / actual を直接比較し、公開メッセージを許可テンプレートと
+     * 許可原因文言のホワイトリストで検証することが望ましい。
+     */
     #[DataProvider('exceptionRouteProvider')]
     public function test_全生成経路の公開メッセージは安全で矛盾しない(
         \Closure $throwing,
@@ -96,6 +104,13 @@ class FieldExceptionMessageContractTest extends TestCase
 
     public function test_生成箇所の追加時は横断契約テストの更新を要求する(): void
     {
+        /*
+         * 限界: 生成箇所の検知は正規表現と経路別の件数に基づく。FQCN の直接 constructor 呼び出し、
+         * alias・変数経由・サブクラス factory による生成、生成後に別の場所で throw するケースは見逃し、
+         * コメントや文字列リテラルは誤検知しうる。件数だけ更新すれば provider を追加せずに通るため、
+         * 将来の経路の自動的な対象化は保証しない。恒久的には token_get_all() 等でコメント・文字列を除外し、
+         * 名前解決した call-site 一覧を抽出して call-site ID と provider を1対1で照合する必要がある。
+         */
         $routeCounts = [];
         $sourceDirectory = \dirname(__DIR__, 2) . '/src';
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory));
@@ -133,11 +148,12 @@ class FieldExceptionMessageContractTest extends TestCase
         \ksort($routeCounts);
         $this->assertSame(
             [
-                'InvalidFieldException::for' => 2,
-                // Charge の重量別配送料にも、配列要素を指す生成経路を追加したため2箇所になる。
+                'InvalidFieldException::for' => 3,
+                // PR3 で Charge の重量別配送料にも配列要素を指す生成経路を追加したため2箇所になる。
                 'InvalidFieldException::forArrayElement' => 2,
                 'InvalidPaginationException::__construct' => 2,
-                'MissingFieldException::for' => 2,
+                // foundation の宣言プロパティ不在経路と PR3 の Sale customer 後方互換経路を両方保持する。
+                'MissingFieldException::for' => 3,
                 'MissingPaginationException::__construct' => 2,
             ],
             $routeCounts,
@@ -173,6 +189,12 @@ class FieldExceptionMessageContractTest extends TestCase
                     new HydratedTypeMismatchEntity(['child' => ['label' => 'child']]);
                 },
                 null,
+            ],
+            'InvalidFieldException::for/readonly再代入失敗' => [
+                static function (): void {
+                    new PromotedReadonlyFieldEntity(['name' => 'api']);
+                },
+                \Error::class,
             ],
             'InvalidFieldException::for/同一型表示の変換失敗' => [
                 static function (): void {
@@ -232,6 +254,12 @@ class FieldExceptionMessageContractTest extends TestCase
             'MissingFieldException::for/必須フィールド欠損' => [
                 static function (): void {
                     (new RequiredEntity([]))->getName();
+                },
+                null,
+            ],
+            'MissingFieldException::for/宣言プロパティ不在' => [
+                static function (): void {
+                    (new InheritedPrivateFieldEntity([]))->assertUnknownField();
                 },
                 null,
             ],

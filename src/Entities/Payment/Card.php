@@ -26,6 +26,8 @@ class Card extends Entity
      */
     public function getBrands(): array
     {
+        $this->assertFieldInitialized('brands');
+
         return $this->brands;
     }
 }
