@@ -16,6 +16,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 
 class FieldExceptionMessageContractTest extends TestCase
@@ -147,7 +148,7 @@ class FieldExceptionMessageContractTest extends TestCase
         \ksort($routeCounts);
         $this->assertSame(
             [
-                'InvalidFieldException::for' => 2,
+                'InvalidFieldException::for' => 3,
                 'InvalidFieldException::forArrayElement' => 1,
                 'InvalidPaginationException::__construct' => 2,
                 'MissingFieldException::for' => 2,
@@ -186,6 +187,12 @@ class FieldExceptionMessageContractTest extends TestCase
                     new HydratedTypeMismatchEntity(['child' => ['label' => 'child']]);
                 },
                 null,
+            ],
+            'InvalidFieldException::for/readonly再代入失敗' => [
+                static function (): void {
+                    new PromotedReadonlyFieldEntity(['name' => 'api']);
+                },
+                \Error::class,
             ],
             'InvalidFieldException::for/同一型表示の変換失敗' => [
                 static function (): void {

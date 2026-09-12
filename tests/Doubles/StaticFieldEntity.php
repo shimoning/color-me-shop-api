@@ -9,15 +9,26 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class StaticFieldEntity extends Entity
 {
-    private static string $sharedState = 'original';
+    public static string $publicSharedState = 'original';
+    protected static string $protectedSharedState = 'original';
+    private static string $privateSharedState = 'original';
 
-    public static function getSharedState(): string
+    /**
+     * @return array{public: string, protected: string, private: string}
+     */
+    public static function getSharedStates(): array
     {
-        return self::$sharedState;
+        return [
+            'public' => self::$publicSharedState,
+            'protected' => self::$protectedSharedState,
+            'private' => self::$privateSharedState,
+        ];
     }
 
     public static function resetSharedState(): void
     {
-        self::$sharedState = 'original';
+        self::$publicSharedState = 'original';
+        self::$protectedSharedState = 'original';
+        self::$privateSharedState = 'original';
     }
 }

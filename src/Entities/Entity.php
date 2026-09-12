@@ -125,7 +125,17 @@ class Entity
             throw InvalidFieldException::for(static::class, $apiField, $expected, $hydrated);
         }
 
-        $reflection->setValue($this, $hydrated);
+        try {
+            $reflection->setValue($this, $hydrated);
+        } catch (\Throwable $error) {
+            throw InvalidFieldException::for(
+                static::class,
+                $apiField,
+                $expected,
+                $hydrated,
+                $error,
+            );
+        }
     }
 
     private static function arrayElementType(mixed $objectField): ?string
@@ -169,7 +179,7 @@ class Entity
         do {
             if ($reflection->hasProperty($property)) {
                 $candidate = $reflection->getProperty($property);
-                if (! $candidate->isStatic()) {
+                if (self::isOrdinaryInstanceProperty($candidate)) {
                     return self::$_properties[$class][$property] = $candidate;
                 }
             }
@@ -177,6 +187,18 @@ class Entity
         } while ($reflection !== false);
 
         return null;
+    }
+
+    /**
+     * hydrate と配列化の対象になる通常のインスタンスプロパティか判定する。
+     */
+    private static function isOrdinaryInstanceProperty(ReflectionProperty $property): bool
+    {
+        if ($property->isStatic()) {
+            return false;
+        }
+
+        return ! \method_exists($property, 'isVirtual') || ! $property->isVirtual();
     }
 
     private static function expectedType(?ReflectionType $type, ReflectionProperty $property): string
@@ -303,8 +325,9 @@ class Entity
     private function initializeOptionalProperties(): void
     {
         foreach ($this->optionalPropertyNames() as $name) {
-            if (! isset($this->{$name})) {
-                $this->{$name} = null;
+            $property = self::property(static::class, $name);
+            if (! $property->isInitialized($this)) {
+                $property->setValue($this, null);
             }
         }
     }
@@ -324,7 +347,7 @@ class Entity
 
         $names = [];
         foreach ((new ReflectionClass(static::class))->getProperties() as $property) {
-            if ($property->isStatic() || $property->hasDefaultValue()) {
+            if (! self::isOrdinaryInstanceProperty($property) || $property->hasDefaultValue()) {
                 continue;
             }
             // 基底クラス以外で宣言された private プロパティはここからは代入できない
@@ -469,7 +492,10 @@ class Entity
 
         $array = [];
         foreach ($properties as $key => $_) {
-            if (self::isInternalProperty($key)) {
+            if (
+                self::isInternalProperty($key)
+                || self::findProperty(static::class, $key) === null
+            ) {
                 continue;
             }
             $_key = static::apiFieldName($key);
@@ -490,7 +516,10 @@ class Entity
 
         $array = [];
         foreach ($properties as $key => $_) {
-            if (self::isInternalProperty($key)) {
+            if (
+                self::isInternalProperty($key)
+                || self::findProperty(static::class, $key) === null
+            ) {
                 continue;
             }
             $_key = static::apiFieldName($key);
