@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -134,6 +135,16 @@ class SalesTest extends TestCase
         $this->assertInstanceOf(Sale::class, $sale);
         $this->assertSame(1001, $sale->getId());
         $this->assertSame('https://api.shop-pro.jp/v1/sales/1001', $mock->uri());
+    }
+
+    public function test_受注fixtureで欠損する決済方法IDは参照時に固有例外になる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+        $sale = (new Sales('my-token', $mock->client()))->one(1001);
+
+        $this->expectException(MissingFieldException::class);
+
+        $sale->getPaymentId();
     }
 
     public function test_受注IDは文字列でも渡せる(): void

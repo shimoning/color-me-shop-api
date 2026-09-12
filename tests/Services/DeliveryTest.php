@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -23,6 +24,16 @@ class DeliveryTest extends TestCase
         $this->assertContainsOnlyInstancesOf(DeliveryEntity::class, $deliveries->all());
         $this->assertSame('宅急便', $deliveries[0]->getName());
         $this->assertSame(DeliveryMethodType::YAMATO, $deliveries[0]->getMethodType());
+    }
+
+    public function test_配送方法fixtureで欠損する配送料設定は参照時に固有例外になる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('deliveries.json'));
+        $deliveries = (new Delivery('my-token', $mock->client()))->all();
+
+        $this->expectException(MissingFieldException::class);
+
+        $deliveries[0]->getCharge();
     }
 
     public function test_正しいエンドポイントにGETする(): void
