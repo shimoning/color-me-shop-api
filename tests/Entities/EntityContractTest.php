@@ -10,6 +10,7 @@ use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
+use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateContractEntity;
 
 /**
  * src/Entities 配下の全エンティティが満たすべき共通契約を検証する。
@@ -33,6 +34,16 @@ class EntityContractTest extends TestCase
             $cases[$key] = [$class];
         }
         return $cases;
+    }
+
+    /**
+     * @return array<string, array{class-string<Entity>}>
+     */
+    public static function fieldContractProvider(): array
+    {
+        return self::entityProvider() + [
+            'Tests\\Doubles\\InheritedPrivateContractEntity' => [InheritedPrivateContractEntity::class],
+        ];
     }
 
     /**
@@ -121,6 +132,22 @@ class EntityContractTest extends TestCase
         $this->assertTrue(self::isOptional($reflection->getProperty('optionalValue')));
     }
 
+    public function test_継承元privateプロパティを必須とnullableの両契約に含める(): void
+    {
+        $properties = self::properties(new ReflectionClass(InheritedPrivateContractEntity::class));
+        $required = \array_filter($properties, self::isRequired(...));
+        $optional = \array_filter($properties, self::isOptional(...));
+
+        $this->assertContains('requiredValue', \array_map(
+            static fn(ReflectionProperty $property): string => $property->getName(),
+            $required,
+        ));
+        $this->assertContains('optionalValue', \array_map(
+            static fn(ReflectionProperty $property): string => $property->getName(),
+            $optional,
+        ));
+    }
+
     /**
      * 宣言されていないプロパティを参照しているゲッターがないこと。
      *
@@ -164,14 +191,14 @@ class EntityContractTest extends TestCase
      * 既定値のない非 null 許容プロパティは、空のレスポンスで getter を呼ぶと
      * PHP の未初期化 Error ではなく MissingFieldException を投げること。
      */
-    #[DataProvider('entityProvider')]
+    #[DataProvider('fieldContractProvider')]
     public function test_非nullableのプロパティは空のレスポンスで固有例外を投げる(string $class): void
     {
         $reflection = new ReflectionClass($class);
         $entity = new $class([]);
 
         $checked = 0;
-        foreach ($reflection->getProperties() as $property) {
+        foreach (self::properties($reflection) as $property) {
             if (! self::isRequired($property)) {
                 continue;
             }
@@ -229,14 +256,14 @@ class EntityContractTest extends TestCase
      * Entities\Error::$field が 401 / 404 のレスポンスで未初期化エラーになっていた
      * 不具合と同種の問題を、全エンティティに対して防ぐ。
      */
-    #[DataProvider('entityProvider')]
+    #[DataProvider('fieldContractProvider')]
     public function test_null許容のプロパティは空のレスポンスでもnullを返す(string $class): void
     {
         $reflection = new ReflectionClass($class);
         $entity = new $class([]);
 
         $checked = 0;
-        foreach ($reflection->getProperties() as $property) {
+        foreach (self::properties($reflection) as $property) {
             if (! self::isOptional($property)) {
                 continue;
             }
@@ -263,6 +290,40 @@ class EntityContractTest extends TestCase
         $type = $property->getType();
 
         return $type !== null && $type->allowsNull();
+    }
+
+    /**
+     * Entity::resolveProperties() と同じ宣言階層・遮蔽規則を意図的に独立実装する。
+     * 本体を呼ぶと同じ不具合を共有して検出力を失うためで、本体の規則を変更した場合はこちらも追随が必要。
+     *
+     * @return array<string, ReflectionProperty>
+     */
+    private static function properties(ReflectionClass $reflection): array
+    {
+        $properties = [];
+        $declaredNames = [];
+        do {
+            foreach ($reflection->getProperties() as $property) {
+                if ($property->getDeclaringClass()->getName() !== $reflection->getName()) {
+                    continue;
+                }
+                $name = $property->getName();
+                if (isset($declaredNames[$name])) {
+                    continue;
+                }
+
+                $declaredNames[$name] = true;
+                if ($property->isStatic()
+                    || (\method_exists($property, 'isVirtual') && $property->isVirtual())
+                ) {
+                    continue;
+                }
+                $properties[$name] = $property;
+            }
+            $reflection = $reflection->getParentClass();
+        } while ($reflection !== false);
+
+        return $properties;
     }
 
     private static function isRequired(ReflectionProperty $property): bool
