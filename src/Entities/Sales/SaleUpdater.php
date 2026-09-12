@@ -33,6 +33,7 @@ class SaleUpdater extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -42,6 +43,7 @@ class SaleUpdater extends Entity
      */
     public function isPaid(): bool
     {
+        $this->assertFieldInitialized('paid');
         return $this->paid;
     }
 
@@ -61,6 +63,7 @@ class SaleUpdater extends Entity
      */
     public function getPointState(): PointState
     {
+        $this->assertFieldInitialized('pointState');
         return $this->pointState;
     }
 
@@ -80,6 +83,7 @@ class SaleUpdater extends Entity
      */
     public function getSaleDeliveries(): array
     {
+        $this->assertFieldInitialized('saleDeliveries');
         return $this->saleDeliveries;
     }
 
