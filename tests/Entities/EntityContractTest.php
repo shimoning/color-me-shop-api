@@ -24,20 +24,12 @@ class EntityContractTest extends TestCase
      * @var array<class-string, array<string>>
      */
     private const TEMPORARILY_UNINITIALIZED_FIELDS = [
-        \Shimoning\ColorMeShopApi\Entities\Customer\Customer::class => [
-            'id', 'accountId', 'points', 'member', 'salesCount',
-        ],
         \Shimoning\ColorMeShopApi\Entities\Delivery\Area::class => [
             'prefId', 'prefName', 'charge',
         ],
         \Shimoning\ColorMeShopApi\Entities\Delivery\Charge::class => [
             'deliveryId', 'accountId', 'chargeRangesByPrice', 'chargeRangesByArea',
             'chargeRangesMaxWeight',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Delivery\Delivery::class => [
-            'id', 'accountId', 'name', 'methodType', 'chargeFreeType', 'chargeType',
-            'charge', 'taxIncluded', 'slipNumberUse', 'displayState', 'preferredDateUse',
-            'preferredPeriodUse', 'unavailablePaymentIds', 'makeDate', 'updateDate',
         ],
         \Shimoning\ColorMeShopApi\Entities\Delivery\Weight::class => [
             'weight', 'areas',
@@ -63,21 +55,8 @@ class EntityContractTest extends TestCase
         \Shimoning\ColorMeShopApi\Entities\Payment\Payment::class => [
             'id', 'accountId', 'name', 'type', 'display', 'useMobile', 'makeDate', 'updateDate',
         ],
-        \Shimoning\ColorMeShopApi\Entities\Product\Category::class => [
-            'idBig', 'idSmall', 'accountId', 'name', 'displayState', 'makeDate',
-            'updateDate', 'children',
-        ],
         \Shimoning\ColorMeShopApi\Entities\Product\Group::class => [
             'id', 'accountId', 'name', 'displayState',
-        ],
-        \Shimoning\ColorMeShopApi\Entities\Sales\Sale::class => [
-            'id', 'accountId', 'makeDate', 'updateDate', 'paymentId', 'mobile', 'paid',
-            'delivered', 'canceled', 'acceptedMailState', 'paidMailState', 'deliveredMailState',
-            'pointState', 'productTotalPrice', 'deliveryTotalCharge', 'fee', 'tax',
-            'noshiTotalCharge', 'cardTotalCharge', 'wrappingTotalCharge', 'pointDiscount',
-            'gmoPointDiscount', 'otherDiscount', 'otherDiscountName', 'totalPrice',
-            'grantedPoints', 'usePoints', 'grantedGmoPoints', 'useGmoPoints',
-            'grantedYahooPoints', 'useYahooPoints', 'externalOrderId', 'details', 'saleDeliveries',
         ],
         \Shimoning\ColorMeShopApi\Entities\Sales\SaleDelivery::class => [
             'id', 'saleId', 'accountId', 'deliveryId', 'detailIds', 'name', 'prefId',
@@ -98,12 +77,6 @@ class EntityContractTest extends TestCase
             'accountId', 'date', 'amountToday', 'countToday', 'amountLast7days',
             'countLast7days', 'amountThisMonth', 'countThisMonth',
         ],
-        \Shimoning\ColorMeShopApi\Entities\Shop\Shop::class => [
-            'id', 'state', 'domainPlan', 'contractPlan', 'lastLoginDate', 'setupDate',
-            'makeDate', 'url', 'openState', 'mobileOpenState', 'loginId', 'name1', 'name2',
-            'name1Kana', 'name2Kana', 'userMail', 'tel', 'postal', 'address1', 'title',
-            'shopMail1', 'taxType', 'tax', 'taxRoundingMethod', 'reduceTaxRate',
-        ],
     ];
 
     /**
@@ -111,9 +84,7 @@ class EntityContractTest extends TestCase
      *
      * @var array<class-string, array<string>>
      */
-    private const TEMPORARILY_NULL_RETURN_FIELDS = [
-        \Shimoning\ColorMeShopApi\Entities\Sales\Sale::class => ['customer'],
-    ];
+    private const TEMPORARILY_NULL_RETURN_FIELDS = [];
 
     /**
      * @return array<string, array{class-string}>
@@ -305,8 +276,8 @@ class EntityContractTest extends TestCase
         $uninitialized = \array_sum(\array_map('count', self::TEMPORARILY_UNINITIALIZED_FIELDS));
         $nullReturns = \array_sum(\array_map('count', self::TEMPORARILY_NULL_RETURN_FIELDS));
 
-        $this->assertSame(171, $uninitialized);
-        $this->assertSame(1, $nullReturns);
+        $this->assertSame(84, $uninitialized);
+        $this->assertSame(0, $nullReturns);
     }
 
     /**
