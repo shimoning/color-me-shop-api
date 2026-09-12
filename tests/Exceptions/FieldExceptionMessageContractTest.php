@@ -149,9 +149,10 @@ class FieldExceptionMessageContractTest extends TestCase
         $this->assertSame(
             [
                 'InvalidFieldException::for' => 3,
-                // Charge の重量別配送料にも、配列要素を指す生成経路を追加したため2箇所になる。
+                // PR3 で Charge の重量別配送料にも配列要素を指す生成経路を追加したため2箇所になる。
                 'InvalidFieldException::forArrayElement' => 2,
                 'InvalidPaginationException::__construct' => 2,
+                // foundation の宣言プロパティ不在経路と PR3 の Sale customer 後方互換経路を両方保持する。
                 'MissingFieldException::for' => 3,
                 'MissingPaginationException::__construct' => 2,
             ],

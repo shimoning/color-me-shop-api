@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -71,6 +72,23 @@ class OAuthTest extends TestCase
         $this->assertSame('dummy-access-token', $token->getAccessToken());
         $this->assertSame('bearer', $token->getTokenType());
         $this->assertSame([AuthScope::READ_PRODUCTS, AuthScope::READ_SALES], $token->getScopes());
+        $this->assertSame(1700000000, $token->getCreatedAt());
+    }
+
+    public function test_部分的な成功応答は交換処理で構築でき欠損はgetter時に固有例外になる(): void
+    {
+        $mock = HttpMock::json(200, '{"scope":"read_products"}');
+
+        $token = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+
+        $this->assertInstanceOf(AccessToken::class, $token);
+        $this->assertSame([AuthScope::READ_PRODUCTS], $token->getScopes());
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            AccessToken::class . ' の API フィールド『access_token』が欠損しています。',
+        );
+
+        $token->getAccessToken();
     }
 
     public function test_トークン交換はフォーム形式でPOSTする(): void

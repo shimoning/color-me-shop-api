@@ -12,6 +12,8 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  */
 class Errors extends Collection
 {
+    private const REQUIRED_ERROR_KEYS = ['code', 'message', 'status'];
+
     private Response $_response;
 
     /**
@@ -45,11 +47,52 @@ class Errors extends Collection
      */
     static public function build(Response $response): self
     {
-        return new self(
-            $response,
-            \array_map(function ($error) {
-                return new Error($error);
-            }, $response->getParsedBody()['errors'] ?? []),
-        );
+        $parsedBody = $response->getParsedBody();
+        $items = \is_array($parsedBody) ? ($parsedBody['errors'] ?? []) : [];
+        if (! \is_array($items)) {
+            $items = [];
+        }
+
+        $errors = [];
+        foreach ($items as $item) {
+            if (! \is_array($item) || ! self::isUsableErrorData($item)) {
+                continue;
+            }
+
+            try {
+                $errors[] = new Error($item);
+            } catch (\Throwable) {
+                // 構築できない要素だけを除外する。元の Response は保持するため、
+                // 呼び出し側は HTTP ステータスと生のレスポンスから詳細を確認できる。
+                continue;
+            }
+        }
+
+        return new self($response, $errors);
+    }
+
+    /**
+     * 全必須 getter を安全に利用できる Error の構築候補か判定する。
+     *
+     * 数値キーを含む配列は API のエラーオブジェクトではなくリスト形状として除外する。
+     * 必須キーが揃わない要素も、不完全な Error が利用時に二次例外を起こすため除外する。
+     *
+     * @param array<array-key, mixed> $item
+     */
+    private static function isUsableErrorData(array $item): bool
+    {
+        foreach (\array_keys($item) as $key) {
+            if (! \is_string($key)) {
+                return false;
+            }
+        }
+
+        foreach (self::REQUIRED_ERROR_KEYS as $key) {
+            if (! \array_key_exists($key, $item)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

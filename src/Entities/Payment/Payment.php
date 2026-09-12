@@ -61,6 +61,8 @@ class Payment extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
+
         return $this->id;
     }
 
@@ -70,6 +72,8 @@ class Payment extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
+
         return $this->accountId;
     }
 
@@ -79,6 +83,8 @@ class Payment extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
+
         return $this->name;
     }
 
@@ -151,6 +157,8 @@ class Payment extends Entity
      */
     public function getType(): PaymentType
     {
+        $this->assertFieldInitialized('type');
+
         return $this->type;
     }
 
@@ -160,6 +168,8 @@ class Payment extends Entity
      */
     public function getDisplay(): bool
     {
+        $this->assertFieldInitialized('display');
+
         return $this->display;
     }
 
@@ -169,6 +179,8 @@ class Payment extends Entity
      */
     public function getUseMobile(): bool
     {
+        $this->assertFieldInitialized('useMobile');
+
         return $this->useMobile;
     }
 
@@ -178,6 +190,8 @@ class Payment extends Entity
      */
     public function getMakeDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('makeDate');
+
         return (new DateTimeImmutable)->setTimestamp($this->makeDate);
     }
 
@@ -187,6 +201,8 @@ class Payment extends Entity
      */
     public function getUpdateDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('updateDate');
+
         return (new DateTimeImmutable)->setTimestamp($this->updateDate);
     }
 
