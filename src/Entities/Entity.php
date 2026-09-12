@@ -70,7 +70,7 @@ class Entity
         foreach ($data as $key => $value) {
             $_key = $propertyNames[$key]
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
-            if (property_exists($this, $_key)) {
+            if (self::findProperty(static::class, $_key) !== null) {
                 $this->hydrateField($_key, $key, $value, $objectFields[$_key] ?? null);
             }
         }
@@ -143,10 +143,37 @@ class Entity
         return null;
     }
 
+    /**
+     * @param class-string<Entity> $class
+     */
     private static function property(string $class, string $property): ReflectionProperty
     {
-        return self::$_properties[$class][$property]
-            ??= new ReflectionProperty($class, $property);
+        $reflection = self::findProperty($class, $property);
+        if ($reflection !== null) {
+            return $reflection;
+        }
+
+        throw MissingFieldException::for($class, $class::apiFieldName($property));
+    }
+
+    /**
+     * @param class-string<Entity> $class
+     */
+    private static function findProperty(string $class, string $property): ?ReflectionProperty
+    {
+        if (isset(self::$_properties[$class][$property])) {
+            return self::$_properties[$class][$property];
+        }
+
+        $reflection = new ReflectionClass($class);
+        do {
+            if ($reflection->hasProperty($property)) {
+                return self::$_properties[$class][$property] = $reflection->getProperty($property);
+            }
+            $reflection = $reflection->getParentClass();
+        } while ($reflection !== false);
+
+        return null;
     }
 
     private static function expectedType(?ReflectionType $type, ReflectionProperty $property): string

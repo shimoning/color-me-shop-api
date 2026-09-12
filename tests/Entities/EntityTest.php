@@ -20,6 +20,8 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeParentEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\DnfIntersectionValue;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\SecondInheritedPrivateFieldEntity;
 
 class EntityTest extends TestCase
 {
@@ -309,6 +311,66 @@ class EntityTest extends TestCase
         $entity = new PrivateFieldEntity(['name' => '山田']);
 
         $this->assertSame('山田', $entity->getName());
+    }
+
+    public function test_親クラス宣言のprivateフィールドを子クラスで初期化する(): void
+    {
+        $entity = new InheritedPrivateFieldEntity(['name' => '山田']);
+
+        $this->assertSame('山田', $entity->getName());
+    }
+
+    public function test_親クラス宣言のprivateフィールド欠損は汎用例外を投げる(): void
+    {
+        $entity = new InheritedPrivateFieldEntity([]);
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            InheritedPrivateFieldEntity::class . ' の API フィールド『name』が欠損しています。',
+        );
+
+        $entity->getName();
+    }
+
+    public function test_親クラス宣言のprivateフィールドの不正値は汎用例外を投げる(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            InheritedPrivateFieldEntity::class . ' の API フィールド『name』が不正です。'
+            . 'string を期待しましたが int でした。',
+        );
+
+        new InheritedPrivateFieldEntity(['name' => 1]);
+    }
+
+    public function test_同じ親privateフィールドを継承するサブクラス間でキャッシュが誤ヒットしない(): void
+    {
+        $first = new InheritedPrivateFieldEntity(['name' => 'first']);
+        $second = new SecondInheritedPrivateFieldEntity(['name' => 'second']);
+
+        $this->assertSame('first', $first->getName());
+        $this->assertSame('second', $second->getName());
+    }
+
+    public function test_宣言クラスが異なる同名privateフィールドでキャッシュが誤ヒットしない(): void
+    {
+        $inherited = new InheritedPrivateFieldEntity(['name' => 'inherited']);
+        $direct = new PrivateFieldEntity(['name' => 'direct']);
+
+        $this->assertSame('inherited', $inherited->getName());
+        $this->assertSame('direct', $direct->getName());
+    }
+
+    public function test_宣言クラスにも存在しないフィールドは欠損の汎用例外を投げる(): void
+    {
+        $entity = new InheritedPrivateFieldEntity([]);
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            InheritedPrivateFieldEntity::class . ' の API フィールド『unknown_field』が欠損しています。',
+        );
+
+        $entity->assertUnknownField();
     }
 
     #[DataProvider('invalidFieldProvider')]

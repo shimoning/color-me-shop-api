@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 
@@ -149,7 +150,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 'InvalidFieldException::for' => 2,
                 'InvalidFieldException::forArrayElement' => 1,
                 'InvalidPaginationException::__construct' => 2,
-                'MissingFieldException::for' => 1,
+                'MissingFieldException::for' => 2,
                 'MissingPaginationException::__construct' => 2,
             ],
             $routeCounts,
@@ -244,6 +245,12 @@ class FieldExceptionMessageContractTest extends TestCase
             'MissingFieldException::for/必須フィールド欠損' => [
                 static function (): void {
                     (new RequiredEntity([]))->getName();
+                },
+                null,
+            ],
+            'MissingFieldException::for/宣言プロパティ不在' => [
+                static function (): void {
+                    (new InheritedPrivateFieldEntity([]))->assertUnknownField();
                 },
                 null,
             ],
