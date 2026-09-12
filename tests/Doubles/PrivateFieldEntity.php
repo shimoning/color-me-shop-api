@@ -13,6 +13,8 @@ class PrivateFieldEntity extends Entity
 
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
+
         return $this->name;
     }
 }

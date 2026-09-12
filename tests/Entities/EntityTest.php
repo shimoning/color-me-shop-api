@@ -22,6 +22,8 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\DnfIntersectionValue;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\SecondInheritedPrivateFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\StaticFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedStaticFieldEntity;
 
 class EntityTest extends TestCase
 {
@@ -47,6 +49,34 @@ class EntityTest extends TestCase
 
         $this->assertSame('a', $entity->getName());
         $this->assertArrayNotHasKey('undefined_key', $entity->toArray());
+    }
+
+    public function test_staticプロパティに対応するキーは複数インスタンスで無視される(): void
+    {
+        StaticFieldEntity::resetSharedState();
+
+        $first = new StaticFieldEntity(['shared_state' => 'first']);
+        $second = new StaticFieldEntity(['shared_state' => 'second']);
+
+        $this->assertSame('original', StaticFieldEntity::getSharedState());
+        $this->assertSame(['shared_state' => 'first'], $first->getRaw());
+        $this->assertSame(['shared_state' => 'second'], $second->getRaw());
+        $this->assertArrayNotHasKey('shared_state', $first->toArray());
+        $this->assertArrayNotHasKey('shared_state', $second->toArrayRecursive(false));
+    }
+
+    public function test_親クラスのstaticプロパティに対応するキーは子クラスで無視される(): void
+    {
+        StaticFieldEntity::resetSharedState();
+
+        $first = new InheritedStaticFieldEntity(['shared_state' => 'first']);
+        $second = new InheritedStaticFieldEntity(['shared_state' => 'second']);
+
+        $this->assertSame('original', StaticFieldEntity::getSharedState());
+        $this->assertSame(['shared_state' => 'first'], $first->getRaw());
+        $this->assertSame(['shared_state' => 'second'], $second->getRaw());
+        $this->assertArrayNotHasKey('shared_state', $first->toArray());
+        $this->assertArrayNotHasKey('shared_state', $second->toArrayRecursive(false));
     }
 
     public function test_渡されなかったプロパティはtoArrayでnullになる(): void
@@ -311,6 +341,29 @@ class EntityTest extends TestCase
         $entity = new PrivateFieldEntity(['name' => '山田']);
 
         $this->assertSame('山田', $entity->getName());
+    }
+
+    public function test_private宣言のフィールド欠損はgetterで汎用例外を投げる(): void
+    {
+        $entity = new PrivateFieldEntity([]);
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            PrivateFieldEntity::class . ' の API フィールド『name』が欠損しています。',
+        );
+
+        $entity->getName();
+    }
+
+    public function test_private宣言のフィールドの不正値は汎用例外を投げる(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            PrivateFieldEntity::class . ' の API フィールド『name』が不正です。'
+            . 'string を期待しましたが int でした。',
+        );
+
+        new PrivateFieldEntity(['name' => 1]);
     }
 
     public function test_親クラス宣言のprivateフィールドを子クラスで初期化する(): void

@@ -168,7 +168,10 @@ class Entity
         $reflection = new ReflectionClass($class);
         do {
             if ($reflection->hasProperty($property)) {
-                return self::$_properties[$class][$property] = $reflection->getProperty($property);
+                $candidate = $reflection->getProperty($property);
+                if (! $candidate->isStatic()) {
+                    return self::$_properties[$class][$property] = $candidate;
+                }
             }
             $reflection = $reflection->getParentClass();
         } while ($reflection !== false);
