@@ -91,6 +91,33 @@ class OAuthTest extends TestCase
         $token->getAccessToken();
     }
 
+    public function test_2xxの空ボディは元レスポンスを保持したErrorsを返す(): void
+    {
+        $mock = HttpMock::json(204, '');
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame(204, $errors->getResponse()->getStatus());
+        $this->assertSame('', $errors->getResponse()->getRawBody());
+        $this->assertNull($errors->getResponse()->getParsedBody());
+    }
+
+    public function test_2xxの非配列JSONは元レスポンスを保持したErrorsを返す(): void
+    {
+        $body = '"unexpected"';
+        $mock = HttpMock::json(200, $body);
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame(200, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+        $this->assertNull($errors->getResponse()->getParsedBody());
+    }
+
     public function test_トークン交換はフォーム形式でPOSTする(): void
     {
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));

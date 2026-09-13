@@ -100,15 +100,32 @@ class ResponseTest extends TestCase
         $this->assertSame('', $response->getRawBody());
     }
 
-    /**
-     * json_decode は連想配列以外も返しうるが、パース処理の戻り値の型宣言が ?array のため、
-     * スカラーの JSON を返すレスポンスはインスタンス生成の時点で TypeError になる (仕様化テスト)。
-     */
-    public function test_配列にならないJSONは生成時にTypeErrorになる(): void
+    #[DataProvider('jsonRootProvider')]
+    public function test_JSONのルート型にかかわらずレスポンス情報を保持する(
+        string $body,
+        int $status,
+        ?array $expectedParsedBody,
+        bool $expectedSuccess,
+    ): void
     {
-        $this->expectException(\TypeError::class);
+        $response = $this->makeResponse($status, $body);
 
-        $this->makeResponse(200, '"just a string"');
+        $this->assertSame($body, $response->getRawBody());
+        $this->assertSame($expectedParsedBody, $response->getParsedBody());
+        $this->assertSame($expectedSuccess, $response->isSuccess());
+    }
+
+    public static function jsonRootProvider(): array
+    {
+        return [
+            'string' => ['"error"', 200, null, true],
+            'int' => ['123', 400, null, false],
+            'float' => ['1.5', 204, null, true],
+            'bool' => ['true', 500, null, false],
+            'null' => ['null', 200, null, true],
+            '配列' => ['[1,{"two":2}]', 201, [1, ['two' => 2]], true],
+            '連想配列' => ['{"shop":{"id":1}}', 422, ['shop' => ['id' => 1]], false],
+        ];
     }
 
     // --- ヘッダ -----------------------------------------------------------

@@ -70,6 +70,12 @@ class OAuth
         if (! $response->isSuccess()) {
             return Errors::build($response);
         }
-        return new AccessToken($response->getParsedBody());
+
+        $parsedBody = $response->getParsedBody();
+        if ($parsedBody === null) {
+            return Errors::build($response);
+        }
+
+        return new AccessToken($parsedBody);
     }
 }

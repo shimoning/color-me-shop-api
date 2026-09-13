@@ -41,7 +41,9 @@ class Response
     private function parse(string $body): ?array
     {
         // $utf8Body = \mb_convert_encoding($body, 'UTF-8', 'SJIS');
-        return \json_decode($body, true);
+        $parsedBody = \json_decode($body, true);
+
+        return \is_array($parsedBody) ? $parsedBody : null;
     }
 
     /**
