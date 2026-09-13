@@ -138,7 +138,7 @@ API が object 形状のエラー要素を返した場合、既知フィール�
 `Exceptions\MissingFieldException` が投げられるため、上記のように `getRaw()` で利用可能なフィールドを
 確認するか、`MissingFieldException` を捕捉して扱うこと。
 
-一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
+一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。空文字のアクセストークンは、各 `Services\Service` の直接生成時に拒否され、公開 Service メソッドの引数で上書きした場合も HTTP リクエストの生成時に拒否される。空文字の判定は厳密に `""` のみで、`"0"` は有効なアクセストークンとして扱われる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
 
 ```php
 try {
