@@ -22,6 +22,8 @@ class Cod extends Entity
      */
     public function getChangeable(): bool
     {
+        $this->assertFieldInitialized('changeable');
+
         return $this->changeable;
     }
 
@@ -32,6 +34,8 @@ class Cod extends Entity
      */
     public function getFees(): array
     {
+        $this->assertFieldInitialized('fees');
+
         return $this->fees;
     }
 
@@ -41,6 +45,8 @@ class Cod extends Entity
      */
     public function getFeeMax(): int
     {
+        $this->assertFieldInitialized('feeMax');
+
         return $this->feeMax;
     }
 
@@ -52,6 +58,8 @@ class Cod extends Entity
      */
     public function getChangeableByTotal(): bool
     {
+        $this->assertFieldInitialized('changeableByTotal');
+
         return $this->changeableByTotal;
     }
 }

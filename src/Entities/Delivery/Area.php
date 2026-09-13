@@ -28,6 +28,8 @@ class Area extends Entity
      */
     public function getPrefId(): Prefecture
     {
+        $this->assertFieldInitialized('prefId');
+
         return $this->prefId;
     }
 
@@ -37,6 +39,8 @@ class Area extends Entity
      */
     public function getPrefName(): string
     {
+        $this->assertFieldInitialized('prefName');
+
         return $this->prefName;
     }
 
@@ -46,6 +50,8 @@ class Area extends Entity
      */
     public function getCharge(): int
     {
+        $this->assertFieldInitialized('charge');
+
         return $this->charge;
     }
 }

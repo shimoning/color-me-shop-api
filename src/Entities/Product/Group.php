@@ -37,6 +37,8 @@ class Group extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
+
         return $this->id;
     }
 
@@ -46,6 +48,8 @@ class Group extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
+
         return $this->accountId;
     }
 
@@ -55,6 +59,8 @@ class Group extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
+
         return $this->name;
     }
 
@@ -91,6 +97,8 @@ class Group extends Entity
      */
     public function getDisplayState(): ProductDisplayState
     {
+        $this->assertFieldInitialized('displayState');
+
         return $this->displayState;
     }
 

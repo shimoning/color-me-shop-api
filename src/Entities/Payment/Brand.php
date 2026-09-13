@@ -20,6 +20,8 @@ class Brand extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
+
         return $this->id;
     }
 
@@ -29,6 +31,8 @@ class Brand extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
+
         return $this->name;
     }
 }

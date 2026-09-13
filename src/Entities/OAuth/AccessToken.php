@@ -50,6 +50,8 @@ class AccessToken extends Entity
      */
     public function getAccessToken(): string
     {
+        $this->assertFieldInitialized('accessToken');
+
         return $this->accessToken;
     }
 
@@ -59,6 +61,8 @@ class AccessToken extends Entity
      */
     public function getTokenType(): string
     {
+        $this->assertFieldInitialized('tokenType');
+
         return $this->tokenType;
     }
 
@@ -77,6 +81,8 @@ class AccessToken extends Entity
      */
     public function getCreatedAt(): int
     {
+        $this->assertFieldInitialized('createdAt');
+
         return $this->createdAt;
     }
 }
