@@ -66,6 +66,7 @@ class SaleDelivery extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -75,6 +76,7 @@ class SaleDelivery extends Entity
      */
     public function getSaleId(): int
     {
+        $this->assertFieldInitialized('saleId');
         return $this->saleId;
     }
 
@@ -84,6 +86,7 @@ class SaleDelivery extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -93,6 +96,7 @@ class SaleDelivery extends Entity
      */
     public function getDeliveryId(): int
     {
+        $this->assertFieldInitialized('deliveryId');
         return $this->deliveryId;
     }
 
@@ -102,6 +106,7 @@ class SaleDelivery extends Entity
      */
     public function getDetailIds(): array
     {
+        $this->assertFieldInitialized('detailIds');
         return $this->detailIds;
     }
 
@@ -111,6 +116,7 @@ class SaleDelivery extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
         return $this->name;
     }
 
@@ -138,6 +144,7 @@ class SaleDelivery extends Entity
      */
     public function getPrefId(): Prefecture
     {
+        $this->assertFieldInitialized('prefId');
         return $this->prefId;
     }
 
@@ -147,6 +154,7 @@ class SaleDelivery extends Entity
      */
     public function getPrefName(): string
     {
+        $this->assertFieldInitialized('prefName');
         return $this->prefName;
     }
 
@@ -273,6 +281,7 @@ class SaleDelivery extends Entity
      */
     public function getDeliveryCharge(): int
     {
+        $this->assertFieldInitialized('deliveryCharge');
         return $this->deliveryCharge;
     }
 
@@ -282,6 +291,7 @@ class SaleDelivery extends Entity
      */
     public function getTotalCharge(): int
     {
+        $this->assertFieldInitialized('totalCharge');
         return $this->totalCharge;
     }
 
@@ -309,6 +319,7 @@ class SaleDelivery extends Entity
      */
     public function isDelivered(): bool
     {
+        $this->assertFieldInitialized('delivered');
         return $this->delivered;
     }
 }
