@@ -126,7 +126,7 @@ if ($result instanceof Errors) {
 }
 ```
 
-一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
+一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。空文字のアクセストークンは、各 `Services\Service` の直接生成時に拒否され、公開 Service メソッドの引数で上書きした場合も HTTP リクエストの生成時に拒否される。空文字の判定は厳密に `""` のみで、`"0"` は有効なアクセストークンとして扱われる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
 
 ```php
 try {

@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
@@ -25,6 +26,53 @@ class ExceptionTest extends TestCase
     {
         $this->assertInstanceOf(ColorMeApiException::class, new MissingPaginationException());
         $this->assertInstanceOf(ColorMeApiException::class, new InvalidPaginationException());
+    }
+
+    public function test_MissingPaginationExceptionのファクトリはサブクラス型を返す(): void
+    {
+        $exception = MissingPaginationException::for(self::class, 'total');
+
+        $this->assertSame(MissingPaginationException::class, $exception::class);
+        $this->assertInstanceOf(MissingFieldException::class, $exception);
+        $this->assertSame(
+            self::class . ' の API フィールド『total』が欠損しています。',
+            $exception->getMessage(),
+        );
+    }
+
+    public function test_InvalidPaginationExceptionのforはサブクラス型を返す(): void
+    {
+        $exception = InvalidPaginationException::for(self::class, 'limit', 'int', null);
+
+        $this->assertSame(InvalidPaginationException::class, $exception::class);
+        $this->assertInstanceOf(InvalidFieldException::class, $exception);
+        $this->assertSame(
+            self::class . ' の API フィールド『limit』が不正です。'
+            . 'int を期待しましたが null でした。',
+            $exception->getMessage(),
+        );
+    }
+
+    public function test_InvalidPaginationExceptionのforArrayElementはサブクラス型を返す(): void
+    {
+        $previous = new \RuntimeException('internal');
+
+        $exception = InvalidPaginationException::forArrayElement(
+            self::class,
+            'items',
+            \stdClass::class,
+            $previous,
+        );
+
+        $this->assertSame(InvalidPaginationException::class, $exception::class);
+        $this->assertInstanceOf(InvalidFieldException::class, $exception);
+        $this->assertSame($previous, $exception->getPrevious());
+        $this->assertSame(
+            self::class . ' の API フィールド『items』が不正です。'
+            . '配列要素を ' . \stdClass::class . ' に変換できませんでした。'
+            . '原因: 配列要素を変換できませんでした。',
+            $exception->getMessage(),
+        );
     }
 
     public function test_ライブラリの例外をまとめて捕捉できる(): void
