@@ -223,36 +223,43 @@ class ErrorsTest extends TestCase
     }
 
     /**
-     * @return array<string, array{string}>
+     * @return array<string, array{string, list<array<array-key, mixed>>}>
      */
-    public static function invalidArrayElementProvider(): array
+    public static function elementShapeProvider(): array
     {
         return [
-            // 数値キーだけの配列は既知フィールドを持たない空 Error になり得るため、
-            // getter の二次例外を防ぐ目的でコレクションには混入させない。
-            '数値キーを持つネスト配列' => ['{"errors":[[["nested"]]]}'],
+            // 空 object もワイヤ上のエラー1件として意図的に保持する。
+            // getter の欠損は Entity 共通契約どおり MissingFieldException で通知する。
+            '空 object' => ['{"errors":[{}]}', [[]]],
+            '数値キーを持つネスト配列' => ['{"errors":[[["nested"]]]}', []],
             '数値キーと既知キーが混在する配列' => [
                 '{"errors":[{"0":"nested","code":"422210","message":"invalid","status":422}]}',
+                [[0 => 'nested', 'code' => '422210', 'message' => 'invalid', 'status' => 422]],
             ],
-            '未知キーだけの連想配列' => ['{"errors":[{"unknown":"x"}]}'],
-            'message が配列' => ['{"errors":[{"message":["nested"]}]}'],
-            'status が null' => ['{"errors":[{"status":null}]}'],
+            '未知キーだけの連想配列' => ['{"errors":[{"unknown":"x"}]}', [['unknown' => 'x']]],
+            'message が配列' => ['{"errors":[{"message":["nested"]}]}', [[]]],
+            'status が null' => ['{"errors":[{"status":null}]}', [[]]],
         ];
     }
 
     /**
-     * Error として全必須 getter を安全に利用できない要素はスキップし、
-     * 呼び出し側が元レスポンスから障害内容を確認できること。
+     * object 形状は有効フィールドがなくても保持し、リスト形状だけをスキップする。
+     * 空 Error の getter が MissingFieldException を投げるのは Entity 共通契約として意図した挙動である。
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('invalidArrayElementProvider')]
-    public function test_構築できない配列要素は無視して元レスポンスを保持する(string $body): void
-    {
+    #[\PHPUnit\Framework\Attributes\DataProvider('elementShapeProvider')]
+    public function test_object形状だけをErrorとして保持して元レスポンスも保持する(
+        string $body,
+        array $expectedRaw,
+    ): void {
         $response = $this->makeResponse(502, $body);
 
         $errors = Errors::build($response);
 
-        $this->assertCount(0, $errors);
-        $this->assertSame([], $errors->all());
+        $this->assertCount(\count($expectedRaw), $errors);
+        $this->assertSame(
+            $expectedRaw,
+            \array_map(fn(Error $error): array => $error->getRaw(), $errors->all()),
+        );
         $this->assertSame($response, $errors->getResponse());
         $this->assertSame(502, $errors->getResponse()->getStatus());
         $this->assertSame($body, $errors->getResponse()->getRawBody());
@@ -299,8 +306,8 @@ class ErrorsTest extends TestCase
             '一段のリスト' => ['{"errors":[["nested"]]}', []],
             '二段のリスト' => ['{"errors":[[["nested"]]]}', []],
             '深いリスト' => ['{"errors":[[[[[["nested"]]]]]]}', []],
-            '未知キーのみ' => ['{"errors":[{"unknown":"x"}]}', []],
-            '未知キーがネスト配列' => ['{"errors":[{"unknown":{"nested":["x"]}}]}', []],
+            '未知キーのみ' => ['{"errors":[{"unknown":"x"}]}', [[]]],
+            '未知キーがネスト配列' => ['{"errors":[{"unknown":{"nested":["x"]}}]}', [[]]],
             'code のみ' => ['{"errors":[{"code":"422210"}]}', [['code' => '422210']]],
             'message のみ' => ['{"errors":[{"message":"invalid"}]}', [['message' => 'invalid']]],
             'status のみ' => ['{"errors":[{"status":422}]}', [['status' => 422]]],
@@ -322,19 +329,19 @@ class ErrorsTest extends TestCase
             ],
             'message が整数' => [
                 '{"errors":[{"code":"422210","message":1,"status":422}]}',
-                [],
+                [['code' => '422210', 'status' => 422]],
             ],
             'status が文字列' => [
                 '{"errors":[{"code":"422210","message":"invalid","status":"422"}]}',
-                [],
+                [['code' => '422210', 'message' => 'invalid']],
             ],
             'field が整数' => [
                 '{"errors":[{"code":"422210","message":"invalid","field":1,"status":422}]}',
-                [],
+                [['code' => '422210', 'message' => 'invalid', 'status' => 422]],
             ],
             '数値キーと必須キーが混在' => [
                 '{"errors":[{"0":"nested","code":"422210","message":"invalid","status":422}]}',
-                [],
+                [['code' => '422210', 'message' => 'invalid', 'status' => 422]],
             ],
             '正常要素とスカラーの混在' => [
                 '{"errors":[{"code":"422210","message":"invalid","status":422},"error"]}',
@@ -396,8 +403,207 @@ class ErrorsTest extends TestCase
 
         $errors = Errors::build($response);
 
-        $this->assertSame(1, $errors->count());
+        $this->assertSame(2, $errors->count());
         $this->assertAllErrorGettersAreSafe($errors);
+    }
+
+    public function test_object形状の境界でgetRawとtoArrayを固定する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{},'
+                . '{"extra":"only"},'
+                . '{"0":"extra","code":401010},'
+                . '{"code":401010,"message":"unauthorized","status":401,"field":"token","extra":true},'
+                . '[],null,"scalar"]}',
+        ));
+
+        $this->assertCount(4, $errors);
+        $this->assertSame(
+            [
+                [],
+                ['extra' => 'only'],
+                [0 => 'extra', 'code' => '401010'],
+                [
+                    'code' => '401010',
+                    'message' => 'unauthorized',
+                    'status' => 401,
+                    'field' => 'token',
+                    'extra' => true,
+                ],
+            ],
+            \array_map(fn(Error $error): array => $error->getRaw(), $errors->all()),
+        );
+        $this->assertSame(
+            [
+                ['code' => null, 'message' => null, 'field' => null, 'status' => null],
+                ['code' => null, 'message' => null, 'field' => null, 'status' => null],
+                ['code' => '401010', 'message' => null, 'field' => null, 'status' => null],
+                ['code' => '401010', 'message' => 'unauthorized', 'field' => 'token', 'status' => 401],
+            ],
+            \array_map(fn(Error $error): array => $error->toArray(), $errors->all()),
+        );
+    }
+
+    public function test_部分不正でも有効なフィールドを保持し不正フィールドだけを欠損扱いにする(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"code":401010,"message":["配列"]}]}',
+        ));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame('401010', $errors[0]->getCode());
+        $this->assertSame(['code' => '401010'], $errors[0]->getRaw());
+        $this->assertSame(
+            ['code' => '401010', 'message' => null, 'field' => null, 'status' => null],
+            $errors[0]->toArray(),
+        );
+
+        $this->expectException(MissingFieldException::class);
+        $errors[0]->getMessage();
+    }
+
+    /**
+     * @return array<string, array{string, array<string, mixed>, array<string, mixed>}>
+     */
+    public static function errorFieldSubsetProvider(): array
+    {
+        $values = [
+            'code' => 401010,
+            'message' => 'invalid',
+            'status' => 422,
+            'field' => 'sale.id',
+        ];
+        $normalizedValues = ['code' => '401010'] + \array_diff_key($values, ['code' => true]);
+        $cases = [];
+
+        for ($mask = 0; $mask < 16; ++$mask) {
+            $payload = [];
+            foreach (\array_keys($values) as $index => $key) {
+                if (($mask & (1 << $index)) !== 0) {
+                    $payload[$key] = $values[$key];
+                }
+            }
+
+            $wirePayload = $payload === [] ? (object) [] : $payload;
+            $body = \json_encode(['errors' => [$wirePayload]], \JSON_THROW_ON_ERROR);
+            $expectedRaw = \array_intersect_key($normalizedValues, $payload);
+            $cases[\sprintf('subset %04b', $mask)] = [
+                $body,
+                $expectedRaw,
+                [
+                    'code' => $expectedRaw['code'] ?? null,
+                    'message' => $expectedRaw['message'] ?? null,
+                    'field' => $expectedRaw['field'] ?? null,
+                    'status' => $expectedRaw['status'] ?? null,
+                ],
+            ];
+        }
+
+        return $cases;
+    }
+
+    /**
+     * 4フィールドのどの部分集合でも object は1件として保持する。
+     * 空部分集合の getter が MissingFieldException を投げることも意図した Entity 契約である。
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('errorFieldSubsetProvider')]
+    public function test_4フィールドの16部分集合でgetRawとtoArrayを固定する(
+        string $body,
+        array $expectedRaw,
+        array $expectedArray,
+    ): void {
+        $errors = Errors::build($this->makeResponse(422, $body));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame($expectedRaw, $errors[0]->getRaw());
+        $this->assertSame($expectedArray, $errors[0]->toArray());
+    }
+
+    /**
+     * @return array<string, array{string, array<string, mixed>, array<string, mixed>}>
+     */
+    public static function codeBoundaryProvider(): array
+    {
+        return [
+            'code 0' => ['0', ['code' => '0'], ['code' => '0', 'message' => null, 'field' => null, 'status' => null]],
+            '負数' => ['-1', ['code' => '-1'], ['code' => '-1', 'message' => null, 'field' => null, 'status' => null]],
+            'PHP_INT_MAX' => [
+                (string) \PHP_INT_MAX,
+                ['code' => (string) \PHP_INT_MAX],
+                ['code' => (string) \PHP_INT_MAX, 'message' => null, 'field' => null, 'status' => null],
+            ],
+            'float' => ['1.5', [], ['code' => null, 'message' => null, 'field' => null, 'status' => null]],
+            '数値文字列' => [
+                '"401010"',
+                ['code' => '401010'],
+                ['code' => '401010', 'message' => null, 'field' => null, 'status' => null],
+            ],
+            '通常 integer' => [
+                '401010',
+                ['code' => '401010'],
+                ['code' => '401010', 'message' => null, 'field' => null, 'status' => null],
+            ],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('codeBoundaryProvider')]
+    public function test_code境界値のgetRawとtoArrayを固定する(
+        string $wireCode,
+        array $expectedRaw,
+        array $expectedArray,
+    ): void {
+        $errors = Errors::build($this->makeResponse(422, '{"errors":[{"code":' . $wireCode . '}]}'));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame($expectedRaw, $errors[0]->getRaw());
+        $this->assertSame($expectedArray, $errors[0]->toArray());
+    }
+
+    public function test_401と422fixtureのgetRawとtoArrayは不変(): void
+    {
+        $errors401 = Errors::build($this->makeResponse(401, self::fixture('errors_401.json')));
+        $errors422 = Errors::build($this->makeResponse(422, self::fixture('errors_422.json')));
+
+        $this->assertSame(
+            [
+                'code' => '401010',
+                'message' => 'このリソースにアクセスできません。有効なアクセストークンが見つからないか、必要なスコープが付与されていません。',
+                'status' => 401,
+            ],
+            $errors401[0]->getRaw(),
+        );
+        $this->assertSame(
+            [
+                'code' => '401010',
+                'message' => 'このリソースにアクセスできません。有効なアクセストークンが見つからないか、必要なスコープが付与されていません。',
+                'field' => null,
+                'status' => 401,
+            ],
+            $errors401[0]->toArray(),
+        );
+        $this->assertSame(
+            [
+                [
+                    'code' => '422210',
+                    'message' => 'パラメータが指定されていません。',
+                    'field' => 'sale.id',
+                    'status' => 422,
+                ],
+                [
+                    'code' => '422210',
+                    'message' => 'パラメータが指定されていません。',
+                    'field' => 'sale.paid',
+                    'status' => 422,
+                ],
+            ],
+            \array_map(fn(Error $error): array => $error->getRaw(), $errors422->all()),
+        );
+        $this->assertSame(
+            \array_map(fn(Error $error): array => $error->getRaw(), $errors422->all()),
+            \array_map(fn(Error $error): array => $error->toArray(), $errors422->all()),
+        );
     }
 
     // --- Response の保持 ---------------------------------------------------

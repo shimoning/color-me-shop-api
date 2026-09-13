@@ -12,8 +12,6 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  */
 class Errors extends Collection
 {
-    private const ERROR_KEYS = ['code', 'message', 'status', 'field'];
-
     private Response $_response;
 
     /**
@@ -42,70 +40,103 @@ class Errors extends Collection
     /**
      * API レスポンスからエラーコレクションを生成する。
      *
+     * ワイヤ上で object 形状の要素は、既知フィールドが空または不正でも Error として保持する。
+     * 不正な既知フィールドは要素全体を捨てず欠損として扱うため、その getter は Entity 共通契約どおり
+     * MissingFieldException を投げる。空 Error を保持することも、ワイヤ上の件数を失わないための意図した挙動である。
+     *
      * @param Response $response API レスポンス
      * @return self
      */
     static public function build(Response $response): self
     {
-        $parsedBody = $response->getParsedBody();
-        $items = \is_array($parsedBody) ? ($parsedBody['errors'] ?? []) : [];
-        if (! \is_array($items)) {
-            $items = [];
-        }
-
         $errors = [];
-        foreach ($items as $item) {
-            if (! \is_array($item) || ! self::isUsableErrorData($item)) {
+        foreach (self::errorItems($response) as $item) {
+            $data = self::objectData($item);
+            if ($data === null) {
                 continue;
             }
 
-            try {
-                $errors[] = new Error(self::normalizeErrorData($item));
-            } catch (\Throwable) {
-                // 構築できない要素だけを除外する。元の Response は保持するため、
-                // 呼び出し側は HTTP ステータスと生のレスポンスから詳細を確認できる。
-                continue;
-            }
+            $errors[] = new Error(self::normalizeErrorData($data));
         }
 
         return new self($response, $errors);
     }
 
     /**
-     * Error の構築候補となる連想配列か判定する。
+     * object / list の形状を失わないよう、生 JSON からエラー要素を取得する。
      *
-     * 数値キーを含む配列は API のエラーオブジェクトではなくリスト形状として除外する。
-     * 公式 API では各フィールドが必須ではないため、既知フィールドが1つでもあれば保持する。
+     * json_decode の連想配列化では {} と [] がどちらも [] になり、数値風の object キーも int キーへ
+     * 変換される。stdClass を使う再パースにより、キーではなくワイヤ上のコンテナ形状で判定する。
      *
-     * @param array<array-key, mixed> $item
+     * @return array<array-key, mixed>
      */
-    private static function isUsableErrorData(array $item): bool
+    private static function errorItems(Response $response): array
     {
-        foreach (\array_keys($item) as $key) {
-            if (! \is_string($key)) {
-                return false;
+        try {
+            $body = \json_decode($response->getRawBody(), false, 512, \JSON_THROW_ON_ERROR);
+            if ($body instanceof \stdClass) {
+                return \property_exists($body, 'errors') && \is_array($body->errors)
+                    ? $body->errors
+                    : [];
             }
+        } catch (\JsonException) {
+            // テストダブルなど生 JSON を持たない Response は、従来のパース結果へフォールバックする。
         }
 
-        foreach (self::ERROR_KEYS as $key) {
-            if (\array_key_exists($key, $item)) {
-                return true;
-            }
-        }
+        $parsedBody = $response->getParsedBody();
+        $items = \is_array($parsedBody) ? ($parsedBody['errors'] ?? []) : [];
 
-        return false;
+        return \is_array($items) ? $items : [];
     }
 
     /**
-     * API 契約上 integer の code を公開 getter の string 契約へ正規化する。
+     * ワイヤ上の object を Error の入力へ変換する。
      *
-     * @param array<string, mixed> $item
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>|null list またはスカラーなら null
+     */
+    private static function objectData(mixed $item): ?array
+    {
+        if ($item instanceof \stdClass) {
+            return \get_object_vars($item);
+        }
+
+        // 生 JSON を利用できない Response のフォールバック。空配列は object と区別できないため除外する。
+        return \is_array($item) && ! \array_is_list($item) ? $item : null;
+    }
+
+    /**
+     * 既知フィールドを個別に検証し、有効なフィールドだけを Error へ渡す。
+     *
+     * code は既存の string 応答を維持しつつ、API 契約上の integer を公開 getter の string 契約へ
+     * 正規化する。PHP_INT_MAX を超える JSON integer は float になり欠損扱いとなる既知の制約がある。
+     * Response 全体へ JSON_BIGINT_AS_STRING を適用すると他 Entity の int フィールドまで文字列化するため、
+     * 実 API の code が6桁である現状では局所的な欠損扱いを選ぶ。
+     *
+     * @param array<array-key, mixed> $item
+     * @return array<array-key, mixed>
      */
     private static function normalizeErrorData(array $item): array
     {
-        if (\array_key_exists('code', $item) && \is_int($item['code'])) {
-            $item['code'] = (string) $item['code'];
+        if (\array_key_exists('code', $item)) {
+            if (\is_int($item['code'])) {
+                $item['code'] = (string) $item['code'];
+            } else if (! \is_string($item['code'])) {
+                unset($item['code']);
+            }
+        }
+
+        if (\array_key_exists('message', $item) && ! \is_string($item['message'])) {
+            unset($item['message']);
+        }
+        if (\array_key_exists('status', $item) && ! \is_int($item['status'])) {
+            unset($item['status']);
+        }
+        if (
+            \array_key_exists('field', $item)
+            && ! \is_string($item['field'])
+            && $item['field'] !== null
+        ) {
+            unset($item['field']);
         }
 
         return $item;
