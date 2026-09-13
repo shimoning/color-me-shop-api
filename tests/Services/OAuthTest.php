@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
@@ -201,6 +202,19 @@ class OAuthTest extends TestCase
         $this->assertSame(200, $error->getResponse()->getStatus());
     }
 
+    public function test_errorとerrorsが併存する場合はOAuthエラーを優先する(): void
+    {
+        $body = '{"error":"invalid_request","errors":[{"code":"401010","message":"unauthorized","status":401}]}';
+        $mock = HttpMock::json(400, $body);
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertSame('invalid_request', $error->getError());
+        $this->assertSame(400, $error->getResponse()->getStatus());
+        $this->assertSame($body, $error->getResponse()->getRawBody());
+    }
+
     public function test_errorが不正型なら元レスポンスを保持するErrorsへフォールバックする(): void
     {
         $body = '{"error":null,"error_description":"upstream error"}';
@@ -212,6 +226,37 @@ class OAuthTest extends TestCase
         $this->assertCount(0, $errors);
         $this->assertSame(400, $errors->getResponse()->getStatus());
         $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    #[DataProvider('invalidOptionalFieldProvider')]
+    public function test_OAuthエラーの任意フィールドが不正型なら元レスポンスを保持するErrorsへフォールバックする(
+        string $field,
+        mixed $invalidValue,
+    ): void {
+        $body = \json_encode([
+            'error' => 'invalid_request',
+            $field => $invalidValue,
+        ], \JSON_THROW_ON_ERROR);
+        $mock = HttpMock::json(400, $body);
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame(400, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function invalidOptionalFieldProvider(): array
+    {
+        return [
+            'error_description' => ['error_description', []],
+            'error_uri' => ['error_uri', false],
+            'state' => ['state', 123],
+        ];
     }
 
     public function test_errorキーのない不完全な応答はErrorsとして元レスポンスを保持する(): void

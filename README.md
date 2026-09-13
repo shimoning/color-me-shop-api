@@ -108,7 +108,7 @@ $client = new Client($token);
 ```
 
 ### エラーハンドリング
-API が 2xx 以外のレスポンスを返した場合、各 API メソッドは `Communicator\Errors` を返す。`Errors` は `Collection` を継承しているため、`foreach` で個々の `Entities\Error` を取得できる。
+OAuth を除き、API が 2xx 以外のレスポンスを返した場合、各 API メソッドは `Communicator\Errors` を返す。`Errors` は `Collection` を継承しているため、`foreach` で個々の `Entities\Error` を取得できる。
 
 ```php
 $result = $client->getShop();
@@ -221,6 +221,7 @@ if ($result instanceof OAuthErrorResponse) {
     $result->toArray(); // RFC 6749 の4フィールド
 } elseif ($result instanceof Errors) {
     // OAuth エンドポイントが ColorMe API 本体の errors 配列形式を返した場合、
+    // OAuth フィールドの型が不正な場合、未知の非 2xx 応答だった場合、
     // または 2xx でも空・非配列の不正な成功応答だった場合
     $response = $result->getResponse();
 } else {
@@ -232,6 +233,9 @@ OAuth 2.0 のエラーは `{"error":"invalid_client","error_description":"..."}`
 ColorMe API 本体の `{"errors":[{"code":...,"message":...,"status":...}]}` 形式とは異なる。
 前者は `Entities\OAuth\ErrorResponse`、後者は従来どおり `Communicator\Errors` で判定する。
 `error_description`、`error_uri`、`state` は省略されることがあり、その場合は各 getter が `null` を返す。
+OAuth の必須・任意フィールドが不正な型の場合や、既知の形式に一致しない非 2xx 応答の場合も
+`Errors` にフォールバックする。この場合の `Errors` は空コレクションになるため、
+`getResponse()->getStatus()` で HTTP ステータス、`getResponse()->getRawBody()` で生ボディを参照して調査する。
 
 0.9.0 では `Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` の戻り値が
 `AccessToken|Errors` から `AccessToken|ErrorResponse|Errors` へ変わるため、OAuth エラーを
