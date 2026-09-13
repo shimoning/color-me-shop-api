@@ -3,11 +3,19 @@
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Communicator\Response;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
+use Shimoning\ColorMeShopApi\Services\Customer;
+use Shimoning\ColorMeShopApi\Services\Delivery;
+use Shimoning\ColorMeShopApi\Services\Payment;
+use Shimoning\ColorMeShopApi\Services\Product;
+use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Services\Service;
+use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -24,6 +32,65 @@ class ServiceTest extends TestCase
     public function test_基底クラスは抽象クラスである(): void
     {
         $this->assertTrue((new \ReflectionClass(Service::class))->isAbstract());
+    }
+
+    public function test_空文字のアクセストークンでは生成できない(): void
+    {
+        $this->expectException(ParameterException::class);
+        $this->expectExceptionMessage('アクセストークンは必ず指定してください');
+
+        new ServiceStub('');
+    }
+
+    public function test_ゼロ文字列は有効なアクセストークンとして受理する(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+        $service = new ServiceStub('0', $mock->client());
+
+        $service->requestForTest()->get($service->endpointForTest('/test'));
+
+        $this->assertSame('Bearer 0', $mock->header('Authorization'));
+    }
+
+    public function test_空文字の上書きトークンはHTTP送信前に拒否する(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+        $service = new ServiceStub('default-token', $mock->client());
+
+        try {
+            $service->requestForTest([], '')->get($service->endpointForTest('/test'));
+            $this->fail('空文字の上書きトークンが受理された');
+        } catch (ParameterException $exception) {
+            $this->assertSame('アクセストークンは必ず指定してください', $exception->getMessage());
+            $this->assertSame(0, $mock->countRequests());
+        }
+    }
+
+    /**
+     * @return array<string, array{class-string<Service>}>
+     */
+    public static function concreteServiceProvider(): array
+    {
+        return [
+            'Customer' => [Customer::class],
+            'Delivery' => [Delivery::class],
+            'Payment' => [Payment::class],
+            'Product' => [Product::class],
+            'Sales' => [Sales::class],
+            'Shop' => [Shop::class],
+        ];
+    }
+
+    /**
+     * @param class-string<Service> $serviceClass
+     */
+    #[DataProvider('concreteServiceProvider')]
+    public function test_具象Serviceも空文字のアクセストークンでは生成できない(string $serviceClass): void
+    {
+        $this->expectException(ParameterException::class);
+        $this->expectExceptionMessage('アクセストークンは必ず指定してください');
+
+        new $serviceClass('');
     }
 
     public function test__endpointはベースURLとパスをスラッシュ重複なしで結合する(): void
