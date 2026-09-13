@@ -131,9 +131,11 @@ if ($result instanceof Errors) {
 }
 ```
 
-API が object 形状のエラー要素を返した場合、フィールドが空または一部不正でも要素自体は保持される。
+API が object 形状のエラー要素を返した場合、既知フィールドが空または一部不正でも要素自体は保持される。
+不正な既知フィールドは `getRaw()` から除かれ、追加プロパティは `getRaw()` だけに保持される。
+大文字小文字や末尾のアンダースコアが異なる追加プロパティも getter の値には影響しない。
 `code`、`message`、`status` の欠損時に getter を直接呼ぶと、他の Entity と同様に
-`Exceptions\MissingFieldException` が投げられる。上記のように `getRaw()` で利用可能なフィールドを
+`Exceptions\MissingFieldException` が投げられるため、上記のように `getRaw()` で利用可能なフィールドを
 確認するか、`MissingFieldException` を捕捉して扱うこと。
 
 一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。

@@ -61,12 +61,6 @@ class Entity
         $propertyNames = \array_flip(static::FIELD_NAMES);
 
         foreach ($data as $key => $value) {
-            // JSON object の数値風プロパティは連想配列化で int キーになる。
-            // 生データには保持しつつ、宣言プロパティへ対応しないキーとして hydrate 対象から外す。
-            if (! \is_string($key)) {
-                continue;
-            }
-
             $_key = $propertyNames[$key]
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (self::findProperty(static::class, $_key) !== null) {

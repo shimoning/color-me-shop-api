@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Communicator;
 
 use Shimoning\ColorMeShopApi\Entities\Collection;
+use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Error;
 
 /**
@@ -12,6 +13,13 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  */
 class Errors extends Collection
 {
+    private const ERROR_KEYS = [
+        'code' => true,
+        'message' => true,
+        'status' => true,
+        'field' => true,
+    ];
+
     private Response $_response;
 
     /**
@@ -61,7 +69,7 @@ class Errors extends Collection
             }
 
             try {
-                $errors[] = new Error(self::normalizeErrorData($data));
+                $errors[] = self::buildError(self::normalizeErrorData($data));
             } catch (\Throwable) {
                 continue;
             }
@@ -75,6 +83,9 @@ class Errors extends Collection
      *
      * json_decode の連想配列化では {} と [] がどちらも [] になり、数値風の object キーも int キーへ
      * 変換される。stdClass を使う再パースにより、キーではなくワイヤ上のコンテナ形状で判定する。
+     * Response が保持する連想配列ツリーに加えて再パース結果も構築するため、build 中のメモリと処理時間は
+     * レスポンスサイズに比例して増える。実 API のエラー件数は小さい前提で形状の正確さを優先しており、
+     * 異常に巨大なエラー応答では一時的なメモリ増加と遅延が上限リスクになる。
      *
      * @return array<array-key, mixed>
      */
@@ -105,11 +116,55 @@ class Errors extends Collection
     private static function objectData(mixed $item): ?array
     {
         if ($item instanceof \stdClass) {
-            return \get_object_vars($item);
+            /** @var array<array-key, mixed> */
+            return self::objectValueToArray($item);
         }
 
         // 生 JSON を利用できない Response のフォールバック。空配列は object と区別できないため除外する。
         return \is_array($item) && ! \array_is_list($item) ? $item : null;
+    }
+
+    /**
+     * 生 JSON から復元した object を、ネストを含めて従来の連想配列表現へ変換する。
+     *
+     * @return mixed
+     */
+    private static function objectValueToArray(mixed $value): mixed
+    {
+        if ($value instanceof \stdClass) {
+            $data = [];
+            foreach (\get_object_vars($value) as $key => $item) {
+                $data[$key] = self::objectValueToArray($item);
+            }
+
+            return $data;
+        }
+
+        if (\is_array($value)) {
+            return \array_map(self::objectValueToArray(...), $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * 既知4フィールドだけを hydrate し、追加プロパティは getRaw() のみに保持する。
+     *
+     * @param array<array-key, mixed> $rawData
+     */
+    private static function buildError(array $rawData): Error
+    {
+        /** @var array<string, mixed> $hydrateData */
+        $hydrateData = \array_intersect_key($rawData, self::ERROR_KEYS);
+        $error = new Error($hydrateData);
+
+        // Entity の公開 API と src/Entities/ を変更せず、hydrate 入力と raw 表現を分離する。
+        // PHP 8.1 以降は private プロパティも ReflectionProperty から直接設定できる。
+        static $rawProperty = null;
+        $rawProperty ??= new \ReflectionProperty(Entity::class, '_raw');
+        $rawProperty->setValue($error, $rawData);
+
+        return $error;
     }
 
     /**
@@ -139,11 +194,7 @@ class Errors extends Collection
         if (\array_key_exists('status', $item) && ! \is_int($item['status'])) {
             unset($item['status']);
         }
-        if (
-            \array_key_exists('field', $item)
-            && ! \is_string($item['field'])
-            && $item['field'] !== null
-        ) {
+        if (\array_key_exists('field', $item) && ! \is_string($item['field'])) {
             unset($item['field']);
         }
 

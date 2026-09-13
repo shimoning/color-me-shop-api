@@ -184,6 +184,112 @@ class ErrorsTest extends TestCase
         $this->assertAllErrorGettersAreSafe($errors);
     }
 
+    public function test_Code追加プロパティが既知のcodeを上書きしない(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"code":401010,"message":"valid","status":422,"Code":"shadow"}]}',
+        ));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(
+            ['code' => '401010', 'message' => 'valid', 'status' => 422, 'Code' => 'shadow'],
+            $errors[0]->getRaw(),
+        );
+        $this->assertSame('401010', $errors[0]->getCode());
+        $this->assertSame('valid', $errors[0]->getMessage());
+        $this->assertSame(422, $errors[0]->getStatus());
+        $this->assertNull($errors[0]->getField());
+    }
+
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function additionalPropertyProvider(): array
+    {
+        return [
+            'code の先頭だけ大文字' => ['Code', 'shadow'],
+            'code の全てが大文字' => ['CODE', 'shadow'],
+            'code に末尾アンダースコア' => ['code_', 'shadow'],
+            'message に末尾アンダースコア' => ['message_', 'shadow'],
+            'status に末尾アンダースコア' => ['status_', 500],
+            'field に末尾アンダースコア' => ['field_', 'shadow'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('additionalPropertyProvider')]
+    public function test_追加プロパティが既知プロパティを上書きしない(
+        string $additionalKey,
+        mixed $additionalValue,
+    ): void {
+        $body = \json_encode([
+            'errors' => [[
+                'code' => 401010,
+                'message' => 'valid',
+                'status' => 422,
+                'field' => 'sale.id',
+                $additionalKey => $additionalValue,
+            ]],
+        ], \JSON_THROW_ON_ERROR);
+
+        $errors = Errors::build($this->makeResponse(422, $body));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(
+            [
+                'code' => '401010',
+                'message' => 'valid',
+                'status' => 422,
+                'field' => 'sale.id',
+                $additionalKey => $additionalValue,
+            ],
+            $errors[0]->getRaw(),
+        );
+        $this->assertSame('401010', $errors[0]->getCode());
+        $this->assertSame('valid', $errors[0]->getMessage());
+        $this->assertSame(422, $errors[0]->getStatus());
+        $this->assertSame('sale.id', $errors[0]->getField());
+    }
+
+    public function test_Code配列だけのobjectを空Errorとして保持する(): void
+    {
+        $errors = Errors::build($this->makeResponse(422, '{"errors":[{"Code":[1]}]}'));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(['Code' => [1]], $errors[0]->getRaw());
+        $this->assertSame(
+            ['code' => null, 'message' => null, 'field' => null, 'status' => null],
+            $errors[0]->toArray(),
+        );
+        $this->assertAllErrorGettersAreSafe($errors);
+    }
+
+    public function test_fieldがnullなら欠損扱いにして有効なcodeと要素を保持する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"code":401010,"field":null}]}',
+        ));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(['code' => '401010'], $errors[0]->getRaw());
+        $this->assertSame('401010', $errors[0]->getCode());
+        $this->assertNull($errors[0]->getField());
+    }
+
+    public function test_ネストした追加objectをgetRawで再帰的に配列化する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"unknown":{"nested":["x"]}}]}',
+        ));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame(['unknown' => ['nested' => ['x']]], $errors[0]->getRaw());
+        $this->assertIsArray($errors[0]->getRaw()['unknown']);
+        $this->assertIsArray($errors[0]->getRaw()['unknown']['nested']);
+    }
+
     public function test_errorsの文字列要素は無視して元レスポンスを保持する(): void
     {
         $body = '{"errors":["upstream error"]}';
