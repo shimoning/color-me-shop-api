@@ -87,6 +87,7 @@ use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
@@ -139,6 +140,8 @@ try {
 ```
 
 API 固有のエラーコードや内容は [エラー仕様書](https://developer.shop-pro.jp/docs/colorme-api#section/API/%E3%82%A8%E3%83%A9%E3%83%BC) も参照すること。
+OAuth のトークンエンドポイントは API 本体と異なるエラー形式を返すため、
+[認可コードをアクセストークンに交換](#認可コードをアクセストークンに交換)も参照すること。
 
 ### 値オブジェクト
 検索条件や OAuth スコープの値を検証し、API 用の文字列や整数へ変換するクラス。
@@ -203,13 +206,36 @@ if (! is_string($code)) {
     throw new \RuntimeException('認可コードを取得できませんでした。');
 }
 
-$tokenOrErrors = (new Client())->exchangeCode2Token($oAuthOptions, $code);
-if ($tokenOrErrors instanceof Errors) {
-    // エラー処理
+$result = (new Client())->exchangeCode2Token($oAuthOptions, $code);
+if ($result instanceof OAuthErrorResponse) {
+    $result->getError();            // OAuth エラーコード (必須)
+    $result->getErrorDescription(); // 人間が読める補足説明
+    $result->getErrorUri();         // エラーの説明ページ
+    $result->getState();            // 認可リクエストと応答を対応付ける値
+
+    $response = $result->getResponse();
+    $response->getStatus();  // HTTP ステータス
+    $response->getRawBody(); // OAuth の生レスポンス
+
+    $result->getRaw();  // 追加プロパティを含む受信データ
+    $result->toArray(); // RFC 6749 の4フィールド
+} elseif ($result instanceof Errors) {
+    // OAuth エンドポイントが ColorMe API 本体の errors 配列形式を返した場合、
+    // または 2xx でも空・非配列の不正な成功応答だった場合
+    $response = $result->getResponse();
 } else {
-    $token = $tokenOrErrors->getAccessToken();
+    $token = $result->getAccessToken();
 }
 ```
+
+OAuth 2.0 のエラーは `{"error":"invalid_client","error_description":"..."}` 形式であり、
+ColorMe API 本体の `{"errors":[{"code":...,"message":...,"status":...}]}` 形式とは異なる。
+前者は `Entities\OAuth\ErrorResponse`、後者は従来どおり `Communicator\Errors` で判定する。
+`error_description`、`error_uri`、`state` は省略されることがあり、その場合は各 getter が `null` を返す。
+
+0.9.0 では `Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` の戻り値が
+`AccessToken|Errors` から `AccessToken|ErrorResponse|Errors` へ変わるため、OAuth エラーを
+`Errors` だけで判定していたコードには破壊的変更となる。
 
 ここで取得した `$token` は、安全な方法で保存する。アクセストークンの有効期限については公式ドキュメントを確認すること。
 
