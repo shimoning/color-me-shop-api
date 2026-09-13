@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 /**
  * src/Entities 配下の全エンティティが満たすべき共通契約を検証する。
@@ -17,6 +18,103 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class EntityContractTest extends TestCase
 {
+    /**
+     * PR2 以降で MissingFieldException へ移行するまで暫定許容する未初期化フィールド。
+     *
+     * @var array<class-string, array<string>>
+     */
+    private const TEMPORARILY_UNINITIALIZED_FIELDS = [
+        \Shimoning\ColorMeShopApi\Entities\Customer\Customer::class => [
+            'id', 'accountId', 'points', 'member', 'salesCount',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Area::class => [
+            'prefId', 'prefName', 'charge',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Charge::class => [
+            'deliveryId', 'accountId', 'chargeRangesByPrice', 'chargeRangesByArea',
+            'chargeRangesMaxWeight',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Delivery::class => [
+            'id', 'accountId', 'name', 'methodType', 'chargeFreeType', 'chargeType',
+            'charge', 'taxIncluded', 'slipNumberUse', 'displayState', 'preferredDateUse',
+            'preferredPeriodUse', 'unavailablePaymentIds', 'makeDate', 'updateDate',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Weight::class => [
+            'weight', 'areas',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Error::class => [
+            'code', 'message', 'status',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken::class => [
+            'accessToken', 'tokenType', 'createdAt',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Payment\Brand::class => [
+            'id', 'name',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Payment\Card::class => [
+            'brands',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Payment\Cod::class => [
+            'changeable', 'fees', 'feeMax', 'changeableByTotal',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Payment\Financial::class => [
+            'name', 'branchName', 'kouzaType', 'kouzaNumber', 'kouzaName',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Payment\Payment::class => [
+            'id', 'accountId', 'name', 'type', 'display', 'useMobile', 'makeDate', 'updateDate',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Product\Category::class => [
+            'idBig', 'idSmall', 'accountId', 'name', 'displayState', 'makeDate',
+            'updateDate', 'children',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Product\Group::class => [
+            'id', 'accountId', 'name', 'displayState',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sales\Sale::class => [
+            'id', 'accountId', 'makeDate', 'updateDate', 'paymentId', 'mobile', 'paid',
+            'delivered', 'canceled', 'acceptedMailState', 'paidMailState', 'deliveredMailState',
+            'pointState', 'productTotalPrice', 'deliveryTotalCharge', 'fee', 'tax',
+            'noshiTotalCharge', 'cardTotalCharge', 'wrappingTotalCharge', 'pointDiscount',
+            'gmoPointDiscount', 'otherDiscount', 'otherDiscountName', 'totalPrice',
+            'grantedPoints', 'usePoints', 'grantedGmoPoints', 'useGmoPoints',
+            'grantedYahooPoints', 'useYahooPoints', 'externalOrderId', 'details', 'saleDeliveries',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sales\SaleDelivery::class => [
+            'id', 'saleId', 'accountId', 'deliveryId', 'detailIds', 'name', 'prefId',
+            'prefName', 'deliveryCharge', 'totalCharge', 'delivered',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater::class => [
+            'id', 'saleId', 'accountId', 'deliveryId', 'detailIds', 'name', 'prefId',
+            'prefName', 'deliveryCharge', 'totalCharge', 'delivered',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sales\SaleDetail::class => [
+            'id', 'saleId', 'accountId', 'productId', 'productName', 'pristineProductFullName',
+            'price', 'priceWithTax', 'productNum', 'subtotalPrice',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater::class => [
+            'id', 'paid', 'pointState', 'saleDeliveries',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sales\Stat::class => [
+            'accountId', 'date', 'amountToday', 'countToday', 'amountLast7days',
+            'countLast7days', 'amountThisMonth', 'countThisMonth',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Shop\Shop::class => [
+            'id', 'state', 'domainPlan', 'contractPlan', 'lastLoginDate', 'setupDate',
+            'makeDate', 'url', 'openState', 'mobileOpenState', 'loginId', 'name1', 'name2',
+            'name1Kana', 'name2Kana', 'userMail', 'tel', 'postal', 'address1', 'title',
+            'shopMail1', 'taxType', 'tax', 'taxRoundingMethod', 'reduceTaxRate',
+        ],
+    ];
+
+    /**
+     * PR2 以降で MissingFieldException へ移行するまで暫定許容する null 戻り値フィールド。
+     *
+     * @var array<class-string, array<string>>
+     */
+    private const TEMPORARILY_NULL_RETURN_FIELDS = [
+        \Shimoning\ColorMeShopApi\Entities\Sales\Sale::class => ['customer'],
+    ];
+
     /**
      * @return array<string, array{class-string}>
      */
@@ -121,6 +219,8 @@ class EntityContractTest extends TestCase
         $entity = new $class([]);
 
         $undefined = [];
+        $uninitialized = [];
+        $nullReturns = [];
         // 「未宣言プロパティの参照」だけを捕捉する。それ以外は false を返して
         // 通常のエラー処理に委ね、想定外の警告が握りつぶされないようにする
         \set_error_handler(static function (int $severity, string $message) use (&$undefined): bool {
@@ -135,8 +235,25 @@ class EntityContractTest extends TestCase
             foreach (self::getters($reflection) as $getter) {
                 try {
                     $getter->invoke($entity);
-                } catch (\Throwable) {
-                    // 未初期化プロパティによる失敗はここでは対象外
+                } catch (MissingFieldException) {
+                    // 基底の欠損検証を適用済みの getter は汎用例外を正常系として扱う。
+                } catch (\Error $error) {
+                    // 個別 Entity への適用は PR2〜PR4 のため、既知のケースだけ暫定許容する。
+                    if (\preg_match(
+                        '/::\$([A-Za-z0-9_]+) must not be accessed before initialization/',
+                        $error->getMessage(),
+                        $matches,
+                    ) === 1) {
+                        $uninitialized[] = $matches[1];
+                        continue;
+                    }
+
+                    if ($error instanceof \TypeError && \str_contains($error->getMessage(), 'null returned')) {
+                        $nullReturns[] = self::propertyNameFor($getter);
+                        continue;
+                    }
+
+                    throw $error;
                 }
             }
         } finally {
@@ -144,6 +261,52 @@ class EntityContractTest extends TestCase
         }
 
         $this->assertSame([], $undefined, $reflection->getShortName() . ' に未宣言のプロパティ参照がある');
+        $this->assertAllowedFailures(
+            $class,
+            '未初期化 Error',
+            self::TEMPORARILY_UNINITIALIZED_FIELDS[$class] ?? [],
+            $uninitialized,
+        );
+        $this->assertAllowedFailures(
+            $class,
+            'null return TypeError',
+            self::TEMPORARILY_NULL_RETURN_FIELDS[$class] ?? [],
+            $nullReturns,
+        );
+    }
+
+    private static function propertyNameFor(ReflectionMethod $getter): string
+    {
+        return \lcfirst((string) \preg_replace('/^(get|is)/', '', $getter->getName()));
+    }
+
+    /**
+     * @param array<string> $expected
+     * @param array<string> $actual
+     */
+    private function assertAllowedFailures(
+        string $class,
+        string $failure,
+        array $expected,
+        array $actual,
+    ): void {
+        \sort($expected);
+        \sort($actual);
+
+        $this->assertSame(
+            $expected,
+            $actual,
+            $class . ' の暫定許容していない ' . $failure . '、または解消済みの許容があります',
+        );
+    }
+
+    public function test_暫定許容件数が固定されている(): void
+    {
+        $uninitialized = \array_sum(\array_map('count', self::TEMPORARILY_UNINITIALIZED_FIELDS));
+        $nullReturns = \array_sum(\array_map('count', self::TEMPORARILY_NULL_RETURN_FIELDS));
+
+        $this->assertSame(171, $uninitialized);
+        $this->assertSame(1, $nullReturns);
     }
 
     /**

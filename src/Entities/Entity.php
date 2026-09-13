@@ -1,9 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Entities;
 
 use BackedEnum;
 use ReflectionClass;
+use ReflectionIntersectionType;
+use ReflectionNamedType;
+use ReflectionProperty;
+use ReflectionType;
+use ReflectionUnionType;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Values\Value;
 
 /**
@@ -29,11 +38,11 @@ class Entity
     const FIELD_NAMES = [];
 
     /**
-     * null 許容かつ既定値を持たないプロパティ名のキャッシュ (クラス単位)
+     * 通常のインスタンスプロパティのキャッシュ (クラス単位)
      *
-     * @var array<string, array<string>>
+     * @var array<class-string, array<string, ReflectionProperty>>
      */
-    private static array $_optionalProperties = [];
+    private static array $_properties = [];
 
     private array $_raw;
 
@@ -54,16 +63,280 @@ class Entity
         foreach ($data as $key => $value) {
             $_key = $propertyNames[$key]
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
-            if (property_exists($this, $_key)) {
-                if (isset($objectFields[$_key])) {
-                    $this->{$_key} = $this->build($objectFields[$_key], $value);
-                    continue;
-                }
-                $this->{$_key} = $value;
+            if (self::findProperty(static::class, $_key) !== null) {
+                $this->hydrateField($_key, $key, $value, $objectFields[$_key] ?? null);
             }
         }
 
         $this->initializeOptionalProperties();
+    }
+
+    /**
+     * フィールドが初期化済みであることを保証する。
+     *
+     * @throws MissingFieldException API レスポンスにフィールドが存在しない場合
+     */
+    protected function assertFieldInitialized(string $property): void
+    {
+        $trace = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $scope = $trace[1]['class'] ?? static::class;
+        if (! \is_a($scope, self::class, true)) {
+            $scope = static::class;
+        }
+
+        /** @var class-string<Entity> $scope */
+        $reflection = self::findProperty($scope, $property);
+        if ($reflection === null || ! $reflection->isInitialized($this)) {
+            throw MissingFieldException::for(static::class, static::apiFieldName($property));
+        }
+    }
+
+    /**
+     * API フィールドを変換・検証して宣言プロパティへ格納する。
+     *
+     * @param class-string|array<string, mixed>|null $objectField
+     * @throws InvalidFieldException 存在する値の変換または型が不正な場合
+     */
+    private function hydrateField(
+        string $property,
+        string $apiField,
+        mixed $value,
+        mixed $objectField,
+    ): void {
+        $reflection = self::property(static::class, $property);
+        $expected = self::expectedType($reflection->getType(), $reflection);
+
+        try {
+            $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
+        } catch (\Throwable $error) {
+            $elementType = self::arrayElementType($objectField);
+            if ($elementType !== null && \is_array($value)) {
+                throw InvalidFieldException::forArrayElement(
+                    static::class,
+                    $apiField,
+                    $elementType,
+                    $error,
+                );
+            }
+
+            throw InvalidFieldException::for(static::class, $apiField, $expected, $value, $error);
+        }
+
+        if (! self::accepts($reflection->getType(), $hydrated, $reflection)) {
+            throw InvalidFieldException::for(static::class, $apiField, $expected, $hydrated);
+        }
+
+        try {
+            $reflection->setValue($this, $hydrated);
+        } catch (\Throwable $error) {
+            throw InvalidFieldException::for(
+                static::class,
+                $apiField,
+                $expected,
+                $hydrated,
+                $error,
+            );
+        }
+    }
+
+    private static function arrayElementType(mixed $objectField): ?string
+    {
+        if (! \is_array($objectField) || empty($objectField['array'])) {
+            return null;
+        }
+
+        foreach (['entity', 'value', 'enum'] as $key) {
+            if (isset($objectField[$key]) && \is_string($objectField[$key])) {
+                return $objectField[$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param class-string<Entity> $class
+     */
+    private static function property(string $class, string $property): ReflectionProperty
+    {
+        $reflection = self::findProperty($class, $property);
+        if ($reflection !== null) {
+            return $reflection;
+        }
+
+        throw MissingFieldException::for($class, $class::apiFieldName($property));
+    }
+
+    /**
+     * @param class-string<Entity> $class
+     */
+    private static function findProperty(string $class, string $property): ?ReflectionProperty
+    {
+        return self::resolveProperties($class)[$property] ?? null;
+    }
+
+    /**
+     * 通常のインスタンスプロパティを実行時クラスに近い宣言から解決する。
+     *
+     * 同名プロパティは最も近い宣言だけを採用する。最も近い宣言が契約外でも
+     * 祖先の同名宣言へフォールスルーせず、その名前自体を対象外とする。
+     *
+     * @param class-string<Entity> $class
+     * @return array<string, ReflectionProperty>
+     */
+    private static function resolveProperties(string $class): array
+    {
+        if (isset(self::$_properties[$class])) {
+            return self::$_properties[$class];
+        }
+
+        $properties = [];
+        $declaredNames = [];
+        $reflection = new ReflectionClass($class);
+        do {
+            foreach ($reflection->getProperties() as $property) {
+                if ($property->getDeclaringClass()->getName() !== $reflection->getName()) {
+                    continue;
+                }
+                $name = $property->getName();
+                if (isset($declaredNames[$name])) {
+                    continue;
+                }
+
+                $declaredNames[$name] = true;
+                if (self::isOrdinaryInstanceProperty($property)) {
+                    $properties[$name] = $property;
+                }
+            }
+            $reflection = $reflection->getParentClass();
+        } while ($reflection !== false);
+
+        return self::$_properties[$class] = $properties;
+    }
+
+    /**
+     * hydrate と配列化の対象になる通常のインスタンスプロパティか判定する。
+     */
+    private static function isOrdinaryInstanceProperty(ReflectionProperty $property): bool
+    {
+        if ($property->isStatic()) {
+            return false;
+        }
+
+        return ! \method_exists($property, 'isVirtual') || ! $property->isVirtual();
+    }
+
+    private static function expectedType(?ReflectionType $type, ReflectionProperty $property): string
+    {
+        if ($type === null) {
+            return 'mixed';
+        }
+        if ($type instanceof ReflectionNamedType) {
+            return self::resolveNamedType($type, $property);
+        }
+        if ($type instanceof ReflectionUnionType) {
+            $types = \array_filter(
+                $type->getTypes(),
+                static fn(ReflectionType $nested): bool => ! ($nested instanceof ReflectionNamedType)
+                    || $nested->getName() !== 'null',
+            );
+
+            return \implode('|', \array_map(
+                static function (ReflectionType $nested) use ($property): string {
+                    $name = self::expectedType($nested, $property);
+
+                    return $nested instanceof ReflectionIntersectionType ? '(' . $name . ')' : $name;
+                },
+                $types,
+            ));
+        }
+        if ($type instanceof ReflectionIntersectionType) {
+            return \implode('&', \array_map(
+                static fn(ReflectionType $nested): string => self::expectedType($nested, $property),
+                $type->getTypes(),
+            ));
+        }
+
+        return (string) $type;
+    }
+
+    private static function accepts(
+        ?ReflectionType $type,
+        mixed $value,
+        ReflectionProperty $property,
+    ): bool
+    {
+        if ($type === null) {
+            return true;
+        }
+        if ($value === null) {
+            return $type->allowsNull();
+        }
+        if ($type instanceof ReflectionUnionType) {
+            return \array_reduce(
+                $type->getTypes(),
+                static fn(bool $accepted, ReflectionType $nested): bool =>
+                    $accepted || self::accepts($nested, $value, $property),
+                false,
+            );
+        }
+        if ($type instanceof ReflectionIntersectionType) {
+            return \array_reduce(
+                $type->getTypes(),
+                static fn(bool $accepted, ReflectionType $nested): bool =>
+                    $accepted && self::accepts($nested, $value, $property),
+                true,
+            );
+        }
+
+        return self::acceptsNamedType($type, $value, $property);
+    }
+
+    private static function acceptsNamedType(
+        ReflectionNamedType $type,
+        mixed $value,
+        ReflectionProperty $property,
+    ): bool
+    {
+        $name = self::resolveNamedType($type, $property);
+        if (! $type->isBuiltin()) {
+            return $value instanceof $name;
+        }
+
+        return match ($name) {
+            'array' => \is_array($value),
+            'bool' => \is_bool($value),
+            'callable' => \is_callable($value),
+            'false' => $value === false,
+            'float' => \is_float($value),
+            'int' => \is_int($value),
+            'iterable' => \is_iterable($value),
+            'mixed' => true,
+            'object' => \is_object($value),
+            'string' => \is_string($value),
+            'true' => $value === true,
+            default => false,
+        };
+    }
+
+    private static function resolveNamedType(
+        ReflectionNamedType $type,
+        ReflectionProperty $property,
+    ): string
+    {
+        $name = $type->getName();
+        $declaringClass = $property->getDeclaringClass();
+
+        if ($name === 'self' || $name === 'static') {
+            return $declaringClass->getName();
+        }
+        if ($name === 'parent') {
+            $parent = $declaringClass->getParentClass();
+
+            return $parent === false ? $name : $parent->getName();
+        }
+
+        return $name;
     }
 
     /**
@@ -76,43 +349,18 @@ class Entity
      */
     private function initializeOptionalProperties(): void
     {
-        foreach ($this->optionalPropertyNames() as $name) {
-            if (! isset($this->{$name})) {
-                $this->{$name} = null;
-            }
-        }
-    }
-
-    /**
-     * null 許容かつ既定値を持たないプロパティ名を取得する
-     *
-     * リフレクションの結果はクラス単位でキャッシュする。
-     *
-     * @return array<string>
-     */
-    private function optionalPropertyNames(): array
-    {
-        if (isset(self::$_optionalProperties[static::class])) {
-            return self::$_optionalProperties[static::class];
-        }
-
-        $names = [];
-        foreach ((new ReflectionClass(static::class))->getProperties() as $property) {
-            if ($property->isStatic() || $property->hasDefaultValue()) {
-                continue;
-            }
-            // 基底クラス以外で宣言された private プロパティはここからは代入できない
-            if ($property->isPrivate() && $property->getDeclaringClass()->getName() !== self::class) {
+        foreach (self::resolveProperties(static::class) as $property) {
+            if ($property->hasDefaultValue()) {
                 continue;
             }
             $type = $property->getType();
             if ($type === null || ! $type->allowsNull()) {
                 continue;
             }
-            $names[] = $property->getName();
+            if (! $property->isInitialized($this)) {
+                $property->setValue($this, null);
+            }
         }
-
-        return self::$_optionalProperties[static::class] = $names;
     }
 
     /**
@@ -167,15 +415,28 @@ class Entity
                 }
                 if ($isArray) {
                     return array_map(function ($v) use ($enum) {
-                        return $enum::tryFrom($v);
+                        return self::buildEnum($enum, $v);
                     }, $value);
                 }
-                return $enum::tryFrom($value);
+                return self::buildEnum($enum, $value);
             }
         }
 
         // 単体
         return new $objectField($value);
+    }
+
+    /**
+     * @param class-string<BackedEnum> $enum
+     */
+    private static function buildEnum(string $enum, mixed $value): BackedEnum
+    {
+        $case = $enum::tryFrom($value);
+        if ($case === null) {
+            throw new \UnexpectedValueException('未知の enum 値です。');
+        }
+
+        return $case;
     }
 
     /**
@@ -225,16 +486,15 @@ class Entity
      */
     public function toArray(): array
     {
-        $properties = get_class_vars(static::class);
-        $values = get_object_vars($this);
-
         $array = [];
-        foreach ($properties as $key => $_) {
+        foreach (self::resolveProperties(static::class) as $key => $property) {
             if (self::isInternalProperty($key)) {
                 continue;
             }
             $_key = static::apiFieldName($key);
-            $array[$_key] = $values[$key] ?? null;
+            $array[$_key] = $property->isInitialized($this)
+                ? $property->getValue($this)
+                : null;
         }
         return $array;
     }
@@ -246,16 +506,15 @@ class Entity
      */
     public function toArrayRecursive($ignoreNull = true): array
     {
-        $properties = get_class_vars(static::class);
-        $values = get_object_vars($this);
-
         $array = [];
-        foreach ($properties as $key => $_) {
+        foreach (self::resolveProperties(static::class) as $key => $property) {
             if (self::isInternalProperty($key)) {
                 continue;
             }
             $_key = static::apiFieldName($key);
-            $value = $values[$key] ?? null;
+            $value = $property->isInitialized($this)
+                ? $property->getValue($this)
+                : null;
             if ($ignoreNull && $value === null) {
                 continue;
             }
