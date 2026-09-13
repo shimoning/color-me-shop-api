@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 /**
  * 受注データ
@@ -106,6 +107,7 @@ class Sale extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -115,6 +117,7 @@ class Sale extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -124,6 +127,7 @@ class Sale extends Entity
      */
     public function getMakeDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('makeDate');
         return (new DateTimeImmutable)->setTimestamp($this->makeDate);
     }
 
@@ -133,6 +137,7 @@ class Sale extends Entity
      */
     public function getUpdateDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('updateDate');
         return (new DateTimeImmutable)->setTimestamp($this->updateDate);
     }
 
@@ -154,6 +159,7 @@ class Sale extends Entity
      */
     public function getPaymentId(): int
     {
+        $this->assertFieldInitialized('paymentId');
         return $this->paymentId;
     }
 
@@ -163,6 +169,7 @@ class Sale extends Entity
      */
     public function isMobile(): bool
     {
+        $this->assertFieldInitialized('mobile');
         return $this->mobile;
     }
 
@@ -172,6 +179,7 @@ class Sale extends Entity
      */
     public function isPaid(): bool
     {
+        $this->assertFieldInitialized('paid');
         return $this->paid;
     }
 
@@ -181,6 +189,7 @@ class Sale extends Entity
      */
     public function isDelivered(): bool
     {
+        $this->assertFieldInitialized('delivered');
         return $this->delivered;
     }
 
@@ -190,6 +199,7 @@ class Sale extends Entity
      */
     public function isCanceled(): bool
     {
+        $this->assertFieldInitialized('canceled');
         return $this->canceled;
     }
 
@@ -199,6 +209,7 @@ class Sale extends Entity
      */
     public function getAcceptedMailState(): MailState
     {
+        $this->assertFieldInitialized('acceptedMailState');
         return $this->acceptedMailState;
     }
 
@@ -208,6 +219,7 @@ class Sale extends Entity
      */
     public function getPaidMailState(): MailState
     {
+        $this->assertFieldInitialized('paidMailState');
         return $this->paidMailState;
     }
 
@@ -217,6 +229,7 @@ class Sale extends Entity
      */
     public function getDeliveredMailState(): MailState
     {
+        $this->assertFieldInitialized('deliveredMailState');
         return $this->deliveredMailState;
     }
 
@@ -259,6 +272,7 @@ class Sale extends Entity
      */
     public function getPointState(): PointState
     {
+        $this->assertFieldInitialized('pointState');
         return $this->pointState;
     }
 
@@ -286,6 +300,7 @@ class Sale extends Entity
      */
     public function getProductTotalPrice(): int
     {
+        $this->assertFieldInitialized('productTotalPrice');
         return $this->productTotalPrice;
     }
 
@@ -295,6 +310,7 @@ class Sale extends Entity
      */
     public function getDeliveryTotalCharge(): int
     {
+        $this->assertFieldInitialized('deliveryTotalCharge');
         return $this->deliveryTotalCharge;
     }
 
@@ -304,6 +320,7 @@ class Sale extends Entity
      */
     public function getFee(): int
     {
+        $this->assertFieldInitialized('fee');
         return $this->fee;
     }
 
@@ -313,6 +330,7 @@ class Sale extends Entity
      */
     public function getTax(): int
     {
+        $this->assertFieldInitialized('tax');
         return $this->tax;
     }
 
@@ -322,6 +340,7 @@ class Sale extends Entity
      */
     public function getNoshiTotalCharge(): int
     {
+        $this->assertFieldInitialized('noshiTotalCharge');
         return $this->noshiTotalCharge;
     }
 
@@ -331,6 +350,7 @@ class Sale extends Entity
      */
     public function getCardTotalCharge(): int
     {
+        $this->assertFieldInitialized('cardTotalCharge');
         return $this->cardTotalCharge;
     }
 
@@ -340,6 +360,7 @@ class Sale extends Entity
      */
     public function getWrappingTotalCharge(): int
     {
+        $this->assertFieldInitialized('wrappingTotalCharge');
         return $this->wrappingTotalCharge;
     }
 
@@ -349,6 +370,7 @@ class Sale extends Entity
      */
     public function getPointDiscount(): int
     {
+        $this->assertFieldInitialized('pointDiscount');
         return $this->pointDiscount;
     }
 
@@ -358,6 +380,7 @@ class Sale extends Entity
      */
     public function getGmoPointDiscount(): int
     {
+        $this->assertFieldInitialized('gmoPointDiscount');
         return $this->gmoPointDiscount;
     }
 
@@ -367,6 +390,7 @@ class Sale extends Entity
      */
     public function getOtherDiscount(): int
     {
+        $this->assertFieldInitialized('otherDiscount');
         return $this->otherDiscount;
     }
 
@@ -376,6 +400,7 @@ class Sale extends Entity
      */
     public function getOtherDiscountName(): string
     {
+        $this->assertFieldInitialized('otherDiscountName');
         return $this->otherDiscountName;
     }
 
@@ -385,6 +410,7 @@ class Sale extends Entity
      */
     public function getTotalPrice(): int
     {
+        $this->assertFieldInitialized('totalPrice');
         return $this->totalPrice;
     }
 
@@ -394,6 +420,7 @@ class Sale extends Entity
      */
     public function getGrantedPoints(): int
     {
+        $this->assertFieldInitialized('grantedPoints');
         return $this->grantedPoints;
     }
 
@@ -403,6 +430,7 @@ class Sale extends Entity
      */
     public function getUsePoints(): int
     {
+        $this->assertFieldInitialized('usePoints');
         return $this->usePoints;
     }
 
@@ -412,6 +440,7 @@ class Sale extends Entity
      */
     public function getGrantedGmoPoints(): int
     {
+        $this->assertFieldInitialized('grantedGmoPoints');
         return $this->grantedGmoPoints;
     }
 
@@ -421,6 +450,7 @@ class Sale extends Entity
      */
     public function getUseGmoPoints(): int
     {
+        $this->assertFieldInitialized('useGmoPoints');
         return $this->useGmoPoints;
     }
 
@@ -430,6 +460,7 @@ class Sale extends Entity
      */
     public function getGrantedYahooPoints(): int
     {
+        $this->assertFieldInitialized('grantedYahooPoints');
         return $this->grantedYahooPoints;
     }
 
@@ -439,6 +470,7 @@ class Sale extends Entity
      */
     public function getUseYahooPoints(): int
     {
+        $this->assertFieldInitialized('useYahooPoints');
         return $this->useYahooPoints;
     }
 
@@ -457,6 +489,7 @@ class Sale extends Entity
      */
     public function getExternalOrderId(): string
     {
+        $this->assertFieldInitialized('externalOrderId');
         return $this->externalOrderId;
     }
 
@@ -466,6 +499,10 @@ class Sale extends Entity
      */
     public function getCustomer(): Customer
     {
+        if ($this->customer === null) {
+            throw MissingFieldException::for(static::class, static::apiFieldName('customer'));
+        }
+
         return $this->customer;
     }
 
@@ -475,6 +512,7 @@ class Sale extends Entity
      */
     public function getDetails(): array
     {
+        $this->assertFieldInitialized('details');
         return $this->details;
     }
 
@@ -484,6 +522,7 @@ class Sale extends Entity
      */
     public function getSaleDeliveries(): array
     {
+        $this->assertFieldInitialized('saleDeliveries');
         return $this->saleDeliveries;
     }
 }

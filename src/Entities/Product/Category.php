@@ -46,6 +46,7 @@ class Category extends Entity
      */
     public function getIdBig(): int
     {
+        $this->assertFieldInitialized('idBig');
         return $this->idBig;
     }
     /**
@@ -54,6 +55,7 @@ class Category extends Entity
      */
     public function getIdSmall(): int
     {
+        $this->assertFieldInitialized('idSmall');
         return $this->idSmall;
     }
 
@@ -63,6 +65,7 @@ class Category extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -72,6 +75,7 @@ class Category extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
         return $this->name;
     }
 
@@ -108,6 +112,7 @@ class Category extends Entity
      */
     public function getDisplayState(): CategoryDisplayState
     {
+        $this->assertFieldInitialized('displayState');
         return $this->displayState;
     }
 
@@ -117,6 +122,7 @@ class Category extends Entity
      */
     public function getMakeDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('makeDate');
         return (new DateTimeImmutable)->setTimestamp($this->makeDate);
     }
 
@@ -126,6 +132,7 @@ class Category extends Entity
      */
     public function getUpdateDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('updateDate');
         return (new DateTimeImmutable)->setTimestamp($this->updateDate);
     }
 
@@ -135,6 +142,7 @@ class Category extends Entity
      */
     public function getChildren(): array
     {
+        $this->assertFieldInitialized('children');
         return $this->children;
     }
 }

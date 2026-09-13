@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -63,6 +64,17 @@ class ProductTest extends TestCase
         $this->assertSame(1, $categories->count());
         $this->assertContainsOnlyInstancesOf(Category::class, $categories->all());
         $this->assertSame('トップス', $categories[0]->getName());
+    }
+
+    public function test_子カテゴリーでchildrenが欠損していれば参照時に固有例外になる(): void
+    {
+        $mock = HttpMock::json(200, '{"categories":[{"children":[{"id_big":1,"id_small":1}]}]}');
+        $categories = (new Product('my-token', $mock->client()))->categories();
+        $child = $categories[0]->getChildren()[0];
+
+        $this->expectException(MissingFieldException::class);
+
+        $child->getChildren();
     }
 
     public function test_商品カテゴリーは正しいエンドポイントにGETする(): void

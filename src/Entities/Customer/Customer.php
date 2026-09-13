@@ -59,6 +59,7 @@ class Customer extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -68,6 +69,7 @@ class Customer extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -221,6 +223,7 @@ class Customer extends Entity
      */
     public function getPoints(): int
     {
+        $this->assertFieldInitialized('points');
         return $this->points;
     }
 
@@ -230,6 +233,7 @@ class Customer extends Entity
      */
     public function isMember(): bool
     {
+        $this->assertFieldInitialized('member');
         return $this->member;
     }
 
@@ -239,6 +243,7 @@ class Customer extends Entity
      */
     public function getSalesCount(): int
     {
+        $this->assertFieldInitialized('salesCount');
         return $this->salesCount;
     }
 

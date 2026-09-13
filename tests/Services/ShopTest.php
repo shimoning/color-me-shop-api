@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\ShopState;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -69,5 +70,9 @@ class ShopTest extends TestCase
 
         $this->assertInstanceOf(ShopEntity::class, $shop);
         $this->assertSame([], $shop->getRaw());
+        // 欠損を許容する生成仕様は維持し、必須値を参照した時点で固有例外に移行する。
+        $this->expectException(MissingFieldException::class);
+
+        $shop->getId();
     }
 }

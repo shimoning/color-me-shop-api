@@ -111,6 +111,7 @@ class Shop extends Entity
      */
     public function getId(): string
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -120,6 +121,7 @@ class Shop extends Entity
      */
     public function getState(): ShopState
     {
+        $this->assertFieldInitialized('state');
         return $this->state;
     }
 
@@ -129,6 +131,7 @@ class Shop extends Entity
      */
     public function getDomainPlan(): DomainPlan
     {
+        $this->assertFieldInitialized('domainPlan');
         return $this->domainPlan;
     }
 
@@ -138,6 +141,7 @@ class Shop extends Entity
      */
     public function getContractPlan(): ContractPlan
     {
+        $this->assertFieldInitialized('contractPlan');
         return $this->contractPlan;
     }
 
@@ -178,6 +182,7 @@ class Shop extends Entity
      */
     public function getLastLoginDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('lastLoginDate');
         return (new DateTimeImmutable)->setTimestamp($this->lastLoginDate);
     }
 
@@ -187,6 +192,7 @@ class Shop extends Entity
      */
     public function getSetupDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('setupDate');
         return (new DateTimeImmutable)->setTimestamp($this->setupDate);
     }
 
@@ -196,6 +202,7 @@ class Shop extends Entity
      */
     public function getMakeDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('makeDate');
         return (new DateTimeImmutable)->setTimestamp($this->makeDate);
     }
 
@@ -205,6 +212,7 @@ class Shop extends Entity
      */
     public function getUrl(): string
     {
+        $this->assertFieldInitialized('url');
         return $this->url;
     }
 
@@ -214,6 +222,7 @@ class Shop extends Entity
      */
     public function getOpenState(): OpenState
     {
+        $this->assertFieldInitialized('openState');
         return $this->openState;
     }
 
@@ -223,6 +232,7 @@ class Shop extends Entity
      */
     public function getMobileOpenState(): OpenState
     {
+        $this->assertFieldInitialized('mobileOpenState');
         return $this->mobileOpenState;
     }
 
@@ -232,6 +242,7 @@ class Shop extends Entity
      */
     public function getLoginId(): string
     {
+        $this->assertFieldInitialized('loginId');
         return $this->loginId;
     }
 
@@ -241,6 +252,7 @@ class Shop extends Entity
      */
     public function getName1(): string
     {
+        $this->assertFieldInitialized('name1');
         return $this->name1;
     }
 
@@ -250,6 +262,7 @@ class Shop extends Entity
      */
     public function getName2(): string
     {
+        $this->assertFieldInitialized('name2');
         return $this->name2;
     }
 
@@ -259,6 +272,7 @@ class Shop extends Entity
      */
     public function getName1Kana(): string
     {
+        $this->assertFieldInitialized('name1Kana');
         return $this->name1Kana;
     }
 
@@ -268,6 +282,7 @@ class Shop extends Entity
      */
     public function getName2Kana(): string
     {
+        $this->assertFieldInitialized('name2Kana');
         return $this->name2Kana;
     }
 
@@ -295,6 +310,7 @@ class Shop extends Entity
      */
     public function getUserMail(): string
     {
+        $this->assertFieldInitialized('userMail');
         return $this->userMail;
     }
 
@@ -304,6 +320,7 @@ class Shop extends Entity
      */
     public function getTel(): string
     {
+        $this->assertFieldInitialized('tel');
         return $this->tel;
     }
 
@@ -322,6 +339,7 @@ class Shop extends Entity
      */
     public function getPostal(): string
     {
+        $this->assertFieldInitialized('postal');
         return $this->postal;
     }
 
@@ -349,6 +367,7 @@ class Shop extends Entity
      */
     public function getAddress1(): string
     {
+        $this->assertFieldInitialized('address1');
         return $this->address1;
     }
 
@@ -367,6 +386,7 @@ class Shop extends Entity
      */
     public function getTitle(): string
     {
+        $this->assertFieldInitialized('title');
         return $this->title;
     }
 
@@ -385,6 +405,7 @@ class Shop extends Entity
      */
     public function getShopMail1(): string
     {
+        $this->assertFieldInitialized('shopMail1');
         return $this->shopMail1;
     }
 
@@ -403,6 +424,7 @@ class Shop extends Entity
      */
     public function getTaxType(): TaxType
     {
+        $this->assertFieldInitialized('taxType');
         return $this->taxType;
     }
 
@@ -412,6 +434,7 @@ class Shop extends Entity
      */
     public function getTax(): int
     {
+        $this->assertFieldInitialized('tax');
         return $this->tax;
     }
 
@@ -421,6 +444,7 @@ class Shop extends Entity
      */
     public function getTaxRoundingMethod(): TaxRoundingMethod
     {
+        $this->assertFieldInitialized('taxRoundingMethod');
         return $this->taxRoundingMethod;
     }
 
@@ -430,6 +454,7 @@ class Shop extends Entity
      */
     public function getReduceTaxRate(): int
     {
+        $this->assertFieldInitialized('reduceTaxRate');
         return $this->reduceTaxRate;
     }
 

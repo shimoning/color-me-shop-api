@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -106,6 +107,16 @@ class CustomerTest extends TestCase
         $this->assertSame(501, $customer->getId());
         $this->assertSame('山田太郎', $customer->getName());
         $this->assertSame('https://api.shop-pro.jp/v1/customers/501', $mock->uri());
+    }
+
+    public function test_顧客fixtureで欠損する購入回数は参照時に固有例外になる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('customer.json'));
+        $customer = (new Customer('my-token', $mock->client()))->one(501);
+
+        $this->expectException(MissingFieldException::class);
+
+        $customer->getSalesCount();
     }
 
     public function test_顧客IDは文字列でも渡せる(): void

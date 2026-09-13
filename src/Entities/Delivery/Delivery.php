@@ -71,6 +71,7 @@ class Delivery extends Entity
      */
     public function getId(): int
     {
+        $this->assertFieldInitialized('id');
         return $this->id;
     }
 
@@ -80,6 +81,7 @@ class Delivery extends Entity
      */
     public function getAccountId(): string
     {
+        $this->assertFieldInitialized('accountId');
         return $this->accountId;
     }
 
@@ -89,6 +91,7 @@ class Delivery extends Entity
      */
     public function getName(): string
     {
+        $this->assertFieldInitialized('name');
         return $this->name;
     }
 
@@ -98,6 +101,7 @@ class Delivery extends Entity
      */
     public function getMethodType(): DeliveryMethodType
     {
+        $this->assertFieldInitialized('methodType');
         return $this->methodType;
     }
 
@@ -116,6 +120,7 @@ class Delivery extends Entity
      */
     public function getChargeFreeType(): DeliveryChargeFreeType
     {
+        $this->assertFieldInitialized('chargeFreeType');
         return $this->chargeFreeType;
     }
 
@@ -134,6 +139,7 @@ class Delivery extends Entity
      */
     public function getChargeType(): DeliveryChargeType
     {
+        $this->assertFieldInitialized('chargeType');
         return $this->chargeType;
     }
 
@@ -143,6 +149,7 @@ class Delivery extends Entity
      */
     public function getCharge(): Charge
     {
+        $this->assertFieldInitialized('charge');
         return $this->charge;
     }
 
@@ -152,6 +159,7 @@ class Delivery extends Entity
      */
     public function getTaxIncluded(): bool
     {
+        $this->assertFieldInitialized('taxIncluded');
         return $this->taxIncluded;
     }
 
@@ -161,6 +169,7 @@ class Delivery extends Entity
      */
     public function getSlipNumberUse(): bool
     {
+        $this->assertFieldInitialized('slipNumberUse');
         return $this->slipNumberUse;
     }
 
@@ -206,6 +215,7 @@ class Delivery extends Entity
      */
     public function getDisplayState(): DisplayState
     {
+        $this->assertFieldInitialized('displayState');
         return $this->displayState;
     }
 
@@ -215,6 +225,7 @@ class Delivery extends Entity
      */
     public function getPreferredDateUse(): bool
     {
+        $this->assertFieldInitialized('preferredDateUse');
         return $this->preferredDateUse;
     }
 
@@ -224,6 +235,7 @@ class Delivery extends Entity
      */
     public function getPreferredPeriodUse(): bool
     {
+        $this->assertFieldInitialized('preferredPeriodUse');
         return $this->preferredPeriodUse;
     }
 
@@ -233,6 +245,7 @@ class Delivery extends Entity
      */
     public function getUnavailablePaymentIds(): array
     {
+        $this->assertFieldInitialized('unavailablePaymentIds');
         return $this->unavailablePaymentIds;
     }
 
@@ -242,6 +255,7 @@ class Delivery extends Entity
      */
     public function getMakeDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('makeDate');
         return (new DateTimeImmutable)->setTimestamp($this->makeDate);
     }
 
@@ -251,6 +265,7 @@ class Delivery extends Entity
      */
     public function getUpdateDate(): DateTimeImmutable
     {
+        $this->assertFieldInitialized('updateDate');
         return (new DateTimeImmutable)->setTimestamp($this->updateDate);
     }
 }
