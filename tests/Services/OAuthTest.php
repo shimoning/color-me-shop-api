@@ -2,11 +2,13 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
+use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -157,7 +159,141 @@ class OAuthTest extends TestCase
         $this->assertNull($mock->header('Authorization'));
     }
 
-    public function test_トークン交換のエラーレスポンス(): void
+    public function test_実APIで観測したOAuthエラーレスポンス(): void
+    {
+        $body = self::fixture('oauth_error_401.json');
+        $mock = HttpMock::json(401, $body);
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertSame('invalid_client', $error->getError());
+        $this->assertSame(
+            'クライアント認証に失敗しました。クライアントIDが正しいかご確認ください。',
+            $error->getErrorDescription(),
+        );
+        $this->assertNull($error->getErrorUri());
+        $this->assertNull($error->getState());
+        $this->assertSame(401, $error->getResponse()->getStatus());
+        $this->assertSame($body, $error->getResponse()->getRawBody());
+    }
+
+    public function test_errorキーだけのOAuthエラーも専用クラスで返す(): void
+    {
+        $mock = HttpMock::json(400, '{"error":"invalid_request"}');
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertSame('invalid_request', $error->getError());
+        $this->assertNull($error->getErrorDescription());
+        $this->assertNull($error->getErrorUri());
+        $this->assertNull($error->getState());
+    }
+
+    public function test_2xxでもerrorキーがあればOAuthエラーを優先する(): void
+    {
+        $mock = HttpMock::json(200, '{"error":"server_error"}');
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertSame('server_error', $error->getError());
+        $this->assertSame(200, $error->getResponse()->getStatus());
+    }
+
+    public function test_errorとerrorsが併存する場合はOAuthエラーを優先する(): void
+    {
+        $body = '{"error":"invalid_request","errors":[{"code":"401010","message":"unauthorized","status":401}]}';
+        $mock = HttpMock::json(400, $body);
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertSame('invalid_request', $error->getError());
+        $this->assertSame(400, $error->getResponse()->getStatus());
+        $this->assertSame($body, $error->getResponse()->getRawBody());
+    }
+
+    public function test_errorが不正型なら元レスポンスを保持するErrorsへフォールバックする(): void
+    {
+        $body = '{"error":null,"error_description":"upstream error"}';
+        $mock = HttpMock::json(400, $body);
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame(400, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    #[DataProvider('invalidOptionalFieldProvider')]
+    public function test_OAuthエラーの任意フィールドが不正型なら元レスポンスを保持するErrorsへフォールバックする(
+        string $field,
+        mixed $invalidValue,
+    ): void {
+        $body = \json_encode([
+            'error' => 'invalid_request',
+            $field => $invalidValue,
+        ], \JSON_THROW_ON_ERROR);
+        $mock = HttpMock::json(400, $body);
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame(400, $errors->getResponse()->getStatus());
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function invalidOptionalFieldProvider(): array
+    {
+        return [
+            'error_description' => ['error_description', []],
+            'error_uri' => ['error_uri', false],
+            'state' => ['state', 123],
+        ];
+    }
+
+    public function test_errorキーのない不完全な応答はErrorsとして元レスポンスを保持する(): void
+    {
+        $body = '{"error_description":"説明だけ"}';
+        $mock = HttpMock::json(400, $body);
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame($body, $errors->getResponse()->getRawBody());
+    }
+
+    public function test_空objectのエラー応答はErrorsとして元レスポンスを保持する(): void
+    {
+        $mock = HttpMock::json(400, '{}');
+
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(0, $errors);
+        $this->assertSame('{}', $errors->getResponse()->getRawBody());
+    }
+
+    public function test_OAuthエラーの追加プロパティを生データに保持する(): void
+    {
+        $mock = HttpMock::json(400, '{"error":"temporarily_unavailable","request_id":"req-1"}');
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertSame('req-1', $error->getRaw()['request_id']);
+        $this->assertArrayNotHasKey('request_id', $error->toArray());
+    }
+
+    public function test_ColorMe形式のエラーレスポンスは従来どおりErrorsを返す(): void
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 

@@ -11,6 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
+use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 use Shimoning\ColorMeShopApi\Services\Shop;
@@ -76,10 +77,13 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86#%E8%AA%8D%E5%8F%AF%E3%82%B3%E3%83%BC%E3%83%89%E3%82%92%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%AB%E4%BA%A4%E6%8F%9B
      * @param OAuthOptions $options
      * @param string $code
-     * @return AccessToken|Errors
+     * @return AccessToken|OAuthErrorResponse|Errors
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function exchangeCode2Token(OAuthOptions $options, string $code): AccessToken|Errors
+    public function exchangeCode2Token(
+        OAuthOptions $options,
+        string $code,
+    ): AccessToken|OAuthErrorResponse|Errors
     {
         return (new OAuth($options, $this->httpClient))->exchangeCode2Token($code);
     }

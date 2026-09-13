@@ -10,6 +10,7 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
+use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
@@ -365,6 +366,17 @@ class ClientTest extends TestCase
             AccessToken::class,
             (new Client(null, $mock->client()))->exchangeCode2Token($options, 'code'),
         );
+    }
+
+    public function test_exchangeCode2TokenはOAuthエラーを専用クラスで返す(): void
+    {
+        $mock = HttpMock::json(401, self::fixture('oauth_error_401.json'));
+        $options = new OAuthOptions('my-client-id', 'my-secret', 'https://example.test/callback');
+
+        $error = (new Client(null, $mock->client()))->exchangeCode2Token($options, 'invalid-code');
+
+        $this->assertInstanceOf(OAuthErrorResponse::class, $error);
+        $this->assertSame('invalid_client', $error->getError());
     }
 
     // --- アクセストークンの引き回し -------------------------------------------
