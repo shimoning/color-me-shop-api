@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Entities\Collection;
+use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Error;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -277,6 +278,38 @@ class ErrorsTest extends TestCase
         $this->assertSame('invalid', $errors[0]->getMessage());
         $this->assertSame(422, $errors[0]->getStatus());
         $this->assertAllErrorGettersAreSafe($errors);
+        $this->assertSame($response, $errors->getResponse());
+    }
+
+    /**
+     * 将来 Error のフィールド構築経路が変わって例外が発生する状況を、
+     * Entity のプロパティ解決キャッシュを一時的に差し替えて再現する。
+     */
+    public function test_Error構築中に例外が発生しても失敗要素だけをスキップする(): void
+    {
+        // Error の通常のプロパティ解決結果をキャッシュさせる。
+        new Error([]);
+
+        $cache = new \ReflectionProperty(Entity::class, '_properties');
+        $originalProperties = $cache->getValue();
+        $failingProperties = $originalProperties;
+        $failingProperties[Error::class]['code'] = new \ReflectionProperty(Entity::class, '_raw');
+        $cache->setValue(null, $failingProperties);
+
+        $response = $this->makeResponse(
+            422,
+            '{"errors":[{"code":"fails"},{"message":"valid","status":422}]}',
+        );
+
+        try {
+            $errors = Errors::build($response);
+        } finally {
+            $cache->setValue(null, $originalProperties);
+        }
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertCount(1, $errors);
+        $this->assertSame(['message' => 'valid', 'status' => 422], $errors[0]->getRaw());
         $this->assertSame($response, $errors->getResponse());
     }
 

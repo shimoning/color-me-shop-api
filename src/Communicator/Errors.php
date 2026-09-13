@@ -44,6 +44,10 @@ class Errors extends Collection
      * 不正な既知フィールドは要素全体を捨てず欠損として扱うため、その getter は Entity 共通契約どおり
      * MissingFieldException を投げる。空 Error を保持することも、ワイヤ上の件数を失わないための意図した挙動である。
      *
+     * フィールド単位の検証により Error の構築例外へ通常は到達しないが、将来のフィールド追加や
+     * Entity の変換経路変更で例外が発生しても Errors 自体を返せるよう、要素単位で Throwable を捕捉する。
+     * これは想定外の例外に対する最後の防御であり、構築に失敗した要素だけをスキップする。
+     *
      * @param Response $response API レスポンス
      * @return self
      */
@@ -56,7 +60,11 @@ class Errors extends Collection
                 continue;
             }
 
-            $errors[] = new Error(self::normalizeErrorData($data));
+            try {
+                $errors[] = new Error(self::normalizeErrorData($data));
+            } catch (\Throwable) {
+                continue;
+            }
         }
 
         return new self($response, $errors);
