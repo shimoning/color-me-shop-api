@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Response;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * カラーミーショップ API サービスの基底クラス。
@@ -25,11 +26,21 @@ abstract class Service
      * @param string $accessToken
      * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
      * @return void
+     * @throws ParameterException アクセストークンが空文字の場合
      */
     public function __construct(string $accessToken, ?ClientInterface $httpClient = null)
     {
-        $this->_accessToken = $accessToken;
+        $this->_accessToken = self::requireAccessToken($accessToken);
         $this->_httpClient = $httpClient;
+    }
+
+    private static function requireAccessToken(string $accessToken): string
+    {
+        if ($accessToken === '') {
+            throw new ParameterException('アクセストークンは必ず指定してください');
+        }
+
+        return $accessToken;
     }
 
     /**
@@ -42,12 +53,16 @@ abstract class Service
 
     /**
      * 認証情報を設定したリクエストを生成する。
+     *
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      */
     protected function _request(array $options = [], ?string $accessToken = null): Request
     {
+        $effectiveAccessToken = $accessToken ?? $this->_accessToken;
+
         return new Request(new RequestOptions([
             ...$options,
-            'authorization' => $accessToken ?? $this->_accessToken,
+            'authorization' => self::requireAccessToken($effectiveAccessToken),
         ]), $this->_httpClient);
     }
 

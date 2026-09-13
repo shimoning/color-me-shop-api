@@ -119,15 +119,27 @@ if ($result instanceof Errors) {
     $response->getRawBody(); // API の生レスポンス
 
     foreach ($result as $error) {
-        $error->getCode();
-        $error->getMessage();
+        $raw = $error->getRaw();
+
+        // code / message / status は API 応答で欠損する可能性がある。
+        $code = array_key_exists('code', $raw) ? $error->getCode() : null;
+        $message = array_key_exists('message', $raw) ? $error->getMessage() : null;
+        $status = array_key_exists('status', $raw) ? $error->getStatus() : null;
+
+        // field は optional で、欠損時も null を返す。
         $error->getField();
-        $error->getStatus();
     }
 }
 ```
 
-一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
+API が object 形状のエラー要素を返した場合、既知フィールドが空または一部不正でも要素自体は保持される。
+不正な既知フィールドは `getRaw()` から除かれ、追加プロパティは `getRaw()` だけに保持される。
+大文字小文字や末尾のアンダースコアが異なる追加プロパティも getter の値には影響しない。
+`code`、`message`、`status` の欠損時に getter を直接呼ぶと、他の Entity と同様に
+`Exceptions\MissingFieldException` が投げられるため、上記のように `getRaw()` で利用可能なフィールドを
+確認するか、`MissingFieldException` を捕捉して扱うこと。
+
+一方、アクセストークンの未指定や値オブジェクトの不正な入力など、リクエスト送信前に検出できる問題では `Exceptions\ParameterException` が投げられる。空文字のアクセストークンは、各 `Services\Service` の直接生成時に拒否され、公開 Service メソッドの引数で上書きした場合も HTTP リクエストの生成時に拒否される。空文字の判定は厳密に `""` のみで、`"0"` は有効なアクセストークンとして扱われる。ページネーション情報の欠損や不正には、それぞれ `Exceptions\MissingPaginationException`、`Exceptions\InvalidPaginationException` が投げられる。これらはすべて `Exceptions\ColorMeApiException` を継承しているため、ライブラリの例外をまとめて捕捉する場合は親クラスを利用できる。
 
 ```php
 try {
