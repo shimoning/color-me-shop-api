@@ -151,7 +151,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 'InvalidFieldException::for' => 3,
                 'InvalidFieldException::forArrayElement' => 1,
                 'InvalidPaginationException::__construct' => 2,
-                'MissingFieldException::for' => 2,
+                'MissingFieldException::for' => 3,
                 'MissingPaginationException::__construct' => 2,
             ],
             $routeCounts,
