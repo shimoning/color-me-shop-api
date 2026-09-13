@@ -8,6 +8,8 @@ use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
+use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 /**
@@ -52,10 +54,10 @@ class OAuth
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86
      * @param string $code
-     * @return AccessToken|Errors
+     * @return AccessToken|ErrorResponse|Errors
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function exchangeCode2Token(string $code): AccessToken|Errors
+    public function exchangeCode2Token(string $code): AccessToken|ErrorResponse|Errors
     {
         $response = (new Request(new RequestOptions(['form' => true]), $this->_httpClient))->post(
             $this->_options->getEndpointUri() . '/token',
@@ -67,12 +69,18 @@ class OAuth
                 'code' => $code,
             ]
         );
-        if (! $response->isSuccess()) {
+        $parsedBody = $response->getParsedBody();
+        if ($parsedBody !== null && \array_key_exists('error', $parsedBody)) {
+            try {
+                return new ErrorResponse($parsedBody, $response);
+            } catch (InvalidFieldException) {
+                return Errors::build($response);
+            }
+        }
+        if ($parsedBody !== null && \array_key_exists('errors', $parsedBody)) {
             return Errors::build($response);
         }
-
-        $parsedBody = $response->getParsedBody();
-        if ($parsedBody === null) {
+        if (! $response->isSuccess() || $parsedBody === null) {
             return Errors::build($response);
         }
 
