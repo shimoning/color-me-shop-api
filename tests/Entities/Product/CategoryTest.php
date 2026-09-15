@@ -2,9 +2,11 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
-use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
+use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class CategoryTest extends TestCase
 {
@@ -47,5 +49,67 @@ class CategoryTest extends TestCase
         $this->assertSame('my-shop', $category->getAccountId());
         $this->assertSame('トップス', $category->getName());
         $this->assertSame(CategoryDisplayState::SHOWING, $category->getDisplayState());
+    }
+
+    public function test_実APIの大カテゴリーからmeta_tagを取得できる(): void
+    {
+        $data = self::actualCategories()[1];
+        $category = new Category($data);
+
+        $this->assertInstanceOf(MetaTag::class, $category->getMetaTag());
+        $this->assertSame($data['meta_tag'], $category->getMetaTag()?->getRaw());
+    }
+
+    public function test_実APIの小カテゴリーからmeta_tagを取得できる(): void
+    {
+        $data = self::actualCategories()[0];
+        $category = new Category($data);
+        $child = $category->getChildren()[0];
+
+        $this->assertInstanceOf(MetaTag::class, $child->getMetaTag());
+        $this->assertSame($data['children'][0]['meta_tag'], $child->getMetaTag()?->getRaw());
+    }
+
+    public function test_実APIでmeta_tagがない大カテゴリーはnullを返す(): void
+    {
+        $category = new Category(self::actualCategories()[0]);
+
+        $this->assertNull($category->getMetaTag());
+    }
+
+    public function test_meta_tagを実APIと同じフィールド名で再帰的に配列化できる(): void
+    {
+        $data = self::actualCategories()[1];
+        $category = new Category($data);
+
+        $this->assertSame($data['meta_tag'], $category->toArrayRecursive()['meta_tag']);
+        $this->assertSame(
+            $data['children'][0]['meta_tag'],
+            $category->toArrayRecursive()['children'][0]['meta_tag'],
+        );
+    }
+
+    public function test_meta_tagの一部キー欠損はMetaTagの欠損契約に従う(): void
+    {
+        $data = self::actualCategories()[1];
+        unset($data['meta_tag']['description']);
+        $category = new Category($data);
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            MetaTag::class . ' の API フィールド『description』が欠損しています。',
+        );
+
+        $category->getMetaTag()?->getDescription();
+    }
+
+    /**
+     * 2026-09-12 に保存した実 API レスポンスを、そのまま fixture 化して利用する。
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function actualCategories(): array
+    {
+        return self::fixtureArray('categories_with_meta_tags.json')['categories'];
     }
 }

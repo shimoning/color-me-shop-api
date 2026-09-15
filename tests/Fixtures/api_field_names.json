@@ -204,6 +204,11 @@
         "sort",
         "update_date"
     ],
+    "Product\\MetaTag": [
+        "description",
+        "keywords",
+        "title"
+    ],
     "Payment\\Payment": [
         "account_id",
         "card",

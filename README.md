@@ -448,12 +448,19 @@ if ($categoriesOrErrors instanceof Errors) {
         $category->getIdBig();
         $category->getIdSmall();
         $category->getName();
+        $metaTag = $category->getMetaTag();
+        if ($metaTag !== null) {
+            $metaTag->getTitle();
+            $metaTag->getKeywords();
+            $metaTag->getDescription();
+        }
         $category->getChildren();
     }
 }
 ```
 
 `Client::getProductCategories()` は、内部で `Services\Product::categories(?string $accessToken = null)` を呼び出す。
+`meta_tag` は一部の大カテゴリーに含まれないため、`Category::getMetaTag()` は `null` を返す場合がある。
 
 ### 決済
 #### 決済設定の一覧を取得

@@ -17,6 +17,10 @@ class Category extends Entity
         'displayState' => [
             'enum' => CategoryDisplayState::class,
         ],
+        'metaTag' => [
+            'nullable' => true,
+            'entity' => MetaTag::class,
+        ],
         'children' => [
             'array' => true,
             'entity' => Category::class,
@@ -34,6 +38,7 @@ class Category extends Entity
 
     protected ?string $imageUrl;
     protected ?string $expl;
+    protected ?MetaTag $metaTag;
 
     protected ?int $sort;
     protected CategoryDisplayState $displayState;
@@ -99,6 +104,19 @@ class Category extends Entity
     public function getExpl(): ?string
     {
         return $this->expl;
+    }
+
+    /**
+     * 商品カテゴリーのメタタグ
+     *
+     * 大カテゴリーでは API レスポンスに含まれない場合があるため、その場合は null を返す。
+     * 公式 OpenAPI に記載がなく、API 側の仕様変更により削除される可能性がある。
+     *
+     * @return MetaTag|null
+     */
+    public function getMetaTag(): ?MetaTag
+    {
+        return $this->metaTag;
     }
 
     /**
