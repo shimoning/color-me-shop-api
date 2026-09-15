@@ -11,6 +11,14 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Stat extends Entity
 {
+    /**
+     * 数字の前にアンダースコアが入るため、自動変換では公式のフィールド名に戻せない。
+     */
+    const FIELD_NAMES = [
+        'amountLast7days' => 'amount_last_7days',
+        'countLast7days' => 'count_last_7days',
+    ];
+
     protected string $accountId;
     protected int $date;
     protected int $amountToday;

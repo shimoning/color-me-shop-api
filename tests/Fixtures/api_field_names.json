@@ -132,6 +132,16 @@
         "wrapping_charge",
         "wrapping_name"
     ],
+    "Sales\\Stat": [
+        "account_id",
+        "amount_last_7days",
+        "amount_this_month",
+        "amount_today",
+        "count_last_7days",
+        "count_this_month",
+        "count_today",
+        "date"
+    ],
     "Customer\\Customer": [
         "account_id",
         "address1",
