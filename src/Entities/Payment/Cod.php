@@ -12,9 +12,9 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 class Cod extends Entity
 {
     protected bool $changeable;
-    protected array $fees;
-    protected int $feeMax;
-    protected bool $changeableByTotal;
+    protected ?array $fees;
+    protected ?int $feeMax;
+    protected ?bool $changeableByTotal;
 
     /**
      * 手数料が決済金額によって変わるか否か
@@ -30,23 +30,19 @@ class Cod extends Entity
     /**
      * 手数料が変わる決済金額の区分
      * [3000, 100]であれば、3000円以下の場合、手数料は100円であることを表す
-     * @return array<int>
+     * @return array<int>|null
      */
-    public function getFees(): array
+    public function getFees(): ?array
     {
-        $this->assertFieldInitialized('fees');
-
         return $this->fees;
     }
 
     /**
      * feesに設定されている区分以上の金額の場合の手数料
-     * @return int
+     * @return int|null
      */
-    public function getFeeMax(): int
+    public function getFeeMax(): ?int
     {
-        $this->assertFieldInitialized('feeMax');
-
         return $this->feeMax;
     }
 
@@ -54,12 +50,10 @@ class Cod extends Entity
      * 手数料計算に用いる決済総額を用いるか否か
      * true: 決済総額で計算
      * false: 商品合計額で計算
-     * @return bool
+     * @return bool|null
      */
-    public function getChangeableByTotal(): bool
+    public function getChangeableByTotal(): ?bool
     {
-        $this->assertFieldInitialized('changeableByTotal');
-
         return $this->changeableByTotal;
     }
 }

@@ -72,6 +72,23 @@ class PaymentTest extends TestCase
         $this->assertSame('ヤマダタロウ', $financial->getKouzaName());
     }
 
+    public function test_実APIでcodの任意項目が欠損してもnullとして取得できる(): void
+    {
+        $payment = self::makePayment([
+            'type' => PaymentType::COD->value,
+            'cod' => [
+                'changeable' => false,
+            ],
+        ]);
+
+        $cod = $payment->getCod();
+        $this->assertNotNull($cod);
+        $this->assertFalse($cod->getChangeable());
+        $this->assertNull($cod->getFees());
+        $this->assertNull($cod->getFeeMax());
+        $this->assertNull($cod->getChangeableByTotal());
+    }
+
     private static function makePayment(array $overrides = []): Payment
     {
         return new Payment($overrides + [
