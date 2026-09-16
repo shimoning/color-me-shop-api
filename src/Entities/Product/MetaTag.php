@@ -14,9 +14,8 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * components.schemas.productCategoryChild.properties.meta_tag.allOf[0].properties で、
  * title / keywords / description が nullable として定義されている。
  * また、meta_tag.allOf[0] は type: object かつ additionalProperties: false と
- * 定義されている。ただし本ライブラリは ADR 0006 に基づき未知キーを無視する契約であり、
- * MetaTag も API 側のフィールド追加で壊れないことを優先してこの契約に従う。
- * 未知キーは型付きプロパティや配列化の対象外だが、getRaw() から参照できる。
+ * 定義されている。ただし MetaTag は Entity の既存契約に従い、未知キーを無視し、
+ * 生データを getRaw() に保持する。未知キーは型付きプロパティや配列化の対象外となる。
  */
 class MetaTag extends Entity
 {
