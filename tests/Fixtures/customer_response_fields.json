@@ -59,6 +59,21 @@
         "name": 123,
         "progress": "invalid"
     },
+    "invalid_membership_progress_fields": {
+        "score": "invalid",
+        "aggregation_period": "invalid",
+        "next_membership": "invalid"
+    },
+    "invalid_membership_aggregation_period_fields": {
+        "start_date": "invalid",
+        "end_date": "invalid"
+    },
+    "invalid_next_membership_fields": {
+        "membership_id": 123,
+        "name": 123,
+        "required_score": "invalid",
+        "remaining_score": "invalid"
+    },
     "invalid_external_account_fields": {
         "provider": "invalid",
         "uid": 123,

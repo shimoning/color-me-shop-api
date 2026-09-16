@@ -2,11 +2,15 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Customer;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\ExternalAccount;
 use Shimoning\ColorMeShopApi\Entities\Customer\Membership;
+use Shimoning\ColorMeShopApi\Entities\Customer\MembershipAggregationPeriod;
+use Shimoning\ColorMeShopApi\Entities\Customer\MembershipProgress;
+use Shimoning\ColorMeShopApi\Entities\Customer\NextMembership;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -22,26 +26,30 @@ class CustomerResponseFieldsTest extends TestCase
     {
         $customer = new Customer(self::fixtureData('customer_with_values'));
 
-        $this->assertSame(1465784944, $customer->getMakeDate());
-        $this->assertSame(1494496809, $customer->getUpdateDate());
+        $this->assertInstanceOf(DateTimeImmutable::class, $customer->getMakeDate());
+        $this->assertSame(1465784944, $customer->getMakeDate()->getTimestamp());
+        $this->assertInstanceOf(DateTimeImmutable::class, $customer->getUpdateDate());
+        $this->assertSame(1494496809, $customer->getUpdateDate()->getTimestamp());
 
         $membership = $customer->getMembership();
         $this->assertInstanceOf(Membership::class, $membership);
         $this->assertSame('gold_member', $membership->getMembershipId());
         $this->assertSame('ゴールド会員', $membership->getName());
-        $this->assertSame([
-            'score' => 3000,
-            'aggregation_period' => [
-                'start_date' => 1780239600,
-                'end_date' => 1782831599,
-            ],
-            'next_membership' => [
-                'membership_id' => 'platinum',
-                'name' => 'プラチナ会員',
-                'required_score' => 4000,
-                'remaining_score' => 1000,
-            ],
-        ], $membership->getProgress());
+        $progress = $membership->getProgress();
+        $this->assertInstanceOf(MembershipProgress::class, $progress);
+        $this->assertSame(3000, $progress->getScore());
+
+        $aggregationPeriod = $progress->getAggregationPeriod();
+        $this->assertInstanceOf(MembershipAggregationPeriod::class, $aggregationPeriod);
+        $this->assertSame(1780239600, $aggregationPeriod->getStartDate());
+        $this->assertSame(1782831599, $aggregationPeriod->getEndDate());
+
+        $nextMembership = $progress->getNextMembership();
+        $this->assertInstanceOf(NextMembership::class, $nextMembership);
+        $this->assertSame('platinum', $nextMembership->getMembershipId());
+        $this->assertSame('プラチナ会員', $nextMembership->getName());
+        $this->assertSame(4000, $nextMembership->getRequiredScore());
+        $this->assertSame(1000, $nextMembership->getRemainingScore());
 
         $accounts = $customer->getExternalAccounts();
         $this->assertCount(1, $accounts);
@@ -69,6 +77,24 @@ class CustomerResponseFieldsTest extends TestCase
         $membership = $customer->getMembership();
         $this->assertInstanceOf(Membership::class, $membership);
         $this->assertNull($membership->getProgress());
+    }
+
+    public function test_progressのnext_membershipが明示的なnullでも保持する(): void
+    {
+        $membership = new Membership([
+            'progress' => [
+                'score' => 3000,
+                'aggregation_period' => [
+                    'start_date' => 1780239600,
+                    'end_date' => 1782831599,
+                ],
+                'next_membership' => null,
+            ],
+        ]);
+
+        $progress = $membership->getProgress();
+        $this->assertInstanceOf(MembershipProgress::class, $progress);
+        $this->assertNull($progress->getNextMembership());
     }
 
     public function test_旧形式のCustomerをunserializeすると新しいnullableフィールドはnullになる(): void
@@ -176,6 +202,45 @@ class CustomerResponseFieldsTest extends TestCase
         }
     }
 
+    #[DataProvider('invalidMembershipProgressFieldProvider')]
+    public function test_progress内部フィールドの不正型は固有例外になる(
+        string $field,
+        mixed $value,
+    ): void {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            MembershipProgress::class . ' の API フィールド『' . $field . '』が不正です。',
+        );
+
+        new MembershipProgress([$field => $value]);
+    }
+
+    #[DataProvider('invalidMembershipAggregationPeriodFieldProvider')]
+    public function test_aggregation_period内部フィールドの不正型は固有例外になる(
+        string $field,
+        mixed $value,
+    ): void {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            MembershipAggregationPeriod::class . ' の API フィールド『' . $field . '』が不正です。',
+        );
+
+        new MembershipAggregationPeriod([$field => $value]);
+    }
+
+    #[DataProvider('invalidNextMembershipFieldProvider')]
+    public function test_next_membership内部フィールドの不正型は固有例外になる(
+        string $field,
+        mixed $value,
+    ): void {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            NextMembership::class . ' の API フィールド『' . $field . '』が不正です。',
+        );
+
+        new NextMembership([$field => $value]);
+    }
+
     #[DataProvider('invalidExternalAccountFieldProvider')]
     public function test_external_accounts要素の内部フィールド不正は要素変換と実フィールドを示す固有例外になる(
         string $field,
@@ -255,6 +320,24 @@ class CustomerResponseFieldsTest extends TestCase
     }
 
     /** @return array<string, array{string, mixed}> */
+    public static function invalidMembershipProgressFieldProvider(): array
+    {
+        return self::invalidFieldCases('invalid_membership_progress_fields');
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    public static function invalidMembershipAggregationPeriodFieldProvider(): array
+    {
+        return self::invalidFieldCases('invalid_membership_aggregation_period_fields');
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    public static function invalidNextMembershipFieldProvider(): array
+    {
+        return self::invalidFieldCases('invalid_next_membership_fields');
+    }
+
+    /** @return array<string, array{string, mixed}> */
     public static function invalidExternalAccountFieldProvider(): array
     {
         $fields = self::fixtureData('invalid_external_account_fields');
@@ -276,6 +359,18 @@ class CustomerResponseFieldsTest extends TestCase
         }
 
         return $data;
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    private static function invalidFieldCases(string $key): array
+    {
+        $fields = self::fixtureData($key);
+        $cases = [];
+        foreach ($fields as $field => $value) {
+            $cases[$field] = [$field, $value];
+        }
+
+        return $cases;
     }
 
     private static function legacyEmptyCustomerPayload(): string

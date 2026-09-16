@@ -5,22 +5,16 @@ namespace Shimoning\ColorMeShopApi\Entities\Customer;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * 顧客が所属する会員ランク
+ * 次に目指す会員ランク
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
  */
-class Membership extends Entity
+class NextMembership extends Entity
 {
-    const OBJECT_FIELDS = [
-        'progress' => [
-            'nullable' => true,
-            'entity' => MembershipProgress::class,
-        ],
-    ];
-
     protected string $membershipId;
     protected string $name;
-    protected ?MembershipProgress $progress;
+    protected int $requiredScore;
+    protected int $remainingScore;
 
     /**
      * 会員ランクID
@@ -43,12 +37,22 @@ class Membership extends Entity
     }
 
     /**
-     * 次の会員ランクへの進捗情報
-     *
-     * @return MembershipProgress|null
+     * 次のランクに到達するために必要な購入金額（税込）
+     * @return int
      */
-    public function getProgress(): ?MembershipProgress
+    public function getRequiredScore(): int
     {
-        return $this->progress ?? null;
+        $this->assertFieldInitialized('requiredScore');
+        return $this->requiredScore;
+    }
+
+    /**
+     * 次のランクまでの残り金額（税込）
+     * @return int
+     */
+    public function getRemainingScore(): int
+    {
+        $this->assertFieldInitialized('remainingScore');
+        return $this->remainingScore;
     }
 }
