@@ -1,4 +1,4 @@
-# ADR 0009: Category を BigCategory と SmallCategory に分割する
+# ADR 0010: Category を BigCategory と SmallCategory に分割する
 
 - 状態: 採用
 - 決定日: 2026-09-16
@@ -6,7 +6,7 @@
 ## 文脈
 
 2026-09-12 にテスト用ショップの実 API を検証した結果、親カテゴリーと子カテゴリーではレスポンスの
-スキーマが異なることが判明した（[実測記録](../api-category-structure.md)、PR #40）。確認した
+スキーマが異なることが判明した（[実測記録](../api-category-structure.md)）。確認した
 親カテゴリー2件はいずれも `id_small = 0` で、非空の `children` キーを持っていた。一方、
 子カテゴリー4件の `id_small` はすべて1以上で、`children` キー自体がなかった。`meta_tag` は
 親カテゴリー2件中1件と子カテゴリー4件すべてに存在したため、親子の判別子にはできない。
@@ -21,21 +21,21 @@
 
 ## 判断
 
-実 API の観測結果の出典は `docs/api-category-structure.md`（PR #40）とする。同文書の出典コミット
-SHA は PR #40 のマージ後に確定する。
+実 API の観測結果の出典は `docs/api-category-structure.md` を更新したコミット
+`9167b12102c78f60a931d76051b373bd0e7cfa9d` とする。
 
 - 親子の判別基準には `id_small === 0` を使う。0なら大カテゴリー、それ以外の `int` なら
   小カテゴリーとする。これは公式説明の「大カテゴリーなら0」と実データの双方に合致する。
-  コードの出典: `0ca343e`。実データの出典: `docs/api-category-structure.md`（PR #40）。
+  コードの出典: `0ca343e`。実データの出典: `docs/api-category-structure.md`。
 - 基底の `Entities\Product\Category` を abstract にする。既存利用者への破壊的変更を許容し、
   親子どちらでもない `Category` の生成を型で防ぐ。出典: `0ca343e`。
 - `$children` プロパティと `getChildren()` は `Entities\Product\BigCategory` のみに置く。
   小カテゴリーには、実 API に存在しない `children` を公開せず、`toArray()` にも出さない。
-  出典: `0ca343e`、`faafff9`、`326f1ac`、`docs/api-category-structure.md`（PR #40）。
+  出典: `0ca343e`、`faafff9`、`326f1ac`、`docs/api-category-structure.md`。
 - 生成には静的ファクトリ `Category::fromArray()` を使う。判別ロジックをドメイン型に一元化し、
   `Services\Product` によるトップレベル要素の変換と `BigCategory` による子要素の変換で再利用する。
   汎用の `Collection` と `Page` は変更しない。出典: `0ca343e`、`765a114`、`ae36b5a`。
-- `children` は `OBJECT_FIELDS` に委ねず、`BigCategory::__construct()` で各要素を
+- `children` は `OBJECT_FIELDS` に委ねず、親側で各要素を
   `Category::fromArray()` に通し、`SmallCategory` として扱えることを確認する。
   現行の `Entity::build()` は指定クラスを直接生成するため、abstract な `Category` を指定できず、
   `SmallCategory` を指定するとファクトリを迂回する。親側で配列を正規化する `Delivery\Charge` の
@@ -51,7 +51,7 @@ SHA は PR #40 のマージ後に確定する。
   `components.schemas.productCategory.properties.meta_tag` と
   `components.schemas.productCategoryChild.properties.meta_tag`（2026-09-16 確認）、および実データの
   双方で親子に存在し得る共通フィールドだからである。実データの出典:
-  `docs/api-category-structure.md`（PR #40）。
+  `docs/api-category-structure.md`。
 - 具象型の名前は `BigCategory` と `SmallCategory`、名前空間は `Entities\Product\` とする。公式の
   「大カテゴリー」「小カテゴリー」という呼称、および `id_big` と `id_small` に整合する。
   出典: `0ca343e`。
@@ -91,5 +91,5 @@ SHA は PR #40 のマージ後に確定する。
 - [ADR 0002: Entity の null 許容性を OpenAPI に合わせる](0002-entity-nullability-from-openapi.md)
 - [ADR 0004: Entity の `toArray()` は往復可能な直列化ではない](0004-entity-to-array-is-not-round-trippable.md)
 - [ADR 0006: Entity のプロパティ解決を通常のインスタンスプロパティに統一する](0006-limit-entity-property-kinds.md)
-- [実 API のカテゴリー応答構造の実測記録](../api-category-structure.md)（PR #40。出典コミット SHA は
-  マージ後に確定）。
+- [実 API のカテゴリー応答構造の実測記録](../api-category-structure.md)（出典コミット:
+  `9167b12102c78f60a931d76051b373bd0e7cfa9d`）。

@@ -114,9 +114,9 @@
 
 ## 今後の計画
 
-大カテゴリーと小カテゴリーを `BigCategory` / `SmallCategory` に分割する設計は、[Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) と、[PR #36](https://github.com/shimoning/color-me-shop-api/pull/36) で提案中の ADR 0009 で検討されている。提案では、今回の実測値と公式説明に基づいて `id_small === 0` を大カテゴリーの判別条件とし、`children` と `getChildren()` を `BigCategory` のみに持たせ、親子に共通し得る `meta_tag` を共通の `Category` に置く。
+大カテゴリーと小カテゴリーを `BigCategory` / `SmallCategory` に分割する設計は、[Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) と [ADR 0010](adr/0010-split-category-into-big-and-small.md) に記録されている。同 ADR では、今回の実測値と公式説明に基づいて `id_small === 0` を大カテゴリーの判別条件とし、`children` と `getChildren()` を `BigCategory` のみに持たせ、親子に共通し得る `meta_tag` を共通の `Category` に置く。
 
-これらは未マージ・未実装の計画であり、現在のライブラリの仕様ではない。
+これらは未実装の設計判断であり、現在のライブラリの仕様ではない。
 
 ## 再収集の概要
 
