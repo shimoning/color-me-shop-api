@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PlainEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\AllowNullObjectFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
@@ -370,6 +371,63 @@ class EntityTest extends TestCase
             '空文字' => [''],
             'false' => [false],
         ];
+    }
+
+    // --- OBJECT_FIELDS: allowNull ----------------------------------------
+
+    public function test_allowNull指定でnullならnullになる(): void
+    {
+        $entity = new AllowNullObjectFieldEntity(['allow_null_child' => null]);
+
+        $this->assertNull($entity->getAllowNullChild());
+    }
+
+    public function test_allowNull指定で空配列なら子エンティティを生成する(): void
+    {
+        $entity = new AllowNullObjectFieldEntity(['allow_null_child' => []]);
+
+        $this->assertInstanceOf(NestedEntity::class, $entity->getAllowNullChild());
+        $this->assertSame([], $entity->getAllowNullChild()->getRaw());
+    }
+
+    #[DataProvider('allowNullInvalidFalsyValueProvider')]
+    public function test_allowNull指定でnull以外のfalsy値は不正値として失敗する(
+        mixed $value,
+        string $actualType,
+    ): void {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            AllowNullObjectFieldEntity::class . ' の API フィールド『allow_null_child』が不正です。'
+            . NestedEntity::class . " を期待しましたが {$actualType} でした。",
+        );
+
+        new AllowNullObjectFieldEntity(['allow_null_child' => $value]);
+    }
+
+    /**
+     * @return array<string, array{mixed, string}>
+     */
+    public static function allowNullInvalidFalsyValueProvider(): array
+    {
+        return [
+            '整数0' => [0, 'int'],
+            'false' => [false, 'bool'],
+            '空文字' => ['', 'string'],
+        ];
+    }
+
+    public function test_nullableとallowNullの併用ではnullとfalsy値をnullにする(): void
+    {
+        foreach ([null, [], 0, false, ''] as $value) {
+            $entity = new AllowNullObjectFieldEntity(['nullable_allow_null_child' => $value]);
+
+            $this->assertNull($entity->getNullableAllowNullChild());
+        }
+
+        $entity = new AllowNullObjectFieldEntity(['nullable_allow_null_child' => ['label' => 'child']]);
+
+        $this->assertInstanceOf(NestedEntity::class, $entity->getNullableAllowNullChild());
+        $this->assertSame('child', $entity->getNullableAllowNullChild()->getLabel());
     }
 
     // --- OBJECT_FIELDS: value --------------------------------------------
