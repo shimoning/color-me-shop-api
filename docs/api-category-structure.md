@@ -2,7 +2,7 @@
 
 ## この文書の位置づけ
 
-この文書は、ColorMe Shop API の実 API から収集したカテゴリー応答の一次情報を、ライブラリの型設計と将来の判断の根拠として保存するものである。2026-09-12 にテスト用ショップで `GET /v1/categories` を実行し、親カテゴリー2件と、その `children` に含まれる子カテゴリー4件を収集した。
+この文書は、ColorMe Shop API の実 API から収集したカテゴリー応答の一次情報を、ライブラリの型設計と将来の判断の根拠として保存するものである。現在のライブラリの仕様を記述するものではない。2026-09-12 にテスト用ショップで `GET /v1/categories` を実行し、親カテゴリー2件と、その `children` に含まれる子カテゴリー4件を収集した。
 
 ここに記録した内容は収集時点の実測結果であり、API 側の仕様変更によって古くなる可能性がある。内容を更新するときは、推測や過去の応答の流用ではなく、テスト用ショップで再収集する必要がある。
 
@@ -108,11 +108,15 @@
 
 `meta_tag` は公式スキーマの親子双方に定義されている。その内部の `title`、`keywords`、`description` は、いずれも `type: string` かつ `nullable: true` である。この点は、`meta_tag` が実データでも親子双方に出現し得ることと整合する。
 
-## ライブラリでの扱い
+## 現在のライブラリ実装との関係
 
-現状の `Entities\Product\Category` は `children` を非 nullable の `array` として持つ。実 API の子カテゴリーには `children` キーがないため、子カテゴリーで `getChildren()` を呼ぶと `MissingFieldException` になる。
+現在のライブラリは、大カテゴリーと小カテゴリーの両方を `Entities\Product\Category` 単一クラスで扱い、両者を別の型には分けていない。また、このクラスは `meta_tag` をフィールドとして持たず、`children` を非 nullable の `array` として持つ。実 API の子カテゴリーには `children` キーがないため、子カテゴリーで `getChildren()` を呼ぶと `MissingFieldException` になる。
 
-ADR 0009 では、実測値と公式説明に基づいて `id_small === 0` を大カテゴリーの判別条件とし、`Category` を `BigCategory` と `SmallCategory` に分割する方針を採用した。`children` と `getChildren()` は `BigCategory` のみに持たせ、親子に共通し得る `meta_tag` は共通の `Category` に置く。
+## 今後の計画
+
+大カテゴリーと小カテゴリーを `BigCategory` / `SmallCategory` に分割する設計は、[Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) と、[PR #36](https://github.com/shimoning/color-me-shop-api/pull/36) で提案中の ADR 0009 で検討されている。提案では、今回の実測値と公式説明に基づいて `id_small === 0` を大カテゴリーの判別条件とし、`children` と `getChildren()` を `BigCategory` のみに持たせ、親子に共通し得る `meta_tag` を共通の `Category` に置く。
+
+これらは未マージ・未実装の計画であり、現在のライブラリの仕様ではない。
 
 ## 再収集の概要
 
