@@ -21,25 +21,34 @@
 
 ## 判断
 
+以下は実装前の設計判断であり、判断そのものを実装したコミットはまだ存在しない。実装は Issue #27 で
+行う予定である。各判断の出典には、その前提となる現行実装または検証結果を含むコミットを示す。
+
 - 親子の判別基準には `id_small === 0` を使う。0なら大カテゴリー、それ以外の `int` なら
   小カテゴリーとする。これは公式説明の「大カテゴリーなら0」と実データの双方に合致する。
+  出典: `0ca343e`、`076a318`。
 - 基底の `Entities\Product\Category` を abstract にする。既存利用者への破壊的変更を許容し、
-  親子どちらでもない `Category` の生成を型で防ぐ。
+  親子どちらでもない `Category` の生成を型で防ぐ。出典: `0ca343e`。
 - `getChildren()` は `Entities\Product\BigCategory` のみに置く。小カテゴリーには、実 API に存在しない
-  `children` の getter を公開しない。
+  `children` の getter を公開しない。出典: `0ca343e`、`faafff9`。
 - 生成には静的ファクトリ `Category::fromArray()` を使う。判別ロジックをドメイン型に一元化し、
   `Services\Product` によるトップレベル要素の変換と `BigCategory` による子要素の変換で再利用する。
-  汎用の `Collection` と `Page` は変更しない。
+  汎用の `Collection` と `Page` は変更しない。出典: `0ca343e`、`765a114`、`ae36b5a`。
 - `id_small` が欠損している場合は `MissingFieldException`、値が `int` でない場合は
   `InvalidFieldException` とする。文字列 `"0"`、`null`、配列などを受理せず、既定で
   `BigCategory` にフォールバックしない。フォールバックは不正な応答の誤分類を隠すためである。
+  出典: `f3f5845`。
 - `BigCategory::getChildren()` の戻り値は `SmallCategory[]` の配列を維持する。
   `Collection<SmallCategory>` へ変更すると、現行の `Collection` は `json_encode` で `{}` になり、
   配列の添字、`foreach`、`count`、`array_map` を使う既存コードの互換性も壊れるため採用しない。
-- `meta_tag` は基底の `Category` に置く。公式の親子両スキーマと実データの双方で親子に存在し得る
-  共通フィールドだからである。
+  出典: `0ca343e`、`a4c368f`、`dc116bb`。
+- `meta_tag` は基底の `Category` に置く。[公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json) の
+  `components.schemas.productCategory.properties.meta_tag` と
+  `components.schemas.productCategoryChild.properties.meta_tag`（2026-09-16 確認）、および実データの
+  双方で親子に存在し得る共通フィールドだからである。出典: `076a318`、`8e5cdbd`。
 - 具象型の名前は `BigCategory` と `SmallCategory`、名前空間は `Entities\Product\` とする。公式の
   「大カテゴリー」「小カテゴリー」という呼称、および `id_big` と `id_small` に整合する。
+  出典: `0ca343e`。
 
 ## 代替案と却下理由
 
