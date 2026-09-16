@@ -14,7 +14,7 @@
   3000円以下の場合、手数料は100円であることを表す」とあるが、この境界の説明は誤っている。例は
   `[[3000, 100], [5000, 200]]` である。
 - `fee_max` は「`fees` に設定されている区分以上の金額の場合の手数料」と説明されているが、
-  「区分以上」では適用境界を正しく表せていない。
+  「区分以上」だけでは最後の閾値以上という適用境界を特定できない。
 - `changeable` は「手数料が決済金額によって変わるか否か」を表す。
 - `changeable_by_total` は手数料計算に用いる金額を表し、`true` なら決済総額、`false` なら
   商品合計額を用いる。
@@ -22,17 +22,18 @@
 2026-09-16 にテスト用ショップの実 API と管理画面を突き合わせた。管理画面で「0円〜300円未満」
 を100円、「上記金額〜500円未満」を70円、「上記金額以上」を10円とした設定は、API では
 `fees=[[300, 100], [500, 70]]`、`fee_max=10` として返った。したがって、タプルの第1要素は
-その区分に含まれない排他的上限であり、`fee_max` は最後の閾値以上、すなわちこの例では500円以上に
-適用される。公式 OpenAPI の「3000円以下」と「区分以上」という説明が誤っていることも、同日の
-管理画面の表記と実データから確認した。また、`fee_max=null` は管理画面で上限手数料が未設定である
-ことを意味した。`changeable=false` では `Payment.fee` の一律手数料、`changeable=true` では `cod` の
-区分手数料が適用される。
+その区分に含まれない排他的上限であり、数値の `fee_max` は最後の閾値以上、すなわちこの例では
+500円以上に適用される。公式 OpenAPI の「3000円以下」は誤りで、「区分以上」は境界の説明として
+不正確である。また、上限手数料が未設定の応答では `fee_max` キーが存在し、値は `null` だった。
+固定手数料の応答では同キー自体が欠損していた。`changeable=false` では `Payment.fee` の一律手数料、
+`changeable=true` では `cod` の区分手数料が適用される。
+実測の出典: [決済設定の実測記録](../api-payment-structure.md)（[PR #41](https://github.com/shimoning/color-me-shop-api/pull/41)）。
 
 現行の `Entities\Payment\Cod::$fees` は `array` であり、タプルの第1要素が上限金額、第2要素が
 手数料であることを型から読み取れない。`Cod::getFees()` の PHPDoc も `array<int>` であり、実際の
 二次元配列と一致しない。Issue #28 の nullable 対応で `array<int>|null` になっても不一致は残ると
 レビューで指摘されており、nullable 化後にも残る既存の不整合である。
-コードの出典: `4b85ca5`、`e5d2654`。実データの出典: Issue #28。
+コードの出典: `4b85ca5`、`e5d2654`。実データの出典: [決済設定の実測記録](../api-payment-structure.md)（PR #41）。
 
 利用者は `$fees[0][0]` と `$fees[0][1]` の意味を公式仕様から自分で解釈しなければならない。
 これは API レスポンスを型付き Entity として扱い、値の意味を公開型から伝える本ライブラリの
@@ -40,13 +41,8 @@
 
 ## 判断
 
-公式 OpenAPI の定義は 2026-09-16 時点のものを参照した。
-各判断の出典には、その前提となる現行実装を含むコミット、または検証結果を記録した Issue を示す。
-ADR 0000 は追跡可能な出典コミット SHA の付記を原則とするが、リポジトリにコミットされていない
-実 API と管理画面の検証結果については、本 ADR に検証日時と実測値を記載し、関連する実 API の
-検証を記録した Issue #28 を出典とする。
-実測記録は `docs/api-payment-structure.md` に整理されているが、現時点では master に未収録であるため、
-同文書への参照は master への収録後に可能となる。
+公式 OpenAPI の定義は 2026-09-16 時点のものを参照した。実 API と管理画面の観測結果は
+[決済設定の実測記録](../api-payment-structure.md)（PR #41）を出典とする。
 
 - `fees` の各区分は `Shimoning\ColorMeShopApi\Entities\Payment\CodFee` で表す。代引き設定を
   表す `Cod` と同じ名前空間とし、汎用的すぎる `Fee` ではなく決済種別を含む名前にすることで、
@@ -56,27 +52,30 @@ ADR 0000 は追跡可能な出典コミット SHA の付記を原則とするが
   `upperLimit` はタプルの第1要素に対応する排他的上限であり、その金額を区分に含めない。
   `fee` は第2要素に対応し、その `upperLimit` 未満の区分で適用する手数料を表す。公式 OpenAPI の
   「3000円以下」ではなく「3000円未満」が正しい。コードの出典: `e5d2654`。境界の出典:
-  Issue #28 および本 ADR に記録した2026-09-16 の実 API と管理画面の検証結果。
-- `Cod::getFees()` は `CodFee` の配列を返す。Issue #28 で、実 API における `fees` の欠損が
-  確認されているため、`Cod::$fees` と `getFees()` の nullable は維持し、公開契約は
+  [決済設定の実測記録](../api-payment-structure.md)（PR #41）。
+- `Cod::getFees()` は `CodFee` の配列を返す。固定手数料の実 API 応答では `fees` の欠損が
+  観測されているため、`Cod::$fees` と `getFees()` の nullable は維持し、公開契約は
   `list<CodFee>|null` とする。フィールドが欠損した場合は `null`、存在する場合は Entity の
-  リストとして扱う。実データの出典: Issue #28。
-- `fees=[]` は実データでは観測されていない。API が空配列を返した場合は、欠損を表す `null` と
-  区別して空のリストのまま扱い、非空であることを検証せず、`fee_max` の適用条件も補完しない。
-  本ライブラリの責務は API レスポンスを型付きで表現することであり、手数料の算出ロジックを
-  提供することではないため、観測されていない組み合わせから計算規則を推測しない。
-- OpenAPI の `minItems: 2` と `maxItems: 2` を入力境界で検証する。各区分は添字 0 と 1 を持つ
-  連続した2要素の配列でなければならず、両要素とも整数でなければならない。違反時は
-  `fees[n]` を識別できる `InvalidFieldException` とし、生の `TypeError`、警告、添字未定義を
-  利用者へ漏らさない。
-  出典: `f3f5845`、`3fe06e5`、`b00077f`、`a0506c1`。
+  リストとして扱う。実データの出典: [決済設定の実測記録](../api-payment-structure.md)（PR #41）。
+- `fees=[]` は未観測である。応答に空配列が存在する場合は欠損を表す `null` と区別して空のリストと
+  して扱うが、その場合の `fee_max` の適用境界は定めない。未観測の組み合わせから手数料の計算規則を
+  推測しない。観測範囲の出典: [決済設定の実測記録](../api-payment-structure.md)（PR #41）。
+- `Cod` 側で `fees` の数値キーのタプルを `CodFee` の意味付きフィールドへ正規化し、各区分の
+  0 と 1 の連続した数値キーからなる2整数の区分かを個別に検証し、不正な区分の位置を識別可能にする。
+  `OBJECT_FIELDS` だけでは数値キーを意味付きフィールドへ対応付けられない。
+  `Delivery\Charge` の重量別配送料と同じく、
+  親にあたる `Cod` で変換する。出典: `8a6560f`、`b89f3ce`、
+  [決済設定の実測記録](../api-payment-structure.md)（PR #41）。
 - `feeMax` は各 `CodFee::$upperLimit` で表す区分に収まらない金額へ適用する手数料であり、
   `CodFee` の要素ではない。`getFees()` と `getFeeMax()` の公開契約では、各 `upperLimit` は
-  排他的上限であり、金額が最大の `upperLimit` 以上の場合に `feeMax` を用いる。例えば
-  `fees=[[300, 100], [500, 70]]` では、300円は第2区分、500円は `feeMax` の区分に入る。
-  `feeMax=null` は最後の区分の手数料が未設定であることを表し、別の値で補完しない。
-  コードの出典: `e5d2654`。境界と `null` の出典: Issue #28 および本 ADR に記録した2026-09-16 の
-  実 API と管理画面の検証結果。
+  排他的上限であり、金額が最大の `upperLimit` 以上の場合、値が設定されていれば `feeMax` を用いる。
+  例えば `fees=[[300, 100], [500, 70]]`、`fee_max=10` では、300円は第2区分、500円は
+  `feeMax` の区分に入る。
+  `Cod::$feeMax` と `getFeeMax()` は nullable とし、`feeMax=null` は明示的な `fee_max: null` と
+  キー欠損を getter 上では区別しない。前者は上限手数料の未設定、後者は固定手数料の応答で観測
+  されている。元のキーの有無は `getRaw()` で確認でき、`null` を別の手数料で補完しない。
+  コードの出典: `e5d2654`。境界と `null` の出典:
+  [決済設定の実測記録](../api-payment-structure.md)（PR #41）。
 
 ## 代替案と却下理由
 
@@ -125,8 +124,9 @@ Issue #28 の nullable 化も、本変更と同様に `getFees()` の公開契�
 ## 関連
 
 - [Issue #28: `Cod` の nullable 対応](https://github.com/shimoning/color-me-shop-api/issues/28)
-- `docs/api-payment-structure.md`（2026-09-16 の実測記録）。現時点では master に未収録のため、
-  収録までは Issue #28 を実データの出典とする。
+- [決済設定の実測記録](../api-payment-structure.md)（[PR #41](https://github.com/shimoning/color-me-shop-api/pull/41)）。
+  出典コミット SHA は PR #41 のマージ後に確定する。
+- [ADR 0000 の実 API 観測結果に関する出典ルール](https://github.com/shimoning/color-me-shop-api/pull/42)（PR #42）。
 - [公式 OpenAPI の `payment.cod`](https://api.shop-pro.jp/v1/spec/open_api.json)
 - [ADR 0002: Entity の null 許容性を OpenAPI に合わせる](0002-entity-nullability-from-openapi.md)
 - [ADR 0003: 暗黙変換より意味上正しい型を優先する](0003-prefer-semantic-types-over-legacy-coercion.md)
