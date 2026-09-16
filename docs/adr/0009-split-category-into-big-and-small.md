@@ -21,16 +21,18 @@
 
 ## 判断
 
-以下は実装前の設計判断であり、判断そのものを実装したコミットはまだ存在しない。実装は Issue #27 で
-行う予定である。各判断の出典には、その前提となる現行実装または検証結果を含むコミットを示す。
+各判断の出典には、その前提となる現行実装または検証結果を含むコミットを示す。
 
 - 親子の判別基準には `id_small === 0` を使う。0なら大カテゴリー、それ以外の `int` なら
   小カテゴリーとする。これは公式説明の「大カテゴリーなら0」と実データの双方に合致する。
   出典: `0ca343e`、`076a318`。
 - 基底の `Entities\Product\Category` を abstract にする。既存利用者への破壊的変更を許容し、
   親子どちらでもない `Category` の生成を型で防ぐ。出典: `0ca343e`。
-- `getChildren()` は `Entities\Product\BigCategory` のみに置く。小カテゴリーには、実 API に存在しない
-  `children` の getter を公開しない。出典: `0ca343e`、`faafff9`。
+- `$children` プロパティ、`OBJECT_FIELDS['children']` の定義、および `getChildren()` は
+  `Entities\Product\BigCategory` のみに置く。小カテゴリーには、実 API に存在しない `children` の
+  プロパティ、変換定義、getter を公開しない。現行の `Entity::toArray()` は未初期化の宣言プロパティも
+  `null` として出力するため、`$children` を基底の `Category` に残さない。出典: `0ca343e`、`faafff9`、
+  `326f1ac`。
 - 生成には静的ファクトリ `Category::fromArray()` を使う。判別ロジックをドメイン型に一元化し、
   `Services\Product` によるトップレベル要素の変換と `BigCategory` による子要素の変換で再利用する。
   汎用の `Collection` と `Page` は変更しない。出典: `0ca343e`、`765a114`、`ae36b5a`。
@@ -78,11 +80,6 @@
 
 一方、`BigCategory` と `SmallCategory` はいずれも `Category` を継承するため、`instanceof Category` と
 `Category` 型宣言は引き続き機能する。この点は実メモリ上の検証で確認済みである。
-
-テストは、`ApiFieldNameTest` のカテゴリー項目を親子2スキーマへ分割する必要がある。
-`EntityContractTest` は abstract になった `Category` ではなく、新しい具象2クラスを検査する構成へ
-更新する。実装の統合順序は Issue #29 の `meta_tag` 対応を先に master へ入れ、その後に本判断を
-実装する。逆順では Issue #29 を具象 `Category` 前提から作り直すことになる。
 
 未確認事項は次のとおりであり、実装時にも OpenAPI だけから挙動を補完しない。
 
