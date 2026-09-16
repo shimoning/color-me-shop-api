@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Sex;
@@ -24,6 +25,15 @@ class Customer extends Entity
         ],
         'prefId' => [
             'enum' => Prefecture::class,
+        ],
+        'membership' => [
+            'nullable' => true,
+            'entity' => Membership::class,
+        ],
+        'externalAccounts' => [
+            'array' => true,
+            'nullable' => true,
+            'entity' => ExternalAccount::class,
         ],
     ];
 
@@ -52,6 +62,12 @@ class Customer extends Entity
     protected ?string $answerFreeForm1;
     protected ?string $answerFreeForm2;
     protected ?string $answerFreeForm3;
+    protected int $makeDate;
+    protected int $updateDate;
+    protected ?Membership $membership;
+
+    /** @var list<ExternalAccount>|null */
+    protected ?array $externalAccounts;
 
     /**
      * 顧客ID
@@ -281,5 +297,43 @@ class Customer extends Entity
     public function getAnswerFreeForm3(): ?string
     {
         return $this->answerFreeForm3;
+    }
+
+    /**
+     * 作成日時
+     * @return DateTimeImmutable
+     */
+    public function getMakeDate(): DateTimeImmutable
+    {
+        $this->assertFieldInitialized('makeDate');
+        return (new DateTimeImmutable)->setTimestamp($this->makeDate);
+    }
+
+    /**
+     * 更新日時
+     * @return DateTimeImmutable
+     */
+    public function getUpdateDate(): DateTimeImmutable
+    {
+        $this->assertFieldInitialized('updateDate');
+        return (new DateTimeImmutable)->setTimestamp($this->updateDate);
+    }
+
+    /**
+     * 顧客が所属する会員ランク
+     * @return Membership|null
+     */
+    public function getMembership(): ?Membership
+    {
+        return $this->membership ?? null;
+    }
+
+    /**
+     * 顧客に関連付けられた外部システムのリスト
+     * @return list<ExternalAccount>|null
+     */
+    public function getExternalAccounts(): ?array
+    {
+        return $this->externalAccounts ?? null;
     }
 }

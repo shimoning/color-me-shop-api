@@ -62,6 +62,58 @@ class CustomerTest extends TestCase
         $this->assertSame(['limit' => '20', 'offset' => '40'], $mock->query());
     }
 
+    public function test_LINE_UIDと会員ランクIDで完全一致検索できる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('customers_page.json'));
+
+        (new Customer('my-token', $mock->client()))->page(new SearchParameters([
+            'line_uid' => 'U0123456789abcdef',
+            'membership_id' => 'gold',
+        ]));
+
+        $this->assertSame([
+            'line_uid' => 'U0123456789abcdef',
+            'membership_id' => 'gold',
+        ], $mock->query());
+    }
+
+    public function test_lineUidはline_uidに逆変換される(): void
+    {
+        $this->assertSame('line_uid', SearchParameters::apiFieldName('lineUid'));
+    }
+
+    public function test_メルマガ受信可の顧客を検索できる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('customers_page.json'));
+
+        (new Customer('my-token', $mock->client()))->page(new SearchParameters([
+            'receive_mail_magazine' => true,
+        ]));
+
+        $this->assertSame(['receive_mail_magazine' => '1'], $mock->query());
+    }
+
+    public function test_メルマガ受信不可の顧客を検索できる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('customers_page.json'));
+
+        (new Customer('my-token', $mock->client()))->page(new SearchParameters([
+            'receive_mail_magazine' => false,
+        ]));
+
+        $this->assertSame(['receive_mail_magazine' => '0'], $mock->query());
+    }
+
+    public function test_追加検索条件の未指定値はクエリに含めない(): void
+    {
+        $parameters = new SearchParameters([]);
+        $query = $parameters->toArrayRecursive();
+
+        $this->assertArrayNotHasKey('line_uid', $query);
+        $this->assertArrayNotHasKey('membership_id', $query);
+        $this->assertArrayNotHasKey('receive_mail_magazine', $query);
+    }
+
     public function test_顧客一覧のエラーレスポンス(): void
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));

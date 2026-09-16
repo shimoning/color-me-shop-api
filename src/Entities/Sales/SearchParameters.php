@@ -55,6 +55,7 @@ class SearchParameters extends Entity
     protected ?DateTime $updateDateMax;
     protected ?array $customerIds;
     protected ?string $customerName;
+    protected ?string $customerMail;
     protected ?Furigana $customerFurigana;
     protected ?MailState $acceptedMailState;
     protected ?MailState $paidMailState;

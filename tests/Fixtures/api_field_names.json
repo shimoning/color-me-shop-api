@@ -42,6 +42,7 @@
         "accepted_mail_sent_date",
         "accepted_mail_state",
         "account_id",
+        "application",
         "canceled",
         "card_total_charge",
         "delivered",
@@ -70,8 +71,11 @@
         "point_state",
         "product_total_price",
         "sale_deliveries",
+        "segment",
+        "shop_coupon",
         "tax",
         "total_price",
+        "totals",
         "update_date",
         "use_gmo_points",
         "use_points",
@@ -81,6 +85,7 @@
     ],
     "Sales\\SaleDetail": [
         "account_id",
+        "customizations",
         "id",
         "option1_index",
         "option1_value",
@@ -100,6 +105,7 @@
         "sale_delivery_id",
         "sale_id",
         "subtotal_price",
+        "tax_reduced",
         "unit"
     ],
     "Sales\\SaleDelivery": [
@@ -151,12 +157,15 @@
         "answer_free_form3",
         "birthday",
         "busho",
+        "external_accounts",
         "fax",
         "furigana",
         "hojin",
         "id",
         "mail",
+        "make_date",
         "member",
+        "membership",
         "name",
         "other",
         "points",
@@ -167,7 +176,8 @@
         "sales_count",
         "sex",
         "tel",
-        "tel_mobile"
+        "tel_mobile",
+        "update_date"
     ],
     "Product\\Group": [
         "account_id",
@@ -175,6 +185,7 @@
         "expl",
         "id",
         "image_url",
+        "meta_tag",
         "name",
         "parent_group_id",
         "sort"
@@ -188,6 +199,7 @@
         "id_small",
         "image_url",
         "make_date",
+        "meta_tag",
         "name",
         "sort",
         "update_date"
@@ -260,5 +272,76 @@
         "charge_ranges_by_weight",
         "charge_ranges_max_weight",
         "delivery_id"
+    ],
+    "Sales\\SearchParameters": [
+        "customer_mail"
+    ],
+    "Sales\\SaleApplication": [
+        "name"
+    ],
+    "Sales\\SaleCustomization": [
+        "title",
+        "value"
+    ],
+    "Sales\\SaleSegment": [
+        "card_total_charge",
+        "delivery_total_charge",
+        "id",
+        "name",
+        "noshi_total_charge",
+        "parent_sale_id",
+        "product_total_price",
+        "siblings_sale_ids",
+        "splitted",
+        "total_price",
+        "wrapping_total_charge"
+    ],
+    "Sales\\SaleShopCoupon": [
+        "code",
+        "id",
+        "name"
+    ],
+    "Sales\\SaleTotals": [
+        "discount_amount_for_normal_tax",
+        "discount_amount_for_reduced_tax",
+        "normal_tax_amount",
+        "reduced_tax_amount",
+        "total_price_with_normal_tax",
+        "total_price_with_reduced_tax"
+    ],
+    "Customer\\SearchParameters": [
+        "line_uid",
+        "membership_id",
+        "receive_mail_magazine"
+    ],
+    "Customer\\ExternalAccount": [
+        "created_at",
+        "provider",
+        "uid"
+    ],
+    "Customer\\Membership": [
+        "membership_id",
+        "name",
+        "progress"
+    ],
+    "Customer\\MembershipProgress": [
+        "aggregation_period",
+        "next_membership",
+        "score"
+    ],
+    "Customer\\MembershipAggregationPeriod": [
+        "end_date",
+        "start_date"
+    ],
+    "Customer\\NextMembership": [
+        "membership_id",
+        "name",
+        "remaining_score",
+        "required_score"
+    ],
+    "Product\\MetaTag": [
+        "description",
+        "keywords",
+        "title"
     ]
 }

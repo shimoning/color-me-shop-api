@@ -13,10 +13,12 @@ class SaleTest extends TestCase
     /**
      * PR1 時点の空の Sale を PHP 8.1 で serialize() したペイロード。
      *
-     * untyped な $customer は null として含まれるため、型宣言の追加による
-     * unserialize() の後方互換性破壊を検出できる。
+     * 新しいプロパティの追加後も旧ペイロードを unserialize() できることを検証する。
      */
     private const PR1_EMPTY_SALE_PAYLOAD_BASE64 = 'Tzo0NDoiU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXFNhbGVzXFNhbGUiOjg6e3M6NDY6IgBTaGltb25pbmdcQ29sb3JNZVNob3BBcGlcRW50aXRpZXNcRW50aXR5AF9yYXciO2E6MDp7fXM6NzoiACoAbWVtbyI7TjtzOjIzOiIAKgBhY2NlcHRlZE1haWxTZW50RGF0ZSI7TjtzOjE5OiIAKgBwYWlkTWFpbFNlbnREYXRlIjtOO3M6MjQ6IgAqAGRlbGl2ZXJlZE1haWxTZW50RGF0ZSI7TjtzOjE2OiIAKgBnbW9Qb2ludFN0YXRlIjtOO3M6MTg6IgAqAHlhaG9vUG9pbnRTdGF0ZSI7TjtzOjExOiIAKgBjdXN0b21lciI7Tjt9';
+
+    /** 現在の空の Sale を serialize() したペイロード。 */
+    private const CURRENT_EMPTY_SALE_PAYLOAD_BASE64 = 'Tzo0NDoiU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXFNhbGVzXFNhbGUiOjEyOntzOjQ2OiIAU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXEVudGl0eQBfcmF3IjthOjA6e31zOjc6IgAqAG1lbW8iO047czoyMzoiACoAYWNjZXB0ZWRNYWlsU2VudERhdGUiO047czoxOToiACoAcGFpZE1haWxTZW50RGF0ZSI7TjtzOjI0OiIAKgBkZWxpdmVyZWRNYWlsU2VudERhdGUiO047czoxNjoiACoAZ21vUG9pbnRTdGF0ZSI7TjtzOjE4OiIAKgB5YWhvb1BvaW50U3RhdGUiO047czoxMToiACoAY3VzdG9tZXIiO047czoxMDoiACoAc2VnbWVudCI7TjtzOjk6IgAqAHRvdGFscyI7TjtzOjE0OiIAKgBhcHBsaWNhdGlvbiI7TjtzOjEzOiIAKgBzaG9wQ291cG9uIjtOO30=';
 
     private function makeSale(array $overrides = []): Sale
     {
@@ -87,11 +89,34 @@ class SaleTest extends TestCase
         $sale = \unserialize(self::pr1EmptySalePayload());
 
         $this->assertInstanceOf(Sale::class, $sale);
+        $this->assertNull($sale->getSegment());
+        $this->assertNull($sale->getTotals());
+        $this->assertNull($sale->getApplication());
+        $this->assertNull($sale->getShopCoupon());
     }
 
-    public function test_PR1時点と空のSaleのserialize表現が同じ(): void
+    /**
+     * serialize 形式の意図しない変更を検知するため、バイト単位で表現を固定する。
+     *
+     * プロパティを追加した場合は期待値を更新し、破壊的変更として記録する必要がある。
+     */
+    public function test_空のSaleのserialize表現が固定されている(): void
     {
-        $this->assertSame(self::pr1EmptySalePayload(), \serialize(new Sale([])));
+        $this->assertSame(
+            self::currentEmptySalePayload(),
+            \serialize(new Sale([])),
+        );
+    }
+
+    public function test_新しい空のSaleをserializeしてunserializeできる(): void
+    {
+        $sale = \unserialize(\serialize(new Sale([])));
+
+        $this->assertInstanceOf(Sale::class, $sale);
+        $this->assertNull($sale->getSegment());
+        $this->assertNull($sale->getTotals());
+        $this->assertNull($sale->getApplication());
+        $this->assertNull($sale->getShopCoupon());
     }
 
     public function test_顧客プロパティはサブクラス互換のため型宣言を持たない(): void
@@ -126,6 +151,16 @@ class SaleTest extends TestCase
         $payload = \base64_decode(self::PR1_EMPTY_SALE_PAYLOAD_BASE64, true);
         if ($payload === false) {
             self::fail('PR1 時点の serialize ペイロードをデコードできません。');
+        }
+
+        return $payload;
+    }
+
+    private static function currentEmptySalePayload(): string
+    {
+        $payload = \base64_decode(self::CURRENT_EMPTY_SALE_PAYLOAD_BASE64, true);
+        if ($payload === false) {
+            self::fail('現在の serialize ペイロードをデコードできません。');
         }
 
         return $payload;

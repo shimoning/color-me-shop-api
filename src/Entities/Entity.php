@@ -11,6 +11,7 @@ use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
+use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Values\Value;
@@ -375,7 +376,7 @@ class Entity
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
             if (!empty($objectField['nullable']) && !$value) {
-                return $isArray ? [] : null;
+                return $isArray && $value !== null ? [] : null;
             }
 
             if (isset($objectField['entity'])) {
@@ -433,6 +434,10 @@ class Entity
     {
         $case = $enum::tryFrom($value);
         if ($case === null) {
+            if (\is_subclass_of($enum, FallbackEnum::class)) {
+                return $enum::fallbackCase();
+            }
+
             throw new \UnexpectedValueException('未知の enum 値です。');
         }
 

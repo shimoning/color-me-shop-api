@@ -1,0 +1,85 @@
+{
+    "customer_with_values": {
+        "make_date": 1465784944,
+        "update_date": 1494496809,
+        "membership": {
+            "membership_id": "gold_member",
+            "name": "ゴールド会員",
+            "progress": {
+                "score": 3000,
+                "aggregation_period": {
+                    "start_date": 1780239600,
+                    "end_date": 1782831599
+                },
+                "next_membership": {
+                    "membership_id": "platinum",
+                    "name": "プラチナ会員",
+                    "required_score": 4000,
+                    "remaining_score": 1000
+                }
+            }
+        },
+        "external_accounts": [
+            {
+                "provider": 0,
+                "uid": "6cfd46d2fd18eb15d01ce0a00d4b0349",
+                "created_at": 1465784934
+            }
+        ]
+    },
+    "customer_list_membership_without_progress": {
+        "membership": {
+            "membership_id": "gold_member",
+            "name": "ゴールド会員"
+        }
+    },
+    "customer_membership_with_null_progress": {
+        "membership": {
+            "membership_id": "gold_member",
+            "name": "ゴールド会員",
+            "progress": null
+        }
+    },
+    "customer_with_missing_fields": {},
+    "customer_with_nulls": {
+        "membership": null,
+        "external_accounts": null
+    },
+    "customer_with_empty_external_accounts": {
+        "external_accounts": []
+    },
+    "invalid_customer_fields": {
+        "make_date": "invalid",
+        "update_date": "invalid",
+        "membership": "invalid",
+        "external_accounts": "invalid"
+    },
+    "invalid_membership_fields": {
+        "membership_id": 123,
+        "name": 123,
+        "progress": "invalid"
+    },
+    "invalid_membership_progress_fields": {
+        "score": "invalid",
+        "aggregation_period": "invalid",
+        "next_membership": "invalid"
+    },
+    "invalid_membership_aggregation_period_fields": {
+        "start_date": "invalid",
+        "end_date": "invalid"
+    },
+    "invalid_next_membership_fields": {
+        "membership_id": 123,
+        "name": 123,
+        "required_score": "invalid",
+        "remaining_score": "invalid"
+    },
+    "invalid_external_account_fields": {
+        "provider": "invalid",
+        "uid": 123,
+        "created_at": "invalid"
+    },
+    "invalid_external_account_elements": [
+        "invalid"
+    ]
+}

@@ -11,6 +11,13 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class SaleDetail extends Entity
 {
+    const OBJECT_FIELDS = [
+        'customizations' => [
+            'array' => true,
+            'entity' => SaleCustomization::class,
+        ],
+    ];
+
     protected int $id;
     protected int $saleId;
     protected string $accountId;
@@ -36,6 +43,10 @@ class SaleDetail extends Entity
     protected int $productNum;
     protected ?string $unit;
     protected int $subtotalPrice;
+    protected bool $taxReduced;
+
+    /** @var list<SaleCustomization> */
+    protected array $customizations;
 
     /**
      * 受注明細ID
@@ -234,5 +245,25 @@ class SaleDetail extends Entity
     {
         $this->assertFieldInitialized('subtotalPrice');
         return $this->subtotalPrice;
+    }
+
+    /**
+     * 軽減税率対象商品かどうか
+     * @return bool
+     */
+    public function isTaxReduced(): bool
+    {
+        $this->assertFieldInitialized('taxReduced');
+        return $this->taxReduced;
+    }
+
+    /**
+     * 商品のカスタマイズ情報
+     * @return list<SaleCustomization>
+     */
+    public function getCustomizations(): array
+    {
+        $this->assertFieldInitialized('customizations');
+        return $this->customizations;
     }
 }

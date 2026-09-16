@@ -1,0 +1,86 @@
+{
+    "sale_with_values": {
+        "segment": {
+            "id": 1,
+            "name": "通常商品",
+            "parent_sale_id": 4434233,
+            "splitted": true,
+            "product_total_price": 2000,
+            "delivery_total_charge": 700,
+            "total_price": 2700,
+            "noshi_total_charge": 0,
+            "card_total_charge": 200,
+            "wrapping_total_charge": 0,
+            "siblings_sale_ids": [4434233, 4434234]
+        },
+        "totals": {
+            "normal_tax_amount": 90,
+            "reduced_tax_amount": 13,
+            "discount_amount_for_normal_tax": 171,
+            "discount_amount_for_reduced_tax": 29,
+            "total_price_with_normal_tax": 989,
+            "total_price_with_reduced_tax": 171
+        },
+        "application": {
+            "name": "サンプルアプリ"
+        },
+        "shop_coupon": {
+            "id": 123,
+            "name": "新規会員限定クーポン",
+            "code": "WELCOME10"
+        }
+    },
+    "sale_with_missing_fields": {},
+    "sale_with_nulls": {
+        "segment": null,
+        "totals": null,
+        "application": null,
+        "shop_coupon": null
+    },
+    "invalid_sale_fields": {
+        "segment": "invalid",
+        "totals": "invalid",
+        "application": "invalid",
+        "shop_coupon": "invalid"
+    },
+    "invalid_nested_entity_fields": {
+        "segment": {
+            "splitted": "invalid"
+        },
+        "totals": {
+            "normal_tax_amount": "invalid"
+        },
+        "application": {
+            "name": 123
+        },
+        "shop_coupon": {
+            "id": "invalid"
+        }
+    },
+    "detail_with_values": {
+        "tax_reduced": true,
+        "customizations": [
+            {
+                "title": "名入れ",
+                "value": "オリジナル名"
+            },
+            {
+                "title": "メッセージ",
+                "value": "おめでとう"
+            }
+        ]
+    },
+    "detail_with_empty_customizations": {
+        "tax_reduced": false,
+        "customizations": []
+    },
+    "detail_with_missing_fields": {},
+    "invalid_detail_fields": {
+        "tax_reduced": "invalid",
+        "customizations": "invalid"
+    },
+    "invalid_customization_fields": {
+        "title": 123,
+        "value": "valid"
+    }
+}
