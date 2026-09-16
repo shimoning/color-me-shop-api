@@ -8,6 +8,8 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * SEOメタタグ情報
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
+ *
+ * 公式 OpenAPI（2026-09-16 確認）では title / keywords / description が nullable。
  */
 class MetaTag extends Entity
 {
@@ -16,7 +18,7 @@ class MetaTag extends Entity
     protected ?string $description;
 
     /**
-     * タイトル
+ * タイトル
      * @return string|null
      */
     public function getTitle(): ?string
@@ -25,7 +27,7 @@ class MetaTag extends Entity
     }
 
     /**
-     * キーワード
+ * キーワード
      * @return string|null
      */
     public function getKeywords(): ?string
@@ -34,7 +36,7 @@ class MetaTag extends Entity
     }
 
     /**
-     * ページ概要
+ * ページ概要
      * @return string|null
      */
     public function getDescription(): ?string

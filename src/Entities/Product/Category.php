@@ -25,9 +25,6 @@ class Category extends Entity
             'array' => true,
             'entity' => Category::class,
         ],
-        'metaTag' => [
-            'entity' => MetaTag::class,
-        ],
     ];
 
     protected int $idBig;
@@ -47,7 +44,6 @@ class Category extends Entity
     protected int $updateDate;
 
     protected array $children;
-    protected MetaTag $metaTag;
 
     /**
      * 大カテゴリーID
@@ -109,8 +105,12 @@ class Category extends Entity
     /**
      * 商品カテゴリーのメタタグ
      *
-     * 大カテゴリーでは API レスポンスに含まれない場合があるため、その場合は null を返す。
-     * 公式 OpenAPI に記載がなく、API 側の仕様変更により削除される可能性がある。
+     * 公式 OpenAPI（2026-09-16 確認）の
+     * components.schemas.productCategory.properties.meta_tag.allOf[0].properties と
+     * components.schemas.productCategoryChild.properties.meta_tag.allOf[0].properties で、
+     * title / keywords / description が nullable として定義されている。
+     * 2026-09-12 の実 API 検証では、親カテゴリー2件中1件で meta_tag 自体の欠損を確認したため、
+     * API レスポンスに含まれない場合は null を返す。
      *
      * @return MetaTag|null
      */

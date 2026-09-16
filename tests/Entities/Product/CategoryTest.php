@@ -5,7 +5,6 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
-use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class CategoryTest extends TestCase
@@ -95,12 +94,24 @@ class CategoryTest extends TestCase
         unset($data['meta_tag']['description']);
         $category = new Category($data);
 
-        $this->expectException(MissingFieldException::class);
-        $this->expectExceptionMessage(
-            MetaTag::class . ' の API フィールド『description』が欠損しています。',
-        );
+        // 公式スキーマ上 nullable のため、従来の欠損例外ではなく Entity 共通契約の null を期待する。
+        $this->assertNull($category->getMetaTag()?->getDescription());
+    }
 
-        $category->getMetaTag()?->getDescription();
+    public function test_meta_tag内のnullableな項目がnullでもカテゴリーを構築できる(): void
+    {
+        $data = self::actualCategories()[1];
+        $data['meta_tag'] = [
+            'title' => null,
+            'keywords' => null,
+            'description' => null,
+        ];
+
+        $category = new Category($data);
+
+        $this->assertNull($category->getMetaTag()?->getTitle());
+        $this->assertNull($category->getMetaTag()?->getKeywords());
+        $this->assertNull($category->getMetaTag()?->getDescription());
     }
 
     /**

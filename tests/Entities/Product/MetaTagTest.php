@@ -6,7 +6,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
-use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class MetaTagTest extends TestCase
 {
@@ -30,8 +29,37 @@ class MetaTagTest extends TestCase
         $this->assertSame($data, $metaTag->toArrayRecursive());
     }
 
+    #[DataProvider('nullableFieldProvider')]
+    public function test_公式スキーマでnullableな項目はnullを取得できる(
+        string $field,
+        string $getter,
+    ): void {
+        $data = [
+            'title' => '',
+            'keywords' => '',
+            'description' => '',
+        ];
+        $data[$field] = null;
+
+        $metaTag = new MetaTag($data);
+
+        $this->assertNull($metaTag->{$getter}());
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function nullableFieldProvider(): array
+    {
+        return [
+            'title' => ['title', 'getTitle'],
+            'keywords' => ['keywords', 'getKeywords'],
+            'description' => ['description', 'getDescription'],
+        ];
+    }
+
     #[DataProvider('missingFieldProvider')]
-    public function test_一部キーが欠損していればgetter呼び出し時に固有例外になる(
+    public function test_公式スキーマでnullableな項目は欠損時にnullを返す(
         string $field,
         string $getter,
     ): void {
@@ -44,12 +72,8 @@ class MetaTagTest extends TestCase
 
         $metaTag = new MetaTag($data);
 
-        $this->expectException(MissingFieldException::class);
-        $this->expectExceptionMessage(
-            MetaTag::class . " の API フィールド『{$field}』が欠損しています。",
-        );
-
-        $metaTag->{$getter}();
+        // 公式スキーマ上 nullable のため、従来の欠損例外ではなく Entity 共通契約の null を期待する。
+        $this->assertNull($metaTag->{$getter}());
     }
 
     /**
@@ -88,7 +112,8 @@ class MetaTagTest extends TestCase
     public static function invalidFieldProvider(): array
     {
         return [
-            'title が null' => ['title', null],
+            // null は公式スキーマ上有効になったため、型不正の期待値を配列に変更する。
+            'title が配列' => ['title', []],
             'keywords が配列' => ['keywords', []],
             'description が整数' => ['description', 1],
         ];
