@@ -32,6 +32,13 @@ class Payment extends Entity
     protected string $accountId;
 
     protected string $name;
+
+    /**
+     * 決済手数料
+     *
+     * 商品代引きでは、cod.changeable が false の場合に一律手数料として適用される。
+     * true の場合は使用されず、cod.fees と cod.fee_max の区分手数料が適用される。
+     */
     protected ?int $fee;
 
     protected ?string $ipCode;
@@ -90,6 +97,10 @@ class Payment extends Entity
 
     /**
      * 決済手数料
+     *
+     * 商品代引きでは、cod.changeable が false の場合に一律手数料として適用される。
+     * true の場合は使用されず、cod.fees と cod.fee_max の区分手数料が適用される。
+     *
      * @return int|null
      */
     public function getFee(): ?int
