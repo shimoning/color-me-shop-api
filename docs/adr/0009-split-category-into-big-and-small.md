@@ -21,11 +21,13 @@
 
 ## 判断
 
-各判断の出典には、その前提となる現行実装または検証結果を含むコミットを示す。
+各判断の出典には、その前提となる現行実装を含むコミット、または検証結果を記録した Issue を示す。
+ADR 0000 は追跡可能な出典コミット SHA の付記を原則とするが、リポジトリにコミットされていない
+実 API の検証結果については、検証日時と実測値を記録した Issue の方が追跡可能なため例外とする。
 
 - 親子の判別基準には `id_small === 0` を使う。0なら大カテゴリー、それ以外の `int` なら
   小カテゴリーとする。これは公式説明の「大カテゴリーなら0」と実データの双方に合致する。
-  出典: `0ca343e`、`076a318`。
+  コードの出典: `0ca343e`。実データの出典: Issue #27（2026-09-12 の実 API 検証結果）。
 - 基底の `Entities\Product\Category` を abstract にする。既存利用者への破壊的変更を許容し、
   親子どちらでもない `Category` の生成を型で防ぐ。出典: `0ca343e`。
 - `$children` プロパティ、`OBJECT_FIELDS['children']` の定義、および `getChildren()` は
@@ -47,7 +49,8 @@
 - `meta_tag` は基底の `Category` に置く。[公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json) の
   `components.schemas.productCategory.properties.meta_tag` と
   `components.schemas.productCategoryChild.properties.meta_tag`（2026-09-16 確認）、および実データの
-  双方で親子に存在し得る共通フィールドだからである。出典: `076a318`、`8e5cdbd`。
+  双方で親子に存在し得る共通フィールドだからである。実データの出典: Issue #27（2026-09-12 の
+  実 API 検証結果）。
 - 具象型の名前は `BigCategory` と `SmallCategory`、名前空間は `Entities\Product\` とする。公式の
   「大カテゴリー」「小カテゴリー」という呼称、および `id_big` と `id_small` に整合する。
   出典: `0ca343e`。
@@ -97,5 +100,5 @@
 - [ADR 0002: Entity の null 許容性を OpenAPI に合わせる](0002-entity-nullability-from-openapi.md)
 - [ADR 0004: Entity の `toArray()` は往復可能な直列化ではない](0004-entity-to-array-is-not-round-trippable.md)
 - [ADR 0006: Entity のプロパティ解決を通常のインスタンスプロパティに統一する](0006-limit-entity-property-kinds.md)
-- [実 API のエラー応答調査](../api-error-responses.md)。主題はエラー応答だが、同じ実 API 検証で
-  カテゴリーの親子スキーマに関する知見を得た。
+- [実 API のエラー応答調査](../api-error-responses.md)（出典コミット: `076a318`）。同文書の主題と
+  記録内容はエラー応答であり、同日に得たカテゴリーの親子スキーマの実測値は Issue #27 を参照する。
