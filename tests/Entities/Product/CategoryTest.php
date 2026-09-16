@@ -2,9 +2,11 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class CategoryTest extends TestCase
@@ -74,6 +76,53 @@ class CategoryTest extends TestCase
         $category = new Category(self::actualCategories()[0]);
 
         $this->assertNull($category->getMetaTag());
+        $this->assertArrayNotHasKey('meta_tag', $category->getRaw());
+        $this->assertNull($category->toArray()['meta_tag']);
+        $this->assertArrayNotHasKey('meta_tag', $category->toArrayRecursive());
+    }
+
+    #[DataProvider('invalidMetaTagProvider')]
+    public function test_meta_tagがobjectでなければ固有例外になる(mixed $value): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            Category::class . " の API フィールド『meta_tag』が不正です。" . MetaTag::class
+            . ' を期待しましたが',
+        );
+
+        $this->makeCategory(['meta_tag' => $value]);
+    }
+
+    /**
+     * @return array<string, array{mixed}>
+     */
+    public static function invalidMetaTagProvider(): array
+    {
+        return [
+            'null' => [null],
+            'false' => [false],
+            '整数0' => [0],
+            '空文字' => [''],
+            '文字列0' => ['0'],
+        ];
+    }
+
+    public function test_meta_tagが空objectなら空のMetaTagを構築する(): void
+    {
+        $category = $this->makeCategory(['meta_tag' => []]);
+        $metaTag = $category->getMetaTag();
+
+        $this->assertInstanceOf(MetaTag::class, $metaTag);
+        $this->assertNull($metaTag->getTitle());
+        $this->assertNull($metaTag->getKeywords());
+        $this->assertNull($metaTag->getDescription());
+        $this->assertSame([], $metaTag->getRaw());
+        $this->assertSame([
+            'title' => null,
+            'keywords' => null,
+            'description' => null,
+        ], $metaTag->toArray());
+        $this->assertSame([], $metaTag->toArrayRecursive());
     }
 
     public function test_meta_tagを実APIと同じフィールド名で再帰的に配列化できる(): void
@@ -112,6 +161,10 @@ class CategoryTest extends TestCase
         $this->assertNull($category->getMetaTag()?->getTitle());
         $this->assertNull($category->getMetaTag()?->getKeywords());
         $this->assertNull($category->getMetaTag()?->getDescription());
+        $this->assertSame($data['meta_tag'], $category->getMetaTag()?->getRaw());
+        $this->assertSame($data['meta_tag'], $category->getMetaTag()?->toArray());
+        $this->assertSame([], $category->getMetaTag()?->toArrayRecursive());
+        $this->assertSame([], $category->toArrayRecursive()['meta_tag']);
     }
 
     /**

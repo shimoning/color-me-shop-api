@@ -114,6 +114,7 @@ class MetaTagTest extends TestCase
         return [
             // null は公式スキーマ上有効になったため、型不正の期待値を配列に変更する。
             'title が配列' => ['title', []],
+            'title が整数' => ['title', 1],
             'keywords が配列' => ['keywords', []],
             'description が整数' => ['description', 1],
         ];

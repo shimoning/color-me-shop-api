@@ -18,7 +18,6 @@ class Category extends Entity
             'enum' => CategoryDisplayState::class,
         ],
         'metaTag' => [
-            'nullable' => true,
             'entity' => MetaTag::class,
         ],
         'children' => [
