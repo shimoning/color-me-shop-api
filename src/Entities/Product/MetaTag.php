@@ -9,7 +9,14 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
  *
- * 公式 OpenAPI（2026-09-16 確認）では title / keywords / description が nullable。
+ * 公式 OpenAPI（2026-09-16 確認）の
+ * components.schemas.productCategory.properties.meta_tag.allOf[0].properties と
+ * components.schemas.productCategoryChild.properties.meta_tag.allOf[0].properties で、
+ * title / keywords / description が nullable として定義されている。
+ * また、meta_tag.allOf[0] は type: object かつ additionalProperties: false と
+ * 定義されている。ただし本ライブラリは ADR 0006 に基づき未知キーを無視する契約であり、
+ * MetaTag も API 側のフィールド追加で壊れないことを優先してこの契約に従う。
+ * 未知キーは型付きプロパティや配列化の対象外だが、getRaw() から参照できる。
  */
 class MetaTag extends Entity
 {
@@ -18,7 +25,7 @@ class MetaTag extends Entity
     protected ?string $description;
 
     /**
- * タイトル
+     * タイトル
      * @return string|null
      */
     public function getTitle(): ?string
@@ -27,7 +34,7 @@ class MetaTag extends Entity
     }
 
     /**
- * キーワード
+     * キーワード
      * @return string|null
      */
     public function getKeywords(): ?string
@@ -36,7 +43,7 @@ class MetaTag extends Entity
     }
 
     /**
- * ページ概要
+     * ページ概要
      * @return string|null
      */
     public function getDescription(): ?string
