@@ -35,7 +35,6 @@ class Category extends Entity
 
     protected ?string $imageUrl;
     protected ?string $expl;
-    protected ?MetaTag $metaTag;
 
     protected ?int $sort;
     protected CategoryDisplayState $displayState;
@@ -44,6 +43,7 @@ class Category extends Entity
     protected int $updateDate;
 
     protected array $children;
+    protected ?MetaTag $metaTag;
 
     /**
      * 大カテゴリーID

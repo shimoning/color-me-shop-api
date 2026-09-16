@@ -52,6 +52,24 @@ class CategoryTest extends TestCase
         $this->assertSame(CategoryDisplayState::SHOWING, $category->getDisplayState());
     }
 
+    public function test_toArrayのキー順はmeta_tagがchildrenの後になる(): void
+    {
+        $this->assertSame([
+            'id_big',
+            'id_small',
+            'account_id',
+            'name',
+            'image_url',
+            'expl',
+            'sort',
+            'display_state',
+            'make_date',
+            'update_date',
+            'children',
+            'meta_tag',
+        ], \array_keys($this->makeCategory()->toArray()));
+    }
+
     public function test_実APIの大カテゴリーからmeta_tagを取得できる(): void
     {
         $data = self::actualCategories()[1];
