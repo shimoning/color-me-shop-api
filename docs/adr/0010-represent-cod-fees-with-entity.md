@@ -19,9 +19,10 @@
   商品合計額を用いる。
 
 現行の `Entities\Payment\Cod::$fees` は `array` であり、タプルの第1要素が上限金額、第2要素が
-手数料であることを型から読み取れない。Issue #28 の nullable 対応で用いる `Cod.php:33` の
-PHPDoc `array<int>|null` も実際の二次元配列と一致しないことがレビューで指摘されており、
-nullable 化後にも残る既存の不整合である。
+手数料であることを型から読み取れない。`Cod::getFees()` の PHPDoc も `array<int>` であり、実際の
+二次元配列と一致しない。Issue #28 の nullable 対応で `array<int>|null` になっても不一致は残ると
+レビューで指摘されており、nullable 化後にも残る既存の不整合である。
+出典: `4b85ca5`、`e5d2654`、`05404db`、`6755ced`。
 
 利用者は `$fees[0][0]` と `$fees[0][1]` の意味を公式仕様から自分で解釈しなければならない。
 これは API レスポンスを型付き Entity として扱い、値の意味を公開型から伝える本ライブラリの
@@ -29,23 +30,31 @@ nullable 化後にも残る既存の不整合である。
 
 ## 判断
 
+以下は実装前の設計判断であり、判断そのものを実装したコミットはまだ存在しない。実装は Issue #28 と
+同じリリースで行う予定である。各判断の出典には、その前提となる現行実装または検証結果を含む
+コミットを示す。公式 OpenAPI の定義は 2026-09-16 時点のものを参照した。
+
 - `fees` の各区分を表す `Shimoning\ColorMeShopApi\Entities\Payment\CodFee` を
   `src/Entities/Payment/CodFee.php` に追加する。代引き設定を表す `Cod` と同じ名前空間へ置き、
   汎用的すぎる `Fee` ではなく決済種別を含む名前にすることで、他の手数料との混同を避ける。
+  出典: `4b85ca5`、`e5d2654`。
 - `CodFee` は `int $upperLimit` と `int $fee` を持ち、`getUpperLimit()` と `getFee()` で取得する。
   `upperLimit` はタプルの第1要素に対応し、公式の「3000円以下」という説明から、その金額を
   含む上限であることを表す。`fee` は第2要素に対応し、その区分で適用する手数料を表す。
+  出典: `e5d2654`。
 - `Cod::getFees()` は `CodFee` の配列を返す。Issue #28 で、実 API における `fees` の欠損が
   確認されているため、`Cod::$fees` と `getFees()` の nullable は維持し、公開契約は
   `list<CodFee>|null` とする。フィールドが欠損した場合は `null`、存在する場合は Entity の
-  リストとして扱う。
+  リストとして扱う。出典: `05404db`、`6755ced`。
 - OpenAPI の `minItems: 2` と `maxItems: 2` を入力境界で検証する。各区分は添字 0 と 1 を持つ
   連続した2要素の配列でなければならず、両要素とも整数でなければならない。違反時は
   `fees[n]` を識別できる `InvalidFieldException` とし、生の `TypeError`、警告、添字未定義を
   利用者へ漏らさない。Entity への具体的な変換経路やヘルパーの配置は実装時に決める。
+  出典: `f3f5845`、`3fe06e5`、`b00077f`、`a0506c1`。
 - `feeMax` は各 `CodFee::$upperLimit` で表す区分に収まらない金額へ適用する手数料であり、
   `CodFee` の要素ではない。`getFees()` と `getFeeMax()` の PHPDoc では、`upperLimit` が境界を
   含むことと、最大の `upperLimit` を超えた場合に `feeMax` を用いる関係を相互に説明する。
+  出典: `e5d2654`。
 
 ## 代替案と却下理由
 
@@ -104,3 +113,6 @@ Issue #28 の nullable 化も `getFees()` の公開契約を変えるため、�
   - 本判断は、生のタプルとの互換性より、上限金額と手数料という意味を型で表すことを優先する。
     破壊的変更となる呼び出し方と移行先を明示して採用する点でも ADR 0003 と整合する。
 - [ADR 0004: Entity の `toArray()` は往復可能な直列化ではない](0004-entity-to-array-is-not-round-trippable.md)
+  - `toArray()` と `toArrayRecursive()` の契約、および `ApiFieldNameTest` の出典コミット: `7a9e566`。
+- 出典コミット: `4b85ca5`、`e5d2654`、`05404db`、`6755ced`、`f3f5845`、`3fe06e5`、`b00077f`、
+  `a0506c1`、`7a9e566`。
