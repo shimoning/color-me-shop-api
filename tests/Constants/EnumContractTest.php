@@ -18,7 +18,7 @@ class EnumContractTest extends TestCase
      *
      * @var array<string>
      */
-    private const EXCLUDED = [];
+    private const EXCLUDED = ['FallbackEnum'];
 
     public static function enumProvider(): array
     {

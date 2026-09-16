@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
@@ -20,6 +21,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeParentEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\DnfIntersectionValue;
+use Shimoning\ColorMeShopApi\Tests\Doubles\FallbackEnumEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\SecondInheritedPrivateFieldEntity;
@@ -395,6 +397,33 @@ class EntityTest extends TestCase
         $entity = new ComplexEntity(['state' => 'sent']);
 
         $this->assertSame(MailState::SENT, $entity->getState());
+    }
+
+    public function test_フォールバック対応enumの既知値は対応するcaseに変換される(): void
+    {
+        $entity = new FallbackEnumEntity(['provider' => 0]);
+
+        $this->assertSame(ExternalAccountProvider::LINE, $entity->getProvider());
+    }
+
+    public function test_フォールバック対応enumの未知値は単体フィールドでUNKNOWNに変換される(): void
+    {
+        $entity = new FallbackEnumEntity(['provider' => 99]);
+
+        $this->assertSame(ExternalAccountProvider::UNKNOWN, $entity->getProvider());
+        $this->assertSame(['provider' => 99], $entity->getRaw());
+        $this->assertSame(['provider' => -1], $entity->toArrayRecursive());
+    }
+
+    public function test_フォールバック対応enumの未知値は配列要素でUNKNOWNに変換される(): void
+    {
+        $entity = new FallbackEnumEntity(['providers' => [0, 99]]);
+
+        $this->assertSame(
+            [ExternalAccountProvider::LINE, ExternalAccountProvider::UNKNOWN],
+            $entity->getProviders(),
+        );
+        $this->assertSame(['providers' => [0, -1]], $entity->toArrayRecursive());
     }
 
     public function test_enum指定でnullならnullになる(): void

@@ -89,6 +89,30 @@ class CustomerResponseFieldsTest extends TestCase
         $this->assertSame([], $customer->getExternalAccounts());
     }
 
+    public function test_external_accountsの未知providerをUNKNOWNとして保持する(): void
+    {
+        $rawAccount = [
+            'provider' => 99,
+            'uid' => 'future-provider-user',
+            'created_at' => 1789484400,
+        ];
+        $customer = new Customer(['external_accounts' => [$rawAccount]]);
+
+        $accounts = $customer->getExternalAccounts();
+        $this->assertCount(1, $accounts);
+        $this->assertSame(ExternalAccountProvider::UNKNOWN, $accounts[0]->getProvider());
+        $this->assertSame($rawAccount, $accounts[0]->getRaw());
+        $this->assertSame(['external_accounts' => [$rawAccount]], $customer->getRaw());
+        $this->assertSame(
+            [[
+                'provider' => -1,
+                'uid' => 'future-provider-user',
+                'created_at' => 1789484400,
+            ]],
+            $customer->toArrayRecursive()['external_accounts'],
+        );
+    }
+
     #[DataProvider('missingTimestampProvider')]
     public function test_timestampフィールドが欠損していれば固有例外になる(
         string $field,

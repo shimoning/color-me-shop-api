@@ -60,7 +60,7 @@
         "progress": "invalid"
     },
     "invalid_external_account_fields": {
-        "provider": 1,
+        "provider": "invalid",
         "uid": 123,
         "created_at": "invalid"
     },

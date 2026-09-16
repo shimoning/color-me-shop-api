@@ -3,6 +3,8 @@
 namespace Shimoning\ColorMeShopApi\Tests\Constants;
 
 use PHPUnit\Framework\TestCase;
+use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
+use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Constants\PointState;
@@ -15,6 +17,22 @@ use Shimoning\ColorMeShopApi\Constants\AuthScope;
  */
 class DomainEnumTest extends TestCase
 {
+    public function test_ExternalAccountProviderは未知値用のフォールバックを公開する(): void
+    {
+        $this->assertInstanceOf(FallbackEnum::class, ExternalAccountProvider::UNKNOWN);
+        $this->assertInstanceOf(\BackedEnum::class, ExternalAccountProvider::UNKNOWN);
+        $this->assertSame(0, ExternalAccountProvider::LINE->value);
+        $this->assertSame(-1, ExternalAccountProvider::UNKNOWN->value);
+        $this->assertSame(ExternalAccountProvider::UNKNOWN, ExternalAccountProvider::fallbackCase());
+    }
+
+    public function test_FallbackEnumはBackedEnumの契約を継承する(): void
+    {
+        $reflection = new \ReflectionClass(FallbackEnum::class);
+
+        $this->assertTrue($reflection->implementsInterface(\BackedEnum::class));
+    }
+
     public function test_MailTypeの値はAPIの仕様どおり(): void
     {
         $this->assertSame('accepted', MailType::ACCEPTED->value);
