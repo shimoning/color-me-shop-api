@@ -30,13 +30,11 @@
 
 ## 判断
 
-以下は実装前の設計判断であり、判断そのものを実装したコミットはまだ存在しない。実装は Issue #28 と
-同じリリースで行う予定である。各判断の出典には、その前提となる現行実装または検証結果を含む
-コミットを示す。公式 OpenAPI の定義は 2026-09-16 時点のものを参照した。
+公式 OpenAPI の定義は 2026-09-16 時点のものを参照した。
 
-- `fees` の各区分を表す `Shimoning\ColorMeShopApi\Entities\Payment\CodFee` を
-  `src/Entities/Payment/CodFee.php` に追加する。代引き設定を表す `Cod` と同じ名前空間へ置き、
-  汎用的すぎる `Fee` ではなく決済種別を含む名前にすることで、他の手数料との混同を避ける。
+- `fees` の各区分は `Shimoning\ColorMeShopApi\Entities\Payment\CodFee` で表す。代引き設定を
+  表す `Cod` と同じ名前空間とし、汎用的すぎる `Fee` ではなく決済種別を含む名前にすることで、
+  他の手数料との混同を避ける。
   出典: `4b85ca5`、`e5d2654`。
 - `CodFee` は `int $upperLimit` と `int $fee` を持ち、`getUpperLimit()` と `getFee()` で取得する。
   `upperLimit` はタプルの第1要素に対応し、公式の「3000円以下」という説明から、その金額を
@@ -49,11 +47,11 @@
 - OpenAPI の `minItems: 2` と `maxItems: 2` を入力境界で検証する。各区分は添字 0 と 1 を持つ
   連続した2要素の配列でなければならず、両要素とも整数でなければならない。違反時は
   `fees[n]` を識別できる `InvalidFieldException` とし、生の `TypeError`、警告、添字未定義を
-  利用者へ漏らさない。Entity への具体的な変換経路やヘルパーの配置は実装時に決める。
+  利用者へ漏らさない。
   出典: `f3f5845`、`3fe06e5`、`b00077f`、`a0506c1`。
 - `feeMax` は各 `CodFee::$upperLimit` で表す区分に収まらない金額へ適用する手数料であり、
-  `CodFee` の要素ではない。`getFees()` と `getFeeMax()` の PHPDoc では、`upperLimit` が境界を
-  含むことと、最大の `upperLimit` を超えた場合に `feeMax` を用いる関係を相互に説明する。
+  `CodFee` の要素ではない。`getFees()` と `getFeeMax()` の公開契約では、`upperLimit` が境界を
+  含み、最大の `upperLimit` を超えた場合に `feeMax` を用いる。
   出典: `e5d2654`。
 
 ## 代替案と却下理由
@@ -94,25 +92,21 @@
 一方、`Cod::getRaw()` は受け取った API レスポンスを保持する既存契約を変えず、`fees` の元の
 タプル配列または欠損状態をそのまま返す。
 
-Issue #28 の nullable 化も `getFees()` の公開契約を変えるため、本変更と同じ破壊的変更のリリースに
-まとめ、移行案内を一度に行うのが妥当である。
+Issue #28 の nullable 化も、本変更と同様に `getFees()` の公開契約を変える。
 
-`ApiFieldNameTest` の fixture は OpenAPI のオブジェクトプロパティ名を検証する。`CodFee` は OpenAPI 上の
-独立した object schema ではなく、名前のないタプルへライブラリが意味を与える Entity なので、
-`upper_limit` と `fee` を公式 API フィールドとして fixture へ登録しない。Issue #33 のような登録漏れと
-区別できるよう、この除外を実装時の専用テストで明示し、`CodFee` の変換と配列化はそこで検証する。
-既存の `Payment\Cod` は引き続き `ApiFieldNameTest` の対象とする。
+`CodFee` は OpenAPI 上の独立した object schema ではなく、名前のないタプルへライブラリが意味を
+与える Entity である。そのため、`upper_limit` と `fee` は公式 API のフィールド名ではなく、
+`CodFee` が公開する意味付きの名前である。
 
 ## 関連
 
 - [Issue #28: `Cod` の nullable 対応](https://github.com/shimoning/color-me-shop-api/issues/28)
-- [Issue #33: `ApiFieldNameTest` fixture の登録漏れ](https://github.com/shimoning/color-me-shop-api/issues/33)
 - [公式 OpenAPI の `payment.cod`](https://api.shop-pro.jp/v1/spec/open_api.json)
 - [ADR 0002: Entity の null 許容性を OpenAPI に合わせる](0002-entity-nullability-from-openapi.md)
 - [ADR 0003: 暗黙変換より意味上正しい型を優先する](0003-prefer-semantic-types-over-legacy-coercion.md)
   - 本判断は、生のタプルとの互換性より、上限金額と手数料という意味を型で表すことを優先する。
     破壊的変更となる呼び出し方と移行先を明示して採用する点でも ADR 0003 と整合する。
 - [ADR 0004: Entity の `toArray()` は往復可能な直列化ではない](0004-entity-to-array-is-not-round-trippable.md)
-  - `toArray()` と `toArrayRecursive()` の契約、および `ApiFieldNameTest` の出典コミット: `7a9e566`。
+  - `toArray()` と `toArrayRecursive()` の契約の出典コミット: `7a9e566`。
 - 出典コミット: `4b85ca5`、`e5d2654`、`05404db`、`6755ced`、`f3f5845`、`3fe06e5`、`b00077f`、
   `a0506c1`、`7a9e566`。
