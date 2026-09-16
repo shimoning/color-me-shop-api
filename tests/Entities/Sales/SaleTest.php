@@ -86,6 +86,10 @@ class SaleTest extends TestCase
         $sale = \unserialize(self::pr1EmptySalePayload());
 
         $this->assertInstanceOf(Sale::class, $sale);
+        $this->assertNull($sale->getSegment());
+        $this->assertNull($sale->getTotals());
+        $this->assertNull($sale->getApplication());
+        $this->assertNull($sale->getShopCoupon());
     }
 
     public function test_新しい空のSaleをserializeしてunserializeできる(): void

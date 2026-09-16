@@ -12,6 +12,12 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class ProductResponseFieldsTest extends TestCase
 {
+    /** metaTag 追加前の空 Group を serialize() したペイロード。 */
+    private const LEGACY_EMPTY_GROUP_PAYLOAD_BASE64 = 'Tzo0NzoiU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXFByb2R1Y3RcR3JvdXAiOjU6e3M6NDY6IgBTaGltb25pbmdcQ29sb3JNZVNob3BBcGlcRW50aXRpZXNcRW50aXR5AF9yYXciO2E6MDp7fXM6MTE6IgAqAGltYWdlVXJsIjtOO3M6NzoiACoAZXhwbCI7TjtzOjc6IgAqAHNvcnQiO047czoxNjoiACoAcGFyZW50R3JvdXBJZCI7Tjt9';
+
+    /** metaTag 追加前の空 Category を serialize() したペイロード。 */
+    private const LEGACY_EMPTY_CATEGORY_PAYLOAD_BASE64 = 'Tzo1MDoiU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXFByb2R1Y3RcQ2F0ZWdvcnkiOjQ6e3M6NDY6IgBTaGltb25pbmdcQ29sb3JNZVNob3BBcGlcRW50aXRpZXNcRW50aXR5AF9yYXciO2E6MDp7fXM6MTE6IgAqAGltYWdlVXJsIjtOO3M6NzoiACoAZXhwbCI7TjtzOjc6IgAqAHNvcnQiO047fQ==';
+
     public function test_カテゴリーのmeta_tagを共有Entityで取得する(): void
     {
         $category = new Category(self::fixtureData('category_with_values'));
@@ -105,6 +111,27 @@ class ProductResponseFieldsTest extends TestCase
         $this->assertNull($group->getMetaTag());
     }
 
+    public function test_旧形式のGroupをunserializeするとmeta_tagはnullになる(): void
+    {
+        $group = \unserialize(self::legacyPayload(self::LEGACY_EMPTY_GROUP_PAYLOAD_BASE64));
+
+        $this->assertInstanceOf(Group::class, $group);
+        $this->assertNull($group->getMetaTag());
+    }
+
+    public function test_旧形式のCategoryをunserializeするとmeta_tagの欠損は固有例外になる(): void
+    {
+        $category = \unserialize(self::legacyPayload(self::LEGACY_EMPTY_CATEGORY_PAYLOAD_BASE64));
+        $this->assertInstanceOf(Category::class, $category);
+
+        $this->expectException(MissingFieldException::class);
+        $this->expectExceptionMessage(
+            Category::class . ' の API フィールド『meta_tag』が欠損しています。',
+        );
+
+        $category->getMetaTag();
+    }
+
     public function test_グループのmeta_tagが不正型なら固有例外になる(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -160,5 +187,15 @@ class ProductResponseFieldsTest extends TestCase
         }
 
         return $data;
+    }
+
+    private static function legacyPayload(string $encoded): string
+    {
+        $payload = \base64_decode($encoded, true);
+        if ($payload === false) {
+            self::fail('旧形式の serialize ペイロードをデコードできません。');
+        }
+
+        return $payload;
     }
 }

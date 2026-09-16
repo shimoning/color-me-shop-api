@@ -552,7 +552,7 @@ class Sale extends Entity
      */
     public function getSegment(): ?SaleSegment
     {
-        return $this->segment;
+        return $this->segment ?? null;
     }
 
     /**
@@ -561,7 +561,7 @@ class Sale extends Entity
      */
     public function getTotals(): ?SaleTotals
     {
-        return $this->totals;
+        return $this->totals ?? null;
     }
 
     /**
@@ -570,7 +570,7 @@ class Sale extends Entity
      */
     public function getApplication(): ?SaleApplication
     {
-        return $this->application;
+        return $this->application ?? null;
     }
 
     /**
@@ -579,6 +579,6 @@ class Sale extends Entity
      */
     public function getShopCoupon(): ?SaleShopCoupon
     {
-        return $this->shopCoupon;
+        return $this->shopCoupon ?? null;
     }
 }

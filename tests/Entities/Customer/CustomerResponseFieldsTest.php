@@ -13,6 +13,11 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class CustomerResponseFieldsTest extends TestCase
 {
+    /**
+     * membership / externalAccounts 追加前の空 Customer を serialize() したペイロード。
+     */
+    private const LEGACY_EMPTY_CUSTOMER_PAYLOAD_BASE64 = 'Tzo1MToiU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXEN1c3RvbWVyXEN1c3RvbWVyIjoyMTp7czo0NjoiAFNoaW1vbmluZ1xDb2xvck1lU2hvcEFwaVxFbnRpdGllc1xFbnRpdHkAX3JhdyI7YTowOnt9czo3OiIAKgBuYW1lIjtOO3M6MTE6IgAqAGZ1cmlnYW5hIjtOO3M6ODoiACoAaG9qaW4iO047czo4OiIAKgBidXNobyI7TjtzOjY6IgAqAHNleCI7TjtzOjExOiIAKgBiaXJ0aGRheSI7TjtzOjk6IgAqAHBvc3RhbCI7TjtzOjk6IgAqAHByZWZJZCI7TjtzOjExOiIAKgBwcmVmTmFtZSI7TjtzOjExOiIAKgBhZGRyZXNzMSI7TjtzOjExOiIAKgBhZGRyZXNzMiI7TjtzOjc6IgAqAG1haWwiO047czo2OiIAKgB0ZWwiO047czo2OiIAKgBmYXgiO047czoxMjoiACoAdGVsTW9iaWxlIjtOO3M6ODoiACoAb3RoZXIiO047czoyMjoiACoAcmVjZWl2ZU1haWxNYWdhemluZSI7TjtzOjE4OiIAKgBhbnN3ZXJGcmVlRm9ybTEiO047czoxODoiACoAYW5zd2VyRnJlZUZvcm0yIjtOO3M6MTg6IgAqAGFuc3dlckZyZWVGb3JtMyI7Tjt9';
+
     public function test_顧客レスポンスの追加フィールドを取得する(): void
     {
         $customer = new Customer(self::fixtureData('customer_with_values'));
@@ -64,6 +69,15 @@ class CustomerResponseFieldsTest extends TestCase
         $membership = $customer->getMembership();
         $this->assertInstanceOf(Membership::class, $membership);
         $this->assertNull($membership->getProgress());
+    }
+
+    public function test_旧形式のCustomerをunserializeすると新しいnullableフィールドはnullになる(): void
+    {
+        $customer = \unserialize(self::legacyEmptyCustomerPayload());
+
+        $this->assertInstanceOf(Customer::class, $customer);
+        $this->assertNull($customer->getMembership());
+        $this->assertNull($customer->getExternalAccounts());
     }
 
     public function test_nullableな顧客フィールドが欠損していればnullになる(): void
@@ -262,5 +276,15 @@ class CustomerResponseFieldsTest extends TestCase
         }
 
         return $data;
+    }
+
+    private static function legacyEmptyCustomerPayload(): string
+    {
+        $payload = \base64_decode(self::LEGACY_EMPTY_CUSTOMER_PAYLOAD_BASE64, true);
+        if ($payload === false) {
+            self::fail('旧形式の Customer serialize ペイロードをデコードできません。');
+        }
+
+        return $payload;
     }
 }

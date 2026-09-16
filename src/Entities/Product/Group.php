@@ -125,6 +125,6 @@ class Group extends Entity
      */
     public function getMetaTag(): ?MetaTag
     {
-        return $this->metaTag;
+        return $this->metaTag ?? null;
     }
 }

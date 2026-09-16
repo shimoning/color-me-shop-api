@@ -324,7 +324,7 @@ class Customer extends Entity
      */
     public function getMembership(): ?Membership
     {
-        return $this->membership;
+        return $this->membership ?? null;
     }
 
     /**
@@ -333,6 +333,6 @@ class Customer extends Entity
      */
     public function getExternalAccounts(): ?array
     {
-        return $this->externalAccounts;
+        return $this->externalAccounts ?? null;
     }
 }
