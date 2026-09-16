@@ -3,7 +3,7 @@
         {
             "id_big": 2829448,
             "id_small": 0,
-            "account_id": "PA01491849",
+            "account_id": "my-shop",
             "name": "初期カテゴリー",
             "image_url": null,
             "expl": "お申し込み時に自動で作成された初期カテゴリー",
@@ -15,7 +15,7 @@
                 {
                     "id_big": 2829448,
                     "id_small": 1,
-                    "account_id": "PA01491849",
+                    "account_id": "my-shop",
                     "name": "小カテゴリ1",
                     "image_url": null,
                     "expl": "1",
@@ -32,7 +32,7 @@
                 {
                     "id_big": 2829448,
                     "id_small": 2,
-                    "account_id": "PA01491849",
+                    "account_id": "my-shop",
                     "name": "小カテゴリ見えない",
                     "image_url": null,
                     "expl": "みえない",
@@ -49,7 +49,7 @@
                 {
                     "id_big": 2829448,
                     "id_small": 3,
-                    "account_id": "PA01491849",
+                    "account_id": "my-shop",
                     "name": "小カテゴリ会員",
                     "image_url": null,
                     "expl": "かいいｎ",
@@ -68,7 +68,7 @@
         {
             "id_big": 2997783,
             "id_small": 0,
-            "account_id": "PA01491849",
+            "account_id": "my-shop",
             "name": "親カテゴリ",
             "image_url": null,
             "expl": null,
@@ -85,7 +85,7 @@
                 {
                     "id_big": 2997783,
                     "id_small": 1,
-                    "account_id": "PA01491849",
+                    "account_id": "my-shop",
                     "name": "小カテゴリ",
                     "image_url": null,
                     "expl": "",

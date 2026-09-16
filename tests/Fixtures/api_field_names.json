@@ -343,10 +343,5 @@
         "name",
         "remaining_score",
         "required_score"
-    ],
-    "Product\\MetaTag": [
-        "description",
-        "keywords",
-        "title"
     ]
 }
