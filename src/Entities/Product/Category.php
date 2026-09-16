@@ -21,6 +21,9 @@ class Category extends Entity
             'array' => true,
             'entity' => Category::class,
         ],
+        'metaTag' => [
+            'entity' => MetaTag::class,
+        ],
     ];
 
     protected int $idBig;
@@ -39,6 +42,7 @@ class Category extends Entity
     protected int $updateDate;
 
     protected array $children;
+    protected MetaTag $metaTag;
 
     /**
      * 大カテゴリーID
@@ -144,5 +148,15 @@ class Category extends Entity
     {
         $this->assertFieldInitialized('children');
         return $this->children;
+    }
+
+    /**
+     * SEOメタタグ情報
+     * @return MetaTag
+     */
+    public function getMetaTag(): MetaTag
+    {
+        $this->assertFieldInitialized('metaTag');
+        return $this->metaTag;
     }
 }

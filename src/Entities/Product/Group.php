@@ -16,6 +16,10 @@ class Group extends Entity
         'displayState' => [
             'enum' => ProductDisplayState::class,
         ],
+        'metaTag' => [
+            'nullable' => true,
+            'entity' => MetaTag::class,
+        ],
     ];
 
     protected int $id;
@@ -30,6 +34,7 @@ class Group extends Entity
     protected ProductDisplayState $displayState;
 
     protected ?int $parentGroupId;
+    protected ?MetaTag $metaTag;
 
     /**
      * 商品グループID
@@ -112,5 +117,14 @@ class Group extends Entity
     public function getParentGroupId(): ?int
     {
         return $this->parentGroupId;
+    }
+
+    /**
+     * SEOメタタグ情報
+     * @return MetaTag|null
+     */
+    public function getMetaTag(): ?MetaTag
+    {
+        return $this->metaTag;
     }
 }
