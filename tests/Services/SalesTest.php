@@ -87,6 +87,34 @@ class SalesTest extends TestCase
         $this->assertSame([], $mock->query());
     }
 
+    public function test_顧客メールアドレスで部分一致検索できる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sales_page.json'));
+
+        (new Sales('my-token', $mock->client()))->page(new SearchParameters([
+            'customer_mail' => 'customer@example.com',
+        ]));
+
+        $this->assertSame(['customer_mail' => 'customer@example.com'], $mock->query());
+    }
+
+    public function test_顧客メールアドレス未指定時はクエリに含めない(): void
+    {
+        $parameters = new SearchParameters([]);
+
+        $this->assertArrayNotHasKey('customer_mail', $parameters->toArrayRecursive());
+    }
+
+    public function test_afterとbeforeは検索条件として受け付けない(): void
+    {
+        $parameters = new SearchParameters([
+            'after' => '2024-01-01',
+            'before' => '2024-01-31',
+        ]);
+
+        $this->assertSame([], $parameters->toArrayRecursive());
+    }
+
     public function test_受注一覧のエラーレスポンス(): void
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));

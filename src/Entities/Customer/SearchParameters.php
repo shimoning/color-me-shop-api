@@ -50,8 +50,11 @@ class SearchParameters extends Entity
     protected ?string $mail;
     protected ?string $postal;
     protected ?string $tel;
+    protected ?string $lineUid;
+    protected ?string $membershipId;
     protected ?Sex $sex;
     protected ?bool $member;
+    protected ?bool $receiveMailMagazine;
 
     protected ?DateTime $makeDateMin;   // after
     protected ?DateTime $makeDateMax;   // before
