@@ -8,7 +8,8 @@
 7 Entity** とする。
 
 構造化された不足フィールドの型は [ADR 0008](adr/0008-model-structured-response-fields-as-entities.md)
-に従い、専用 Entity を提案する。今回の調査では `src/` と `tests/` を変更していない。
+に従い、専用 Entity を提案する。この監査文書を作成した調査時点では `src/` と `tests/` を変更しておらず、
+実装は後続の別コミットで行った。
 
 ## 調査方法
 

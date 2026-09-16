@@ -39,11 +39,14 @@
 
 - 新規フィールドをすべて素の `array` とする案は、既存の nested Entity と公開方法が不統一になり、
   内部フィールドの型不正を構築時に検出できないため却下する。
+  出典: `60def840e555a17890af3d7cfa896c4d62e62538`。
 - object ごとに汎用の `ObjectValue` を一つ導入する案は、フィールドごとの意味と getter の型を
   表現できず、利用者がキー文字列へ依存するため却下する。
+  出典: `60def840e555a17890af3d7cfa896c4d62e62538`。
 - nullable な object 配列の `null` を空配列へ正規化する案は、「関連なし」と「関連はあるが0件」を
   区別できず、OpenAPI の `nullable: true` と [ADR 0002](0002-entity-nullability-from-openapi.md) に
   反するため却下する。
+  出典: `60def840e555a17890af3d7cfa896c4d62e62538`。
 
 ## 帰結
 
