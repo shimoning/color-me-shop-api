@@ -41,8 +41,10 @@ class CustomerResponseFieldsTest extends TestCase
 
         $aggregationPeriod = $progress->getAggregationPeriod();
         $this->assertInstanceOf(MembershipAggregationPeriod::class, $aggregationPeriod);
-        $this->assertSame(1780239600, $aggregationPeriod->getStartDate());
-        $this->assertSame(1782831599, $aggregationPeriod->getEndDate());
+        $this->assertInstanceOf(DateTimeImmutable::class, $aggregationPeriod->getStartDate());
+        $this->assertSame(1780239600, $aggregationPeriod->getStartDate()->getTimestamp());
+        $this->assertInstanceOf(DateTimeImmutable::class, $aggregationPeriod->getEndDate());
+        $this->assertSame(1782831599, $aggregationPeriod->getEndDate()->getTimestamp());
 
         $nextMembership = $progress->getNextMembership();
         $this->assertInstanceOf(NextMembership::class, $nextMembership);
@@ -56,7 +58,8 @@ class CustomerResponseFieldsTest extends TestCase
         $this->assertContainsOnlyInstancesOf(ExternalAccount::class, $accounts);
         $this->assertSame(ExternalAccountProvider::LINE, $accounts[0]->getProvider());
         $this->assertSame('6cfd46d2fd18eb15d01ce0a00d4b0349', $accounts[0]->getUid());
-        $this->assertSame(1465784934, $accounts[0]->getCreatedAt());
+        $this->assertInstanceOf(DateTimeImmutable::class, $accounts[0]->getCreatedAt());
+        $this->assertSame(1465784934, $accounts[0]->getCreatedAt()->getTimestamp());
     }
 
     public function test_一覧取得でmembershipのprogressが省略されてもnullとして取得できる(): void

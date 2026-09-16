@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
@@ -16,21 +17,21 @@ class MembershipAggregationPeriod extends Entity
 
     /**
      * 集計期間の開始日時
-     * @return int
+     * @return DateTimeImmutable
      */
-    public function getStartDate(): int
+    public function getStartDate(): DateTimeImmutable
     {
         $this->assertFieldInitialized('startDate');
-        return $this->startDate;
+        return (new DateTimeImmutable)->setTimestamp($this->startDate);
     }
 
     /**
      * 集計期間の終了日時
-     * @return int
+     * @return DateTimeImmutable
      */
-    public function getEndDate(): int
+    public function getEndDate(): DateTimeImmutable
     {
         $this->assertFieldInitialized('endDate');
-        return $this->endDate;
+        return (new DateTimeImmutable)->setTimestamp($this->endDate);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
@@ -44,11 +45,11 @@ class ExternalAccount extends Entity
 
     /**
      * 外部システムとの連携日時
-     * @return int
+     * @return DateTimeImmutable
      */
-    public function getCreatedAt(): int
+    public function getCreatedAt(): DateTimeImmutable
     {
         $this->assertFieldInitialized('createdAt');
-        return $this->createdAt;
+        return (new DateTimeImmutable)->setTimestamp($this->createdAt);
     }
 }
