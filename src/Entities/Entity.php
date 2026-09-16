@@ -375,7 +375,7 @@ class Entity
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
             if (!empty($objectField['nullable']) && !$value) {
-                return $isArray ? [] : null;
+                return $isArray && $value !== null ? [] : null;
             }
 
             if (isset($objectField['entity'])) {

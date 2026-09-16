@@ -342,11 +342,32 @@ class EntityTest extends TestCase
         $this->assertNull($entity->getNullableChild());
     }
 
-    public function test_nullableかつarray指定でnullなら空配列になる(): void
+    public function test_nullableかつarray指定でnullならnullになる(): void
     {
         $entity = new ComplexEntity(['nullable_children' => null]);
 
+        $this->assertNull($entity->getNullableChildren());
+    }
+
+    #[DataProvider('nullableArrayFalsyValueProvider')]
+    public function test_nullableかつarray指定でnull以外のfalsy値なら空配列になる(mixed $value): void
+    {
+        $entity = new ComplexEntity(['nullable_children' => $value]);
+
         $this->assertSame([], $entity->getNullableChildren());
+    }
+
+    /**
+     * @return array<string, array{mixed}>
+     */
+    public static function nullableArrayFalsyValueProvider(): array
+    {
+        return [
+            '空配列' => [[]],
+            '整数0' => [0],
+            '空文字' => [''],
+            'false' => [false],
+        ];
     }
 
     // --- OBJECT_FIELDS: value --------------------------------------------
