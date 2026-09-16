@@ -375,6 +375,10 @@ class Entity
     {
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
+            // nullable は falsy 値も変換するため、null だけを許すフィールドは allowNull を使う。
+            if (!empty($objectField['allowNull']) && $value === null) {
+                return null;
+            }
             if (!empty($objectField['nullable']) && !$value) {
                 return $isArray && $value !== null ? [] : null;
             }

@@ -460,7 +460,7 @@ if ($categoriesOrErrors instanceof Errors) {
 ```
 
 `Client::getProductCategories()` は、内部で `Services\Product::categories(?string $accessToken = null)` を呼び出す。
-`meta_tag` は一部の大カテゴリーに含まれないため、`Category::getMetaTag()` は `null` を返す場合がある。
+`meta_tag` が省略または `null` の場合、`Category::getMetaTag()` は `null` を返す。
 
 ### 決済
 #### 決済設定の一覧を取得

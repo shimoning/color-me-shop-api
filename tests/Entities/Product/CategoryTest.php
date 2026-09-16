@@ -99,9 +99,9 @@ class CategoryTest extends TestCase
     public static function invalidMetaTagProvider(): array
     {
         return [
-            'null' => [null],
             'false' => [false],
             '整数0' => [0],
+            '正の整数' => [123],
             '空文字' => [''],
             '文字列0' => ['0'],
         ];

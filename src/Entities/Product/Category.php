@@ -18,6 +18,7 @@ class Category extends Entity
             'enum' => CategoryDisplayState::class,
         ],
         'metaTag' => [
+            'allowNull' => true,
             'entity' => MetaTag::class,
         ],
         'children' => [
@@ -104,18 +105,15 @@ class Category extends Entity
     /**
      * 商品カテゴリーのメタタグ
      *
-     * 公式 OpenAPI（2026-09-16 確認）の
-     * components.schemas.productCategory.properties.meta_tag.allOf[0].properties と
-     * components.schemas.productCategoryChild.properties.meta_tag.allOf[0].properties で、
-     * title / keywords / description が nullable として定義されている。
-     * 2026-09-12 の実 API 検証では、親カテゴリー2件中1件で meta_tag 自体の欠損を確認したため、
-     * API レスポンスに含まれない場合は null を返す。
+     * 公式 OpenAPI（2026-09-16 確認）では meta_tag 自体は nullable ではない。
+     * 2026-09-12 の実 API 検証では親カテゴリー2件中1件で meta_tag の欠損を確認したため、
+     * 欠損または明示的な null の場合は null を返す。
      *
      * @return MetaTag|null
      */
     public function getMetaTag(): ?MetaTag
     {
-        return $this->metaTag;
+        return $this->metaTag ?? null;
     }
 
     /**
@@ -165,15 +163,5 @@ class Category extends Entity
     {
         $this->assertFieldInitialized('children');
         return $this->children;
-    }
-
-    /**
-     * SEOメタタグ情報
-     * @return MetaTag
-     */
-    public function getMetaTag(): MetaTag
-    {
-        $this->assertFieldInitialized('metaTag');
-        return $this->metaTag;
     }
 }
