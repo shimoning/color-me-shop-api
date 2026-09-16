@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Sex;
@@ -300,22 +301,22 @@ class Customer extends Entity
 
     /**
      * 作成日時
-     * @return int
+     * @return DateTimeImmutable
      */
-    public function getMakeDate(): int
+    public function getMakeDate(): DateTimeImmutable
     {
         $this->assertFieldInitialized('makeDate');
-        return $this->makeDate;
+        return (new DateTimeImmutable)->setTimestamp($this->makeDate);
     }
 
     /**
      * 更新日時
-     * @return int
+     * @return DateTimeImmutable
      */
-    public function getUpdateDate(): int
+    public function getUpdateDate(): DateTimeImmutable
     {
         $this->assertFieldInitialized('updateDate');
-        return $this->updateDate;
+        return (new DateTimeImmutable)->setTimestamp($this->updateDate);
     }
 
     /**
