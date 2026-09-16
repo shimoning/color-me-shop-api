@@ -2,7 +2,7 @@
 
 ## この文書の位置づけ
 
-この文書は、ColorMe Shop API の実 API から収集した決済設定応答の一次情報を、ライブラリの型設計と将来の判断の根拠として保存するものである。2026-09-16 にテスト用ショップで `GET /v1/payments` を再実行し、決済6件を収集した。
+この文書は、ColorMe Shop API の実 API から収集した決済設定応答の一次情報を、ライブラリの型設計と将来の判断の根拠として保存するものであり、現在のライブラリ仕様を記述するものではない。2026-09-16 にテスト用ショップで `GET /v1/payments` を再実行し、決済6件を収集した。
 
 同じエンドポイントは 2026-09-12 にも調査している。その時点では固定手数料の「商品代引き」だけが存在した。その後、ショップ側に「段階的代引き」と「fee_max設定代引き」を追加し、`changeable` による `cod` の構造差と、区分手数料の境界を確認するために再取得した。
 
@@ -176,9 +176,11 @@ fee_max:
 }
 ```
 
-## ライブラリでの扱い
+## 現在のライブラリでの扱い
 
-ライブラリのデータモデルでは、`cod.fees`、`cod.fee_max`、`cod.changeable_by_total` を nullable として扱う（Issue #28）。これにより、`changeable=false` の応答で3項目が欠損する場合と、`changeable=true` でも `fee_max` が `null` になる場合の両方を表現できる。
+現在の `Cod` エンティティでは、`$fees`、`$feeMax`、`$changeableByTotal` はそれぞれ非 nullable の `array`、`int`、`bool` として定義されている。そのため、`changeable=false` の応答で対応するキーが欠損している場合、各 getter は `Entity::assertFieldInitialized()` により `MissingFieldException` を送出する。また、実 API が返す `fee_max: null` は、現在の `int` 型の `$feeMax` では表現できない。
+
+この実 API と現在のライブラリ実装の乖離は Issue #28 で対応予定であり、nullable 化はまだ適用されていない。上記の観測結果は、Issue #28 の適用後の仕様を先取りした記述ではなく、現時点で実 API が返した構造そのものを記録している。
 
 ## 再収集の概要
 
