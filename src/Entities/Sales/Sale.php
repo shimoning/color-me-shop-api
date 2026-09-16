@@ -26,6 +26,22 @@ class Sale extends Entity
             'array' => true,
             'entity' => SaleDelivery::class,
         ],
+        'segment' => [
+            'nullable' => true,
+            'entity' => SaleSegment::class,
+        ],
+        'totals' => [
+            'nullable' => true,
+            'entity' => SaleTotals::class,
+        ],
+        'application' => [
+            'nullable' => true,
+            'entity' => SaleApplication::class,
+        ],
+        'shopCoupon' => [
+            'nullable' => true,
+            'entity' => SaleShopCoupon::class,
+        ],
         'acceptedMailState' => [
             'enum' => MailState::class,
         ],
@@ -100,6 +116,10 @@ class Sale extends Entity
     protected $customer;
     protected array $details;
     protected array $saleDeliveries;
+    protected ?SaleSegment $segment;
+    protected ?SaleTotals $totals;
+    protected ?SaleApplication $application;
+    protected ?SaleShopCoupon $shopCoupon;
 
     /**
      * 売上ID
@@ -524,5 +544,41 @@ class Sale extends Entity
     {
         $this->assertFieldInitialized('saleDeliveries');
         return $this->saleDeliveries;
+    }
+
+    /**
+     * 分割された受注の情報
+     * @return SaleSegment|null
+     */
+    public function getSegment(): ?SaleSegment
+    {
+        return $this->segment;
+    }
+
+    /**
+     * 税率別の受注金額
+     * @return SaleTotals|null
+     */
+    public function getTotals(): ?SaleTotals
+    {
+        return $this->totals;
+    }
+
+    /**
+     * 受注を作成したOAuthアプリケーション情報
+     * @return SaleApplication|null
+     */
+    public function getApplication(): ?SaleApplication
+    {
+        return $this->application;
+    }
+
+    /**
+     * 受注で使用されたショップクーポン情報
+     * @return SaleShopCoupon|null
+     */
+    public function getShopCoupon(): ?SaleShopCoupon
+    {
+        return $this->shopCoupon;
     }
 }

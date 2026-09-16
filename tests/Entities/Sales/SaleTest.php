@@ -13,8 +13,7 @@ class SaleTest extends TestCase
     /**
      * PR1 時点の空の Sale を PHP 8.1 で serialize() したペイロード。
      *
-     * untyped な $customer は null として含まれるため、型宣言の追加による
-     * unserialize() の後方互換性破壊を検出できる。
+     * 新しいプロパティの追加後も旧ペイロードを unserialize() できることを検証する。
      */
     private const PR1_EMPTY_SALE_PAYLOAD_BASE64 = 'Tzo0NDoiU2hpbW9uaW5nXENvbG9yTWVTaG9wQXBpXEVudGl0aWVzXFNhbGVzXFNhbGUiOjg6e3M6NDY6IgBTaGltb25pbmdcQ29sb3JNZVNob3BBcGlcRW50aXRpZXNcRW50aXR5AF9yYXciO2E6MDp7fXM6NzoiACoAbWVtbyI7TjtzOjIzOiIAKgBhY2NlcHRlZE1haWxTZW50RGF0ZSI7TjtzOjE5OiIAKgBwYWlkTWFpbFNlbnREYXRlIjtOO3M6MjQ6IgAqAGRlbGl2ZXJlZE1haWxTZW50RGF0ZSI7TjtzOjE2OiIAKgBnbW9Qb2ludFN0YXRlIjtOO3M6MTg6IgAqAHlhaG9vUG9pbnRTdGF0ZSI7TjtzOjExOiIAKgBjdXN0b21lciI7Tjt9';
 
@@ -89,9 +88,15 @@ class SaleTest extends TestCase
         $this->assertInstanceOf(Sale::class, $sale);
     }
 
-    public function test_PR1時点と空のSaleのserialize表現が同じ(): void
+    public function test_新しい空のSaleをserializeしてunserializeできる(): void
     {
-        $this->assertSame(self::pr1EmptySalePayload(), \serialize(new Sale([])));
+        $sale = \unserialize(\serialize(new Sale([])));
+
+        $this->assertInstanceOf(Sale::class, $sale);
+        $this->assertNull($sale->getSegment());
+        $this->assertNull($sale->getTotals());
+        $this->assertNull($sale->getApplication());
+        $this->assertNull($sale->getShopCoupon());
     }
 
     public function test_顧客プロパティはサブクラス互換のため型宣言を持たない(): void
