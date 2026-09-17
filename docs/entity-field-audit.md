@@ -11,6 +11,8 @@
 に従い、専用 Entity を提案する。この監査文書を作成した調査時点では `src/` と `tests/` を変更しておらず、
 実装は後続の別コミットで行った。
 
+この調査時点以降の変更は、後続の ADR を参照する。
+
 ## 調査方法
 
 - 取得日時: 2026-09-15 17:17:29 +0900 (JST)
@@ -78,6 +80,8 @@ ADR 0008 の方針を満たす説明用の候補名であり、実装コミッ�
 | `Customer\SearchParameters` | `line_uid` | string / false、query 自体は任意 | `?string` | `$lineUid` | どちらも不要 | なし | **追加**。LINE UID 完全一致検索が現在送れない |
 | `Customer\SearchParameters` | `membership_id` | string / false、query 自体は任意 | `?string` | `$membershipId` | どちらも不要 | なし | **追加**。会員ランク ID 完全一致検索が現在送れない |
 | `Customer\SearchParameters` | `receive_mail_magazine` | boolean / false、query 自体は任意 | `?bool` | `$receiveMailMagazine` | どちらも不要 | なし | **追加**。メルマガ受信可否検索が現在送れない |
+
+注: 上表の `Product\Category` の `meta_tag` 行は監査時点 (PR #37) の記述である。現行契約は [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) のとおり nullable で、欠損・`null` は `null` として扱う。
 
 追加候補のトップレベルフィールドに、そのまま再利用できる既存 enum はない。全
 `src/Constants/*.php` を確認した。nested の `external_accounts[].provider` は OpenAPI 上の enum が
@@ -192,4 +196,5 @@ OpenAPI との差分として削除・追加の対象にはしない。
 3. 一覧と単体取得で `membership.progress` の有無が異なるケースをテストする。
 4. `Category` の `meta_tag` は nullable ではないが、`required` を根拠に存在を仮定せず、欠損時は
    既存の `MissingFieldException` 契約に従う。
+   注: 上記 4 は監査時点 (PR #37) の記述である。現行契約は [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) のとおり nullable で、欠損・`null` は `null` として扱う。
 5. `composer check` と全 Entity の横断契約テストを実行し、今回の参考情報は別スコープに保つ。

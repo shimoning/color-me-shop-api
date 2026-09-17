@@ -1,0 +1,105 @@
+{
+    "categories": [
+        {
+            "id_big": 2829448,
+            "id_small": 0,
+            "account_id": "my-shop",
+            "name": "初期カテゴリー",
+            "image_url": null,
+            "expl": "お申し込み時に自動で作成された初期カテゴリー",
+            "sort": null,
+            "display_state": "showing",
+            "make_date": 1663764621,
+            "update_date": 1663764621,
+            "children": [
+                {
+                    "id_big": 2829448,
+                    "id_small": 1,
+                    "account_id": "my-shop",
+                    "name": "小カテゴリ1",
+                    "image_url": null,
+                    "expl": "1",
+                    "sort": null,
+                    "display_state": "showing",
+                    "make_date": 1698767669,
+                    "update_date": 1698767669,
+                    "meta_tag": {
+                        "title": "",
+                        "keywords": "",
+                        "description": ""
+                    }
+                },
+                {
+                    "id_big": 2829448,
+                    "id_small": 2,
+                    "account_id": "my-shop",
+                    "name": "小カテゴリ見えない",
+                    "image_url": null,
+                    "expl": "みえない",
+                    "sort": 2,
+                    "display_state": "hidden",
+                    "make_date": 1698767682,
+                    "update_date": 1698767711,
+                    "meta_tag": {
+                        "title": "",
+                        "keywords": "",
+                        "description": ""
+                    }
+                },
+                {
+                    "id_big": 2829448,
+                    "id_small": 3,
+                    "account_id": "my-shop",
+                    "name": "小カテゴリ会員",
+                    "image_url": null,
+                    "expl": "かいいｎ",
+                    "sort": 1,
+                    "display_state": "members_only",
+                    "make_date": 1698767698,
+                    "update_date": 1698767711,
+                    "meta_tag": {
+                        "title": "",
+                        "keywords": "",
+                        "description": ""
+                    }
+                }
+            ]
+        },
+        {
+            "id_big": 2997783,
+            "id_small": 0,
+            "account_id": "my-shop",
+            "name": "親カテゴリ",
+            "image_url": null,
+            "expl": null,
+            "sort": null,
+            "display_state": "showing",
+            "make_date": 1789196763,
+            "update_date": 1789196763,
+            "meta_tag": {
+                "title": "",
+                "keywords": "",
+                "description": ""
+            },
+            "children": [
+                {
+                    "id_big": 2997783,
+                    "id_small": 1,
+                    "account_id": "my-shop",
+                    "name": "小カテゴリ",
+                    "image_url": null,
+                    "expl": "",
+                    "sort": null,
+                    "display_state": "showing",
+                    "make_date": 1789196781,
+                    "update_date": 1789196781,
+                    "meta_tag": {
+                        "title": "",
+                        "keywords": "",
+                        "description": ""
+                    }
+                }
+            ]
+        }
+    ]
+}

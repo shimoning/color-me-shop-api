@@ -15,11 +15,13 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
  * 例えば shop_mail_1 は shopMail1 として取り込まれるが、配列化すると shop_mail1 になり
  * 元のキーに戻らない。
  *
- * 期待するフィールド名の一覧は公式の OpenAPI 仕様から生成している。
+ * 期待するフィールド名の一覧は公式の OpenAPI 仕様を基本とし、
+ * 公式仕様にない実 API の観測フィールドも補完している。
  *
  *   https://api.shop-pro.jp/v1/spec/open_api.json
  *
- * 更新するときは同じ仕様から tests/Fixtures/api_field_names.json を作り直すこと。
+ * 更新するときは同じ仕様から tests/Fixtures/api_field_names.json を作り直し、
+ * 実 API でのみ観測したフィールドを追記すること。
  */
 class ApiFieldNameTest extends TestCase
 {

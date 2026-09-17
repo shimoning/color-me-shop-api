@@ -204,6 +204,11 @@
         "sort",
         "update_date"
     ],
+    "Product\\MetaTag": [
+        "description",
+        "keywords",
+        "title"
+    ],
     "Payment\\Payment": [
         "account_id",
         "card",
@@ -338,10 +343,5 @@
         "name",
         "remaining_score",
         "required_score"
-    ],
-    "Product\\MetaTag": [
-        "description",
-        "keywords",
-        "title"
     ]
 }

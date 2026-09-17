@@ -110,9 +110,9 @@
 
 ## 現在のライブラリ実装との関係
 
-現在のライブラリは、大カテゴリーと小カテゴリーの両方を `Entities\Product\Category` 単一クラスで扱い、両者を別の型には分けていない。`meta_tag` は `MetaTag` エンティティとして実装済みで、`Category::$metaTag` は非 nullable である。`meta_tag` キーが欠損した応答では `getMetaTag()` の呼び出し時に `MissingFieldException`、`meta_tag: null` の応答では `Category` の構築時に `InvalidFieldException` が送出される。`MetaTag` 内の `title`、`keywords`、`description` はいずれも nullable である。
+現在のライブラリは、大カテゴリーと小カテゴリーの両方を `Entities\Product\Category` 単一クラスで扱い、両者を別の型には分けていない。`meta_tag` は `MetaTag` エンティティとして実装済みで、`Category::$metaTag` は nullable（`?MetaTag`）である。`meta_tag` キーが欠損した応答と明示的な `meta_tag: null` の応答では、`getMetaTag()` が `null` を返す。空オブジェクトは `MetaTag` として保持し、その他の不正値は `Category` の構築時に `InvalidFieldException` が送出される。`MetaTag` 内の `title`、`keywords`、`description` はいずれも nullable である。
 
-2026-09-12 の実測では親カテゴリー2件中1件で `meta_tag` キー自体が欠損しており、現行の非 nullable 実装と乖離する。nullable 化の是非は [Issue #29](https://github.com/shimoning/color-me-shop-api/issues/29) で未決である。また、`children` は非 nullable の `array` である。実 API の子カテゴリーには `children` キーがないため、子カテゴリーで `getChildren()` を呼ぶと `MissingFieldException` になる。この親子の構造差は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) で扱う。
+2026-09-12 の実測では親カテゴリー2件中1件で `meta_tag` キー自体が欠損している。この実測に基づく nullable 化の判断は [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) に記録した。また、`children` は非 nullable の `array` である。実 API の子カテゴリーには `children` キーがないため、子カテゴリーで `getChildren()` を呼ぶと `MissingFieldException` になる。この親子の構造差は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) で扱う。
 
 ## 今後の計画
 

@@ -17,7 +17,7 @@ class Group extends Entity
             'enum' => ProductDisplayState::class,
         ],
         'metaTag' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => MetaTag::class,
         ],
     ];
@@ -121,6 +121,9 @@ class Group extends Entity
 
     /**
      * SEOメタタグ情報
+     *
+     * meta_tag が欠損または null の場合は null、空オブジェクトの場合は MetaTag を返す。
+     *
      * @return MetaTag|null
      */
     public function getMetaTag(): ?MetaTag
