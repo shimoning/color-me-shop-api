@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
+use Shimoning\ColorMeShopApi\Entities\Payment\Cod;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -149,10 +150,10 @@ class FieldExceptionMessageContractTest extends TestCase
         \ksort($routeCounts);
         $this->assertSame(
             [
-                // Category::fromArray() の id_small 判定と BigCategory の children 形状判定を含む。
-                'InvalidFieldException::for' => 5,
-                // Charge の重量別配送料と BigCategory の子要素変換経路を含む。
-                'InvalidFieldException::forArrayElement' => 3,
+                // Category・BigCategory の判定と Cod の fees リスト形状の検証経路を含む。
+                'InvalidFieldException::for' => 6,
+                // Charge・BigCategory の要素変換と Cod の手数料区分の位置付き経路を含む。
+                'InvalidFieldException::forArrayElement' => 4,
                 'InvalidPaginationException::__construct' => 2,
                 // foundation の宣言プロパティ不在経路と PR3 の Sale customer 後方互換経路を両方保持する。
                 'MissingFieldException::for' => 3,
@@ -171,6 +172,12 @@ class FieldExceptionMessageContractTest extends TestCase
             'InvalidFieldException::for/直接型不一致' => [
                 static function (): void {
                     new RequiredEntity(['count' => '1']);
+                },
+                null,
+            ],
+            'InvalidFieldException::for/Codのリスト形状不一致' => [
+                static function (): void {
+                    new Cod(['changeable' => true, 'fees' => ['first' => [300, 100]]]);
                 },
                 null,
             ],
@@ -242,6 +249,12 @@ class FieldExceptionMessageContractTest extends TestCase
             'InvalidFieldException::forArrayElement/未知enum' => [
                 static function (): void {
                     new ComplexEntity(['states' => ['sent', 'unknown']]);
+                },
+                \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::forArrayElement/Codのタプル不一致' => [
+                static function (): void {
+                    new Cod(['changeable' => true, 'fees' => [[300, 'invalid']]]);
                 },
                 \UnexpectedValueException::class,
             ],

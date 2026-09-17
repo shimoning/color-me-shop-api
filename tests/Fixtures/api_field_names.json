@@ -271,6 +271,10 @@
         "fee_max",
         "fees"
     ],
+    "Payment\\CodFee": [
+        "fee",
+        "upper_limit"
+    ],
     "Payment\\Card": [
         "brands"
     ],

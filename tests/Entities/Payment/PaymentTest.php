@@ -54,7 +54,10 @@ class PaymentTest extends TestCase
         $cod = $payment->getCod();
         $this->assertNotNull($cod);
         $this->assertTrue($cod->getChangeable());
-        $this->assertSame([[3000, 100], [5000, 200]], $cod->getFees());
+        $this->assertSame(3000, $cod->getFees()[0]->getUpperLimit());
+        $this->assertSame(100, $cod->getFees()[0]->getFee());
+        $this->assertSame(5000, $cod->getFees()[1]->getUpperLimit());
+        $this->assertSame(200, $cod->getFees()[1]->getFee());
         $this->assertSame(500, $cod->getFeeMax());
         $this->assertFalse($cod->getChangeableByTotal());
 
@@ -70,6 +73,23 @@ class PaymentTest extends TestCase
         $this->assertSame(KouzaType::SAVING, $financial->getKouzaType());
         $this->assertSame('1234567', $financial->getKouzaNumber());
         $this->assertSame('ヤマダタロウ', $financial->getKouzaName());
+    }
+
+    public function test_実APIでcodの任意項目が欠損してもnullとして取得できる(): void
+    {
+        $payment = self::makePayment([
+            'type' => PaymentType::COD->value,
+            'cod' => [
+                'changeable' => false,
+            ],
+        ]);
+
+        $cod = $payment->getCod();
+        $this->assertNotNull($cod);
+        $this->assertFalse($cod->getChangeable());
+        $this->assertNull($cod->getFees());
+        $this->assertNull($cod->getFeeMax());
+        $this->assertNull($cod->getChangeableByTotal());
     }
 
     private static function makePayment(array $overrides = []): Payment
