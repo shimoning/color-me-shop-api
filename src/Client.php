@@ -313,7 +313,8 @@ class Client
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
      * @param string|null $accessToken
      * @return Collection<BigCategoryEntity|SmallCategoryEntity>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException 実効アクセストークンが空文字、または categories が配列以外の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException Category::fromArray() で API フィールドが不正な場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors
