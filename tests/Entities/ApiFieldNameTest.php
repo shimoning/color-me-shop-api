@@ -47,6 +47,13 @@ class ApiFieldNameTest extends TestCase
         'Payment\\CodFee' => 'upper_limit / fee は API の代引き手数料タプルに付けたライブラリ独自名',
     ];
 
+    /** @var array<string, array<string, string>> 公式フィールド外の内部フィールドと理由 */
+    private const INTERNAL_FIELDS = [
+        'Sales\\SaleUpdater' => [
+            'id' => 'PUT /v1/sales/{sale_id} の path parameter 由来。現行実装では body にも含めて送信される (Issue #53)',
+        ],
+    ];
+
     public function test_空のフィールド一覧は登録として認めない(): void
     {
         $this->expectException(AssertionFailedError::class);
@@ -153,6 +160,29 @@ class ApiFieldNameTest extends TestCase
 
         $this->assertNotEmpty($fields);
         $this->assertGreaterThan(200, \array_sum(\array_map('count', $fields)));
+    }
+
+    public function test_内部フィールドは公式一覧の外にあり配列化のキーに存在する(): void
+    {
+        $registrations = self::fixtureArray('api_field_names.json');
+
+        foreach (self::INTERNAL_FIELDS as $relative => $fields) {
+            $this->assertArrayHasKey($relative, $registrations, $relative . ' が公式フィールド一覧にありません');
+            $this->assertNotEmpty($fields, $relative . ' の内部フィールドが空です');
+
+            $class = 'Shimoning\\ColorMeShopApi\\Entities\\' . $relative;
+            $keys = \array_keys(self::newEntity($class, [])->toArray());
+
+            foreach ($fields as $field => $reason) {
+                $this->assertNotSame('', \trim($reason), $relative . '.' . $field . ' の理由が空です');
+                $this->assertNotContains($field, $registrations[$relative], $relative . '.' . $field . ' が公式フィールド一覧と重複しています');
+                $this->assertContains(
+                    $field,
+                    $keys,
+                    $relative . '.' . $field . ' が toArray() のキーにありません。INTERNAL_FIELDS の宣言を削除してください。',
+                );
+            }
+        }
     }
 
     /**
