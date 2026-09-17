@@ -4,6 +4,9 @@ namespace Shimoning\ColorMeShopApi\Constants;
 
 /**
  * ショップポイントの付与状態。
+ *
+ * 公式 OpenAPI の sale response は `canceled`、更新 request のみ `cenceled` と記載される（typo の疑い）。
+ * 本ライブラリは `canceled` を送信する。実 API がどちらを受理するかは未検証。
  */
 enum PointState: string
 {

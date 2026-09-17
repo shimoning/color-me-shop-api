@@ -160,12 +160,25 @@ OpenAPI との差分として削除・追加の対象にはしない。
   `male` / `female` のみである。
 - OAuth の説明にある scope のうち `write_shop_coupons`、`read_templates`、`write_templates`、
   `read_analytics` は既存 `AuthScope` enum にない。そのため `Scopes` と `AccessToken` でも扱えない。
-- `updateSale` request の `point_state` は `cenceled` と記載される一方、response schema と既存
-  `PointState` は `canceled` である。仕様側の typo と考えられるが、実 API 確認なしに変更しない。
 - `Error::$code` は OpenAPI では integer、公開 getter は string である。既存 communicator が
   互換性のため string へ正規化している。
 - OAuth token / error は OpenAPI に formal schema がなく、`AccessToken::$createdAt` などは
   OpenAPI だけでは妥当性を確定できない。
+
+## 公式 OpenAPI 内部の不一致
+
+[公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json) を 2026-09-17 に再取得して確認した。
+以下は OpenAPI 内の定義・説明の差であり、実 API での受理値や挙動は未検証である。
+
+- `PointState`: `sale` response の `point_state` は `canceled` だが、`PUT /v1/sales/{sale_id}` の
+  request 定義のみ `cenceled` と記載される（typo の疑い）。本ライブラリは response 側の
+  `canceled` を採用し、更新時もこれを送信する。実 API がどちらを受理するかは未検証。
+- グループの `display_state`: `productGroup` response と本ライブラリの `ProductDisplayState` は
+  `showing` / `hidden` / `showing_for_members` / `sale_for_members` だが、グループ作成・更新 request
+  の定義は `showing` / `hidden` / `members_only`。本ライブラリは response 側の値を採用する。
+  request 側の値の実 API での挙動は未検証。
+- `saleDelivery.pref_id`（別 Issue 候補）: 説明は北海道 1 〜 沖縄 47 までで、海外 48 に言及しない。
+  他の `pref_id` の説明には海外 48 が含まれる。実 API での扱いは未検証。
 
 ## コミット分割案と見積り
 

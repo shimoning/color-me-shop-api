@@ -4,6 +4,11 @@ namespace Shimoning\ColorMeShopApi\Constants;
 
 /**
  * 商品の表示および販売状態。
+ *
+ * 公式 OpenAPI の productGroup response と本 enum は `showing` / `hidden` /
+ * `showing_for_members` / `sale_for_members` だが、グループ作成・更新 request は
+ * `showing` / `hidden` / `members_only` と記載される。本ライブラリは response 側の値を採用する。
+ * request 側の値の実 API での挙動は未検証。
  */
 enum ProductDisplayState: string
 {
