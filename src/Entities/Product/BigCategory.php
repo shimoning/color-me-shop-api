@@ -23,6 +23,10 @@ class BigCategory extends Category
             return;
         }
 
+        if (! \is_array($data['children']) || ! \array_is_list($data['children'])) {
+            throw InvalidFieldException::for(static::class, 'children', 'list', $data['children']);
+        }
+
         $this->children = [];
         foreach ($data['children'] as $index => $child) {
             try {
@@ -45,6 +49,7 @@ class BigCategory extends Category
     /**
      * 子カテゴリー。実測した大カテゴリーは常に children キーを持つため、欠損時は
      * 非 nullable な既存契約に従い MissingFieldException を送出する。
+     * children は 0 から始まる連番キーのリスト形状のみ受理する。
      *
      * @return SmallCategory[]
      */

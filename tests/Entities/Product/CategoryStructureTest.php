@@ -112,6 +112,26 @@ class CategoryStructureTest extends TestCase
         ];
     }
 
+    #[DataProvider('invalidChildrenShapeProvider')]
+    public function test_親のchildrenがリスト形状以外なら固有例外になる(array $children): void
+    {
+        $data = self::fixtureArray('category_structure.json');
+        $data['children'] = $children;
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('children');
+        Category::fromArray($data);
+    }
+
+    /** @return array<string, array{array<int|string, array<string, int>>}> */
+    public static function invalidChildrenShapeProvider(): array
+    {
+        return [
+            '連想配列' => [['first' => ['id_small' => 1]]],
+            '飛び番' => [[1 => ['id_small' => 1]]],
+        ];
+    }
+
     public function test_子への不正なchildren入力も公開フィールドにはならない(): void
     {
         $data = self::fixtureArray('category_structure.json')['children'][0];

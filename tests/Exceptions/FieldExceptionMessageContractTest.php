@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
+use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -148,8 +149,8 @@ class FieldExceptionMessageContractTest extends TestCase
         \ksort($routeCounts);
         $this->assertSame(
             [
-                // Category::fromArray() の id_small 判定経路を含む。
-                'InvalidFieldException::for' => 4,
+                // Category::fromArray() の id_small 判定と BigCategory の children 形状判定を含む。
+                'InvalidFieldException::for' => 5,
                 // Charge の重量別配送料と BigCategory の子要素変換経路を含む。
                 'InvalidFieldException::forArrayElement' => 3,
                 'InvalidPaginationException::__construct' => 2,
@@ -226,6 +227,15 @@ class FieldExceptionMessageContractTest extends TestCase
                     $cyclic['self'] = &$cyclic;
 
                     throw InvalidFieldException::for(self::class, 'items', 'string', $cyclic);
+                },
+                null,
+            ],
+            'InvalidFieldException::for/子カテゴリーのリスト形状不一致' => [
+                static function (): void {
+                    Category::fromArray([
+                        'id_small' => 0,
+                        'children' => ['first' => ['id_small' => 1]],
+                    ]);
                 },
                 null,
             ],
