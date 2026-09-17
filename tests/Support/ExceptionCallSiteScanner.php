@@ -10,9 +10,15 @@ namespace Shimoning\ColorMeShopApi\Tests\Support;
 final class ExceptionCallSiteScanner
 {
     private const EXCEPTIONS = 'Shimoning\\ColorMeShopApi\\Exceptions\\';
+    private const TARGET_CLASSES = [
+        self::EXCEPTIONS . 'InvalidFieldException',
+        self::EXCEPTIONS . 'MissingFieldException',
+        self::EXCEPTIONS . 'InvalidPaginationException',
+        self::EXCEPTIONS . 'MissingPaginationException',
+    ];
 
     /**
-     * @return array<string, string> 相対パス:行番号 => FQCN::method
+     * @return array<string, array{route: string, endLine: int}> 相対パス:開始行 => 経路と閉じ括弧の行
      */
     public static function scan(string $source, string $path): array
     {
@@ -53,11 +59,12 @@ final class ExceptionCallSiteScanner
                     continue;
                 }
                 $class = self::resolve($name[0], $namespace, $imports);
-                if (\in_array($class, [
-                    self::EXCEPTIONS . 'InvalidPaginationException',
-                    self::EXCEPTIONS . 'MissingPaginationException',
-                ], true)) {
-                    self::record($sites, $path . ':' . $token['line'], $class . '::__construct');
+                if (\in_array($class, self::TARGET_CLASSES, true)) {
+                    $opening = $name[1] + 1;
+                    $endLine = ($tokens[$opening]['text'] ?? null) === '('
+                        ? self::closingParenthesisLine($tokens, $opening)
+                        : $token['line'];
+                    self::record($sites, $path . ':' . $token['line'], $class . '::__construct', $endLine);
                 }
                 continue;
             }
@@ -69,31 +76,54 @@ final class ExceptionCallSiteScanner
             $method = $tokens[$name[1] + 2] ?? null;
             if (
                 $method === null
-                || ! \in_array($method['id'], [\T_STRING, \T_FOR], true)
+                || \preg_match('/^[A-Za-z_\x80-\xff][A-Za-z0-9_\x80-\xff]*$/D', $method['text']) !== 1
                 || ($tokens[$name[1] + 3]['text'] ?? null) !== '('
             ) {
                 continue;
             }
             $class = self::resolve($name[0], $namespace, $imports);
-            if (
-                ($class === self::EXCEPTIONS . 'MissingFieldException' && $method['text'] === 'for')
-                || ($class === self::EXCEPTIONS . 'InvalidFieldException'
-                    && \in_array($method['text'], ['for', 'forArrayElement'], true))
-            ) {
-                self::record($sites, $path . ':' . $token['line'], $class . '::' . $method['text']);
+            if (\in_array($class, self::TARGET_CLASSES, true)) {
+                self::record(
+                    $sites,
+                    $path . ':' . $token['line'],
+                    $class . '::' . $method['text'],
+                    self::closingParenthesisLine($tokens, $name[1] + 3),
+                );
             }
         }
 
         return $sites;
     }
 
-    /** @param array<string, string> $sites */
-    private static function record(array &$sites, string $location, string $route): void
+    public static function containsLine(int $startLine, int $endLine, int $line): bool
+    {
+        return $startLine <= $line && $line <= $endLine;
+    }
+
+    /**
+     * @param list<array{id: int|null, text: string, line: int}> $tokens
+     */
+    private static function closingParenthesisLine(array $tokens, int $opening): int
+    {
+        $depth = 0;
+        for ($i = $opening; isset($tokens[$i]); ++$i) {
+            if ($tokens[$i]['text'] === '(') {
+                ++$depth;
+            } elseif ($tokens[$i]['text'] === ')' && --$depth === 0) {
+                return $tokens[$i]['line'];
+            }
+        }
+
+        throw new \RuntimeException('呼び出し式の閉じ括弧が見つかりません: ' . $tokens[$opening]['line']);
+    }
+
+    /** @param array<string, array{route: string, endLine: int}> $sites */
+    private static function record(array &$sites, string $location, string $route, int $endLine): void
     {
         if (isset($sites[$location])) {
             throw new \RuntimeException('同一行に複数の生成箇所があります: ' . $location);
         }
-        $sites[$location] = $route;
+        $sites[$location] = ['route' => $route, 'endLine' => $endLine];
     }
 
     /**

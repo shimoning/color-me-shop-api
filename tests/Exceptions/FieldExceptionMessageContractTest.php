@@ -172,7 +172,7 @@ class FieldExceptionMessageContractTest extends TestCase
         return $path . '@' . $route . '#' . $ordinal;
     }
 
-    /** @return array<string, array{string, string}> 安定 ID => [相対パス:行番号, FQCN::method] */
+    /** @return array<string, array{string, string, int}> 安定 ID => [相対パス:開始行, FQCN::method, 終了行] */
     private static function sourceCallSites(): array
     {
         $sourceDirectory = \dirname(__DIR__, 2) . '/src';
@@ -189,9 +189,14 @@ class FieldExceptionMessageContractTest extends TestCase
             }
             $path = 'src/' . \substr($file->getPathname(), \strlen($sourceDirectory) + 1);
             $ordinals = [];
-            foreach (ExceptionCallSiteScanner::scan($source, $path) as $location => $route) {
+            foreach (ExceptionCallSiteScanner::scan($source, $path) as $location => $callSite) {
+                $route = $callSite['route'];
                 $ordinals[$route] = ($ordinals[$route] ?? 0) + 1;
-                $sites[self::site($path, $route, $ordinals[$route])] = [$location, $route];
+                $sites[self::site($path, $route, $ordinals[$route])] = [
+                    $location,
+                    $route,
+                    $callSite['endLine'],
+                ];
             }
         }
 
@@ -200,9 +205,10 @@ class FieldExceptionMessageContractTest extends TestCase
 
     private function assertExceptionOrigin(\Throwable $exception, string $callSiteId): void
     {
-        $site = self::sourceCallSites()[$callSiteId] ?? null;
+        $sourceSites = self::sourceCallSites();
+        $site = $sourceSites[$callSiteId] ?? null;
         $this->assertNotNull($site, 'provider ID の生成箇所が見つかりません: ' . $callSiteId);
-        [$location, $route] = $site;
+        [$location, $route, $endLine] = $site;
         $separator = \strrpos($location, ':');
         $this->assertNotFalse($separator);
         $path = \substr($location, 0, $separator);
@@ -210,22 +216,72 @@ class FieldExceptionMessageContractTest extends TestCase
         $absolutePath = \dirname(__DIR__, 2) . '/' . $path;
 
         if (\str_ends_with($route, '::__construct')) {
-            $this->assertSame($absolutePath, $exception->getFile());
-            $this->assertSame($line, $exception->getLine());
-            return;
+            if (
+                $exception->getFile() === $absolutePath
+                && ExceptionCallSiteScanner::containsLine($line, $endLine, $exception->getLine())
+            ) {
+                return;
+            }
+            $actual = self::describeOrigin($exception->getFile(), $exception->getLine(), $route, $sourceSites);
+            $this->fail(
+                '指定した生成箇所を通っていません: ' . $callSiteId . ' (' . $location . '-' . $endLine
+                . '); 実際: ' . $actual,
+            );
         }
 
+        $actualFrames = [];
         foreach ($exception->getTrace() as $frame) {
+            $frameRoute = ($frame['class'] ?? null) . '::' . ($frame['function'] ?? null);
+            if ($frameRoute === $route && isset($frame['file'], $frame['line'])) {
+                $actualFrames[] = self::describeOrigin($frame['file'], $frame['line'], $route, $sourceSites);
+            }
             if (
                 ($frame['file'] ?? null) === $absolutePath
-                && ($frame['line'] ?? null) === $line
-                && ($frame['class'] ?? null) . '::' . ($frame['function'] ?? null) === $route
+                && isset($frame['line'])
+                && ExceptionCallSiteScanner::containsLine($line, $endLine, $frame['line'])
+                && $frameRoute === $route
             ) {
                 return;
             }
         }
 
-        $this->fail('指定した生成箇所を通っていません: ' . $callSiteId . ' (' . $location . ')');
+        if ($actualFrames === []) {
+            $frame = $exception->getTrace()[0] ?? null;
+            $actualFrames[] = $frame !== null && isset($frame['file'], $frame['line'])
+                ? self::describeOrigin(
+                    $frame['file'],
+                    $frame['line'],
+                    ($frame['class'] ?? null) . '::' . ($frame['function'] ?? null),
+                    $sourceSites,
+                )
+                : $exception->getFile() . ':' . $exception->getLine();
+        }
+
+        $this->fail(
+            '指定した生成箇所を通っていません: ' . $callSiteId . ' (' . $location . '-' . $endLine
+            . '); 実際: ' . \implode(', ', $actualFrames),
+        );
+    }
+
+    /**
+     * @param array<string, array{string, string, int}> $sourceSites
+     */
+    private static function describeOrigin(string $file, int $line, string $route, array $sourceSites): string
+    {
+        $description = $file . ':' . $line;
+        foreach ($sourceSites as $id => [$location, $siteRoute, $endLine]) {
+            $separator = \strrpos($location, ':');
+            if ($separator === false || $siteRoute !== $route) {
+                continue;
+            }
+            $path = \dirname(__DIR__, 2) . '/' . \substr($location, 0, $separator);
+            $startLine = (int) \substr($location, $separator + 1);
+            if ($file === $path && ExceptionCallSiteScanner::containsLine($startLine, $endLine, $line)) {
+                return $description . ' (' . $id . ')';
+            }
+        }
+
+        return $description;
     }
 
     /** @return array<string, array{string, \Closure(): void, class-string<\Throwable>|null}> */
