@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleTest extends TestCase
@@ -82,6 +83,13 @@ class SaleTest extends TestCase
         $sale = new Sale(['customer' => ['id' => 501]]);
 
         $this->assertSame(501, $sale->getCustomer()->getId());
+    }
+
+    public function test_性別が該当なしの受注顧客応答を構築できる(): void
+    {
+        $sale = new Sale(['customer' => ['sex' => 'not_applicable']]);
+
+        $this->assertSame(Sex::NOT_APPLICABLE, $sale->getCustomer()->getSex());
     }
 
     public function test_PR1時点のserializeペイロードをunserializeできる(): void

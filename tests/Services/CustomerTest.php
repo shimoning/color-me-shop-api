@@ -62,6 +62,17 @@ class CustomerTest extends TestCase
         $this->assertSame(['limit' => '20', 'offset' => '40'], $mock->query());
     }
 
+    public function test_性別が該当なしの顧客を検索できる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('customers_page.json'));
+
+        (new Customer('my-token', $mock->client()))->page(new SearchParameters([
+            'sex' => 'not_applicable',
+        ]));
+
+        $this->assertSame(['sex' => 'not_applicable'], $mock->query());
+    }
+
     public function test_LINE_UIDと会員ランクIDで完全一致検索できる(): void
     {
         $mock = HttpMock::json(200, self::fixture('customers_page.json'));

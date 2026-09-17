@@ -158,6 +158,7 @@ OpenAPI との差分として削除・追加の対象にはしない。
   ただし各 description は決済種別により存在すると明記しており、省略可能性との区別が必要である。
 - `Customer::$sex` と検索条件は OpenAPI enum の `not_applicable` を含むが、既存 `Sex` enum は
   `male` / `female` のみである。
+  - **対応済み（Issue #54、2026-09-17）**: `Sex::NOT_APPLICABLE` を追加。
 - OAuth の説明にある scope のうち `write_shop_coupons`、`read_templates`、`write_templates`、
   `read_analytics` は既存 `AuthScope` enum にない。そのため `Scopes` と `AccessToken` でも扱えない。
 - `updateSale` request の `point_state` は `cenceled` と記載される一方、response schema と既存
