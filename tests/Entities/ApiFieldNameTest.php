@@ -27,7 +27,8 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
  *   https://api.shop-pro.jp/v1/spec/open_api.json (2026-09-17 取得)
  *   Error::field は docs/api-error-responses.md の実 API 観測結果による。
  *   OAuth\\AccessToken は RFC 6749 §5.1 と tests/Fixtures/oauth_token.json、
- *   OAuth\\ErrorResponse は RFC 6749 §5.2 と docs/adr/0007 による。
+ *   OAuth\\ErrorResponse の error / error_description / error_uri は RFC 6749 §5.2、
+ *   state は RFC 6749 §4.1.2.1 (認可コード) / §4.2.2.1 (インプリシット) と docs/adr/0007 による。
  *
  * 更新するときは同じ仕様から tests/Fixtures/api_field_names.json を作り直し、
  * 実 API でのみ観測したフィールドを追記すること。

@@ -411,7 +411,6 @@
         "status"
     ],
     "Sales\\SaleUpdater": [
-        "id",
         "paid",
         "point_state",
         "sale_deliveries"
