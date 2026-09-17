@@ -32,6 +32,13 @@ class Payment extends Entity
     protected string $accountId;
 
     protected string $name;
+
+    /**
+     * 決済手数料
+     *
+     * 実測では、cod.changeable が false の場合に管理画面で一律手数料が選択され、
+     * true の場合にもこの入力値は応答に残る。実決済時の計算結果は未観測。
+     */
     protected ?int $fee;
 
     protected ?string $ipCode;
@@ -90,6 +97,10 @@ class Payment extends Entity
 
     /**
      * 決済手数料
+     *
+     * 実測では、cod.changeable が false の場合に管理画面で一律手数料が選択され、
+     * true の場合にもこの入力値は応答に残る。実決済時の計算結果は未観測。
+     *
      * @return int|null
      */
     public function getFee(): ?int

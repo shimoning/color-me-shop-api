@@ -1,0 +1,38 @@
+[
+    {
+        "id": 101,
+        "account_id": "example-shop",
+        "name": "商品代引き",
+        "type": 0,
+        "fee": 300,
+        "cod": {
+            "changeable": false
+        }
+    },
+    {
+        "id": 102,
+        "account_id": "example-shop",
+        "name": "段階的代引き",
+        "type": 0,
+        "fee": 123,
+        "cod": {
+            "changeable": true,
+            "fees": [[500, 200]],
+            "fee_max": null,
+            "changeable_by_total": false
+        }
+    },
+    {
+        "id": 103,
+        "account_id": "example-shop",
+        "name": "fee_max設定代引き",
+        "type": 0,
+        "fee": 987,
+        "cod": {
+            "changeable": true,
+            "fees": [[300, 100], [500, 70]],
+            "fee_max": 10,
+            "changeable_by_total": true
+        }
+    }
+]

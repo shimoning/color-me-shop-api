@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Payment;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 決済設定
@@ -11,13 +12,88 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Cod extends Entity
 {
+    /**
+     * 手数料が決済金額によって変わるか否か
+     *
+     * 2026-09-16 の実測では、false は一律手数料、true は区分手数料が
+     * 管理画面で選択されていた。実決済時の計算結果は未観測。
+     */
     protected bool $changeable;
-    protected array $fees;
-    protected int $feeMax;
-    protected bool $changeableByTotal;
+
+    /**
+     * 手数料が変わる決済金額の区分
+     *
+     * @var list<CodFee>|null
+     */
+    protected ?array $fees;
+
+    /**
+     * 最後の区分がある場合、その排他的上限以上に設定された手数料
+     *
+     * @var int|null
+     */
+    protected ?int $feeMax;
+
+    /**
+     * 手数料計算に用いる金額の種類
+     *
+     * true の場合は決済総額、false の場合は商品合計額で計算する。
+     *
+     * @var bool|null
+     */
+    protected ?bool $changeableByTotal;
+
+    /**
+     * API の手数料タプルを意味付き Entity に変換する。
+     *
+     * @param array<string, mixed> $data API レスポンスデータ
+     */
+    public function __construct(array $data)
+    {
+        parent::__construct($data);
+
+        if (! \array_key_exists('fees', $data) || $data['fees'] === null) {
+            return;
+        }
+
+        if (! \is_array($data['fees']) || ! \array_is_list($data['fees'])) {
+            throw InvalidFieldException::for(static::class, 'fees', 'list', $data['fees']);
+        }
+
+        $this->fees = [];
+        foreach ($data['fees'] as $index => $tuple) {
+            try {
+                if (
+                    ! \is_array($tuple)
+                    || ! \array_is_list($tuple)
+                    || \count($tuple) !== 2
+                    || ! \is_int($tuple[0])
+                    || ! \is_int($tuple[1])
+                ) {
+                    throw new \UnexpectedValueException('代引き手数料区分は2整数のタプルである必要があります。');
+                }
+
+                $this->fees[] = new CodFee([
+                    'upper_limit' => $tuple[0],
+                    'fee' => $tuple[1],
+                ]);
+            } catch (\Throwable $error) {
+                throw InvalidFieldException::forArrayElement(
+                    static::class,
+                    \sprintf('fees[%d]', $index),
+                    CodFee::class,
+                    $error,
+                );
+            }
+        }
+    }
 
     /**
      * 手数料が決済金額によって変わるか否か
+     *
+     * 2026-09-16 の実測では、false は一律手数料、true は区分手数料が
+     * 管理画面で選択されていた。実決済時の計算結果は未観測。
+     *
      * @return bool
      */
     public function getChangeable(): bool
@@ -29,37 +105,46 @@ class Cod extends Entity
 
     /**
      * 手数料が変わる決済金額の区分
-     * [3000, 100]であれば、3000円以下の場合、手数料は100円であることを表す
-     * @return array<int>
+     *
+     * 各区分の upperLimit は設定上の排他的上限（未満）。公式 OpenAPI の
+     * 「3000円以下」は設定境界の説明として誤っている。実決済時の計算は未観測。
+     * 欠損と明示 null は null、空配列は空リストとして返す。
+     * 出典: docs/api-payment-structure.md。
+     *
+     * @return list<CodFee>|null
      */
-    public function getFees(): array
+    public function getFees(): ?array
     {
-        $this->assertFieldInitialized('fees');
-
         return $this->fees;
     }
 
     /**
-     * feesに設定されている区分以上の金額の場合の手数料
-     * @return int
+     * 最後の区分がある場合、その upperLimit 以上に設定された手数料。
+     * 公式 OpenAPI は nullable と
+     * していないが、実 API では未設定時に null、固定手数料時にキー欠損を確認した。
+     * null の場合の最終区分と実決済時の計算結果は未観測。
+     * 出典: docs/api-payment-structure.md。
+     *
+     * @return int|null
      */
-    public function getFeeMax(): int
+    public function getFeeMax(): ?int
     {
-        $this->assertFieldInitialized('feeMax');
-
         return $this->feeMax;
     }
 
     /**
-     * 手数料計算に用いる決済総額を用いるか否か
-     * true: 決済総額で計算
-     * false: 商品合計額で計算
-     * @return bool
+     * 手数料計算に用いる金額の種類
+     *
+     * true の場合は決済総額、false の場合は商品合計額で計算する。
+     * 公式 OpenAPI では非 nullable の boolean だが、実 API では固定手数料
+     * （changeable=false）のときキー欠損を確認した。固定手数料では
+     * 手数料の区分判定がないため値がなく、欠損時は null を返す。
+     * 出典: docs/api-payment-structure.md。
+     *
+     * @return bool|null
      */
-    public function getChangeableByTotal(): bool
+    public function getChangeableByTotal(): ?bool
     {
-        $this->assertFieldInitialized('changeableByTotal');
-
         return $this->changeableByTotal;
     }
 }
