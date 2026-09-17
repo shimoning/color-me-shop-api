@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -46,9 +47,31 @@ class ApiFieldNameTest extends TestCase
         'Payment\\CodFee' => 'upper_limit / fee は API の代引き手数料タプルに付けたライブラリ独自名',
     ];
 
+    public function test_空のフィールド一覧は登録として認めない(): void
+    {
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Sales\\Sale');
+
+        self::assertRegisteredFieldsNotEmpty([
+            'Shop\\Shop' => ['id'],
+            'Sales\\Sale' => [],
+        ]);
+    }
+
+    /** @param array<string, list<string>> $registrations */
+    private static function assertRegisteredFieldsNotEmpty(array $registrations): void
+    {
+        foreach ($registrations as $relative => $fields) {
+            self::assertNotEmpty($fields, $relative . ' の API フィールド名が登録されていません');
+        }
+    }
+
     public function test_すべてのEntityが検証対象に含まれている(): void
     {
-        $registered = \array_keys(self::fixtureArray('api_field_names.json'));
+        $registrations = self::fixtureArray('api_field_names.json');
+        self::assertRegisteredFieldsNotEmpty($registrations);
+
+        $registered = \array_keys($registrations);
         $excluded = \array_keys(self::EXCLUDED_ENTITIES);
         $discovered = self::discoveredClasses();
         $entities = self::entityClasses($discovered);
