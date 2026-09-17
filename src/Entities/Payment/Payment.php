@@ -236,7 +236,10 @@ class Payment extends Entity
     }
 
     /**
-     * 代引き決済の設定情報。代引き決済の場合のみ存在する
+     * 銀行振込決済（type=1）の設定情報。銀行振込決済の場合のみ存在する。
+     * 銀行振込以外の決済で financial キーが欠損した場合は null を返す。
+     * 出典: docs/api-payment-structure.md。
+     *
      * @return Financial|null
      */
     public function getFinancial(): ?Financial
