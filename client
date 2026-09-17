@@ -33,7 +33,14 @@ if (!empty($_ENV['CLIENT_ID']) && !empty($_ENV['CLIENT_SECRET'])) {
     );
 
 }
-$oAuthScopes = new Values\Scopes(Constants\AuthScope::cases());
+// サンプルの既定は従来の 5 scope。追加の scope は必要に応じて Values\Scopes で明示する。
+$oAuthScopes = new Values\Scopes([
+    Constants\AuthScope::READ_PRODUCTS,
+    Constants\AuthScope::WRITE_PRODUCTS,
+    Constants\AuthScope::READ_SALES,
+    Constants\AuthScope::WRITE_SALES,
+    Constants\AuthScope::READ_SHOP_COUPONS,
+]);
 
 // - Access token
 $token = $_ENV['TOKEN'] ?? null;
