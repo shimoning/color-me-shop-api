@@ -4,6 +4,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -19,7 +21,7 @@ class ProductResponseFieldsTest extends TestCase
 
     public function test_カテゴリーのmeta_tagを共有Entityで取得する(): void
     {
-        $category = new Category(self::fixtureData('category_with_values'));
+        $category = Category::fromArray(self::fixtureData('category_with_values'));
 
         $metaTag = $category->getMetaTag();
         $this->assertInstanceOf(MetaTag::class, $metaTag);
@@ -30,11 +32,11 @@ class ProductResponseFieldsTest extends TestCase
 
     public function test_子カテゴリーのmeta_tagも再帰的に共有Entityへ変換する(): void
     {
-        $category = new Category(self::fixtureData('category_with_values'));
+        $category = Category::fromArray(self::fixtureData('category_with_values'));
 
         $children = $category->getChildren();
         $this->assertCount(1, $children);
-        $this->assertContainsOnlyInstancesOf(Category::class, $children);
+        $this->assertContainsOnlyInstancesOf(SmallCategory::class, $children);
 
         $metaTag = $children[0]->getMetaTag();
         $this->assertInstanceOf(MetaTag::class, $metaTag);
@@ -45,7 +47,7 @@ class ProductResponseFieldsTest extends TestCase
 
     public function test_meta_tag内部のnullableフィールドの明示的なnullを保持する(): void
     {
-        $category = new Category(self::fixtureData('category_with_null_meta_tag_fields'));
+        $category = Category::fromArray(self::fixtureData('category_with_null_meta_tag_fields'));
 
         $metaTag = $category->getMetaTag();
         $this->assertNull($metaTag->getTitle());
@@ -55,7 +57,7 @@ class ProductResponseFieldsTest extends TestCase
 
     public function test_nullableなカテゴリーのmeta_tagが欠損していればnullになる(): void
     {
-        $category = new Category(self::fixtureData('category_with_missing_meta_tag'));
+        $category = Category::fromArray(self::fixtureData('category_with_missing_meta_tag'));
 
         $this->assertNull($category->getMetaTag());
         $this->assertNull($category->toArray()['meta_tag']);
@@ -65,7 +67,7 @@ class ProductResponseFieldsTest extends TestCase
 
     public function test_nullableなカテゴリーのmeta_tagの明示的なnullを保持する(): void
     {
-        $category = new Category(self::fixtureData('category_with_null_meta_tag'));
+        $category = Category::fromArray(self::fixtureData('category_with_null_meta_tag'));
 
         $this->assertNull($category->getMetaTag());
         $array = $category->toArray();
@@ -77,17 +79,17 @@ class ProductResponseFieldsTest extends TestCase
             $this->assertArrayHasKey($field, $recursiveWithNull);
             $this->assertNull($recursiveWithNull[$field]);
         }
-        $this->assertSame(['meta_tag' => null], $category->getRaw());
+        $this->assertSame(['id_small' => 0, 'meta_tag' => null], $category->getRaw());
     }
 
     public function test_カテゴリーのmeta_tagが不正型なら固有例外になる(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
-            Category::class . ' の API フィールド『meta_tag』が不正です。',
+            BigCategory::class . ' の API フィールド『meta_tag』が不正です。',
         );
 
-        new Category(self::fixtureData('category_with_invalid_meta_tag'));
+        Category::fromArray(self::fixtureData('category_with_invalid_meta_tag'));
     }
 
     public function test_グループのmeta_tagをカテゴリーと同じ共有Entityで取得する(): void
@@ -139,10 +141,13 @@ class ProductResponseFieldsTest extends TestCase
         $this->assertNull($group->getMetaTag());
     }
 
-    public function test_旧形式のCategoryをunserializeするとmeta_tagはnullになる(): void
+    public function test_旧形式のCategoryペイロードをBigCategoryとして復元するとmeta_tagはnullになる(): void
     {
-        $category = \unserialize(self::legacyPayload(self::LEGACY_EMPTY_CATEGORY_PAYLOAD_BASE64));
-        $this->assertInstanceOf(Category::class, $category);
+        $payload = self::legacyPayload(self::LEGACY_EMPTY_CATEGORY_PAYLOAD_BASE64);
+        $oldHeader = 'O:' . \strlen(Category::class) . ':"' . Category::class . '"';
+        $newHeader = 'O:' . \strlen(BigCategory::class) . ':"' . BigCategory::class . '"';
+        $category = \unserialize(\str_replace($oldHeader, $newHeader, $payload));
+        $this->assertInstanceOf(BigCategory::class, $category);
 
         $this->assertNull($category->getMetaTag());
     }
@@ -173,11 +178,11 @@ class ProductResponseFieldsTest extends TestCase
         mixed $value,
     ): void {
         try {
-            new Category(['meta_tag' => [$field => $value]]);
+            Category::fromArray(['id_small' => 0, 'meta_tag' => [$field => $value]]);
             $this->fail('InvalidFieldException が送出されませんでした。');
         } catch (InvalidFieldException $exception) {
             $this->assertStringContainsString(
-                Category::class . ' の API フィールド『meta_tag』が不正です。',
+                BigCategory::class . ' の API フィールド『meta_tag』が不正です。',
                 $exception->getMessage(),
             );
 

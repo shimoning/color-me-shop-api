@@ -4,6 +4,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -13,7 +15,7 @@ class CategoryTest extends TestCase
 {
     private function makeCategory(array $overrides = []): Category
     {
-        return new Category($overrides + [
+        return Category::fromArray($overrides + [
             'id_big' => 10,
             'id_small' => 20,
             'account_id' => 'my-shop',
@@ -21,7 +23,6 @@ class CategoryTest extends TestCase
             'display_state' => 'showing',
             'make_date' => 1700000000,
             'update_date' => 1700000000,
-            'children' => [],
         ]);
     }
 
@@ -52,28 +53,23 @@ class CategoryTest extends TestCase
         $this->assertSame(CategoryDisplayState::SHOWING, $category->getDisplayState());
     }
 
-    public function test_toArrayのキー順はmeta_tagがchildrenの後になる(): void
+    public function test_toArrayは具象型に応じたフィールドを返す(): void
     {
-        $this->assertSame([
-            'id_big',
-            'id_small',
-            'account_id',
-            'name',
-            'image_url',
-            'expl',
-            'sort',
-            'display_state',
-            'make_date',
-            'update_date',
-            'children',
-            'meta_tag',
-        ], \array_keys($this->makeCategory()->toArray()));
+        $small = $this->makeCategory();
+        $big = $this->makeCategory(['id_small' => 0, 'children' => []]);
+
+        $this->assertInstanceOf(SmallCategory::class, $small);
+        $this->assertArrayNotHasKey('children', $small->toArray());
+        $this->assertArrayHasKey('meta_tag', $small->toArray());
+        $this->assertInstanceOf(BigCategory::class, $big);
+        $this->assertSame([], $big->toArray()['children']);
+        $this->assertArrayHasKey('meta_tag', $big->toArray());
     }
 
     public function test_実APIの大カテゴリーからmeta_tagを取得できる(): void
     {
         $data = self::actualCategories()[1];
-        $category = new Category($data);
+        $category = Category::fromArray($data);
 
         $this->assertInstanceOf(MetaTag::class, $category->getMetaTag());
         $this->assertSame($data['meta_tag'], $category->getMetaTag()?->getRaw());
@@ -82,7 +78,7 @@ class CategoryTest extends TestCase
     public function test_実APIの小カテゴリーからmeta_tagを取得できる(): void
     {
         $data = self::actualCategories()[0];
-        $category = new Category($data);
+        $category = Category::fromArray($data);
         $child = $category->getChildren()[0];
 
         $this->assertInstanceOf(MetaTag::class, $child->getMetaTag());
@@ -91,7 +87,7 @@ class CategoryTest extends TestCase
 
     public function test_実APIでmeta_tagがない大カテゴリーはnullを返す(): void
     {
-        $category = new Category(self::actualCategories()[0]);
+        $category = Category::fromArray(self::actualCategories()[0]);
 
         $this->assertNull($category->getMetaTag());
         $this->assertArrayNotHasKey('meta_tag', $category->getRaw());
@@ -104,7 +100,7 @@ class CategoryTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
-            Category::class . " の API フィールド『meta_tag』が不正です。" . MetaTag::class
+            SmallCategory::class . " の API フィールド『meta_tag』が不正です。" . MetaTag::class
             . ' を期待しましたが',
         );
 
@@ -146,7 +142,7 @@ class CategoryTest extends TestCase
     public function test_meta_tagを実APIと同じフィールド名で再帰的に配列化できる(): void
     {
         $data = self::actualCategories()[1];
-        $category = new Category($data);
+        $category = Category::fromArray($data);
 
         $this->assertSame($data['meta_tag'], $category->toArrayRecursive()['meta_tag']);
         $this->assertSame(
@@ -159,7 +155,7 @@ class CategoryTest extends TestCase
     {
         $data = self::actualCategories()[1];
         unset($data['meta_tag']['description']);
-        $category = new Category($data);
+        $category = Category::fromArray($data);
 
         // 公式スキーマ上 nullable のため、従来の欠損例外ではなく Entity 共通契約の null を期待する。
         $this->assertNull($category->getMetaTag()?->getDescription());
@@ -174,7 +170,7 @@ class CategoryTest extends TestCase
             'description' => null,
         ];
 
-        $category = new Category($data);
+        $category = Category::fromArray($data);
 
         $this->assertNull($category->getMetaTag()?->getTitle());
         $this->assertNull($category->getMetaTag()?->getKeywords());

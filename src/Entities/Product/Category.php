@@ -5,13 +5,14 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 商品カテゴリー
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
  */
-class Category extends Entity
+abstract class Category extends Entity
 {
     const OBJECT_FIELDS = [
         'displayState' => [
@@ -20,10 +21,6 @@ class Category extends Entity
         'metaTag' => [
             'allowNull' => true,
             'entity' => MetaTag::class,
-        ],
-        'children' => [
-            'array' => true,
-            'entity' => Category::class,
         ],
     ];
 
@@ -42,8 +39,23 @@ class Category extends Entity
     protected int $makeDate;
     protected int $updateDate;
 
-    protected array $children;
     protected ?MetaTag $metaTag;
+
+    /**
+     * id_small の実測上の親子判別に従ってカテゴリーを生成する。
+     *
+     * @param array<string, mixed> $data API レスポンスデータ
+     * @throws InvalidFieldException id_small が欠損または整数以外の場合
+     */
+    public static function fromArray(array $data): BigCategory|SmallCategory
+    {
+        $idSmall = $data['id_small'] ?? null;
+        if (! \is_int($idSmall)) {
+            throw InvalidFieldException::for(self::class, 'id_small', 'int', $idSmall);
+        }
+
+        return $idSmall === 0 ? new BigCategory($data) : new SmallCategory($data);
+    }
 
     /**
      * 大カテゴリーID
@@ -153,15 +165,5 @@ class Category extends Entity
     {
         $this->assertFieldInitialized('updateDate');
         return (new DateTimeImmutable)->setTimestamp($this->updateDate);
-    }
-
-    /**
-     * 子カテゴリー
-     * @return Category[]
-     */
-    public function getChildren(): array
-    {
-        $this->assertFieldInitialized('children');
-        return $this->children;
     }
 }

@@ -1,5 +1,6 @@
 {
     "category_with_values": {
+        "id_small": 0,
         "meta_tag": {
             "title": "高品質なTシャツコレクション | ECショップ",
             "keywords": "Tシャツ,ファッション,コットン",
@@ -7,6 +8,7 @@
         },
         "children": [
             {
+                "id_small": 1,
                 "meta_tag": {
                     "title": "カジュアルTシャツ | ECショップ",
                     "keywords": "カジュアル,Tシャツ,日常着",
@@ -16,17 +18,20 @@
         ]
     },
     "category_with_null_meta_tag_fields": {
+        "id_small": 0,
         "meta_tag": {
             "title": null,
             "keywords": null,
             "description": null
         }
     },
-    "category_with_missing_meta_tag": {},
+    "category_with_missing_meta_tag": {"id_small": 0},
     "category_with_null_meta_tag": {
+        "id_small": 0,
         "meta_tag": null
     },
     "category_with_invalid_meta_tag": {
+        "id_small": 0,
         "meta_tag": "invalid"
     },
     "group_with_values": {

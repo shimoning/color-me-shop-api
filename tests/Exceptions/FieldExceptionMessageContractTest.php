@@ -148,9 +148,10 @@ class FieldExceptionMessageContractTest extends TestCase
         \ksort($routeCounts);
         $this->assertSame(
             [
-                'InvalidFieldException::for' => 3,
-                // Charge の重量別配送料にも、配列要素を指す生成経路を追加したため2箇所になる。
-                'InvalidFieldException::forArrayElement' => 2,
+                // Category::fromArray() の id_small 判定経路を含む。
+                'InvalidFieldException::for' => 4,
+                // Charge の重量別配送料と BigCategory の子要素変換経路を含む。
+                'InvalidFieldException::forArrayElement' => 3,
                 'InvalidPaginationException::__construct' => 2,
                 // foundation の宣言プロパティ不在経路と PR3 の Sale customer 後方互換経路を両方保持する。
                 'MissingFieldException::for' => 3,

@@ -89,6 +89,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
@@ -454,7 +455,11 @@ if ($categoriesOrErrors instanceof Errors) {
             $metaTag->getKeywords();
             $metaTag->getDescription();
         }
-        $category->getChildren();
+        if ($category instanceof BigCategory) {
+            foreach ($category->getChildren() as $child) {
+                $child->getName();
+            }
+        }
     }
 }
 ```
