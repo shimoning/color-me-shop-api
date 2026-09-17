@@ -111,7 +111,7 @@ class Cod extends Entity
      * 欠損と明示 null は null、空配列は空リストとして返す。
      * 出典: docs/api-payment-structure.md。
      *
-     * @return CodFee[]|null
+     * @return list<CodFee>|null
      */
     public function getFees(): ?array
     {
@@ -136,6 +136,10 @@ class Cod extends Entity
      * 手数料計算に用いる金額の種類
      *
      * true の場合は決済総額、false の場合は商品合計額で計算する。
+     * 公式 OpenAPI では非 nullable の boolean だが、実 API では固定手数料
+     * （changeable=false）のときキー欠損を確認した。固定手数料では
+     * 手数料の区分判定がないため値がなく、欠損時は null を返す。
+     * 出典: docs/api-payment-structure.md。
      *
      * @return bool|null
      */
