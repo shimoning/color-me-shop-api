@@ -62,7 +62,7 @@ class CustomerTest extends TestCase
         $this->assertSame(['limit' => '20', 'offset' => '40'], $mock->query());
     }
 
-    public function test_性別が該当なしの顧客を検索できる(): void
+    public function test_性別が未回答の顧客を検索できる(): void
     {
         $mock = HttpMock::json(200, self::fixture('customers_page.json'));
 

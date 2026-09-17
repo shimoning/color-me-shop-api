@@ -85,7 +85,7 @@ class SaleTest extends TestCase
         $this->assertSame(501, $sale->getCustomer()->getId());
     }
 
-    public function test_性別が該当なしの受注顧客応答を構築できる(): void
+    public function test_性別が未回答の受注顧客応答を構築できる(): void
     {
         $sale = new Sale(['customer' => ['sex' => 'not_applicable']]);
 

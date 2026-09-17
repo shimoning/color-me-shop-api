@@ -63,7 +63,7 @@ class CustomerResponseFieldsTest extends TestCase
         $this->assertSame(1465784934, $accounts[0]->getCreatedAt()->getTimestamp());
     }
 
-    public function test_性別が該当なしの顧客応答を構築できる(): void
+    public function test_性別が未回答の顧客応答を構築できる(): void
     {
         $customer = new Customer(['sex' => 'not_applicable']);
 
