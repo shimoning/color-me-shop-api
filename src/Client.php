@@ -35,7 +35,8 @@ use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\Category as CategoryEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\BigCategory as BigCategoryEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory as SmallCategoryEntity;
 
 /**
  * カラーミーショップ API の各機能を提供するクライアント。
@@ -311,8 +312,9 @@ class Client
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
      * @param string|null $accessToken
-     * @return Collection<CategoryEntity>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @return Collection<BigCategoryEntity|SmallCategoryEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException 実効アクセストークンが空文字、または categories が配列以外の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException Category::fromArray() で API フィールドが不正、または categories の要素が配列以外の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors

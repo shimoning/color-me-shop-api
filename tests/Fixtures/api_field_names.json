@@ -190,9 +190,22 @@
         "parent_group_id",
         "sort"
     ],
-    "Product\\Category": [
+    "Product\\BigCategory": [
         "account_id",
         "children",
+        "display_state",
+        "expl",
+        "id_big",
+        "id_small",
+        "image_url",
+        "make_date",
+        "meta_tag",
+        "name",
+        "sort",
+        "update_date"
+    ],
+    "Product\\SmallCategory": [
+        "account_id",
         "display_state",
         "expl",
         "id_big",

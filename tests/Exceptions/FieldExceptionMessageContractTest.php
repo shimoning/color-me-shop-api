@@ -10,15 +10,18 @@ use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Payment\Cod;
+use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
+use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
+use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class FieldExceptionMessageContractTest extends TestCase
 {
@@ -149,10 +152,10 @@ class FieldExceptionMessageContractTest extends TestCase
         \ksort($routeCounts);
         $this->assertSame(
             [
-                // Cod の fees リスト形状の検証経路を含む。
-                'InvalidFieldException::for' => 4,
-                // Charge の重量別配送料と Cod の手数料区分の位置付き経路を含む。
-                'InvalidFieldException::forArrayElement' => 3,
+                // Category・BigCategory の判定と Cod の fees リスト形状の検証経路を含む。
+                'InvalidFieldException::for' => 6,
+                // Charge・BigCategory・Product の要素変換と Cod の手数料区分の位置付き経路を含む。
+                'InvalidFieldException::forArrayElement' => 5,
                 'InvalidPaginationException::__construct' => 2,
                 // foundation の宣言プロパティ不在経路と PR3 の Sale customer 後方互換経路を両方保持する。
                 'MissingFieldException::for' => 3,
@@ -236,6 +239,15 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
+            'InvalidFieldException::for/子カテゴリーのリスト形状不一致' => [
+                static function (): void {
+                    Category::fromArray([
+                        'id_small' => 0,
+                        'children' => ['first' => ['id_small' => 1]],
+                    ]);
+                },
+                null,
+            ],
             'InvalidFieldException::forArrayElement/未知enum' => [
                 static function (): void {
                     new ComplexEntity(['states' => ['sent', 'unknown']]);
@@ -247,6 +259,13 @@ class FieldExceptionMessageContractTest extends TestCase
                     new Cod(['changeable' => true, 'fees' => [[300, 'invalid']]]);
                 },
                 \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::forArrayElement/カテゴリー要素型不一致' => [
+                static function (): void {
+                    $mock = HttpMock::json(200, '{"categories":[null]}');
+                    (new Product('my-token', $mock->client()))->categories();
+                },
+                \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/要素型不一致' => [
                 static function (): void {

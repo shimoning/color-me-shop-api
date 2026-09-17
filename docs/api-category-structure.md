@@ -110,15 +110,15 @@
 
 ## 現在のライブラリ実装との関係
 
-現在のライブラリは、大カテゴリーと小カテゴリーの両方を `Entities\Product\Category` 単一クラスで扱い、両者を別の型には分けていない。`meta_tag` は `MetaTag` エンティティとして実装済みで、`Category::$metaTag` は nullable（`?MetaTag`）である。`meta_tag` キーが欠損した応答と明示的な `meta_tag: null` の応答では、`getMetaTag()` が `null` を返す。空オブジェクトは `MetaTag` として保持し、その他の不正値は `Category` の構築時に `InvalidFieldException` が送出される。`MetaTag` 内の `title`、`keywords`、`description` はいずれも nullable である。
+現在のライブラリは、[ADR 0010](adr/0010-split-category-into-big-and-small.md) に従い、抽象基底クラス `Entities\Product\Category` から `BigCategory` / `SmallCategory` を生成する。`Category::fromArray()` は `id_small === 0` を大カテゴリー、それ以外の整数を小カテゴリーとして扱い、`id_small` の欠損や整数以外の値は不正な応答として例外にする。`children` と `getChildren()` は `BigCategory` のみにあり、子要素は `SmallCategory` へ変換する。
 
-2026-09-12 の実測では親カテゴリー2件中1件で `meta_tag` キー自体が欠損している。この実測に基づく nullable 化の判断は [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) に記録した。また、`children` は非 nullable の `array` である。実 API の子カテゴリーには `children` キーがないため、子カテゴリーで `getChildren()` を呼ぶと `MissingFieldException` になる。この親子の構造差は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) で扱う。
+`meta_tag` は共通基底の `Category` に置く。`Category::$metaTag` は nullable（`?MetaTag`）であり、`meta_tag` キーが欠損した応答と明示的な `meta_tag: null` の応答では、`getMetaTag()` が `null` を返す。空オブジェクトは `MetaTag` として保持し、その他の不正値は具象カテゴリーの構築時に `InvalidFieldException` が送出される。`MetaTag` 内の `title`、`keywords`、`description` はいずれも nullable である。
+
+2026-09-12 の実測では親カテゴリー2件中1件で `meta_tag` キー自体が欠損している。この実測に基づく nullable 化の判断は [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) に記録した。`BigCategory::$children` は非 nullable の `array` であり、親応答で `children` が欠損した場合は `getChildren()` で `MissingFieldException` になる。`SmallCategory` には `getChildren()` がない。この親子の構造差は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) で解決した。
 
 ## 今後の計画
 
-大カテゴリーと小カテゴリーを `BigCategory` / `SmallCategory` に分割する設計は、[Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) と [ADR 0010](adr/0010-split-category-into-big-and-small.md) に記録されている。同 ADR では、今回の実測値と公式説明に基づいて `id_small === 0` を大カテゴリーの判別条件とし、`children` と `getChildren()` を `BigCategory` のみに持たせ、親子に共通し得る `meta_tag` を共通の `Category` に置く。
-
-これらは未実装の設計判断であり、現在のライブラリの仕様ではない。
+大カテゴリーと小カテゴリーの分割は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) と [ADR 0010](adr/0010-split-category-into-big-and-small.md) に従って実装済みである。今後の再収集では、親カテゴリーで `children` キーが欠損する場合や、トップレベルに小カテゴリーが現れる場合があるかを確認する。
 
 ## 再収集の概要
 
