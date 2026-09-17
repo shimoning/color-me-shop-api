@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
@@ -95,6 +96,33 @@ class ProductTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('id_small');
         (new Product('my-token', $mock->client()))->categories();
+    }
+
+    #[DataProvider('invalidTopLevelCategoryProvider')]
+    public function test_トップレベルの非配列カテゴリーは位置付き固有例外になる(
+        string $body,
+        string $field,
+    ): void {
+        $mock = HttpMock::json(200, $body);
+
+        try {
+            (new Product('my-token', $mock->client()))->categories();
+            $this->fail('不正なカテゴリー要素が受理されました。');
+        } catch (InvalidFieldException $exception) {
+            $this->assertStringContainsString($field, $exception->getMessage());
+            $this->assertStringContainsString('配列要素を', $exception->getMessage());
+            $this->assertInstanceOf(\TypeError::class, $exception->getPrevious());
+        }
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function invalidTopLevelCategoryProvider(): array
+    {
+        return [
+            'null at 0' => ['{"categories":[null]}', 'categories[0]'],
+            'string at 1' => ['{"categories":[{"id_small":1},"x"]}', 'categories[1]'],
+            'number at 2' => ['{"categories":[{"id_small":1},{"id_small":2},42]}', 'categories[2]'],
+        ];
     }
 
     public function test_categoriesが配列以外なら従来の引数例外を維持する(): void
