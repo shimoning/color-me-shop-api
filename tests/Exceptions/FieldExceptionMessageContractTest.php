@@ -7,12 +7,17 @@ namespace Shimoning\ColorMeShopApi\Tests\Exceptions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\MailState;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Charge;
+use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Payment\Cod;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
@@ -21,6 +26,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
+use Shimoning\ColorMeShopApi\Tests\Support\ExceptionCallSiteScanner;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class FieldExceptionMessageContractTest extends TestCase
@@ -33,8 +39,25 @@ class FieldExceptionMessageContractTest extends TestCase
      */
     #[DataProvider('exceptionRouteProvider')]
     public function test_全生成経路の公開メッセージは安全で矛盾しない(
+        string $callSiteId,
         \Closure $throwing,
         ?string $previousClass,
+    ): void {
+        $this->assertExceptionMessage($throwing, $previousClass, $callSiteId);
+    }
+
+    #[DataProvider('additionalMessageProvider')]
+    public function test_追加の公開メッセージ契約を保持する(
+        \Closure $throwing,
+        ?string $previousClass,
+    ): void {
+        $this->assertExceptionMessage($throwing, $previousClass);
+    }
+
+    private function assertExceptionMessage(
+        \Closure $throwing,
+        ?string $previousClass,
+        ?string $callSiteId = null,
     ): void {
         try {
             $throwing();
@@ -73,6 +96,10 @@ class FieldExceptionMessageContractTest extends TestCase
                 $this->assertInstanceOf($previousClass, $exception->getPrevious());
             }
 
+            if ($callSiteId !== null) {
+                $this->assertExceptionOrigin($exception, $callSiteId);
+            }
+
             return;
         }
 
@@ -108,86 +135,247 @@ class FieldExceptionMessageContractTest extends TestCase
 
     public function test_生成箇所の追加時は横断契約テストの更新を要求する(): void
     {
-        /*
-         * 限界: 生成箇所の検知は正規表現と経路別の件数に基づく。FQCN の直接 constructor 呼び出し、
-         * alias・変数経由・サブクラス factory による生成、生成後に別の場所で throw するケースは見逃し、
-         * コメントや文字列リテラルは誤検知しうる。件数だけ更新すれば provider を追加せずに通るため、
-         * 将来の経路の自動的な対象化は保証しない。恒久的には token_get_all() 等でコメント・文字列を除外し、
-         * 名前解決した call-site 一覧を抽出して call-site ID と provider を1対1で照合する必要がある。
-         */
-        $routeCounts = [];
+        $sourceSites = self::sourceCallSites();
+        $providerIds = [];
+        foreach (self::exceptionRouteProvider() as $case) {
+            $providerIds[] = $case[0];
+        }
+
+        $duplicates = \array_keys(\array_filter(
+            \array_count_values($providerIds),
+            static fn(int $count): bool => $count !== 1,
+        ));
+        $sourceOnly = \array_diff(\array_keys($sourceSites), $providerIds);
+        $providerOnly = \array_diff($providerIds, \array_keys($sourceSites));
+        \sort($duplicates);
+        \sort($sourceOnly);
+        \sort($providerOnly);
+
+        $this->assertSame(
+            ['sourceOnly' => [], 'providerOnly' => [], 'duplicates' => []],
+            ['sourceOnly' => $sourceOnly, 'providerOnly' => $providerOnly, 'duplicates' => $duplicates],
+            "provider 未登録の生成箇所: " . \implode(', ', \array_map(
+                static fn(string $id): string => $id . ' (' . $sourceSites[$id][0] . ')',
+                $sourceOnly,
+            ))
+                . "\nsrc/ に存在しない provider ID: " . \implode(', ', $providerOnly)
+                . "\n重複した provider ID: " . \implode(', ', $duplicates),
+        );
+    }
+
+    /**
+     * 行番号は編集で変わるため、provider は「相対パス + FQCN::method + 同一ファイル・経路内の出現順」を宣言する。
+     * scanner は行番号付き位置を抽出し、この安定 ID に正規化してから双方向に照合する。
+     */
+    private static function site(string $path, string $route, int $ordinal): string
+    {
+        return $path . '@' . $route . '#' . $ordinal;
+    }
+
+    /** @return array<string, array{string, string}> 安定 ID => [相対パス:行番号, FQCN::method] */
+    private static function sourceCallSites(): array
+    {
         $sourceDirectory = \dirname(__DIR__, 2) . '/src';
         $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory));
+        $sites = [];
 
         foreach ($files as $file) {
             if (! $file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
-
             $source = \file_get_contents($file->getPathname());
-            $this->assertIsString($source);
-
-            \preg_match_all(
-                '/\b(?:throw|return)\s+new\s+'
-                . '(InvalidFieldException|MissingFieldException|InvalidPaginationException|MissingPaginationException)\s*\(/',
-                $source,
-                $constructors,
-            );
-            foreach ($constructors[1] as $class) {
-                $route = $class . '::__construct';
-                $routeCounts[$route] = ($routeCounts[$route] ?? 0) + 1;
+            if ($source === false) {
+                throw new \RuntimeException('ソースを読めません: ' . $file->getPathname());
             }
-
-            \preg_match_all(
-                '/\b(InvalidFieldException|MissingFieldException)::([A-Za-z_][A-Za-z0-9_]*)\s*\(/',
-                $source,
-                $factories,
-            );
-            foreach ($factories[1] as $index => $class) {
-                $route = $class . '::' . $factories[2][$index];
-                $routeCounts[$route] = ($routeCounts[$route] ?? 0) + 1;
+            $path = 'src/' . \substr($file->getPathname(), \strlen($sourceDirectory) + 1);
+            $ordinals = [];
+            foreach (ExceptionCallSiteScanner::scan($source, $path) as $location => $route) {
+                $ordinals[$route] = ($ordinals[$route] ?? 0) + 1;
+                $sites[self::site($path, $route, $ordinals[$route])] = [$location, $route];
             }
         }
 
-        \ksort($routeCounts);
-        $this->assertSame(
-            [
-                // Category・BigCategory の判定と Cod の fees リスト形状の検証経路を含む。
-                'InvalidFieldException::for' => 6,
-                // Charge・BigCategory・Product の要素変換と Cod の手数料区分の位置付き経路を含む。
-                'InvalidFieldException::forArrayElement' => 5,
-                'InvalidPaginationException::__construct' => 2,
-                // foundation の宣言プロパティ不在経路と PR3 の Sale customer 後方互換経路を両方保持する。
-                'MissingFieldException::for' => 3,
-                'MissingPaginationException::__construct' => 2,
-            ],
-            $routeCounts,
-        );
+        return $sites;
     }
 
-    /**
-     * @return array<string, array{\Closure(): void, class-string<\Throwable>|null}>
-     */
+    private function assertExceptionOrigin(\Throwable $exception, string $callSiteId): void
+    {
+        $site = self::sourceCallSites()[$callSiteId] ?? null;
+        $this->assertNotNull($site, 'provider ID の生成箇所が見つかりません: ' . $callSiteId);
+        [$location, $route] = $site;
+        $separator = \strrpos($location, ':');
+        $this->assertNotFalse($separator);
+        $path = \substr($location, 0, $separator);
+        $line = (int) \substr($location, $separator + 1);
+        $absolutePath = \dirname(__DIR__, 2) . '/' . $path;
+
+        if (\str_ends_with($route, '::__construct')) {
+            $this->assertSame($absolutePath, $exception->getFile());
+            $this->assertSame($line, $exception->getLine());
+            return;
+        }
+
+        foreach ($exception->getTrace() as $frame) {
+            if (
+                ($frame['file'] ?? null) === $absolutePath
+                && ($frame['line'] ?? null) === $line
+                && ($frame['class'] ?? null) . '::' . ($frame['function'] ?? null) === $route
+            ) {
+                return;
+            }
+        }
+
+        $this->fail('指定した生成箇所を通っていません: ' . $callSiteId . ' (' . $location . ')');
+    }
+
+    /** @return array<string, array{string, \Closure(): void, class-string<\Throwable>|null}> */
     public static function exceptionRouteProvider(): array
     {
         return [
             'InvalidFieldException::for/直接型不一致' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::for', 2),
                 static function (): void {
                     new RequiredEntity(['count' => '1']);
                 },
                 null,
             ],
             'InvalidFieldException::for/Codのリスト形状不一致' => [
+                self::site('src/Entities/Payment/Cod.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
                     new Cod(['changeable' => true, 'fees' => ['first' => [300, 100]]]);
                 },
                 null,
             ],
             'InvalidFieldException::for/単体enum変換失敗' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
                     new ComplexEntity(['state' => 'unknown']);
                 },
                 \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::for/readonly再代入失敗' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::for', 3),
+                static function (): void {
+                    new PromotedReadonlyFieldEntity(['name' => 'api']);
+                },
+                \Error::class,
+            ],
+            'InvalidFieldException::for/子カテゴリーのリスト形状不一致' => [
+                self::site('src/Entities/Product/BigCategory.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    Category::fromArray([
+                        'id_small' => 0,
+                        'children' => ['first' => ['id_small' => 1]],
+                    ]);
+                },
+                null,
+            ],
+            'InvalidFieldException::for/カテゴリー識別子欠損' => [
+                self::site('src/Entities/Product/Category.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    Category::fromArray([]);
+                },
+                null,
+            ],
+            'InvalidFieldException::forArrayElement/未知enum' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new ComplexEntity(['states' => ['sent', 'unknown']]);
+                },
+                \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::forArrayElement/Codのタプル不一致' => [
+                self::site('src/Entities/Payment/Cod.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new Cod(['changeable' => true, 'fees' => [[300, 'invalid']]]);
+                },
+                \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::forArrayElement/カテゴリー要素型不一致' => [
+                self::site('src/Services/Product.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    $mock = HttpMock::json(200, '{"categories":[null]}');
+                    (new Product('my-token', $mock->client()))->categories();
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/子カテゴリー要素型不一致' => [
+                self::site('src/Entities/Product/BigCategory.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    Category::fromArray(['id_small' => 0, 'children' => [null]]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/重量別配送料要素型不一致' => [
+                self::site('src/Entities/Delivery/Charge.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new Charge(['charge_ranges_by_weight' => [null]]);
+                },
+                \UnexpectedValueException::class,
+            ],
+            'MissingFieldException::for/必須フィールド欠損' => [
+                self::site('src/Entities/Entity.php', MissingFieldException::class . '::for', 1),
+                static function (): void {
+                    (new RequiredEntity([]))->getName();
+                },
+                null,
+            ],
+            'MissingFieldException::for/property解決失敗' => [
+                self::site('src/Entities/Entity.php', MissingFieldException::class . '::for', 2),
+                static function (): void {
+                    // hydrateField() からは事前判定済みなので、この防御的分岐を直接検証する。
+                    (new \ReflectionMethod(Entity::class, 'property'))
+                        ->invoke(null, RequiredEntity::class, 'unknownField');
+                },
+                null,
+            ],
+            'MissingFieldException::for/受注顧客の後方互換経路' => [
+                self::site('src/Entities/Sales/Sale.php', MissingFieldException::class . '::for', 1),
+                static function (): void {
+                    (new Sale([]))->getCustomer();
+                },
+                null,
+            ],
+            'InvalidPaginationException::__construct/meta型不一致' => [
+                self::site('src/Entities/Pagination.php', InvalidPaginationException::class . '::__construct', 1),
+                static function (): void {
+                    new Pagination(null);
+                },
+                null,
+            ],
+            'InvalidPaginationException::__construct/ページング値型不一致' => [
+                self::site('src/Entities/Pagination.php', InvalidPaginationException::class . '::__construct', 2),
+                static function (): void {
+                    new Pagination(['total' => '1', 'limit' => 10, 'offset' => 0]);
+                },
+                null,
+            ],
+            'MissingPaginationException::__construct/ページング値欠損' => [
+                self::site('src/Entities/Pagination.php', MissingPaginationException::class . '::__construct', 1),
+                static function (): void {
+                    (new Pagination(['limit' => 10, 'offset' => 0]))->getTotal();
+                },
+                null,
+            ],
+            'MissingPaginationException::__construct/meta欠損' => [
+                self::site('src/Entities/Page.php', MissingPaginationException::class . '::__construct', 1),
+                static function (): void {
+                    Page::build(NestedEntity::class, ['items' => []], 'items')->getTotal();
+                },
+                null,
+            ],
+        ];
+    }
+
+    /** @return array<string, array{\Closure(): void, class-string<\Throwable>|null}> */
+    public static function additionalMessageProvider(): array
+    {
+        return [
+            'MissingFieldException::for/宣言プロパティ不在' => [
+                static function (): void {
+                    (new InheritedPrivateFieldEntity([]))->assertUnknownField();
+                },
+                null,
             ],
             'InvalidFieldException::for/値オブジェクト変換失敗' => [
                 static function (): void {
@@ -200,12 +388,6 @@ class FieldExceptionMessageContractTest extends TestCase
                     new HydratedTypeMismatchEntity(['child' => ['label' => 'child']]);
                 },
                 null,
-            ],
-            'InvalidFieldException::for/readonly再代入失敗' => [
-                static function (): void {
-                    new PromotedReadonlyFieldEntity(['name' => 'api']);
-                },
-                \Error::class,
             ],
             'InvalidFieldException::for/同一型表示の変換失敗' => [
                 static function (): void {
@@ -239,34 +421,6 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
-            'InvalidFieldException::for/子カテゴリーのリスト形状不一致' => [
-                static function (): void {
-                    Category::fromArray([
-                        'id_small' => 0,
-                        'children' => ['first' => ['id_small' => 1]],
-                    ]);
-                },
-                null,
-            ],
-            'InvalidFieldException::forArrayElement/未知enum' => [
-                static function (): void {
-                    new ComplexEntity(['states' => ['sent', 'unknown']]);
-                },
-                \UnexpectedValueException::class,
-            ],
-            'InvalidFieldException::forArrayElement/Codのタプル不一致' => [
-                static function (): void {
-                    new Cod(['changeable' => true, 'fees' => [[300, 'invalid']]]);
-                },
-                \UnexpectedValueException::class,
-            ],
-            'InvalidFieldException::forArrayElement/カテゴリー要素型不一致' => [
-                static function (): void {
-                    $mock = HttpMock::json(200, '{"categories":[null]}');
-                    (new Product('my-token', $mock->client()))->categories();
-                },
-                \TypeError::class,
-            ],
             'InvalidFieldException::forArrayElement/要素型不一致' => [
                 static function (): void {
                     new ComplexEntity(['states' => [1]]);
@@ -283,42 +437,6 @@ class FieldExceptionMessageContractTest extends TestCase
                     );
                 },
                 \RuntimeException::class,
-            ],
-            'MissingFieldException::for/必須フィールド欠損' => [
-                static function (): void {
-                    (new RequiredEntity([]))->getName();
-                },
-                null,
-            ],
-            'MissingFieldException::for/宣言プロパティ不在' => [
-                static function (): void {
-                    (new InheritedPrivateFieldEntity([]))->assertUnknownField();
-                },
-                null,
-            ],
-            'InvalidPaginationException::__construct/meta型不一致' => [
-                static function (): void {
-                    new Pagination(null);
-                },
-                null,
-            ],
-            'InvalidPaginationException::__construct/ページング値型不一致' => [
-                static function (): void {
-                    new Pagination(['total' => '1', 'limit' => 10, 'offset' => 0]);
-                },
-                null,
-            ],
-            'MissingPaginationException::__construct/ページング値欠損' => [
-                static function (): void {
-                    (new Pagination(['limit' => 10, 'offset' => 0]))->getTotal();
-                },
-                null,
-            ],
-            'MissingPaginationException::__construct/meta欠損' => [
-                static function (): void {
-                    Page::build(NestedEntity::class, ['items' => []], 'items')->getTotal();
-                },
-                null,
             ],
         ];
     }
