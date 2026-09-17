@@ -54,7 +54,10 @@ class PaymentTest extends TestCase
         $cod = $payment->getCod();
         $this->assertNotNull($cod);
         $this->assertTrue($cod->getChangeable());
-        $this->assertSame([[3000, 100], [5000, 200]], $cod->getFees());
+        $this->assertSame(3000, $cod->getFees()[0]->getUpperLimit());
+        $this->assertSame(100, $cod->getFees()[0]->getFee());
+        $this->assertSame(5000, $cod->getFees()[1]->getUpperLimit());
+        $this->assertSame(200, $cod->getFees()[1]->getFee());
         $this->assertSame(500, $cod->getFeeMax());
         $this->assertFalse($cod->getChangeableByTotal());
 

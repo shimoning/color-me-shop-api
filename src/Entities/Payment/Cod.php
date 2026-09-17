@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Payment;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 決済設定
@@ -14,40 +15,20 @@ class Cod extends Entity
     /**
      * 手数料が決済金額によって変わるか否か
      *
-     * false の場合は Payment.fee の一律手数料が適用される。true の場合は
-     * Payment.fee は使用されず、fees と fee_max の区分手数料が適用される。
-     *
-     * 2026-09-16 に実 API で確認した各1件のサンプルでは、false の場合は fees、
-     * fee_max、changeable_by_total のキーがなく、true の場合は各キーが存在した。
+     * 2026-09-16 の実測では、false は一律手数料、true は区分手数料が
+     * 管理画面で選択されていた。実決済時の計算結果は未観測。
      */
     protected bool $changeable;
 
     /**
      * 手数料が変わる決済金額の区分
      *
-     * 各要素は [排他的上限金額, 手数料] の2要素タプルで、第1要素の金額は
-     * 区分に含まれない（「未満」）。たとえば [[300, 100], [500, 70]] は、
-     * 0円以上300円未満なら100円、300円以上500円未満なら70円を表す。
-     *
-     * 公式 OpenAPI の「[3000, 100] なら3000円以下の場合は100円」という説明は
-     * 実際の境界と異なる。2026-09-16 に管理画面の「円未満」「上記金額以上」
-     * という表記と実データで確認した。
-     *
-     * @var list<array{int, int}>|null
+     * @var list<CodFee>|null
      */
     protected ?array $fees;
 
     /**
-     * fees の最後の区分の排他的上限金額以上に適用される手数料
-     *
-     * たとえば fees が [[300, 100], [500, 70]]、fee_max が10なら、500円以上は
-     * 10円となる。公式 OpenAPI の「fees に設定されている区分以上」という説明は
-     * 実際の境界と異なり、最後の区分の閾値そのものを含む。2026-09-16 に
-     * 管理画面の「上記金額以上」という表記と実データで確認した。
-     *
-     * 公式 OpenAPI スキーマには nullable の指定がないが、2026-09-16 の実 API では
-     * null が返り、上限手数料が未設定であることを表していた。この場合、最後の区分の
-     * 排他的上限金額以上の手数料は応答だけでは確定できない。
+     * 最後の区分がある場合、その排他的上限以上に設定された手数料
      *
      * @var int|null
      */
@@ -63,13 +44,55 @@ class Cod extends Entity
     protected ?bool $changeableByTotal;
 
     /**
+     * API の手数料タプルを意味付き Entity に変換する。
+     *
+     * @param array<string, mixed> $data API レスポンスデータ
+     */
+    public function __construct(array $data)
+    {
+        parent::__construct($data);
+
+        if (! \array_key_exists('fees', $data) || $data['fees'] === null) {
+            return;
+        }
+
+        if (! \is_array($data['fees']) || ! \array_is_list($data['fees'])) {
+            throw InvalidFieldException::for(static::class, 'fees', 'list', $data['fees']);
+        }
+
+        $this->fees = [];
+        foreach ($data['fees'] as $index => $tuple) {
+            try {
+                if (
+                    ! \is_array($tuple)
+                    || ! \array_is_list($tuple)
+                    || \count($tuple) !== 2
+                    || ! \is_int($tuple[0])
+                    || ! \is_int($tuple[1])
+                ) {
+                    throw new \UnexpectedValueException('代引き手数料区分は2整数のタプルである必要があります。');
+                }
+
+                $this->fees[] = new CodFee([
+                    'upper_limit' => $tuple[0],
+                    'fee' => $tuple[1],
+                ]);
+            } catch (\Throwable $error) {
+                throw InvalidFieldException::forArrayElement(
+                    static::class,
+                    \sprintf('fees[%d]', $index),
+                    CodFee::class,
+                    $error,
+                );
+            }
+        }
+    }
+
+    /**
      * 手数料が決済金額によって変わるか否か
      *
-     * false の場合は Payment.fee の一律手数料が適用される。true の場合は
-     * Payment.fee は使用されず、fees と fee_max の区分手数料が適用される。
-     *
-     * 2026-09-16 に実 API で確認した各1件のサンプルでは、false の場合は fees、
-     * fee_max、changeable_by_total のキーがなく、true の場合は各キーが存在した。
+     * 2026-09-16 の実測では、false は一律手数料、true は区分手数料が
+     * 管理画面で選択されていた。実決済時の計算結果は未観測。
      *
      * @return bool
      */
@@ -83,15 +106,12 @@ class Cod extends Entity
     /**
      * 手数料が変わる決済金額の区分
      *
-     * 各要素は [排他的上限金額, 手数料] の2要素タプルで、第1要素の金額は
-     * 区分に含まれない（「未満」）。たとえば [[300, 100], [500, 70]] は、
-     * 0円以上300円未満なら100円、300円以上500円未満なら70円を表す。
+     * 各区分の upperLimit は設定上の排他的上限（未満）。公式 OpenAPI の
+     * 「3000円以下」は設定境界の説明として誤っている。実決済時の計算は未観測。
+     * 欠損と明示 null は null、空配列は空リストとして返す。
+     * 出典: docs/api-payment-structure.md。
      *
-     * 公式 OpenAPI の「[3000, 100] なら3000円以下の場合は100円」という説明は
-     * 実際の境界と異なる。2026-09-16 に管理画面の「円未満」「上記金額以上」
-     * という表記と実データで確認した。
-     *
-     * @return list<array{int, int}>|null
+     * @return CodFee[]|null
      */
     public function getFees(): ?array
     {
@@ -99,16 +119,11 @@ class Cod extends Entity
     }
 
     /**
-     * fees の最後の区分の排他的上限金額以上に適用される手数料
-     *
-     * たとえば fees が [[300, 100], [500, 70]]、fee_max が10なら、500円以上は
-     * 10円となる。公式 OpenAPI の「fees に設定されている区分以上」という説明は
-     * 実際の境界と異なり、最後の区分の閾値そのものを含む。2026-09-16 に
-     * 管理画面の「上記金額以上」という表記と実データで確認した。
-     *
-     * 公式 OpenAPI スキーマには nullable の指定がないが、2026-09-16 の実 API では
-     * null が返り、上限手数料が未設定であることを表していた。この場合、最後の区分の
-     * 排他的上限金額以上の手数料は応答だけでは確定できない。
+     * 最後の区分がある場合、その upperLimit 以上に設定された手数料。
+     * 公式 OpenAPI は nullable と
+     * していないが、実 API では未設定時に null、固定手数料時にキー欠損を確認した。
+     * null の場合の最終区分と実決済時の計算結果は未観測。
+     * 出典: docs/api-payment-structure.md。
      *
      * @return int|null
      */

@@ -36,8 +36,8 @@ class Payment extends Entity
     /**
      * 決済手数料
      *
-     * 商品代引きでは、cod.changeable が false の場合に一律手数料として適用される。
-     * true の場合は使用されず、cod.fees と cod.fee_max の区分手数料が適用される。
+     * 実測では、cod.changeable が false の場合に管理画面で一律手数料が選択され、
+     * true の場合にもこの入力値は応答に残る。実決済時の計算結果は未観測。
      */
     protected ?int $fee;
 
@@ -98,8 +98,8 @@ class Payment extends Entity
     /**
      * 決済手数料
      *
-     * 商品代引きでは、cod.changeable が false の場合に一律手数料として適用される。
-     * true の場合は使用されず、cod.fees と cod.fee_max の区分手数料が適用される。
+     * 実測では、cod.changeable が false の場合に管理画面で一律手数料が選択され、
+     * true の場合にもこの入力値は応答に残る。実決済時の計算結果は未観測。
      *
      * @return int|null
      */

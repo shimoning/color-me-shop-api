@@ -178,11 +178,9 @@ fee_max:
 
 ## 現在のライブラリでの扱い
 
-現在の `Cod` エンティティでは、`$fees`、`$feeMax`、`$changeableByTotal` はそれぞれ非 nullable の `array`、`int`、`bool` として定義されている。`changeable=false` の応答でこれらのキーが欠損している場合、`Cod` は構築できるが、欠損した項目の getter を呼ぶと `Entity::assertFieldInitialized()` により `MissingFieldException` が送出される。
+現在の `Cod` エンティティでは、`fees`、`fee_max`、`changeable_by_total` のキー欠損または明示的な `null` を受け入れ、各 getter は `null` を返す。`fees` が存在する場合、2整数のタプルを `CodFee` のリストへ変換する。空配列は空リストとして保持し、不正なタプルは要素位置を示す `InvalidFieldException` になる。`getRaw()` は元のタプルとキーの有無を保持する。
 
-一方、`fee_max: null` が存在する場合、`Entity::hydrateField()` はプロパティへの代入前に `accepts()` で型を検査する。非 nullable の `Cod::$feeMax` は `null` を受け付けないため、**`Cod` の構築時点で `InvalidFieldException` が送出され、getter には到達しない**。したがって、現行ライブラリは今回実測した「段階的代引き」の `fee_max: null` を含む実データを扱えない。
-
-この実 API と現在のライブラリ実装の乖離は Issue #28 で対応予定であり、nullable 化はまだ適用されていない。上記の観測結果は、Issue #28 の適用後の仕様を先取りした記述ではなく、現時点で実 API が返した構造そのものを記録している。
+`Cod::toArray()` は `fees` に `CodFee` オブジェクトのリストを含み、`toArrayRecursive()` は各要素を `upper_limit` と `fee` の連想配列へ変換する。再帰配列化では既定で `null` の項目を省略し、`false` を渡すと残す。この実装判断は [ADR 0011](adr/0011-represent-cod-fees-with-entity.md) と [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) に従う。
 
 ## 再収集の概要
 
