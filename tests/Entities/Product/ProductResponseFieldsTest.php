@@ -101,18 +101,34 @@ class ProductResponseFieldsTest extends TestCase
         $this->assertSame('暑い夏を涼しく過ごすための商品を集めました。', $metaTag->getDescription());
     }
 
-    public function test_nullableなグループのmeta_tagが欠損していればnullになる(): void
+    public function test_グループのmeta_tagが欠損していればnullになる(): void
     {
         $group = new Group(self::fixtureData('group_with_missing_meta_tag'));
 
         $this->assertNull($group->getMetaTag());
+        $this->assertNull($group->toArray()['meta_tag']);
     }
 
-    public function test_nullableなグループのmeta_tagの明示的なnullを保持する(): void
+    public function test_グループのmeta_tagの明示的なnullを保持する(): void
     {
         $group = new Group(self::fixtureData('group_with_null_meta_tag'));
 
         $this->assertNull($group->getMetaTag());
+        $this->assertNull($group->toArray()['meta_tag']);
+        $this->assertSame(['meta_tag' => null], $group->getRaw());
+    }
+
+    public function test_グループのmeta_tagが空オブジェクトなら空のMetaTagを保持する(): void
+    {
+        $group = new Group(['meta_tag' => []]);
+
+        $metaTag = $group->getMetaTag();
+        $this->assertInstanceOf(MetaTag::class, $metaTag);
+        $this->assertNull($metaTag->getTitle());
+        $this->assertNull($metaTag->getKeywords());
+        $this->assertNull($metaTag->getDescription());
+        $this->assertSame([], $metaTag->getRaw());
+        $this->assertSame($metaTag, $group->toArray()['meta_tag']);
     }
 
     public function test_旧形式のGroupをunserializeするとmeta_tagはnullになる(): void
@@ -131,14 +147,24 @@ class ProductResponseFieldsTest extends TestCase
         $this->assertNull($category->getMetaTag());
     }
 
-    public function test_グループのmeta_tagが不正型なら固有例外になる(): void
+    #[DataProvider('invalidGroupMetaTagProvider')]
+    public function test_グループのmeta_tagが不正型なら固有例外になる(mixed $value): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
             Group::class . ' の API フィールド『meta_tag』が不正です。',
         );
 
-        new Group(self::fixtureData('group_with_invalid_meta_tag'));
+        new Group(['meta_tag' => $value]);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidGroupMetaTagProvider(): array
+    {
+        return [
+            '文字列' => [self::fixtureData('group_with_invalid_meta_tag')['meta_tag']],
+            '数値' => [0],
+        ];
     }
 
     #[DataProvider('invalidMetaTagFieldProvider')]

@@ -34,6 +34,9 @@ API レスポンスに項目がないと、未初期化の型付きプロパテ�
 有効である。ページネーションはこの一般則に委ねず、`Page::build()` と `Pagination` が欠損・
 不正値を固有例外で扱う。出典: `ae36b5a`、`ead46f7`。
 
+実 API の観測に基づく例外条件は、[ADR 0012](0012-allow-nullability-from-api-observations.md)
+により追加された。
+
 ## 帰結
 
 API が省略または `null` を返し得る項目の getter は、PHP の戻り値型まで一貫して nullable に
