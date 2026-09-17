@@ -42,7 +42,7 @@ class DomainEnumTest extends TestCase
         );
         $this->assertSame('男性', Sex::MALE->name());
         $this->assertSame('女性', Sex::FEMALE->name());
-        $this->assertSame('該当なし', Sex::NOT_APPLICABLE->name());
+        $this->assertSame('未回答', Sex::NOT_APPLICABLE->name());
     }
 
     public function test_MailTypeの値はAPIの仕様どおり(): void
