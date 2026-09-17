@@ -172,6 +172,24 @@ class FieldExceptionMessageContractTest extends TestCase
         return $path . '@' . $route . '#' . $ordinal;
     }
 
+    public function test_生成箇所のパスはスラッシュ区切りに正規化する(): void
+    {
+        $this->assertSame(
+            'src/Entities/Product/Category.php',
+            self::normalizePath('src\\Entities\\Product\\Category.php'),
+        );
+    }
+
+    private static function normalizePath(string $path): string
+    {
+        return \str_replace('\\', '/', $path);
+    }
+
+    private static function normalizeAbsolutePath(string $path): string
+    {
+        return self::normalizePath(\realpath($path) ?: $path);
+    }
+
     /** @return array<string, array{string, string, int}> 安定 ID => [相対パス:開始行, FQCN::method, 終了行] */
     private static function sourceCallSites(): array
     {
@@ -187,7 +205,7 @@ class FieldExceptionMessageContractTest extends TestCase
             if ($source === false) {
                 throw new \RuntimeException('ソースを読めません: ' . $file->getPathname());
             }
-            $path = 'src/' . \substr($file->getPathname(), \strlen($sourceDirectory) + 1);
+            $path = self::normalizePath('src/' . \substr($file->getPathname(), \strlen($sourceDirectory) + 1));
             $ordinals = [];
             foreach (ExceptionCallSiteScanner::scan($source, $path) as $location => $callSite) {
                 $route = $callSite['route'];
@@ -213,11 +231,11 @@ class FieldExceptionMessageContractTest extends TestCase
         $this->assertNotFalse($separator);
         $path = \substr($location, 0, $separator);
         $line = (int) \substr($location, $separator + 1);
-        $absolutePath = \dirname(__DIR__, 2) . '/' . $path;
+        $absolutePath = self::normalizeAbsolutePath(\dirname(__DIR__, 2) . '/' . $path);
 
         if (\str_ends_with($route, '::__construct')) {
             if (
-                $exception->getFile() === $absolutePath
+                self::normalizeAbsolutePath($exception->getFile()) === $absolutePath
                 && ExceptionCallSiteScanner::containsLine($line, $endLine, $exception->getLine())
             ) {
                 return;
@@ -236,7 +254,8 @@ class FieldExceptionMessageContractTest extends TestCase
                 $actualFrames[] = self::describeOrigin($frame['file'], $frame['line'], $route, $sourceSites);
             }
             if (
-                ($frame['file'] ?? null) === $absolutePath
+                isset($frame['file'])
+                && self::normalizeAbsolutePath($frame['file']) === $absolutePath
                 && isset($frame['line'])
                 && ExceptionCallSiteScanner::containsLine($line, $endLine, $frame['line'])
                 && $frameRoute === $route
@@ -274,9 +293,9 @@ class FieldExceptionMessageContractTest extends TestCase
             if ($separator === false || $siteRoute !== $route) {
                 continue;
             }
-            $path = \dirname(__DIR__, 2) . '/' . \substr($location, 0, $separator);
+            $path = self::normalizeAbsolutePath(\dirname(__DIR__, 2) . '/' . \substr($location, 0, $separator));
             $startLine = (int) \substr($location, $separator + 1);
-            if ($file === $path && ExceptionCallSiteScanner::containsLine($startLine, $endLine, $line)) {
+            if (self::normalizeAbsolutePath($file) === $path && ExceptionCallSiteScanner::containsLine($startLine, $endLine, $line)) {
                 return $description . ' (' . $id . ')';
             }
         }
