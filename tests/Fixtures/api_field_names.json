@@ -271,10 +271,6 @@
         "fee_max",
         "fees"
     ],
-    "Payment\\CodFee": [
-        "fee",
-        "upper_limit"
-    ],
     "Payment\\Card": [
         "brands"
     ],
@@ -296,7 +292,26 @@
         "delivery_id"
     ],
     "Sales\\SearchParameters": [
-        "customer_mail"
+        "accepted_mail_state",
+        "canceled",
+        "customer_furigana",
+        "customer_ids",
+        "customer_mail",
+        "customer_name",
+        "delivered",
+        "delivered_mail_state",
+        "fields",
+        "ids",
+        "limit",
+        "make_date_max",
+        "make_date_min",
+        "mobile",
+        "offset",
+        "paid",
+        "paid_mail_state",
+        "payment_ids",
+        "update_date_max",
+        "update_date_min"
     ],
     "Sales\\SaleApplication": [
         "name"
@@ -332,9 +347,23 @@
         "total_price_with_reduced_tax"
     ],
     "Customer\\SearchParameters": [
+        "furigana",
+        "ids",
+        "limit",
         "line_uid",
+        "mail",
+        "make_date_max",
+        "make_date_min",
+        "member",
         "membership_id",
-        "receive_mail_magazine"
+        "name",
+        "offset",
+        "postal",
+        "receive_mail_magazine",
+        "sex",
+        "tel",
+        "update_date_max",
+        "update_date_min"
     ],
     "Customer\\ExternalAccount": [
         "created_at",
@@ -360,5 +389,73 @@
         "name",
         "remaining_score",
         "required_score"
+    ],
+    "Pagination": [
+        "limit",
+        "offset",
+        "total"
+    ],
+    "Delivery\\Area": [
+        "charge",
+        "pref_id",
+        "pref_name"
+    ],
+    "Payment\\Brand": [
+        "id",
+        "name"
+    ],
+    "Error": [
+        "code",
+        "field",
+        "message",
+        "status"
+    ],
+    "Sales\\SaleUpdater": [
+        "id",
+        "paid",
+        "point_state",
+        "sale_deliveries"
+    ],
+    "Sales\\SaleDeliveryUpdater": [
+        "account_id",
+        "address1",
+        "address2",
+        "card_charge",
+        "card_name",
+        "card_text",
+        "delivered",
+        "delivery_charge",
+        "delivery_id",
+        "detail_ids",
+        "furigana",
+        "id",
+        "memo",
+        "name",
+        "noshi_charge",
+        "noshi_text",
+        "postal",
+        "pref_id",
+        "pref_name",
+        "preferred_date",
+        "preferred_period",
+        "sale_id",
+        "slip_number",
+        "tel",
+        "total_charge",
+        "tracking_url",
+        "wrapping_charge",
+        "wrapping_name"
+    ],
+    "OAuth\\AccessToken": [
+        "access_token",
+        "created_at",
+        "scope",
+        "token_type"
+    ],
+    "OAuth\\ErrorResponse": [
+        "error",
+        "error_description",
+        "error_uri",
+        "state"
     ]
 }

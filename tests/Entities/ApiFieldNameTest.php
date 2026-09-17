@@ -2,9 +2,15 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities;
 
+use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use ReflectionClass;
+use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
+use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 /**
@@ -18,13 +24,93 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
  * 期待するフィールド名の一覧は公式の OpenAPI 仕様を基本とし、
  * 公式仕様にない実 API の観測フィールドも補完している。
  *
- *   https://api.shop-pro.jp/v1/spec/open_api.json
+ *   https://api.shop-pro.jp/v1/spec/open_api.json (2026-09-17 取得)
+ *   Error::field は docs/api-error-responses.md の実 API 観測結果による。
+ *   OAuth\\AccessToken は RFC 6749 §5.1 と tests/Fixtures/oauth_token.json、
+ *   OAuth\\ErrorResponse は RFC 6749 §5.2 と docs/adr/0007 による。
  *
  * 更新するときは同じ仕様から tests/Fixtures/api_field_names.json を作り直し、
  * 実 API でのみ観測したフィールドを追記すること。
  */
 class ApiFieldNameTest extends TestCase
 {
+    /** @var array<string, string> 対象外クラスと理由 */
+    private const EXCLUDED_ENTITIES = [
+        'Entity' => '共通基底クラスで、API フィールドを宣言しない',
+        'Collection' => 'Entity を継承せず、toArray() を持たないコレクション',
+        'Page' => 'Entity を継承せず、toArray() を持たないページ付きコレクション',
+        'OAuth\\Options' => 'Entity を継承しないアプリ設定 DTO',
+        'Product\\Category' => '抽象基底クラスで、具象クラスを個別に検証する',
+        'Delivery\\Weight' => 'weight / areas は API の重量別送料タプルに付けたライブラリ独自名',
+        'Payment\\CodFee' => 'upper_limit / fee は API の代引き手数料タプルに付けたライブラリ独自名',
+    ];
+
+    public function test_すべてのEntityが検証対象に含まれている(): void
+    {
+        $registered = \array_keys(self::fixtureArray('api_field_names.json'));
+        $excluded = \array_keys(self::EXCLUDED_ENTITIES);
+        $discovered = self::discoveredClasses();
+        $entities = self::entityClasses($discovered);
+
+        $missing = \array_values(\array_diff($entities, $registered, $excluded));
+        $this->assertSame([], $missing, \sprintf(
+            'api_field_names.json に未登録の Entity: %s。登録するか、EXCLUDED_ENTITIES に理由付きで追加してください。',
+            \implode(', ', $missing),
+        ));
+
+        $stale = \array_values(\array_diff($excluded, $discovered));
+        $this->assertSame([], $stale, '存在しないクラスが EXCLUDED_ENTITIES にあります: ' . \implode(', ', $stale));
+
+        $invalidRegistered = \array_values(\array_diff($registered, $entities));
+        $this->assertSame([], $invalidRegistered, '具象 Entity ではない登録: ' . \implode(', ', $invalidRegistered));
+
+        $unclassified = \array_values(\array_diff($discovered, $entities, $excluded));
+        $this->assertSame([], $unclassified, '基底・抽象・非 Entity クラスの対象外理由がありません: ' . \implode(', ', $unclassified));
+
+        $overlap = \array_values(\array_intersect($registered, $excluded));
+        $this->assertSame([], $overlap, '登録と対象外の両方にあるクラス: ' . \implode(', ', $overlap));
+
+        foreach (self::EXCLUDED_ENTITIES as $class => $reason) {
+            $this->assertNotSame('', \trim($reason), $class . ' の対象外理由が空です');
+        }
+    }
+
+    /**
+     * @param list<string> $discovered
+     * @return list<string>
+     */
+    private static function entityClasses(array $discovered): array
+    {
+        return \array_values(\array_filter($discovered, static function (string $relative): bool {
+            $reflection = new ReflectionClass('Shimoning\\ColorMeShopApi\\Entities\\' . $relative);
+            return $reflection->isSubclassOf(Entity::class) && ! $reflection->isAbstract();
+        }));
+    }
+
+    /** @return list<string> src/Entities 配下のクラス名 (Entities 名前空間からの相対名) */
+    private static function discoveredClasses(): array
+    {
+        $root = __DIR__ . '/../../src/Entities';
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root));
+        $classes = [];
+
+        foreach ($files as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $relative = \substr($file->getPathname(), \strlen($root) + 1, -4);
+            $class = 'Shimoning\\ColorMeShopApi\\Entities\\' . \str_replace('/', '\\', $relative);
+            if (! \class_exists($class)) {
+                throw new \RuntimeException('Entity クラスを読み込めません: ' . $class);
+            }
+            $classes[] = \str_replace('/', '\\', $relative);
+        }
+
+        \sort($classes);
+        return $classes;
+    }
+
     /**
      * @return array<string, array{class-string, array<string>}>
      */
@@ -55,7 +141,7 @@ class ApiFieldNameTest extends TestCase
     #[DataProvider('entityFieldProvider')]
     public function test_配列化するとAPIと同じフィールド名になる(string $class, array $fields): void
     {
-        $keys = \array_keys((new $class([]))->toArray());
+        $keys = \array_keys(self::newEntity($class, [])->toArray());
         $shortName = (new ReflectionClass($class))->getShortName();
 
         foreach ($fields as $field) {
@@ -92,7 +178,7 @@ class ApiFieldNameTest extends TestCase
             }
 
             $checked++;
-            $entity = new $class([$field => $value]);
+            $entity = self::newEntity($class, [$field => $value]);
             $this->assertSame(
                 $value,
                 $entity->toArray()[$field] ?? null,
@@ -140,4 +226,22 @@ class ApiFieldNameTest extends TestCase
         };
     }
 
+    /**
+     * @param class-string<Entity> $class
+     * @param array<string, mixed> $data
+     */
+    private static function newEntity(string $class, array $data): Entity
+    {
+        if ($class === ErrorResponse::class) {
+            return new ErrorResponse(
+                $data,
+                new Response(
+                    new Psr7Response(400),
+                    new RequestMeta('POST', 'https://api.shop-pro.jp/oauth/token', []),
+                ),
+            );
+        }
+
+        return new $class($data);
+    }
 }
