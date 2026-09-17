@@ -314,7 +314,7 @@ class Client
      * @param string|null $accessToken
      * @return Collection<BigCategoryEntity|SmallCategoryEntity>|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException 実効アクセストークンが空文字、または categories が配列以外の場合
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException Category::fromArray() で API フィールドが不正な場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException Category::fromArray() で API フィールドが不正、または categories の要素が配列以外の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors

@@ -44,7 +44,7 @@ class Product extends Service
      * @param string|null $accessToken
      * @return Collection<BigCategory|SmallCategory>|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または categories が配列以外の場合
-     * @throws InvalidFieldException Category::fromArray() で API フィールドが不正な場合
+     * @throws InvalidFieldException Category::fromArray() で API フィールドが不正、または categories の要素が配列以外の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function categories(?string $accessToken = null): Collection|Errors
@@ -61,10 +61,25 @@ class Product extends Service
                     throw new ParameterException();
                 }
 
-                return new Collection(\array_map(
-                    static fn(array $category): BigCategory|SmallCategory => Category::fromArray($category),
-                    $categories,
-                ));
+                $convert = static function (mixed $category, int|string $index): BigCategory|SmallCategory {
+                    if (! \is_array($category)) {
+                        throw InvalidFieldException::forArrayElement(
+                            self::class,
+                            \sprintf('categories[%s]', $index),
+                            Category::class,
+                            new \TypeError('カテゴリー要素は配列である必要があります。'),
+                        );
+                    }
+
+                    return Category::fromArray($category);
+                };
+
+                $items = [];
+                foreach ($categories as $index => $category) {
+                    $items[$index] = $convert($category, $index);
+                }
+
+                return new Collection($items);
             },
         );
     }
