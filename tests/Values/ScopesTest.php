@@ -30,6 +30,36 @@ class ScopesTest extends TestCase
         $this->assertSame('read_shop_coupons read_sales', $scopes->get());
     }
 
+    public function test_追加されたスコープをAuthScopeで要求できる(): void
+    {
+        $scopes = new Scopes([
+            AuthScope::WRITE_SHOP_COUPONS,
+            AuthScope::READ_TEMPLATES,
+            AuthScope::WRITE_TEMPLATES,
+            AuthScope::READ_ANALYTICS,
+        ]);
+
+        $this->assertSame(
+            'write_shop_coupons read_templates write_templates read_analytics',
+            $scopes->get(),
+        );
+    }
+
+    public function test_追加されたスコープを文字列で要求できる(): void
+    {
+        $scopes = new Scopes([
+            'write_shop_coupons',
+            'read_templates',
+            'write_templates',
+            'read_analytics',
+        ]);
+
+        $this->assertSame(
+            'write_shop_coupons read_templates write_templates read_analytics',
+            $scopes->get(),
+        );
+    }
+
     public function test_単一のスコープはそのまま返る(): void
     {
         $this->assertSame('read_sales', (new Scopes([AuthScope::READ_SALES]))->get());

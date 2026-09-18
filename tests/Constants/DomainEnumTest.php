@@ -64,6 +64,11 @@ class DomainEnumTest extends TestCase
         $this->assertSame('read_sales', AuthScope::READ_SALES->value);
         $this->assertSame('write_sales', AuthScope::WRITE_SALES->value);
         $this->assertSame('read_shop_coupons', AuthScope::READ_SHOP_COUPONS->value);
+        $this->assertSame('write_shop_coupons', AuthScope::WRITE_SHOP_COUPONS->value);
+        $this->assertSame('read_templates', AuthScope::READ_TEMPLATES->value);
+        $this->assertSame('write_templates', AuthScope::WRITE_TEMPLATES->value);
+        $this->assertSame('read_analytics', AuthScope::READ_ANALYTICS->value);
+        $this->assertCount(9, AuthScope::cases());
     }
 
     public function test_Prefectureは47都道府県と海外の48件で1から連番になっている(): void
