@@ -23,7 +23,7 @@
 
   ```sh
   curl --fail --silent --show-error --location https://api.shop-pro.jp/v1/spec/open_api.json --output /tmp/color-me-shop-openapi.json
-  python3 docs/extract-enum-openapi-excerpt.py /tmp/color-me-shop-openapi.json 2026-09-18 > docs/enum-openapi-excerpt.json
+  php docs/extract-enum-openapi-excerpt.php /tmp/color-me-shop-openapi.json 2026-09-18 > docs/enum-openapi-excerpt.json
   ```
 - コード監査基点: `origin/master` の
   `3e5ced56f28a86c3a168b7319cf80741e4438b69`。
