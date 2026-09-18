@@ -124,6 +124,8 @@ if ($result instanceof Errors) {
 
         // code / message / status は API 応答で欠損する可能性がある。
         $code = array_key_exists('code', $raw) ? $error->getCode() : null;
+        $errorCode = array_key_exists('code', $raw) ? $error->getErrorCode() : null; // 未知なら ErrorCode::UNKNOWN
+        // getCode() と配列化では元のコード文字列を保持する。
         $message = array_key_exists('message', $raw) ? $error->getMessage() : null;
         $status = array_key_exists('status', $raw) ? $error->getStatus() : null;
 

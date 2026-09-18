@@ -6,6 +6,7 @@ use GuzzleHttp\Psr7\Response as Psr7Response;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
+use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Error;
@@ -75,6 +76,33 @@ class ErrorsTest extends TestCase
     }
 
     // --- build ------------------------------------------------------------
+
+    public function test_既知と未知のコードをenumで解釈し生コードを保持する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"code":"422007","message":"Nameを入力してください。","status":422},{"code":"499999","message":"new error","status":422}]}',
+        ));
+
+        $this->assertSame(ErrorCode::VALIDATE_ERROR_422007, $errors[0]->getErrorCode());
+        $this->assertSame(ErrorCode::UNKNOWN, $errors[1]->getErrorCode());
+        $this->assertSame('499999', $errors[1]->getCode());
+        $this->assertSame('499999', $errors[1]->toArray()['code']);
+        $this->assertSame('499999', $errors[1]->toArrayRecursive()['code']);
+    }
+
+    public function test_整数のAPIコードを文字列へ正規化して既知caseへ解釈する(): void
+    {
+        $errors = Errors::build($this->makeResponse(
+            500,
+            '{"errors":[{"code":500000,"message":"Internal Server Error","status":500}]}',
+        ));
+
+        $this->assertSame(ErrorCode::INTERNAL_SERVER_ERROR, $errors[0]->getErrorCode());
+        $this->assertSame('500000', $errors[0]->getCode());
+        $this->assertSame('500000', $errors[0]->toArray()['code']);
+        $this->assertSame('500000', $errors[0]->toArrayRecursive()['code']);
+    }
 
     public function test_エラーレスポンスからErrorエンティティのコレクションを組み立てる(): void
     {
