@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Customer;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
+use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\ExternalAccount;
 use Shimoning\ColorMeShopApi\Entities\Customer\Membership;
@@ -60,6 +61,13 @@ class CustomerResponseFieldsTest extends TestCase
         $this->assertSame('6cfd46d2fd18eb15d01ce0a00d4b0349', $accounts[0]->getUid());
         $this->assertInstanceOf(DateTimeImmutable::class, $accounts[0]->getCreatedAt());
         $this->assertSame(1465784934, $accounts[0]->getCreatedAt()->getTimestamp());
+    }
+
+    public function test_性別が未回答の顧客応答を構築できる(): void
+    {
+        $customer = new Customer(['sex' => 'not_applicable']);
+
+        $this->assertSame(Sex::NOT_APPLICABLE, $customer->getSex());
     }
 
     public function test_一覧取得でmembershipのprogressが省略されてもnullとして取得できる(): void

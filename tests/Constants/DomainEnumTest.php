@@ -10,6 +10,7 @@ use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\Sex;
 
 /**
  * API のリクエスト・レスポンスに直接現れる enum の値を固定する。
@@ -31,6 +32,17 @@ class DomainEnumTest extends TestCase
         $reflection = new \ReflectionClass(FallbackEnum::class);
 
         $this->assertTrue($reflection->implementsInterface(\BackedEnum::class));
+    }
+
+    public function test_Sexの値と日本語名はAPIの仕様どおり(): void
+    {
+        $this->assertSame(
+            ['male', 'female', 'not_applicable'],
+            \array_map(fn(Sex $case): string => $case->value, Sex::cases()),
+        );
+        $this->assertSame('男性', Sex::MALE->name());
+        $this->assertSame('女性', Sex::FEMALE->name());
+        $this->assertSame('未回答', Sex::NOT_APPLICABLE->name());
     }
 
     public function test_MailTypeの値はAPIの仕様どおり(): void
