@@ -24,14 +24,15 @@ API の宣言値、値の性質を照合した。`PaymentType`、`DeliveryMethod
 ## 判断
 
 - `FallbackEnum` の opt-in 対象に `PaymentType`、`Sex`、`KouzaType`、`ErrorCode`、
-  `DeliveryMethodType`、`ContractPlan` の 6 enum を追加する。いずれも応答の解釈に関係し、
+  `DeliveryMethodType` の 5 enum を追加する。いずれも応答の解釈に関係し、
   未知の有効値が入ったときに一覧やエラー応答の解釈まで止まる利用者の不利益を重く見る。
   `Sex` と `KouzaType` は元分析では閉集合寄りだったが、オーナー判断として応答の構築失敗を
   避ける方を優先する。出典: `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、
   `df86e33ad76cc4c937e9bddd16be0314973e9147`。
 - 番兵は API 仕様上の値ではなく、未知の値を型付きプロパティで表す専用 case とする。
-  int enum は ADR 0009 と同じ `-1`、string enum は正規値と衝突しない `unknown` を基本とし、
-  正規の `unknown` / `other` と区別する必要がある enum には `__unknown__` を使う。
+  int enum は ADR 0009 と同じ `-1`、string enum は一律 `__unknown__` とする。
+  `ContractPlan` に正規値 `unknown` が実在するように、`unknown` は API が返し得る語である。
+  ADR 0009 が再検討条件とする将来の正規値との衝突を避けるため、API 値として現れ得ない形に統一する。
   現行 case と OpenAPI 定義との非衝突は次表のとおり。出典:
   `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、
   `df86e33ad76cc4c937e9bddd16be0314973e9147`。
@@ -39,11 +40,10 @@ API の宣言値、値の性質を照合した。`PaymentType`、`DeliveryMethod
   | enum | 仕様上の正規値・既存 case と衝突する候補 | 専用番兵 | 現行値との衝突 |
   | --- | --- | --- | --- |
   | `PaymentType` | `0`〜`45`（`OTHER = 9` を含む） | `-1` | なし |
-  | `Sex` | `male`, `female`, `not_applicable` | `unknown` | なし |
-  | `KouzaType` | `saving`, `checking` | `unknown` | なし |
-  | `ErrorCode` | 既存の `401010`, `404100`, `422210` と実測コード `422007`, `500000` 等 | `unknown` | なし |
+  | `Sex` | `male`, `female`, `not_applicable` | `__unknown__` | なし |
+  | `KouzaType` | `saving`, `checking` | `__unknown__` | なし |
+  | `ErrorCode` | 既存の `401010`, `404100`, `422210` と実測コード `422007`, `500000` 等 | `__unknown__` | なし |
   | `DeliveryMethodType` | 正規値 `other` と、他の配送方法 4 値 | `__unknown__` | なし |
-  | `ContractPlan` | 正規値 `unknown` と、他の契約プラン 11 値 | `__unknown__` | なし |
 
 - 未知の生値は `getRaw()` に残し、型付きプロパティは番兵にする。
   `toArrayRecursive()` は生値ではなく番兵の backing value を返す非対称性を受け入れる。
@@ -64,8 +64,11 @@ API の宣言値、値の性質を照合した。`PaymentType`、`DeliveryMethod
   例外を捕捉していた処理と番兵を扱う処理の違いを利用者が把握できるようにする。
   出典: `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、
   `df86e33ad76cc4c937e9bddd16be0314973e9147`。
-- 今回追加しない残り 17 enum は現行の扱いを維持する。そのうち
-  `ExternalAccountProvider` は既に opt-in 済みであり、他の 16 enum は厳格なままとする。
+- 今回追加しない残り 18 enum は現行の扱いを維持する。そのうち
+  `ExternalAccountProvider` は既に opt-in 済みであり、`ContractPlan` を含む他の 17 enum は
+  厳格なままとする。`ContractPlan` は正規値 `unknown` を持ち、契約プランは事業者が管理する
+  閉集合に近いため、未知値を番兵へ集約すると正規の `unknown` と意味が紛れやすい。
+  今回は追加しないというオーナー判断である。
   実 API で未知の**有効**値を観測した場合、公式仕様が新値を追加した場合、または番兵が
   正規値と衝突した場合は、該当 enum の扱いを個別に再検討する。出典:
   `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、
@@ -87,8 +90,10 @@ API の宣言値、値の性質を照合した。`PaymentType`、`DeliveryMethod
   番兵に吸収し得るため採用しない。出典:
   `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、
   `df86e33ad76cc4c937e9bddd16be0314973e9147`。
-- `ContractPlan` の正規 `unknown` や `DeliveryMethodType` の正規 `other` を
-  未知値の番兵として兼用する案は、仕様上の値と未認識の値を区別できないため採用しない。
+- string enum の番兵に `unknown` を使う案は、`ContractPlan` に同じ正規値が実在し、
+  将来も正規値との衝突があり得るため採用しない。
+- `DeliveryMethodType` の正規 `other` を未知値の番兵として兼用する案は、
+  仕様上の値と未認識の値を区別できないため採用しない。
   出典: `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`。
 
 ## 帰結
