@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateContractEntity;
@@ -104,6 +105,25 @@ class EntityContractTest extends TestCase
     public function test_対象のエンティティが検出できている(): void
     {
         $this->assertGreaterThan(15, \count(self::entityClasses()));
+    }
+
+    public function test_全ての検索条件と更新Entityは要求側と宣言される(): void
+    {
+        $requestClasses = [];
+        foreach (self::entityClasses() as $class) {
+            if (\preg_match('/(?:SearchParameters|Updater)$/', $class) !== 1) {
+                continue;
+            }
+            $requestClasses[] = $class;
+            $this->assertTrue(\is_subclass_of($class, RequestEntity::class), $class);
+        }
+
+        $this->assertEqualsCanonicalizing([
+            \Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters::class,
+            \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters::class,
+            \Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater::class,
+            \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater::class,
+        ], $requestClasses);
     }
 
     /**

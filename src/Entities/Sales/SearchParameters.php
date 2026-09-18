@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Values\DateTime;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
@@ -14,7 +15,7 @@ use Shimoning\ColorMeShopApi\Constants\MailState;
  *
  * TODO: fields のサポート
  */
-class SearchParameters extends Entity
+class SearchParameters extends Entity implements RequestEntity
 {
     const OBJECT_FIELDS = [
         'makeDateMin' => [

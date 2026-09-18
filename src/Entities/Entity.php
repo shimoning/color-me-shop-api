@@ -12,6 +12,7 @@ use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
 use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Values\Value;
@@ -420,10 +421,10 @@ class Entity
                 }
                 if ($isArray) {
                     return array_map(function ($v) use ($enum) {
-                        return self::buildEnum($enum, $v);
+                        return $this->buildEnum($enum, $v);
                     }, $value);
                 }
-                return self::buildEnum($enum, $value);
+                return $this->buildEnum($enum, $value);
             }
         }
 
@@ -434,14 +435,19 @@ class Entity
     /**
      * @param class-string<BackedEnum> $enum
      */
-    private static function buildEnum(string $enum, mixed $value): BackedEnum
+    private function buildEnum(string $enum, mixed $value): BackedEnum
     {
         $case = $enum::tryFrom($value);
-        if ($case === null) {
-            if (\is_subclass_of($enum, FallbackEnum::class)) {
+        if (\is_subclass_of($enum, FallbackEnum::class)) {
+            if ($this instanceof RequestEntity && $case === $enum::fallbackCase()) {
+                throw new \UnexpectedValueException('未知の enum 値です。');
+            }
+            if ($case === null && ! ($this instanceof RequestEntity)) {
                 return $enum::fallbackCase();
             }
+        }
 
+        if ($case === null) {
             throw new \UnexpectedValueException('未知の enum 値です。');
         }
 

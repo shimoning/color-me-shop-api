@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Constants;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 
 /**
  * src/Constants 配下の全 enum が満たすべき共通契約を検証する。
@@ -31,6 +32,21 @@ class EnumContractTest extends TestCase
             $cases[$shortName] = ['Shimoning\\ColorMeShopApi\\Constants\\' . $shortName];
         }
         return $cases;
+    }
+
+    public function test_FallbackEnum実装一覧を固定する(): void
+    {
+        $actual = [];
+        foreach (self::enumProvider() as $name => [$enum]) {
+            if (\is_subclass_of($enum, FallbackEnum::class)) {
+                $actual[] = $name;
+            }
+        }
+
+        $this->assertEqualsCanonicalizing(
+            ['ExternalAccountProvider', 'PaymentType', 'Sex', 'KouzaType', 'DeliveryMethodType'],
+            $actual,
+        );
     }
 
     #[DataProvider('enumProvider')]
