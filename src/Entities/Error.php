@@ -2,6 +2,8 @@
 
 namespace Shimoning\ColorMeShopApi\Entities;
 
+use Shimoning\ColorMeShopApi\Constants\ErrorCode;
+
 /**
  * API が返したエラーの詳細。
  */
@@ -21,6 +23,14 @@ class Error extends Entity
         $this->assertFieldInitialized('code');
 
         return $this->code;
+    }
+
+    /**
+     * 生コードを既知のエラー種別に解釈し、未知の値は番兵として返す。
+     */
+    public function getErrorCode(): ErrorCode
+    {
+        return ErrorCode::tryFrom($this->getCode()) ?? ErrorCode::fallbackCase();
     }
 
     /**

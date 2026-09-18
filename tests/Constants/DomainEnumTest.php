@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Constants;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
+use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\MailState;
@@ -32,6 +33,13 @@ class DomainEnumTest extends TestCase
         $reflection = new \ReflectionClass(FallbackEnum::class);
 
         $this->assertTrue($reflection->implementsInterface(\BackedEnum::class));
+    }
+
+    public function test_ErrorCodeは未知値用のフォールバックを公開する(): void
+    {
+        $this->assertInstanceOf(FallbackEnum::class, ErrorCode::UNKNOWN);
+        $this->assertSame('__unknown__', ErrorCode::UNKNOWN->value);
+        $this->assertSame(ErrorCode::UNKNOWN, ErrorCode::fallbackCase());
     }
 
     public function test_Sexの値と日本語名はAPIの仕様どおり(): void
