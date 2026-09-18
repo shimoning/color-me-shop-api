@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 
@@ -10,7 +11,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
-class SaleDeliveryUpdater extends SaleDelivery
+class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
 {
     /**
      * 宛名を設定

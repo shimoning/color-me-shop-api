@@ -4,9 +4,12 @@ namespace Shimoning\ColorMeShopApi\Constants;
 
 /**
  * 決済方法の種別。
+ * UNKNOWN は API 仕様外の応答値を示す番兵。元値は Entity::getRaw() で確認できる。
+ * Entity::toArrayRecursive() では元値でなく番兵の -1 になる。
  */
-enum PaymentType: int
+enum PaymentType: int implements FallbackEnum
 {
+    case UNKNOWN = -1;
     case COD = 0;  // 商品代引
     case BANK_TRANSFER = 1;  // 銀行振込
     case POSTAL_TRANSFER = 2;   // ゆうちょ振替
@@ -53,4 +56,9 @@ enum PaymentType: int
     case AMAZON_PAY_V2_AMAZON = 43; // Amazon Pay V2（アマゾンペイ）
     case AMAZON_PAY_V2_EPSILON = 44; // Amazon Pay V2（イプシロン）
     case SQUARE_F2F = 45; // Square対面決済
+
+    public static function fallbackCase(): static
+    {
+        return self::UNKNOWN;
+    }
 }

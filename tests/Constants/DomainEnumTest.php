@@ -12,6 +12,9 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\Sex;
+use Shimoning\ColorMeShopApi\Constants\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
 
 /**
  * API のリクエスト・レスポンスに直接現れる enum の値を固定する。
@@ -45,12 +48,44 @@ class DomainEnumTest extends TestCase
     public function test_Sexの値と日本語名はAPIの仕様どおり(): void
     {
         $this->assertSame(
-            ['male', 'female', 'not_applicable'],
+            ['male', 'female', 'not_applicable', '__unknown__'],
             \array_map(fn(Sex $case): string => $case->value, Sex::cases()),
         );
         $this->assertSame('男性', Sex::MALE->name());
         $this->assertSame('女性', Sex::FEMALE->name());
         $this->assertSame('未回答', Sex::NOT_APPLICABLE->name());
+        $this->assertSame('不明', Sex::UNKNOWN->name());
+    }
+
+    public function test_追加されたフォールバックenumは専用の番兵を持つ(): void
+    {
+        foreach ([
+            PaymentType::class => -1,
+            Sex::class => '__unknown__',
+            KouzaType::class => '__unknown__',
+            DeliveryMethodType::class => '__unknown__',
+        ] as $enum => $value) {
+            $this->assertTrue(\is_subclass_of($enum, FallbackEnum::class));
+            $this->assertSame($value, $enum::UNKNOWN->value);
+            $this->assertSame($enum::UNKNOWN, $enum::fallbackCase());
+        }
+        $this->assertSame('不明', DeliveryMethodType::UNKNOWN->name());
+    }
+
+    public function test_追加されたフォールバックenumのcase一覧を固定する(): void
+    {
+        $this->assertSame(
+            \array_merge([-1], \range(0, 45)),
+            \array_map(static fn(PaymentType $case): int => $case->value, PaymentType::cases()),
+        );
+        $this->assertSame(
+            ['saving', 'checking', '__unknown__'],
+            \array_map(static fn(KouzaType $case): string => $case->value, KouzaType::cases()),
+        );
+        $this->assertSame(
+            ['other', 'yamato', 'yamato_pickup', 'sagawa', 'jp', '__unknown__'],
+            \array_map(static fn(DeliveryMethodType $case): string => $case->value, DeliveryMethodType::cases()),
+        );
     }
 
     public function test_MailTypeの値はAPIの仕様どおり(): void

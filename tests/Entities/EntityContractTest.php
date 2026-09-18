@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateContractEntity;
@@ -53,6 +54,20 @@ class EntityContractTest extends TestCase
      */
     private static function entityClasses(): array
     {
+        return \array_values(\array_filter(self::sourceEntityClasses(), static function (string $class): bool {
+            // Page など、追加の必須引数を取るものは対象外
+            $constructor = (new ReflectionClass($class))->getConstructor();
+            return $constructor === null || $constructor->getNumberOfRequiredParameters() <= 1;
+        }));
+    }
+
+    /**
+     * src/Entities 配下の全 Entity サブクラスを集める。
+     *
+     * @return array<class-string<Entity>>
+     */
+    private static function sourceEntityClasses(): array
+    {
         $classes = [];
         $base = \realpath(__DIR__ . '/../../src/Entities');
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($base));
@@ -70,11 +85,6 @@ class EntityContractTest extends TestCase
             }
             $reflection = new ReflectionClass($class);
             if ($reflection->isAbstract() || ! $reflection->isSubclassOf(Entity::class)) {
-                continue;
-            }
-            // Page など、追加の必須引数を取るものは対象外
-            $constructor = $reflection->getConstructor();
-            if ($constructor && $constructor->getNumberOfRequiredParameters() > 1) {
                 continue;
             }
             $classes[] = $class;
@@ -104,6 +114,20 @@ class EntityContractTest extends TestCase
     public function test_対象のエンティティが検出できている(): void
     {
         $this->assertGreaterThan(15, \count(self::entityClasses()));
+    }
+
+    public function test_全ての検索条件と更新Entityは要求側と宣言される(): void
+    {
+        $requestClasses = [];
+        foreach (self::sourceEntityClasses() as $class) {
+            if (\preg_match('/(?:SearchParameters|Updater)$/', $class) !== 1) {
+                continue;
+            }
+            $requestClasses[] = $class;
+            $this->assertTrue(\is_subclass_of($class, RequestEntity::class), $class);
+        }
+
+        $this->assertNotEmpty($requestClasses, '要求側 Entity が検出されませんでした。');
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 
 /**
@@ -10,7 +11,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
-class SaleUpdater extends Entity
+class SaleUpdater extends Entity implements RequestEntity
 {
     const OBJECT_FIELDS = [
         'pointState' => [
