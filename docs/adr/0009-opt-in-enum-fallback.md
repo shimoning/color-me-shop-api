@@ -67,3 +67,4 @@ provider を利用していない顧客を含むレスポンスまで `Customer`
 - [ADR 0008: 構造化されたレスポンスフィールドを Entity として表現する](0008-model-structured-response-fields-as-entities.md)
 - [ADR 0003: 暗黙変換より意味上正しい型を優先する](0003-prefer-semantic-types-over-legacy-coercion.md)
 - 判断時点の実装コミット: `a2b5814`
+- opt-in 対象の追加判断は [ADR 0013](0013-expand-opt-in-enum-fallback.md) により更新された。
