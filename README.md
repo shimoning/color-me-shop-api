@@ -93,6 +93,7 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
@@ -454,7 +455,7 @@ if ($productsOrErrors instanceof Errors) {
 
 `ids` と `group_ids` は整数配列で指定し、クエリではカンマ区切りになる。商品一覧の `limit` は API 側で最大 50 件。
 `fields` を `id,name` のように絞ると、応答には指定した商品フィールドだけが含まれる。
-省略されたフィールドの getter を呼ぶと `MissingFieldException` になる。
+省略された nullable フィールドの getter は `null` を返し、非 nullable フィールドの getter は `MissingFieldException` を投げる。
 
 #### 商品単体を取得
 ```php
@@ -470,7 +471,13 @@ if ($productOrErrors instanceof Errors) {
 
 #### バリエーション一覧と単体を取得
 ```php
-$variantsOrErrors = $client->getProductVariants(101, limit: 10, offset: 0, modelNumber: 'TEST');
+$variantParameters = new VariantSearchParameters([
+    'model_number' => 'TEST',
+    'fields' => 'id,title,option1,option2',
+    'limit' => 10,
+    'offset' => 0,
+]);
+$variantsOrErrors = $client->getProductVariants(101, $variantParameters);
 if (! $variantsOrErrors instanceof Errors) {
     foreach ($variantsOrErrors as $variant) {
         $variant->getTitle();
@@ -485,7 +492,7 @@ if (! $variantOrErrors instanceof Errors) {
 }
 ```
 
-バリエーション一覧の既定 `limit` は 10 件。`modelNumber` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
+バリエーション一覧の既定 `limit` は 10 件。検索条件の `model_number` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
 
 #### 画像と商品広告を取得
 ```php

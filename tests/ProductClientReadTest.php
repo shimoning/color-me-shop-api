@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class ProductClientReadTest extends TestCase
@@ -53,7 +54,9 @@ class ProductClientReadTest extends TestCase
         $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
         $client = new Client('token', $mock->client());
 
-        $client->getProductVariants(101, modelNumber: 'TEST', fields: 'id,model_number');
+        $client->getProductVariants(101, new VariantSearchParameters([
+            'model_number' => 'TEST', 'fields' => 'id,model_number',
+        ]));
 
         $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());
     }

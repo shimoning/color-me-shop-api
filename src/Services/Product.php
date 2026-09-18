@@ -15,6 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
@@ -54,36 +55,19 @@ class Product extends Service
 
     /**
      * バリエーション一覧。実測の既定 limit は 10。
-     * @param string|null $modelNumber 型番の部分一致検索
-     * @param string|null $fields 応答フィールドのカンマ区切り指定
+     * 検索条件では model_number / fields / limit / offset を指定できる。
      * @return Page<Variant>|Errors
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function variants(
         int|string $productId,
-        ?int $limit = null,
-        ?int $offset = null,
+        ?VariantSearchParameters $parameters = null,
         ?string $accessToken = null,
-        ?string $modelNumber = null,
-        ?string $fields = null,
     ): Page|Errors {
-        $query = [];
-        if ($limit !== null) {
-            $query['limit'] = $limit;
-        }
-        if ($offset !== null) {
-            $query['offset'] = $offset;
-        }
-        if ($modelNumber !== null) {
-            $query['model_number'] = $modelNumber;
-        }
-        if ($fields !== null) {
-            $query['fields'] = $fields;
-        }
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/products/' . $productId . '/variants'),
-            $query,
+            ($parameters ?? new VariantSearchParameters([]))->toArrayRecursive(),
         );
         return $this->_handle($response, static fn(?array $data): Page => Page::build(
             Variant::class, $data, 'variants', 'meta', 'GET /v1/products/{id}/variants のレスポンス',

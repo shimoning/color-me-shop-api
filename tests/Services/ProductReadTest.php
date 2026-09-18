@@ -13,6 +13,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -53,6 +55,21 @@ class ProductReadTest extends TestCase
         $this->assertSame('https://api.shop-pro.jp/v1/products/101/variants/301', $variantMock->uri());
     }
 
+    public function test_商品一覧の射影応答は省略されたnullableと非nullableを区別する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('products_projection.json'));
+        $page = (new Product('token', $mock->client()))->products(new SearchParameters(['fields' => 'id,name']));
+
+        $this->assertInstanceOf(Page::class, $page);
+        $this->assertSame(['fields' => 'id,name'], $mock->query());
+        $this->assertSame(101, $page[0]->getId());
+        $this->assertSame('テスト商品', $page[0]->getName());
+        $this->assertNull($page[0]->getPrice());
+        $this->assertNull($page[0]->getModelNumber());
+        $this->expectException(MissingFieldException::class);
+        $page[0]->getCategory();
+    }
+
     public function test_バリエーション一覧は指定したlimitとoffsetでPageを返す(): void
     {
         $fixture = self::fixtureArray('products_read.json');
@@ -61,7 +78,9 @@ class ProductReadTest extends TestCase
             'meta' => ['total' => 16, 'limit' => 100, 'offset' => 10],
         ]));
 
-        $page = (new Product('token', $mock->client()))->variants(101, 100, 10);
+        $page = (new Product('token', $mock->client()))->variants(101, new VariantSearchParameters([
+            'limit' => 100, 'offset' => 10,
+        ]));
         $this->assertInstanceOf(Page::class, $page);
         $this->assertInstanceOf(Variant::class, $page[0]);
         $this->assertSame(100, $page->getLimit());
@@ -74,7 +93,9 @@ class ProductReadTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
-        (new Product('token', $mock->client()))->variants(101, modelNumber: 'TEST', fields: 'id,model_number');
+        (new Product('token', $mock->client()))->variants(101, new VariantSearchParameters([
+            'model_number' => 'TEST', 'fields' => 'id,model_number',
+        ]));
 
         $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());
     }

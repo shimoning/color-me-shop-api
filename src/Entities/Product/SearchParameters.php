@@ -51,7 +51,8 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?string $sort;
     /**
      * 応答に含める商品フィールドのカンマ区切り一覧。
-     * fields を絞ると省略されたフィールドの getter は MissingFieldException になる。
+     * fields を絞った応答では、省略された nullable フィールドの getter は null を返す。
+     * 省略された非 nullable フィールドの getter は MissingFieldException を投げる。
      */
     protected ?string $fields;
     protected ?int $limit;

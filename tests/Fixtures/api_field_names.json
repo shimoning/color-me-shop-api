@@ -380,6 +380,12 @@
         "update_date",
         "weight"
     ],
+    "Product\\VariantSearchParameters": [
+        "fields",
+        "limit",
+        "model_number",
+        "offset"
+    ],
     "Product\\VariantOption": [
         "id",
         "name",

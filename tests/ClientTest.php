@@ -75,7 +75,7 @@ class ClientTest extends TestCase
                 $client->getProduct(101, $accessToken);
             }],
             'getProductVariants' => [static function (Client $client, ?string $accessToken): void {
-                $client->getProductVariants(101, null, null, $accessToken);
+                $client->getProductVariants(101, null, $accessToken);
             }],
             'getProductVariant' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductVariant(101, 301, $accessToken);
