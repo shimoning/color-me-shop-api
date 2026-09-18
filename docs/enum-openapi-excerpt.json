@@ -1,0 +1,224 @@
+{
+  "retrieved_at": "2026-09-18",
+  "source_url": "https://api.shop-pro.jp/v1/spec/open_api.json",
+  "source_sha256": "0d61491b262f92a76aa0926734b5e946792ac2d2cef2ad2284e2b123d245817b",
+  "entries": {
+    "AuthRedirectUri": {},
+    "AuthScope": {},
+    "CategoryDisplayState": {
+      "/components/schemas/productCategory/properties/display_state/enum": [
+        "showing",
+        "hidden",
+        "members_only"
+      ]
+    },
+    "ContractPlan": {
+      "/components/schemas/shop/properties/contract_plan/enum": [
+        "unknown",
+        "economy",
+        "small",
+        "regular",
+        "lolipop",
+        "heteml",
+        "platinum",
+        "goope",
+        "large",
+        "dormant",
+        "free",
+        "premium"
+      ]
+    },
+    "DeliveryChargeFreeType": {
+      "/components/schemas/delivery/properties/charge_free_type/enum": [
+        "not_free",
+        "free",
+        "free_to_limit"
+      ]
+    },
+    "DeliveryChargeType": {
+      "/components/schemas/delivery/properties/charge_type/enum": [
+        "fixed",
+        "by_price",
+        "by_area",
+        "by_weight"
+      ]
+    },
+    "DeliveryMethodType": {
+      "/components/schemas/delivery/properties/method_type/enum": [
+        "other",
+        "yamato",
+        "yamato_pickup",
+        "sagawa",
+        "jp"
+      ]
+    },
+    "DisplayState": {
+      "/components/schemas/delivery/properties/display_state/enum": [
+        "showing",
+        "hidden"
+      ]
+    },
+    "DomainPlan": {
+      "/components/schemas/shop/properties/domain_plan/enum": [
+        "cmsp_sub_domain",
+        "own_domain",
+        "own_sub_domain"
+      ]
+    },
+    "ErrorCode": {
+      "/paths/~1v1~1sales~1{sale_id}~1payment_urls/post/responses/401/content/application~1json/schema/properties/errors/items/properties/code/enum": null
+    },
+    "ExternalAccountProvider": {
+      "/components/schemas/customer/properties/external_accounts/items/properties/provider/enum": [
+        0
+      ]
+    },
+    "KouzaType": {
+      "/components/schemas/payment/properties/financial/properties/kouza_type/enum": [
+        "saving",
+        "checking"
+      ]
+    },
+    "MailState": {
+      "/components/schemas/sale/properties/accepted_mail_state/enum": [
+        "not_yet",
+        "sent",
+        "pass"
+      ],
+      "/components/schemas/sale/properties/paid_mail_state/enum": [
+        "not_yet",
+        "sent",
+        "pass"
+      ],
+      "/components/schemas/sale/properties/delivered_mail_state/enum": [
+        "not_yet",
+        "sent",
+        "pass"
+      ],
+      "/paths/~1v1~1sales/get/parameters/11/schema/enum": [
+        "not_yet",
+        "sent",
+        "pass"
+      ],
+      "/paths/~1v1~1sales/get/parameters/12/schema/enum": [
+        "not_yet",
+        "sent",
+        "pass"
+      ],
+      "/paths/~1v1~1sales/get/parameters/13/schema/enum": [
+        "not_yet",
+        "sent",
+        "pass"
+      ]
+    },
+    "MailType": {
+      "/paths/~1v1~1sales~1{sale_id}~1mails/post/requestBody/content/application~1json/schema/properties/mail/properties/type/enum": [
+        "accepted",
+        "paid",
+        "delivered"
+      ]
+    },
+    "OpenState": {
+      "/components/schemas/shop/properties/open_state/enum": [
+        "opened",
+        "closed",
+        "prepare",
+        "paused"
+      ],
+      "/components/schemas/shop/properties/mobile_open_state/enum": [
+        "opened",
+        "closed",
+        "prepare",
+        "paused"
+      ]
+    },
+    "PaymentType": {
+      "/components/schemas/payment/properties/type/enum": null
+    },
+    "PointState": {
+      "/components/schemas/sale/properties/point_state/enum": [
+        "assumed",
+        "fixed",
+        "canceled"
+      ],
+      "/components/schemas/sale/properties/gmo_point_state/enum": [
+        "assumed",
+        "fixed",
+        "canceled"
+      ],
+      "/components/schemas/sale/properties/yahoo_point_state/enum": [
+        "assumed",
+        "fixed",
+        "canceled"
+      ],
+      "/paths/~1v1~1sales~1{sale_id}/put/requestBody/content/application~1json/schema/properties/sale/properties/point_state/enum": [
+        "assumed",
+        "fixed",
+        "cenceled"
+      ]
+    },
+    "Prefecture": {
+      "/components/schemas/customer/properties/pref_id/enum": null,
+      "/components/schemas/shop/properties/pref_id/enum": null
+    },
+    "ProductDisplayState": {
+      "/components/schemas/productGroup/properties/display_state/enum": [
+        "showing",
+        "hidden",
+        "showing_for_members",
+        "sale_for_members"
+      ],
+      "/components/schemas/productGroupCreateRequest/properties/group/properties/display_state/enum": [
+        "showing",
+        "hidden",
+        "members_only"
+      ],
+      "/components/schemas/productGroupUpdateRequest/properties/group/properties/display_state/enum": [
+        "showing",
+        "hidden",
+        "members_only"
+      ]
+    },
+    "Sex": {
+      "/components/schemas/customer/properties/sex/enum": [
+        "male",
+        "female",
+        "not_applicable"
+      ],
+      "/components/schemas/sale/properties/customer/properties/sex/enum": [
+        "male",
+        "female",
+        "not_applicable"
+      ],
+      "/paths/~1v1~1customers/get/parameters/8/schema/enum": [
+        "male",
+        "female",
+        "not_applicable"
+      ],
+      "/paths/~1v1~1sales/post/requestBody/content/application~1json/schema/allOf/0/properties/sale/properties/customer/properties/sex/enum": [
+        "male",
+        "female"
+      ]
+    },
+    "ShopState": {
+      "/components/schemas/shop/properties/state/enum": [
+        "enabled",
+        "suspended",
+        "unsigned"
+      ]
+    },
+    "TaxRoundingMethod": {
+      "/components/schemas/shop/properties/tax_rounding_method/enum": [
+        "round_off",
+        "round_down",
+        "round_up"
+      ]
+    },
+    "TaxType": {
+      "/components/schemas/shop/properties/tax_type/enum": [
+        "excluded",
+        "included"
+      ]
+    }
+  }
+}
