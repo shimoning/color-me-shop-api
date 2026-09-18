@@ -31,7 +31,9 @@ API の宣言値、値の性質を照合した。`PaymentType`、`DeliveryMethod
   避ける方を優先する。出典: `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、
   `df86e33ad76cc4c937e9bddd16be0314973e9147`、
   [Issue #39 のオーナー決定](https://github.com/shimoning/color-me-shop-api/issues/39#issuecomment-5725467986)。
-- フォールバックは応答の水和にのみ適用する。`*\SearchParameters` や `*Updater` など、
+- フォールバックは応答の水和にのみ適用する。現行の接続は応答と要求を区別しないため、
+  この判断を満たすには接続側で適用範囲を分ける必要がある（方法は実装で決める）。
+  `*\SearchParameters` や `*Updater` など、
   利用者が値を組み立てて送信するリクエスト側 Entity では未知値を従来どおり厳格に拒否する。
   リクエスト側の不正値は利用者の誤りであり、番兵を送信すると誤りが API 側の未定義挙動に
   化けるためである。`Sex` は応答と `Customer\SearchParameters` の両方で使われる。

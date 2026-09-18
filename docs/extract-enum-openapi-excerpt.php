@@ -121,6 +121,15 @@ function main(array $argv): void
         throw new InvalidArgumentException('usage: php docs/extract-enum-openapi-excerpt.php OPENAPI_JSON [YYYY-MM-DD]');
     }
 
+    $retrievedAt = $argv[2] ?? date('Y-m-d');
+    $parsedDate = DateTimeImmutable::createFromFormat('!Y-m-d', $retrievedAt);
+    $dateErrors = DateTimeImmutable::getLastErrors();
+    if ($parsedDate === false
+        || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+        || $parsedDate->format('Y-m-d') !== $retrievedAt) {
+        throw new InvalidArgumentException("Invalid date: {$retrievedAt}. Expected a valid YYYY-MM-DD date.");
+    }
+
     $raw = @file_get_contents($argv[1]);
     if ($raw === false) {
         throw new RuntimeException("Cannot read OpenAPI JSON: {$argv[1]}");
@@ -149,7 +158,7 @@ function main(array $argv): void
     }
 
     $excerpt = [
-        'retrieved_at' => $argv[2] ?? date('Y-m-d'),
+        'retrieved_at' => $retrievedAt,
         'source_url' => SOURCE_URL,
         'source_sha256' => hash('sha256', $raw),
         'entries' => $entries,
