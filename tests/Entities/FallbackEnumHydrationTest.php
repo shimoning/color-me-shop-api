@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 use Shimoning\ColorMeShopApi\Constants\KouzaType;
 use Shimoning\ColorMeShopApi\Constants\PaymentType;
 use Shimoning\ColorMeShopApi\Constants\Sex;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery;
@@ -106,6 +107,60 @@ class FallbackEnumHydrationTest extends TestCase
         new SearchParameters(['sex' => '__unknown__']);
     }
 
+    public function test_要求Entityの未マークの子では未知のenum値を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new NestedRequestRoot(['child' => ['sex' => 'new_value']]);
+    }
+
+    public function test_要求Entityの配列内の未マークの子でも未知のenum値を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new NestedRequestRoot(['children' => [['sex' => 'new_value']]]);
+    }
+
+    public function test_要求Entityの連想配列形式の子でも未知のenum値を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new NestedRequestRoot(['children' => ['sex' => 'new_value']]);
+    }
+
+    public function test_要求Entityの二段下の未マークの子でも未知のenum値を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new NestedRequestRoot(['child' => ['grandchild' => ['sex' => 'new_value']]]);
+    }
+
+    public function test_要求Entityの二段下の未マークの子では番兵値も拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new NestedRequestRoot(['child' => ['grandchild' => ['sex' => '__unknown__']]]);
+    }
+
+    public function test_応答Entityの同じ子は未知値を番兵に変換する(): void
+    {
+        $response = new NestedResponseRoot(['child' => ['grandchild' => ['sex' => 'new_value']]]);
+
+        $this->assertSame('new_value', $response->getRaw()['child']['grandchild']['sex']);
+        $this->assertSame('__unknown__', $response->toArrayRecursive()['child']['grandchild']['sex']);
+    }
+
+    public function test_要求Entityの構築失敗後も応答文脈に戻る(): void
+    {
+        try {
+            new NestedRequestRoot(['child' => ['grandchild' => ['sex' => 'new_value']]]);
+            $this->fail('要求側の未知値を拒否する必要があります。');
+        } catch (InvalidFieldException) {
+            $response = new NestedResponseRoot(['child' => ['sex' => 'new_value']]);
+            $this->assertSame('__unknown__', $response->toArrayRecursive()['child']['sex']);
+        }
+    }
+
     public function test_数値enumへ文字列を渡す型不一致は拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -126,4 +181,42 @@ class FallbackEnumHydrationTest extends TestCase
 
         new Customer(['sex' => 99]);
     }
+}
+
+/** 要求文脈が未マークの子と孫へ伝わることを固定するテスト用 Entity。 */
+final class NestedRequestRoot extends Entity implements RequestEntity
+{
+    public const OBJECT_FIELDS = [
+        'child' => ['entity' => NestedChild::class],
+        'children' => ['array' => true, 'entity' => NestedChild::class],
+    ];
+
+    protected NestedChild $child;
+    /** @var list<NestedChild> */
+    protected array $children;
+}
+
+final class NestedResponseRoot extends Entity
+{
+    public const OBJECT_FIELDS = ['child' => ['entity' => NestedChild::class]];
+
+    protected NestedChild $child;
+}
+
+final class NestedChild extends Entity
+{
+    public const OBJECT_FIELDS = [
+        'sex' => ['enum' => Sex::class],
+        'grandchild' => ['entity' => NestedGrandchild::class],
+    ];
+
+    protected Sex $sex;
+    protected NestedGrandchild $grandchild;
+}
+
+final class NestedGrandchild extends Entity
+{
+    public const OBJECT_FIELDS = ['sex' => ['enum' => Sex::class]];
+
+    protected Sex $sex;
 }

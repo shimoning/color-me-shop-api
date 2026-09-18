@@ -46,6 +46,14 @@ class Entity
      */
     private static array $_properties = [];
 
+    /**
+     * 子 Entity のコンストラクタへ渡す要求文脈。
+     *
+     * 子クラスが __construct() を上書きしていても伝わるよう、構築中だけ設定し
+     * finally で復元する。RequestEntity の印がない孫にも引き継ぐ。
+     */
+    private static bool $_requestContext = false;
+
     private array $_raw;
 
     /**
@@ -368,6 +376,9 @@ class Entity
     /**
      * オブジェクトのフィールド
      *
+     * 要求側の子 Entity は未マークでも厳格な enum 検証を引き継ぐ。
+     * 各子クラスへのマーカー付けに頼ると新しいネストの追加時に漏れるため。
+     *
      * @param class-string|array<string, mixed> $objectField
      * @param mixed $value
      * @return mixed
@@ -390,14 +401,14 @@ class Entity
                     // 配列指定
                     if (static::isHash($value)) {
                         // しかし中身は連想配列
-                        return [new $class($value)];
+                        return [$this->buildEntity($class, $value)];
                     } else {
                         return array_map(function ($v) use ($class) {
-                            return new $class($v);
+                            return $this->buildEntity($class, $v);
                         }, $value);
                     }
                 }
-                return new $class($value);
+                return $this->buildEntity($class, $value);
             }
             if (isset($objectField['value'])) {
                 $class = $objectField['value'];
@@ -433,16 +444,33 @@ class Entity
     }
 
     /**
+     * OBJECT_FIELDS の子 Entity を親と同じ要求文脈で構築する。
+     *
+     * @param class-string<Entity> $class
+     */
+    private function buildEntity(string $class, mixed $value): Entity
+    {
+        $previous = self::$_requestContext;
+        self::$_requestContext = $previous || $this instanceof RequestEntity;
+        try {
+            return new $class($value);
+        } finally {
+            self::$_requestContext = $previous;
+        }
+    }
+
+    /**
      * @param class-string<BackedEnum> $enum
      */
     private function buildEnum(string $enum, mixed $value): BackedEnum
     {
         $case = $enum::tryFrom($value);
         if (\is_subclass_of($enum, FallbackEnum::class)) {
-            if ($this instanceof RequestEntity && $case === $enum::fallbackCase()) {
+            $strict = $this instanceof RequestEntity || self::$_requestContext;
+            if ($strict && $case === $enum::fallbackCase()) {
                 throw new \UnexpectedValueException('未知の enum 値です。');
             }
-            if ($case === null && ! ($this instanceof RequestEntity)) {
+            if ($case === null && ! $strict) {
                 return $enum::fallbackCase();
             }
         }
@@ -496,7 +524,7 @@ class Entity
     }
 
     /**
-     * 配列として取得する
+     * 配列として取得する。
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -515,7 +543,11 @@ class Entity
     }
 
     /**
-     * 配列として取得する
+     * 再帰的に配列として取得する。
+     *
+     * 応答の未知の FallbackEnum 値は番兵の backing value になる。
+     * 元の API 値は getRaw() に残るため、両者は一致しない場合がある
+     * (ADR 0009 / 0013)。
      * @param bool $ignoreNull null の値を除外するか
      * @return array<string, mixed>
      */
@@ -565,7 +597,11 @@ class Entity
     }
 
     /**
-     * 生データをそのまま取得する
+     * 変換前の生データをそのまま取得する。
+     *
+     * 応答の未知の FallbackEnum 値も元値のまま残る。
+     * toArrayRecursive() は番兵の backing value を返す
+     * (ADR 0009 / 0013)。
      * @return array
      */
     public function getRaw(): array
