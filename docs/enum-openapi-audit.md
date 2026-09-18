@@ -16,6 +16,15 @@
 - 2026-09-18 に同 URL を `curl --fail --silent --show-error --location` で再取得し、
   `src/Constants/`、使用箇所、表の主要な `enum:` を再確認した。再取得した JSON の SHA-256 は
   `0d61491b262f92a76aa0926734b5e946792ac2d2cef2ad2284e2b123d245817b`。
+- 当時の `enum:` 値と OpenAPI 内の JSON Pointer は
+  [監査用抜粋](enum-openapi-excerpt.json) に保存した。`null` はそのフィールドに `enum:` がなく、
+  空の項目は対応する `enum:` 自体がないことを表す。説明文による照合値は抜粋に含めない。
+  同じ JSON からの再抽出手順:
+
+  ```sh
+  curl --fail --silent --show-error --location https://api.shop-pro.jp/v1/spec/open_api.json --output /tmp/color-me-shop-openapi.json
+  python3 docs/extract-enum-openapi-excerpt.py /tmp/color-me-shop-openapi.json 2026-09-18 > docs/enum-openapi-excerpt.json
+  ```
 - コード監査基点: `origin/master` の
   `3e5ced56f28a86c3a168b7319cf80741e4438b69`。
 - 同じ用途・方向の OpenAPI 定義と enum の **backing value** を比較した。「不足」は
