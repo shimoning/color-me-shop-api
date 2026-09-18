@@ -17,6 +17,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [ショップ](#ショップ)
   * [受注](#受注)
   * [顧客](#顧客)
+  * [商品](#商品)
   * [商品グループ](#商品グループ)
   * [商品カテゴリー](#商品カテゴリー)
   * [決済](#決済)
@@ -89,7 +90,10 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
@@ -421,6 +425,116 @@ if ($customerOrErrors instanceof Errors) {
 #### 顧客データを追加
 現在は未実装。`Services\Customer` に追加用のメソッドはまだ存在しない。
 
+### 商品
+#### 商品一覧を取得
+```php
+$parameters = new ProductSearchParameters([
+    'ids' => [101, 102],
+    'group_ids' => [301, 302],
+    'display_state' => 'showing',
+    'limit' => 50,
+    'offset' => 0,
+]);
+$productsOrErrors = $client->getProducts($parameters);
+
+if ($productsOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($productsOrErrors as $product) {
+        $product->getId();
+        $product->getName();
+        $product->getCategory()->getIdBig();
+        $product->getDigitalContent();
+        $product->getUnlisted();
+    }
+    $productsOrErrors->getTotal();
+    $productsOrErrors->getLimit();
+    $productsOrErrors->getOffset();
+}
+```
+
+`ids` と `group_ids` は整数配列で指定し、クエリではカンマ区切りになる。商品一覧の `limit` は API 側で最大 50 件。
+`fields` を `id,name` のように絞ると、応答には指定した商品フィールドだけが含まれる。
+省略された nullable フィールドの getter は `null` を返し、非 nullable フィールドの getter は `MissingFieldException` を投げる。
+
+#### 商品単体を取得
+```php
+$productOrErrors = $client->getProduct(101);
+if ($productOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $productOrErrors->getName();
+    $productOrErrors->getImages(); // 商品本体の追加画像
+    $productOrErrors->getMakeDate(); // DateTimeImmutable
+}
+```
+
+#### バリエーション一覧と単体を取得
+```php
+$variantParameters = new VariantSearchParameters([
+    'model_number' => 'TEST',
+    'fields' => 'id,title,option1,option2',
+    'limit' => 10,
+    'offset' => 0,
+]);
+$variantsOrErrors = $client->getProductVariants(101, $variantParameters);
+if (! $variantsOrErrors instanceof Errors) {
+    foreach ($variantsOrErrors as $variant) {
+        $variant->getTitle();
+        $variant->getOption1();
+        $variant->getOption2(); // 1軸の場合は null
+    }
+}
+
+$variantOrErrors = $client->getProductVariant(101, 301);
+if (! $variantOrErrors instanceof Errors) {
+    $variantOrErrors->getId();
+}
+```
+
+バリエーション一覧の既定 `limit` は 10 件。検索条件の `model_number` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
+
+#### 画像と商品広告を取得
+```php
+$imagesOrErrors = $client->getProductImages(101);
+if (! $imagesOrErrors instanceof Errors) {
+    foreach ($imagesOrErrors as $image) {
+        $image->getUrl();
+        $image->getPosition();
+    }
+}
+
+$advertisingParameters = new AdvertisingSearchParameters([
+    'product_ids' => [101, 102],
+    'display_state' => 'showing',
+    'limit' => 25,
+    'offset' => 50,
+]);
+$advertisingsOrErrors = $client->getProductAdvertisings($advertisingParameters);
+if (! $advertisingsOrErrors instanceof Errors) {
+    foreach ($advertisingsOrErrors as $advertising) {
+        $advertising->getProductId();
+        $advertising->getColors();
+    }
+    $advertisingsOrErrors->getTotal();
+    $advertisingsOrErrors->getLimit();
+    $advertisingsOrErrors->getOffset();
+}
+```
+
+`product_ids` は整数配列で指定し、クエリではカンマ区切りになる。広告一覧の既定 `limit` は 50 件、OpenAPI 上の最大値は 250 件。
+
+画像専用 GET の要素は `url` と `position` を持つ `ProductImage`。商品本体の `images` 要素 (`src` / `mobile` / `position`) とは別構造。
+
+#### 商品グループ単体を取得
+```php
+$groupOrErrors = $client->getProductGroup(401);
+if (! $groupOrErrors instanceof Errors) {
+    $groupOrErrors->getId();
+    $groupOrErrors->getName();
+}
+```
+
 ### 商品グループ
 #### 商品グループ一覧を取得
 ```php
@@ -563,7 +677,7 @@ $pagination->getOffset();
 ## 未実装
 
 * [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
-* [商品](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
+* [商品の登録・更新・削除](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)

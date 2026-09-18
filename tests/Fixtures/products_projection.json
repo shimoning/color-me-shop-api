@@ -1,0 +1,6 @@
+{
+    "products": [
+        { "id": 101, "name": "テスト商品" }
+    ],
+    "meta": { "total": 1, "limit": 50, "offset": 0 }
+}
