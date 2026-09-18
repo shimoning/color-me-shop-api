@@ -161,6 +161,52 @@ class FallbackEnumHydrationTest extends TestCase
         }
     }
 
+    /** @return array<string, array{string, array<string, mixed>|list<array<string, mixed>>}> */
+    public static function requestChildObjectFields(): array
+    {
+        return [
+            'class-string 単体' => ['bare', ['sex' => 'new_value']],
+            'entity 単体' => ['child', ['sex' => 'new_value']],
+            'entity 配列' => ['children', [['sex' => 'new_value']]],
+            'entity 連想配列' => ['children', ['sex' => 'new_value']],
+            'value 単体 Entity' => ['value_child', ['sex' => 'new_value']],
+            'value 配列 Entity' => ['value_children', [['sex' => 'new_value']]],
+            'value 連想配列 Entity' => ['value_children', ['sex' => 'new_value']],
+            'class-string 二段ネスト' => ['deep', ['grandchild' => ['sex' => 'new_value']]],
+        ];
+    }
+
+    #[DataProvider('requestChildObjectFields')]
+    public function test_要求Entityの全子生成経路で未知enum値を拒否する(string $field, array $value): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new ObjectFieldRequestRoot([$field => $value]);
+    }
+
+    public function test_class_string経路の構築失敗後も応答文脈に戻る(): void
+    {
+        try {
+            new ObjectFieldRequestRoot(['bare' => ['sex' => 'new_value']]);
+            $this->fail('要求側の未知値を拒否する必要があります。');
+        } catch (InvalidFieldException) {
+            $response = new ObjectFieldResponseRoot(['bare' => ['sex' => 'new_value']]);
+            $this->assertSame('__unknown__', $response->toArrayRecursive()['bare']['sex']);
+        }
+    }
+
+    public function test_応答Entityのclass_stringとvalue経路は未知値を番兵に変換する(): void
+    {
+        $response = new ObjectFieldResponseRoot([
+            'bare' => ['sex' => 'new_value'],
+            'value_child' => ['sex' => 'new_value'],
+        ]);
+
+        $this->assertSame('new_value', $response->getRaw()['bare']['sex']);
+        $this->assertSame('__unknown__', $response->toArrayRecursive()['bare']['sex']);
+        $this->assertSame('__unknown__', $response->toArrayRecursive()['value_child']['sex']);
+    }
+
     public function test_数値enumへ文字列を渡す型不一致は拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -219,4 +265,36 @@ final class NestedGrandchild extends Entity
     public const OBJECT_FIELDS = ['sex' => ['enum' => Sex::class]];
 
     protected Sex $sex;
+}
+
+class ObjectFieldResponseRoot extends Entity
+{
+    public const OBJECT_FIELDS = [
+        'bare' => NestedChild::class,
+        'child' => ['entity' => NestedChild::class],
+        'children' => ['array' => true, 'entity' => NestedChild::class],
+        'valueChild' => ['value' => NestedChild::class],
+        'valueChildren' => ['array' => true, 'value' => NestedChild::class],
+        'deep' => BareNestedChild::class,
+    ];
+
+    protected NestedChild $bare;
+    protected NestedChild $child;
+    /** @var list<NestedChild> */
+    protected array $children;
+    protected NestedChild $valueChild;
+    /** @var list<NestedChild> */
+    protected array $valueChildren;
+    protected BareNestedChild $deep;
+}
+
+final class ObjectFieldRequestRoot extends ObjectFieldResponseRoot implements RequestEntity
+{
+}
+
+final class BareNestedChild extends Entity
+{
+    public const OBJECT_FIELDS = ['grandchild' => NestedGrandchild::class];
+
+    protected NestedGrandchild $grandchild;
 }

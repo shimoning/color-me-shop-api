@@ -401,14 +401,14 @@ class Entity
                     // 配列指定
                     if (static::isHash($value)) {
                         // しかし中身は連想配列
-                        return [$this->buildEntity($class, $value)];
+                        return [$this->buildObject($class, $value)];
                     } else {
                         return array_map(function ($v) use ($class) {
-                            return $this->buildEntity($class, $v);
+                            return $this->buildObject($class, $v);
                         }, $value);
                     }
                 }
-                return $this->buildEntity($class, $value);
+                return $this->buildObject($class, $value);
             }
             if (isset($objectField['value'])) {
                 $class = $objectField['value'];
@@ -416,14 +416,14 @@ class Entity
                     // 配列指定
                     if (static::isHash($value)) {
                         // しかし中身は連想配列
-                        return [new $class($value)];
+                        return [$this->buildObject($class, $value)];
                     } else {
                         return array_map(function ($v) use ($class) {
-                            return new $class($v);
+                            return $this->buildObject($class, $v);
                         }, $value);
                     }
                 }
-                return new $class($value);
+                return $this->buildObject($class, $value);
             }
             if (isset($objectField['enum'])) {
                 $enum = $objectField['enum'];
@@ -440,15 +440,15 @@ class Entity
         }
 
         // 単体
-        return new $objectField($value);
+        return $this->buildObject($objectField, $value);
     }
 
     /**
-     * OBJECT_FIELDS の子 Entity を親と同じ要求文脈で構築する。
+     * OBJECT_FIELDS の子オブジェクトを親と同じ要求文脈で構築する。
      *
-     * @param class-string<Entity> $class
+     * @param class-string<object> $class
      */
-    private function buildEntity(string $class, mixed $value): Entity
+    private function buildObject(string $class, mixed $value): object
     {
         $previous = self::$_requestContext;
         self::$_requestContext = $previous || $this instanceof RequestEntity;
