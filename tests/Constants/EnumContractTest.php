@@ -44,7 +44,7 @@ class EnumContractTest extends TestCase
         }
 
         $this->assertEqualsCanonicalizing(
-            ['ExternalAccountProvider', 'PaymentType', 'Sex', 'KouzaType', 'DeliveryMethodType'],
+            ['ExternalAccountProvider', 'ErrorCode', 'PaymentType', 'Sex', 'KouzaType', 'DeliveryMethodType'],
             $actual,
         );
     }
