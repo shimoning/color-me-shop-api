@@ -138,7 +138,8 @@ API の宣言値、値の性質を照合した。`PaymentType`、`DeliveryMethod
 - [ADR 0000: アーキテクチャ上の意思決定を記録する](0000-record-architecture-decisions.md)
 - [ADR 0009: 未知の enum 値を opt-in でフォールバックする](0009-opt-in-enum-fallback.md)
 - [ADR 0012: 実 API の観測に基づき Entity の null 許容を判断する](0012-allow-nullability-from-api-observations.md)（統合コミット: `45cb7d56ffcfe4db1267739b80c6aed885328641`）
-- [enum と公式 OpenAPI の突合記録](../enum-openapi-audit.md)（出典コミット: `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、`34c1fb625b388eb021d7852cf6ddccb565bdc8a8`）
+- [enum と公式 OpenAPI の突合記録](../enum-openapi-audit.md)（出典コミット: `8ea49f5fc5b1616e4a31249e12e291fcf07c6ee6`、`34c1fb625b388eb021d7852cf6ddccb565bdc8a8`、`d6d381cc21715e5b74bf0a3cb0087d704d708ef8`）
 - [監査時の OpenAPI enum 抜粋](../enum-openapi-excerpt.json)（出典コミット: `34c1fb625b388eb021d7852cf6ddccb565bdc8a8`）
+- [OpenAPI enum 抜粋の再抽出用 PHP スクリプト](../extract-enum-openapi-excerpt.php)（出典コミット: `d6d381cc21715e5b74bf0a3cb0087d704d708ef8`）
 - [エラー応答の実測記録](../api-error-responses.md)（出典コミット: `076a3182f948c05b43dca8f4b4ce12a8c365ec93`）
 - [Issue #39 のオーナー決定](https://github.com/shimoning/color-me-shop-api/issues/39#issuecomment-5725467986)、#54、#55（#54 の統合コミット: `2197642f413beb57db411090de6851b6193b8fab`、#55 の統合コミット: `7371c6101c91dfce848dc83091eb3970b648fef8`）
