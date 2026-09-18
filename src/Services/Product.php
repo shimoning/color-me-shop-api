@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
@@ -53,6 +54,8 @@ class Product extends Service
 
     /**
      * バリエーション一覧。実測の既定 limit は 10。
+     * @param string|null $modelNumber 型番の部分一致検索
+     * @param string|null $fields 応答フィールドのカンマ区切り指定
      * @return Page<Variant>|Errors
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -62,6 +65,8 @@ class Product extends Service
         ?int $limit = null,
         ?int $offset = null,
         ?string $accessToken = null,
+        ?string $modelNumber = null,
+        ?string $fields = null,
     ): Page|Errors {
         $query = [];
         if ($limit !== null) {
@@ -69,6 +74,12 @@ class Product extends Service
         }
         if ($offset !== null) {
             $query['offset'] = $offset;
+        }
+        if ($modelNumber !== null) {
+            $query['model_number'] = $modelNumber;
+        }
+        if ($fields !== null) {
+            $query['fields'] = $fields;
         }
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/products/' . $productId . '/variants'),
@@ -110,15 +121,22 @@ class Product extends Service
 
     /**
      * 商品広告一覧。
-     * @return Collection<Advertising>|Errors
+     * @return Page<Advertising>|Errors
      * @throws ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException meta の型が不正な場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function advertisings(?string $accessToken = null): Collection|Errors
+    public function advertisings(
+        ?AdvertisingSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors
     {
-        $response = $this->_request([], $accessToken)->get($this->_endpoint('/product_advertisings'));
-        return $this->_handle($response, static fn(?array $data): Collection => Collection::cast(
-            Advertising::class, $data['product_advertisings'] ?? [],
+        $response = $this->_request([], $accessToken)->get(
+            $this->_endpoint('/product_advertisings'),
+            ($parameters ?? new AdvertisingSearchParameters([]))->toArrayRecursive(),
+        );
+        return $this->_handle($response, static fn(?array $data): Page => Page::build(
+            Advertising::class, $data, 'product_advertisings', 'meta', 'GET /v1/product_advertisings のレスポンス',
         ));
     }
 

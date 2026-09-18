@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
@@ -69,6 +70,15 @@ class ProductReadTest extends TestCase
         $this->assertSame('/v1/products/101/variants', $mock->request()->getUri()->getPath());
     }
 
+    public function test_バリエーション一覧は型番と取得フィールドを送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
+
+        (new Product('token', $mock->client()))->variants(101, modelNumber: 'TEST', fields: 'id,model_number');
+
+        $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());
+    }
+
     public function test_画像専用GETはProductImageのCollectionを返す(): void
     {
         $fixture = self::fixtureArray('products_read.json');
@@ -95,10 +105,21 @@ class ProductReadTest extends TestCase
     public function test_広告とグループ単体を取得する(): void
     {
         $fixture = self::fixtureArray('products_read.json');
-        $adMock = HttpMock::json(200, json_encode(['product_advertisings' => [$fixture['advertising']]]));
-        $ads = (new Product('token', $adMock->client()))->advertisings();
-        $this->assertInstanceOf(Collection::class, $ads);
+        $adMock = HttpMock::json(200, json_encode([
+            'product_advertisings' => [$fixture['advertising']],
+            'meta' => ['total' => 61, 'limit' => 25, 'offset' => 50],
+        ]));
+        $ads = (new Product('token', $adMock->client()))->advertisings(new AdvertisingSearchParameters([
+            'product_ids' => [101, 102], 'display_state' => 'showing', 'limit' => 25, 'offset' => 50,
+        ]));
+        $this->assertInstanceOf(Page::class, $ads);
         $this->assertInstanceOf(Advertising::class, $ads[0]);
+        $this->assertSame(61, $ads->getTotal());
+        $this->assertSame(25, $ads->getLimit());
+        $this->assertSame(50, $ads->getOffset());
+        $this->assertSame([
+            'product_ids' => '101,102', 'display_state' => 'showing', 'limit' => '25', 'offset' => '50',
+        ], $adMock->query());
         $this->assertSame('/v1/product_advertisings', $adMock->request()->getUri()->getPath());
 
         $groupMock = HttpMock::json(200, '{"group":{"id":401,"name":"テストグループ"}}');

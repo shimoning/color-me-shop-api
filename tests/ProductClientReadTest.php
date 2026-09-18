@@ -4,6 +4,8 @@ namespace Shimoning\ColorMeShopApi\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
+use Shimoning\ColorMeShopApi\Entities\Page;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
@@ -32,5 +34,27 @@ class ProductClientReadTest extends TestCase
             ['getProductAdvertisings', [], '{"product_advertisings":[]}', '/v1/product_advertisings'],
             ['getProductGroup', [401], '{"group":{"id":401}}', '/v1/groups/401'],
         ];
+    }
+
+    public function test_広告一覧の条件とページ情報をClient経由で扱える(): void
+    {
+        $mock = HttpMock::json(200, '{"product_advertisings":[],"meta":{"total":51,"limit":1,"offset":50}}');
+        $client = new Client('token', $mock->client());
+
+        $page = $client->getProductAdvertisings(new AdvertisingSearchParameters(['limit' => 1, 'offset' => 50]));
+
+        $this->assertInstanceOf(Page::class, $page);
+        $this->assertSame(51, $page->getTotal());
+        $this->assertSame(['limit' => '1', 'offset' => '50'], $mock->query());
+    }
+
+    public function test_バリエーション条件をClient経由で送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
+        $client = new Client('token', $mock->client());
+
+        $client->getProductVariants(101, modelNumber: 'TEST', fields: 'id,model_number');
+
+        $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());
     }
 }

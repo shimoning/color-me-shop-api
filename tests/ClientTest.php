@@ -84,7 +84,7 @@ class ClientTest extends TestCase
                 $client->getProductImages(101, $accessToken);
             }],
             'getProductAdvertisings' => [static function (Client $client, ?string $accessToken): void {
-                $client->getProductAdvertisings($accessToken);
+                $client->getProductAdvertisings(null, $accessToken);
             }],
             'getProductGroup' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductGroup(401, $accessToken);

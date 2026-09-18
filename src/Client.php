@@ -41,6 +41,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage as ProductImageEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising as ProductAdvertisingEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 
 /**
@@ -73,7 +74,9 @@ class Client
     }
 
     /**
-     * 商品バリエーション一覧を取得する。
+     * 商品バリエーション一覧を取得する。実測の既定 limit は 10。
+     * @param string|null $modelNumber 型番の部分一致検索
+     * @param string|null $fields 応答フィールドのカンマ区切り指定
      * @return Page<ProductVariantEntity>|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -83,8 +86,10 @@ class Client
         ?int $limit = null,
         ?int $offset = null,
         ?string $accessToken = null,
+        ?string $modelNumber = null,
+        ?string $fields = null,
     ): Page|Errors {
-        return $this->productService($accessToken)->variants($productId, $limit, $offset, $accessToken);
+        return $this->productService($accessToken)->variants($productId, $limit, $offset, $accessToken, $modelNumber, $fields);
     }
 
     /**
@@ -113,13 +118,17 @@ class Client
 
     /**
      * 商品広告一覧を取得する。
-     * @return Collection<ProductAdvertisingEntity>|Errors
+     * @return Page<ProductAdvertisingEntity>|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException meta の型が不正な場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getProductAdvertisings(?string $accessToken = null): Collection|Errors
+    public function getProductAdvertisings(
+        ?AdvertisingSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors
     {
-        return $this->productService($accessToken)->advertisings($accessToken);
+        return $this->productService($accessToken)->advertisings($parameters, $accessToken);
     }
 
     /**

@@ -199,7 +199,9 @@ class Product extends Entity
     }
 
     /**
-     * 掲載設定   - `showing`: 掲載状態  - `hidden`: 非掲載状態  - `showing_for_members`: 会員にのみ掲載  - `sale_for_members`: 掲載状態だが購入は
+     * 掲載設定。
+     * `showing`: 掲載、`hidden`: 非掲載、`showing_for_members`: 会員のみ掲載、
+     * `sale_for_members`: 掲載するが購入は会員のみ可能。
      * @return ProductDisplayState
      */
     public function getDisplayState(): ProductDisplayState

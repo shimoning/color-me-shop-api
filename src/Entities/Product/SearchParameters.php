@@ -49,6 +49,10 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?int $membersPriceMax;
     protected ?string $janCode;
     protected ?string $sort;
+    /**
+     * 応答に含める商品フィールドのカンマ区切り一覧。
+     * fields を絞ると省略されたフィールドの getter は MissingFieldException になる。
+     */
     protected ?string $fields;
     protected ?int $limit;
     protected ?int $offset;

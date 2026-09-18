@@ -90,6 +90,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
@@ -452,6 +453,8 @@ if ($productsOrErrors instanceof Errors) {
 ```
 
 `ids` と `group_ids` は整数配列で指定し、クエリではカンマ区切りになる。商品一覧の `limit` は API 側で最大 50 件。
+`fields` を `id,name` のように絞ると、応答には指定した商品フィールドだけが含まれる。
+省略されたフィールドの getter を呼ぶと `MissingFieldException` になる。
 
 #### 商品単体を取得
 ```php
@@ -467,7 +470,7 @@ if ($productOrErrors instanceof Errors) {
 
 #### バリエーション一覧と単体を取得
 ```php
-$variantsOrErrors = $client->getProductVariants(101, limit: 10, offset: 0);
+$variantsOrErrors = $client->getProductVariants(101, limit: 10, offset: 0, modelNumber: 'TEST');
 if (! $variantsOrErrors instanceof Errors) {
     foreach ($variantsOrErrors as $variant) {
         $variant->getTitle();
@@ -482,6 +485,8 @@ if (! $variantOrErrors instanceof Errors) {
 }
 ```
 
+バリエーション一覧の既定 `limit` は 10 件。`modelNumber` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
+
 #### 画像と商品広告を取得
 ```php
 $imagesOrErrors = $client->getProductImages(101);
@@ -492,14 +497,25 @@ if (! $imagesOrErrors instanceof Errors) {
     }
 }
 
-$advertisingsOrErrors = $client->getProductAdvertisings();
+$advertisingParameters = new AdvertisingSearchParameters([
+    'product_ids' => [101, 102],
+    'display_state' => 'showing',
+    'limit' => 25,
+    'offset' => 50,
+]);
+$advertisingsOrErrors = $client->getProductAdvertisings($advertisingParameters);
 if (! $advertisingsOrErrors instanceof Errors) {
     foreach ($advertisingsOrErrors as $advertising) {
         $advertising->getProductId();
         $advertising->getColors();
     }
+    $advertisingsOrErrors->getTotal();
+    $advertisingsOrErrors->getLimit();
+    $advertisingsOrErrors->getOffset();
 }
 ```
+
+`product_ids` は整数配列で指定し、クエリではカンマ区切りになる。広告一覧の既定 `limit` は 50 件、OpenAPI 上の最大値は 250 件。
 
 画像専用 GET の要素は `url` と `position` を持つ `ProductImage`。商品本体の `images` 要素 (`src` / `mobile` / `position`) とは別構造。
 

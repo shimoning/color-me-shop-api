@@ -235,6 +235,12 @@
         "product_id",
         "sizes"
     ],
+    "Product\\AdvertisingSearchParameters": [
+        "display_state",
+        "limit",
+        "offset",
+        "product_ids"
+    ],
     "Product\\CategoryIds": [
         "id_big",
         "id_small"

@@ -18,7 +18,7 @@ class VariantOption extends Entity
     protected ?string $value;
 
     /**
-     * オプション1のID
+     * オプションのID
      * @return int
      */
     public function getId(): int
@@ -28,7 +28,7 @@ class VariantOption extends Entity
     }
 
     /**
-     * オプション1の名前
+     * オプションの名前
      * @return string
      */
     public function getName(): string
@@ -38,7 +38,7 @@ class VariantOption extends Entity
     }
 
     /**
-     * オプション1の値ID
+     * オプションの値ID
      * @return ?int
      */
     public function getValueId(): ?int
@@ -47,7 +47,7 @@ class VariantOption extends Entity
     }
 
     /**
-     * オプション1の値の名前
+     * オプションの値の名前
      * @return ?string
      */
     public function getValue(): ?string
