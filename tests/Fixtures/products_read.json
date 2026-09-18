@@ -1,0 +1,167 @@
+{
+  "product": {
+    "account_id": "TEST_ACCOUNT",
+    "id": 101,
+    "name": "テスト商品",
+    "stocks": null,
+    "stock_managed": false,
+    "few_num": null,
+    "model_number": null,
+    "category": {
+      "id_big": 501,
+      "id_small": 0
+    },
+    "group_ids": [],
+    "display_state": "showing",
+    "sales_price": 1200,
+    "sales_price_including_tax": 1320,
+    "sales_price_tax": 120,
+    "price": null,
+    "members_price": 1100,
+    "members_price_including_tax": 1210,
+    "members_price_tax": 110,
+    "cost": null,
+    "delivery_charge": null,
+    "cool_charge": null,
+    "unavailable_payment_ids": [],
+    "unavailable_delivery_ids": [],
+    "min_num": null,
+    "max_num": null,
+    "sale_start_date": null,
+    "sale_end_date": null,
+    "unit": null,
+    "weight": null,
+    "soldout_display": false,
+    "sort": null,
+    "simple_expl": null,
+    "expl": null,
+    "mobile_expl": null,
+    "smartphone_expl": null,
+    "make_date": 1700000000,
+    "update_date": 1700000100,
+    "memo": "",
+    "image_url": null,
+    "mobile_image_url": null,
+    "thumbnail_image_url": null,
+    "images": [
+      {
+        "src": "https://example.invalid/item-extra.jpg",
+        "position": 1,
+        "mobile": false
+      }
+    ],
+    "options": [
+      {
+        "id": 201,
+        "product_id": 101,
+        "account_id": "TEST_ACCOUNT",
+        "name": "色",
+        "values": [
+          "赤",
+          "青"
+        ],
+        "make_date": 1700000000,
+        "update_date": 1700000100
+      }
+    ],
+    "variants": [
+      {
+        "id": 301,
+        "product_id": 101,
+        "account_id": "TEST_ACCOUNT",
+        "option1_value": "赤",
+        "option2_value": null,
+        "option1": {
+          "id": 201,
+          "name": "色",
+          "value_id": 1,
+          "value": "赤"
+        },
+        "option2": null,
+        "title": "赤",
+        "stocks": null,
+        "few_num": null,
+        "model_number": "TEST-RED",
+        "weight": null,
+        "option_market_price": null,
+        "option_cost": null,
+        "option_price": 1200,
+        "option_price_including_tax": 1320,
+        "option_price_tax": 120,
+        "option_members_price": 1100,
+        "option_members_price_including_tax": 1210,
+        "option_members_price_tax": 110,
+        "make_date": 1700000000,
+        "update_date": 1700000100
+      }
+    ],
+    "pickups": [
+      {
+        "pickup_type": 1,
+        "order_num": null,
+        "make_date": 1700000000,
+        "update_date": 1700000100
+      }
+    ],
+    "regular_purchase": false,
+    "tax_reduced": false,
+    "without_shipping": false,
+    "digital_content": false,
+    "unlisted": true
+  },
+  "variant": {
+    "id": 301,
+    "product_id": 101,
+    "account_id": "TEST_ACCOUNT",
+    "option1_value": "赤",
+    "option2_value": null,
+    "option1": {
+      "id": 201,
+      "name": "色",
+      "value_id": 1,
+      "value": "赤"
+    },
+    "option2": null,
+    "title": "赤",
+    "stocks": null,
+    "few_num": null,
+    "model_number": "TEST-RED",
+    "weight": null,
+    "option_market_price": null,
+    "option_cost": null,
+    "option_price": 1200,
+    "option_price_including_tax": 1320,
+    "option_price_tax": 120,
+    "option_members_price": 1100,
+    "option_members_price_including_tax": 1210,
+    "option_members_price_tax": 110,
+    "make_date": 1700000000,
+    "update_date": 1700000100
+  },
+  "option_value": {
+    "option_id": 201,
+    "value_id": 1,
+    "product_id": 101,
+    "account_id": "TEST_ACCOUNT",
+    "name": "赤",
+    "make_date": 1700000000,
+    "update_date": 1700000100
+  },
+  "product_image": {
+    "position": 1,
+    "url": "https://example.invalid/item-main.jpg"
+  },
+  "advertising": {
+    "account_id": "TEST_ACCOUNT",
+    "product_id": 101,
+    "brand": null,
+    "colors": [],
+    "condition": "new",
+    "description": null,
+    "gender": "unisex",
+    "google_product_category": null,
+    "gtin": null,
+    "mpn": null,
+    "sizes": []
+  }
+}

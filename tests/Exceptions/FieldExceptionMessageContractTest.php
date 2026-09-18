@@ -388,6 +388,55 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \UnexpectedValueException::class,
             ],
+            'InvalidFieldException::forArrayElement/商品グループID' => [
+                self::site('src/Entities/Product/Product.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Product(['group_ids' => ['bad']]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/商品決済ID' => [
+                self::site('src/Entities/Product/Product.php', InvalidFieldException::class . '::forArrayElement', 2),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Product(['unavailable_payment_ids' => ['bad']]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/商品配送ID' => [
+                self::site('src/Entities/Product/Product.php', InvalidFieldException::class . '::forArrayElement', 3),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Product(['unavailable_delivery_ids' => ['bad']]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/オプション値' => [
+                self::site('src/Entities/Product/Option.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Option(['values' => [1]]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/広告の色' => [
+                self::site('src/Entities/Product/Advertising.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising(['colors' => [1]]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/広告のサイズ' => [
+                self::site('src/Entities/Product/Advertising.php', InvalidFieldException::class . '::forArrayElement', 2),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising(['sizes' => [1]]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/商品検索ID' => [
+                self::site('src/Entities/Product/SearchParameters.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\SearchParameters(['ids' => ['bad']]);
+                },
+                \TypeError::class,
+            ],
             'MissingFieldException::for/必須フィールド欠損' => [
                 self::site('src/Entities/Entity.php', MissingFieldException::class . '::for', 1),
                 static function (): void {
