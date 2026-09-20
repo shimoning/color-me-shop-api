@@ -16,20 +16,22 @@
 `required: true` である。表中の「required なし」は、その object のプロパティを指定する OpenAPI の
 `required` 配列がないことを表す。
 
-| 操作 | 入力 Entity | Content-Type と要求ボディ | 成功応答 |
-| --- | --- | --- | --- |
-| `POST /v1/products` | `Entities\Product\ProductInput` | `application/json`。`product{name, price, category_id_big, cost, sales_price, members_price, model_number, expl, simple_expl, smartphone_expl, display_state, stock_managed, tax_reduced}`。`product` と子プロパティは required なし | `200`、JSON の `product` |
-| `PUT /v1/products/{product_id}` | `Entities\Product\ProductInput` | `application/json`。`product{name, price, category_id_big, category_id_small, cost, sales_price, members_price, model_number, expl, simple_expl, smartphone_expl, display_state, stock_managed, stocks, group_ids, variants, tax_reduced}`。要求ボディ、`product`、子プロパティはいずれも required なし | `200`、JSON の `product` |
-| `PUT /v1/products/{product_id}/variants/{id}` | `Entities\Product\VariantInput` | `application/json`。`variant{stocks, few_num, model_number, weight, option_price, option_members_price, option_market_price, option_cost}`。`variant` と子プロパティは required なし | `200`、JSON の `variant` |
-| `POST /v1/products/{product_id}/options` | `Entities\Product\OptionInput` | `application/json`。`option{name, values[]{name}}`。`option`、`name`、`values`、各値の `name` が required | `201`、JSON の `option` |
-| `DELETE /v1/products/{product_id}/options/{id}` | なし | ボディなし | `204`、ボディなし |
-| `POST /v1/products/{product_id}/options/{option_id}/values` | `Entities\Product\OptionValueInput` | `application/json`。`option_value{name}`。`option_value` と `name` が required | `201`、JSON の `option_value` |
-| `DELETE /v1/products/{product_id}/options/{option_id}/values/{id}` | なし | ボディなし | `204`、ボディなし |
-| `POST /v1/products/{product_id}/pickups` | `Entities\Product\PickupInput` | `application/json`。`pickup_type` と `order_num` をトップレベルに持ち、required なし | `200`、JSON の `pickup` |
-| `PUT /v1/products/{product_id}/pickups` | `Entities\Product\PickupInput` | `application/json`。`pickup_type` と `order_num` をトップレベルに持ち、required なし | `200`、JSON の `pickup` |
-| `DELETE /v1/products/{product_id}/pickups/{pickup_type}` | なし | ボディなし | `200`、JSON の削除済み `pickup` |
-| `POST /v1/products/{product_id}/images` | なし | `multipart/form-data`。binary の `image` と integer の `position` が required | `201`、JSON の `product_image` |
-| `DELETE /v1/products/{product_id}/images/{position}` | なし | ボディなし | `204`、ボディなし |
+| 操作 | 入力 Entity | Content-Type と要求ボディ | OpenAPI の成功応答 | 実測 |
+| --- | --- | --- | --- | --- |
+| `POST /v1/products` | `Entities\Product\ProductInput` | `application/json`。`product{name, price, category_id_big, cost, sales_price, members_price, model_number, expl, simple_expl, smartphone_expl, display_state, stock_managed, tax_reduced}`。`product` と子プロパティは required なし | `200`、JSON の `product` | `200`、JSON の `product`。`name` だけで作成 |
+| `PUT /v1/products/{product_id}` | `Entities\Product\ProductInput` | `application/json`。`product{name, price, category_id_big, category_id_small, cost, sales_price, members_price, model_number, expl, simple_expl, smartphone_expl, display_state, stock_managed, stocks, group_ids, variants, tax_reduced}`。要求ボディ、`product`、子プロパティはいずれも required なし | `200`、JSON の `product` | `200`、JSON の `product` |
+| `PUT /v1/products/{product_id}/variants/{id}` | `Entities\Product\VariantInput` | `application/json`。`variant{stocks, few_num, model_number, weight, option_price, option_members_price, option_market_price, option_cost}`。`variant` と子プロパティは required なし | `200`、JSON の `variant` | `200`、JSON の `variant` |
+| `POST /v1/products/{product_id}/options` | `Entities\Product\OptionInput` | `application/json`。`option{name, values[]{name}}`。`option`、`name`、`values`、各値の `name` が required | `201`、JSON の `option` | `201`、JSON の `option` |
+| `DELETE /v1/products/{product_id}/options/{id}` | なし | ボディなし | `204`、ボディなし | `204`、ボディなし |
+| `POST /v1/products/{product_id}/options/{option_id}/values` | `Entities\Product\OptionValueInput` | `application/json`。`option_value{name}`。`option_value` と `name` が required | `201`、JSON の `option_value` | `201`、JSON の `option_value` |
+| `DELETE /v1/products/{product_id}/options/{option_id}/values/{id}` | なし | ボディなし | `204`、ボディなし | `204`、ボディなし |
+| `POST /v1/products/{product_id}/pickups` | `Entities\Product\PickupInput` | `application/json`。`pickup_type` と `order_num` をトップレベルに持ち、required なし | `200`、JSON の `pickup` | `200`、JSON の `pickup` |
+| `PUT /v1/products/{product_id}/pickups` | `Entities\Product\PickupInput` | `application/json`。`pickup_type` と `order_num` をトップレベルに持ち、required なし | `200`、JSON の `pickup` | `200`、JSON の `pickup` |
+| `DELETE /v1/products/{product_id}/pickups/{pickup_type}` | なし | ボディなし | `200`、JSON の削除済み `pickup` | `200`、JSON の削除済み `pickup` |
+| `POST /v1/products/{product_id}/images` | なし | `multipart/form-data`。binary の `image` と integer の `position` が required | `201`、JSON の `product_image` | プラン制限の `401`。成功は未観測 |
+| `DELETE /v1/products/{product_id}/images/{position}` | なし | ボディなし | `204`、ボディなし | 未観測 |
+
+実測列の出典は、2026-09-20 の[商品 API 書き込み観測](../api-product-structure.md#書き込み系の観測)である。出典: `b1ceab5`。
 
 商品作成と更新は、いずれも `product` object を包む JSON であり、`product` 自体にもその子にも
 required 指定がない。両者のプロパティ集合は同一ではなく、更新側には `category_id_small`、`stocks`、
@@ -44,17 +46,24 @@ required 指定がない。両者のプロパティ集合は同一ではなく�
 
 画像作成は JPEG、PNG、GIF のファイルを受け取り、最大5MB、`position` は0〜49である。成功は
 `201` である一方、OpenAPI は失敗として `422` に加えて `429` と `503` も定義している。
+実 API では契約プランの制限により `401` となり、作成成功と画像削除は観測できなかった。
+したがって画像の要求・成功応答の判断は OpenAPI 定義に基づく。出典: `b1ceab5`。
 
 `204` の3操作には成功時の JSON がないため、応答 Entity を構築できない。一方、既存の
 `Communicator\Errors` は元の `Communicator\Response` を保持し、利用者は成功型との union を
 `instanceof Errors` で分岐できる。出典: `a6688cf`。成功時に単なる `true` を返すと、HTTP
 ステータスやヘッダなどを後から参照する経路がなくなる。
 
-[商品 API 応答構造の実測記録](../api-product-structure.md)は GET の観測だけを扱い、書き込み系へ
-一般化しないことを明示している。同記録では OpenAPI にない `unlisted: boolean` を商品応答で
-観測した。`unlisted` は OpenAPI の商品入力にはなく、読み取り専用として扱う。出典: `fa4bfbb`。
-公式 OpenAPI には商品そのものを削除する操作がなく、対象12操作の DELETE はオプション、
-オプション値、ピックアップ、画像だけである。
+[商品 API 応答構造の実測記録](../api-product-structure.md)の GET 観測では、OpenAPI にない
+`unlisted: boolean` を商品応答で観測した。出典: `fa4bfbb`。同記録へ追加した書き込み観測では、
+`unlisted: true` の PUT は `200` でも応答と直後の GET が `false` のままであり、書き込みできない
+ことを確認した。出典: `b1ceab5`。
+
+同じ書き込み観測で、商品 PUT の `display_state` は `showing`、`hidden`、
+`showing_for_members`、`sale_for_members` の4値を受理し、`members_only` は `422` で拒否された。
+OpenAPI の商品グループ作成・更新 request が列挙する3値とは一致せず、request 側の enum 定義を
+商品入力へ採用するのは誤りである。出典: `b1ceab5`。公式 OpenAPI には商品そのものを削除する
+操作がなく、対象12操作の DELETE はオプション、オプション値、ピックアップ、画像だけである。
 
 ## 判断
 
@@ -62,6 +71,10 @@ required 指定がない。両者のプロパティ集合は同一ではなく�
   1つの入力 Entity で共用する。作成と更新はどちらも `product` object で、両者に required 指定が
   なく、作成専用型と更新専用型の必須性を型で区別できない。両操作のプロパティの和集合を表す。
   出典: 公式 OpenAPI（2026-09-20 取得）、`0c7b73d`。
+- `ProductInput` の `display_state` には、応答で用いる既存の `ProductDisplayState` を共用する。
+  値は `showing`、`hidden`、`showing_for_members`、`sale_for_members` の4つとする。実 API が4値を
+  受理して `members_only` を拒否したためである。要求側なので未知値のフォールバックは設けず、
+  [ADR 0013](0013-expand-opt-in-enum-fallback.md) の要求側契約を維持する。出典: `b1ceab5`。
 - バリエーション、オプション、オプション値、ピックアップの入力は、それぞれ
   `Entities\Product\VariantInput`、`OptionInput`、`OptionValueInput`、`PickupInput` とする。
   いずれも `Contracts\RequestEntity` を実装し、入力に使う enum は未知値のフォールバックを
@@ -70,7 +83,9 @@ required 指定がない。両者のプロパティ集合は同一ではなく�
 - `Contracts\RequestEntity` を実装する入力 Entity は、利用者が明示的に与えたフィールドの集合を
   保持する。要求の直列化では、その集合に含まれるフィールドだけを値が `null` でも送信し、集合に
   含まれない未設定フィールドは送信しない。これにより、OpenAPI が nullable とするフィールドを
-  API 経由で `null` にクリアできる。出典: 公式 OpenAPI（2026-09-20 取得）、`01ba9bd`、`0c7b73d`。
+  API 経由で `null` にクリアできる。実 API でも `sales_price` を整数へ設定した後に明示的な
+  `null` でクリアできることを確認した。出典: 公式 OpenAPI（2026-09-20 取得）、`01ba9bd`、
+  `0c7b73d`、`b1ceab5`。
 - この直列化契約は、新しい商品入力 Entity だけでなく、既存の `Sales\SaleUpdater`、
   `SaleDeliveryUpdater`、各 `SearchParameters` を含む全ての `RequestEntity` に適用する。既存の
   要求側 Entity では「`null` を与えても送られない」状態から「明示した `null` は送られる」状態へ
@@ -88,7 +103,9 @@ required 指定がない。両者のプロパティ集合は同一ではなく�
 - `Communicator\Request` に `multipart/form-data` 送信を追加する。商品画像の入力はファイルパス
   または読み取り可能なストリームと `position` とし、JSON へ変換しない。画像作成の `422`、`429`、
   `503` を含む失敗応答は、他の API と同じ `Errors` 経路で返す。出典: 公式 OpenAPI
-  （2026-09-20 取得）、`10cf216`、`a6688cf`。
+  （2026-09-20 取得）、`10cf216`、`a6688cf`。実 API の成功系はプラン制限により未観測であるため、
+  利用可能な契約プランで作成と削除を実測できた時点で、multipart の入力、成功応答の形、
+  `position` の扱いを再検討する。出典: `b1ceab5`。
 - `204 No Content` の成功は `Shimoning\ColorMeShopApi\Communicator\NoContent` で表す。
   `NoContent` は API ボディ由来のフィールドを持たない値オブジェクトで、`Entity` は継承しない。
   `Errors` と同様に元の `Communicator\Response` を保持し、ステータスやヘッダを参照できるようにする。
@@ -97,7 +114,8 @@ required 指定がない。両者のプロパティ集合は同一ではなく�
 - 商品自体の削除 API は提供しない。公式 API に該当操作がないため、実 API の検証で作成した商品は
   ショップに残る。検証用商品は、書き込み可能な `display_state` により非表示にする運用とする。
   `unlisted` は読み取り専用であり非表示化には使えない。この運用は削除不能による検証環境の運用で
-  あり、ライブラリの仕様にはしない。出典: 公式 OpenAPI（2026-09-20 取得）、`fa4bfbb`。
+  あり、ライブラリの仕様にはしない。`unlisted: true` を送っても `false` のままだった実測を根拠に、
+  書き込み不可と判断する。出典: 公式 OpenAPI（2026-09-20 取得）、`fa4bfbb`、`b1ceab5`。
 
 ## 代替案と却下理由
 
@@ -110,7 +128,8 @@ required 指定がない。両者のプロパティ集合は同一ではなく�
   二重管理するだけになるため採用しない。出典: 公式 OpenAPI（2026-09-20 取得）、`0c7b73d`。
 - 未設定と明示的な `null` を区別せず、現行の `Sales\SaleUpdater` と同様に `null` を送信しない案は、
   既存の直列化契約と一致する。しかし、nullable フィールドを API 経由でクリアできないため採用しない。
-  出典: 公式 OpenAPI（2026-09-20 取得）、`01ba9bd`、`0c7b73d`。
+  `sales_price` を明示的な `null` でクリアできた実測も、この案を採用しない根拠となる。
+  出典: 公式 OpenAPI（2026-09-20 取得）、`01ba9bd`、`0c7b73d`、`b1ceab5`。
 - 商品画像を base64 文字列にして JSON 送信する案は、OpenAPI が binary の `image` と
   `position` を持つ `multipart/form-data` を要求しており、API 契約と一致しないため採用しない。
   出典: 公式 OpenAPI（2026-09-20 取得）、`10cf216`。
@@ -138,6 +157,7 @@ nullable フィールドを明示的な `null` でクリアできる。既存の
 - [ADR 0012: 実 API の観測に基づき Entity の null 許容を判断する](0012-allow-nullability-from-api-observations.md)
 - [ADR 0013: 応答に使う enum のフォールバック対象を拡張する](0013-expand-opt-in-enum-fallback.md)
 - [商品 API 応答構造の実測記録](../api-product-structure.md)（出典コミット: `fa4bfbb`）
+- [商品 API の書き込み系観測](../api-product-structure.md#書き込み系の観測)（出典コミット: `b1ceab57f187b0b46b109ad7a1f830960f1ff151`）
 - [公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json)（2026-09-20 取得）
 - `Errors` が元の `Response` を保持する契約の出典コミット: `a6688cf`
 - `RequestEntity` と `Sales\SaleUpdater` の要求側契約の出典コミット: `0c7b73d`
