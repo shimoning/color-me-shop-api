@@ -37,6 +37,13 @@ use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory as BigCategoryEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory as SmallCategoryEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductImage as ProductImageEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising as ProductAdvertisingEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 
 /**
  * カラーミーショップ API の各機能を提供するクライアント。
@@ -45,6 +52,99 @@ class Client
 {
     protected string $accessToken;
     protected ?ClientInterface $httpClient;
+
+    /**
+     * 商品一覧を取得する。
+     * @return Page<ProductEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProducts(?ProductSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    {
+        return $this->productService($accessToken)->products($parameters ?? new ProductSearchParameters([]), $accessToken);
+    }
+
+    /**
+     * 商品単体を取得する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProduct(int|string $id, ?string $accessToken = null): ProductEntity|Errors
+    {
+        return $this->productService($accessToken)->product($id, $accessToken);
+    }
+
+    /**
+     * 商品バリエーション一覧を取得する。実測の既定 limit は 10。
+     * 検索条件では model_number / fields / limit / offset を指定できる。
+     * @return Page<ProductVariantEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductVariants(
+        int|string $productId,
+        ?VariantSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->productService($accessToken)->variants($productId, $parameters, $accessToken);
+    }
+
+    /**
+     * 商品バリエーション単体を取得する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductVariant(
+        int|string $productId,
+        int|string $id,
+        ?string $accessToken = null,
+    ): ProductVariantEntity|Errors {
+        return $this->productService($accessToken)->variant($productId, $id, $accessToken);
+    }
+
+    /**
+     * 商品画像専用 GET の一覧を取得する。
+     * @return Collection<ProductImageEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductImages(int|string $productId, ?string $accessToken = null): Collection|Errors
+    {
+        return $this->productService($accessToken)->images($productId, $accessToken);
+    }
+
+    /**
+     * 商品広告一覧を取得する。
+     * @return Page<ProductAdvertisingEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException meta の型が不正な場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductAdvertisings(
+        ?AdvertisingSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors
+    {
+        return $this->productService($accessToken)->advertisings($parameters, $accessToken);
+    }
+
+    /**
+     * 商品グループ単体を取得する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductGroup(int|string $id, ?string $accessToken = null): GroupEntity|Errors
+    {
+        return $this->productService($accessToken)->group($id, $accessToken);
+    }
+
+    private function productService(?string $accessToken): Product
+    {
+        if ($accessToken !== null) {
+            $this->accessToken = $accessToken;
+        }
+        return new Product($this->accessToken ?? '', $this->httpClient);
+    }
 
     /**
      * @param string|null $accessToken

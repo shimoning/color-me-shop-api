@@ -68,6 +68,27 @@ class ClientTest extends TestCase
             'getProductCategories' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductCategories($accessToken);
             }],
+            'getProducts' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProducts(null, $accessToken);
+            }],
+            'getProduct' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProduct(101, $accessToken);
+            }],
+            'getProductVariants' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductVariants(101, null, $accessToken);
+            }],
+            'getProductVariant' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductVariant(101, 301, $accessToken);
+            }],
+            'getProductImages' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductImages(101, $accessToken);
+            }],
+            'getProductAdvertisings' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductAdvertisings(null, $accessToken);
+            }],
+            'getProductGroup' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductGroup(401, $accessToken);
+            }],
         ];
     }
 
