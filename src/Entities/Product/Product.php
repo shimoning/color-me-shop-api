@@ -522,7 +522,7 @@ class Product extends Entity
     }
 
     /**
-     * おすすめ商品情報  ※おすすめ商品種別が「3: 新着商品」の情報は、「[新着商品管理](https://help.shop-pro.jp/hc/ja/articles/360062008694)」が「手動モード」の場合の
+     * おすすめ商品情報  ※おすすめ商品種別が「3: 新着商品」の情報は、「[新着商品管理](https://help.shop-pro.jp/hc/ja/articles/360062008694)」が「手動モード」の場合のみ取得できます。
      * @return list<Pickup>
      */
     public function getPickups(): array
