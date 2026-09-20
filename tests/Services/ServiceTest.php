@@ -2,8 +2,10 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Http\Message\ResponseInterface;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Communicator\Request;
@@ -156,6 +158,59 @@ class ServiceTest extends TestCase
         $this->assertInstanceOf(Errors::class, $result);
         $this->assertSame($response, $result->getResponse());
         $this->assertSame('422210', $result[0]->getCode());
+    }
+
+    public function test__handleはmultipartの422応答をErrorsへ変換したあとも所有ストリームを解放する(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'colorme-error-stream-');
+        $this->assertNotFalse($path);
+        \file_put_contents($path, 'error-stream-content');
+        $mock = HttpMock::json(
+            422,
+            '{"errors":[{"code":"422210","message":"invalid","status":422}]}',
+        );
+        $capturedStream = null;
+        $wasOpenDuringRequest = false;
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('request')
+            ->willReturnCallback(static function (
+                string $method,
+                string $uri,
+                array $options,
+            ) use ($mock, &$capturedStream, &$wasOpenDuringRequest): ResponseInterface {
+                $capturedStream = $options['multipart'][0]['contents'];
+                $wasOpenDuringRequest = \is_resource($capturedStream);
+                return $mock->client()->request($method, $uri, $options);
+            });
+        $service = new ServiceStub('my-token', $client);
+
+        try {
+            $response = $service->requestForTest()->postMultipart(
+                $service->endpointForTest('/products/1/images'),
+                [],
+                ['image' => $path],
+            );
+            $result = $service->handleForTest(
+                $response,
+                static fn(?array $data): mixed => throw new \LogicException('mapper must not be called'),
+            );
+        } finally {
+            \unlink($path);
+        }
+
+        $this->assertInstanceOf(Errors::class, $result);
+        $this->assertTrue($wasOpenDuringRequest);
+        $this->assertFalse(\is_resource($capturedStream));
+        $multipart = $result->getResponse()->getRequestMeta()->getOptions()['multipart'];
+        $this->assertSame([
+            [
+                'name' => 'image',
+                'filename' => \basename($path),
+                'size' => 20,
+            ],
+        ], $multipart);
+        $this->assertArrayNotHasKey('contents', $multipart[0]);
     }
 
     public function test__handleは成功した空ボディもmapperに渡す(): void
