@@ -56,6 +56,7 @@ class SaleUpdater extends Entity implements RequestEntity
     public function setPaid(bool $paid)
     {
         $this->paid = $paid;
+        $this->markRequestField('paid');
     }
 
     /**
@@ -76,6 +77,7 @@ class SaleUpdater extends Entity implements RequestEntity
     public function setPointState(PointState $pointState)
     {
         $this->pointState = $pointState;
+        $this->markRequestField('pointState');
     }
 
     /**
@@ -96,6 +98,7 @@ class SaleUpdater extends Entity implements RequestEntity
     public function setSaleDeliveries($saleDeliveries)
     {
         $this->saleDeliveries = $saleDeliveries;
+        $this->markRequestField('saleDeliveries');
     }
 
     /**

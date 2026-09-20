@@ -22,7 +22,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateContractEntity;
 class EntityContractTest extends TestCase
 {
     /**
-     * @return array<string, array{class-string}>
+     * @return array<string, array{class-string<Entity>}>
      */
     public static function entityProvider(): array
     {
@@ -35,6 +35,52 @@ class EntityContractTest extends TestCase
             $cases[$key] = [$class];
         }
         return $cases;
+    }
+
+    /**
+     * @return array<string, array{class-string<Entity>}>
+     */
+    public static function requestEntityProvider(): array
+    {
+        $cases = [];
+        foreach (self::entityProvider() as $name => $case) {
+            if (\is_subclass_of($case[0], RequestEntity::class)) {
+                $cases[$name] = $case;
+            }
+        }
+
+        return $cases;
+    }
+
+    /** @return array<string, array{class-string<Entity>, string}> */
+    public static function nullableRequestFieldProvider(): array
+    {
+        return [
+            'Customer\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters::class,
+                'name',
+            ],
+            'Product\\AdvertisingSearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters::class,
+                'limit',
+            ],
+            'Product\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\SearchParameters::class,
+                'name',
+            ],
+            'Product\\VariantSearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters::class,
+                'model_number',
+            ],
+            'Sales\\SaleDeliveryUpdater' => [
+                \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater::class,
+                'memo',
+            ],
+            'Sales\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters::class,
+                'customer_mail',
+            ],
+        ];
     }
 
     /**
@@ -128,6 +174,24 @@ class EntityContractTest extends TestCase
         }
 
         $this->assertNotEmpty($requestClasses, '要求側 Entity が検出されませんでした。');
+    }
+
+    #[DataProvider('requestEntityProvider')]
+    public function test_全てのRequestEntityは未設定フィールドをnull含め直列化しない(string $class): void
+    {
+        $entity = new $class([]);
+
+        $this->assertSame([], $entity->toArrayRecursive(false), $class);
+    }
+
+    #[DataProvider('nullableRequestFieldProvider')]
+    public function test_既存のnull許容RequestEntityは明示したnullを直列化する(
+        string $class,
+        string $field,
+    ): void {
+        $entity = new $class([$field => null]);
+
+        $this->assertSame([$field => null], $entity->toArrayRecursive(), $class);
     }
 
     /**

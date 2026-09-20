@@ -21,6 +21,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setName(string $name)
     {
         $this->name = $name;
+        $this->markRequestField('name');
     }
 
     /**
@@ -31,6 +32,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setFurigana(Furigana $furigana)
     {
         $this->furigana = $furigana;
+        $this->markRequestField('furigana');
     }
 
     /**
@@ -41,6 +43,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setPostal(string $postal)
     {
         $this->postal = $postal;
+        $this->markRequestField('postal');
     }
 
     /**
@@ -51,6 +54,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setPrefId(Prefecture $prefId)
     {
         $this->prefId = $prefId;
+        $this->markRequestField('prefId');
     }
 
     /**
@@ -61,6 +65,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setPrefName(string $prefName)
     {
         $this->prefName = $prefName;
+        $this->markRequestField('prefName');
     }
 
     /**
@@ -71,6 +76,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setAddress1(string $address1)
     {
         $this->address1 = $address1;
+        $this->markRequestField('address1');
     }
     /**
      * 住所2を設定
@@ -80,6 +86,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setAddress2(string $address2)
     {
         $this->address2 = $address2;
+        $this->markRequestField('address2');
     }
 
     /**
@@ -90,6 +97,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setTel(string $tel)
     {
         $this->tel = $tel;
+        $this->markRequestField('tel');
     }
 
     /**
@@ -100,6 +108,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setPreferredDate(string $preferredDate)
     {
         $this->preferredDate = $preferredDate;
+        $this->markRequestField('preferredDate');
     }
 
     /**
@@ -110,6 +119,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setPreferredPeriod(string $preferredPeriod)
     {
         $this->preferredPeriod = $preferredPeriod;
+        $this->markRequestField('preferredPeriod');
     }
 
     /**
@@ -120,6 +130,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setSlipNumber(string $slipNumber)
     {
         $this->slipNumber = $slipNumber;
+        $this->markRequestField('slipNumber');
     }
 
     /**
@@ -130,6 +141,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setNoshiText(string $noshiText)
     {
         $this->noshiText = $noshiText;
+        $this->markRequestField('noshiText');
     }
 
     /**
@@ -140,6 +152,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setNoshiCharge(int $noshiCharge)
     {
         $this->noshiCharge = $noshiCharge;
+        $this->markRequestField('noshiCharge');
     }
 
     /**
@@ -150,6 +163,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setCardName(string $cardName)
     {
         $this->cardName = $cardName;
+        $this->markRequestField('cardName');
     }
 
     /**
@@ -160,6 +174,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setCardText(string $cardText)
     {
         $this->cardText = $cardText;
+        $this->markRequestField('cardText');
     }
 
     /**
@@ -170,6 +185,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setCardCharge(int $cardCharge)
     {
         $this->cardCharge = $cardCharge;
+        $this->markRequestField('cardCharge');
     }
 
     /**
@@ -180,6 +196,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setWrappingName(string $wrappingName)
     {
         $this->wrappingName = $wrappingName;
+        $this->markRequestField('wrappingName');
     }
 
     /**
@@ -190,6 +207,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setWrappingCharge(int $wrappingCharge)
     {
         $this->wrappingCharge = $wrappingCharge;
+        $this->markRequestField('wrappingCharge');
     }
 
     /**
@@ -200,6 +218,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setDeliveryCharge(int $deliveryCharge)
     {
         $this->deliveryCharge = $deliveryCharge;
+        $this->markRequestField('deliveryCharge');
     }
 
     /**
@@ -210,6 +229,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setTotalCharge(int $totalCharge)
     {
         $this->totalCharge = $totalCharge;
+        $this->markRequestField('totalCharge');
     }
 
     /**
@@ -220,6 +240,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setTrackingUrl(string $trackingUrl)
     {
         $this->trackingUrl = $trackingUrl;
+        $this->markRequestField('trackingUrl');
     }
 
     /**
@@ -229,6 +250,7 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
      */
     public function setMemo(string $memo) {
         $this->memo = $memo;
+        $this->markRequestField('memo');
     }
 
     /**
@@ -239,5 +261,6 @@ class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
     public function setDelivered(bool $delivered)
     {
         $this->delivered = $delivered;
+        $this->markRequestField('delivered');
     }
 }

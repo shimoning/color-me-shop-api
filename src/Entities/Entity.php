@@ -54,6 +54,18 @@ class Entity
      */
     private static bool $_requestContext = false;
 
+    /**
+     * 要求側 Entity ごとに、利用者が明示したプロパティ名を保持する。
+     *
+     * 応答側と共有する nullable プロパティは、欠損時にも null で初期化される。
+     * 値では両者を区別できないため、取り込み時のキー集合を別に記録する。
+     * 応答 Entity では未初期化のままにし、既存の serialize 表現へプロパティを増やさない。
+     * RequestEntity だけがコンストラクタで初期化することで、明示フィールドの永続化も保つ。
+     *
+     * @var array<string, true>
+     */
+    private array $_requestFields;
+
     private array $_raw;
 
     /**
@@ -65,6 +77,9 @@ class Entity
     public function __construct(array $data)
     {
         $this->_raw = $data;
+        if ($this instanceof RequestEntity) {
+            $this->_requestFields = [];
+        }
 
         $objectFields = static::OBJECT_FIELDS;
 
@@ -75,6 +90,9 @@ class Entity
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (self::findProperty(static::class, $_key) !== null) {
                 $this->hydrateField($_key, $key, $value, $objectFields[$_key] ?? null);
+                if ($this instanceof RequestEntity) {
+                    $this->markRequestField($_key);
+                }
             }
         }
 
@@ -554,15 +572,19 @@ class Entity
     public function toArrayRecursive($ignoreNull = true): array
     {
         $array = [];
+        $request = $this instanceof RequestEntity;
         foreach (self::resolveProperties(static::class) as $key => $property) {
             if (self::isInternalProperty($key)) {
+                continue;
+            }
+            if ($request && ! isset($this->requestFields()[$key])) {
                 continue;
             }
             $_key = static::apiFieldName($key);
             $value = $property->isInitialized($this)
                 ? $property->getValue($this)
                 : null;
-            if ($ignoreNull && $value === null) {
+            if (! $request && $ignoreNull && $value === null) {
                 continue;
             }
             if (\is_array($value)) {
@@ -573,6 +595,26 @@ class Entity
             $array[$_key] = $value;
         }
         return $array;
+    }
+
+    /**
+     * setter 経由で明示された要求フィールドを記録する。
+     *
+     * コンストラクタ配列のキーは基底で自動記録するが、既存の
+     * SaleUpdater 系が持つ setter も同じ「利用者が明示した値」として扱う。
+     */
+    protected function markRequestField(string $property): void
+    {
+        if (! isset($this->_requestFields)) {
+            $this->_requestFields = [];
+        }
+        $this->_requestFields[$property] = true;
+    }
+
+    /** @return array<string, true> */
+    private function requestFields(): array
+    {
+        return $this->_requestFields;
     }
 
     /**
