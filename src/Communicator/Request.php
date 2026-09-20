@@ -91,6 +91,7 @@ class Request
      *
      * @param array<string, mixed> $fields 通常フィールド
      * @param array<string, string|resource|StreamInterface> $files フィールド名 => ファイルパスまたはストリーム
+     * @param array<string, string> $filenames フィールド名 => 送信するファイル名
      * @throws ParameterException ファイルが存在しないか、ストリームを読み取れない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -99,6 +100,7 @@ class Request
         array $fields,
         array $files,
         array $headers = [],
+        array $filenames = [],
     ): Response {
         $multipart = [];
         foreach ($fields as $name => $value) {
@@ -107,18 +109,56 @@ class Request
                 'contents' => \is_scalar($value) || $value === null ? (string) $value : $value,
             ];
         }
-        foreach ($files as $name => $file) {
-            $part = [
-                'name' => $name,
-                'contents' => self::readableFile($name, $file),
-            ];
-            if (\is_string($file)) {
-                $part['filename'] = \basename($file);
+        $ownedStreams = [];
+
+        try {
+            foreach ($files as $name => $file) {
+                $contents = self::readableFile($name, $file);
+                if (\is_string($file)) {
+                    $ownedStreams[] = $contents;
+                }
+                $multipart[] = [
+                    'name' => $name,
+                    'contents' => $contents,
+                    'filename' => self::multipartFilename($name, $file, $filenames[$name] ?? null),
+                ];
             }
-            $multipart[] = $part;
+
+            return $this->sendRequest('POST', $uri, $headers, null, ['multipart' => $multipart]);
+        } finally {
+            foreach ($ownedStreams as $stream) {
+                if (\is_resource($stream)) {
+                    \fclose($stream);
+                }
+            }
+        }
+    }
+
+    private static function multipartFilename(string $field, mixed $file, mixed $filename): string
+    {
+        if (\is_string($filename) && $filename !== '') {
+            return $filename;
         }
 
-        return $this->sendRequest('POST', $uri, $headers, null, ['multipart' => $multipart]);
+        $uri = null;
+        if (\is_string($file)) {
+            $uri = $file;
+        } else if ($file instanceof StreamInterface) {
+            $uri = $file->getMetadata('uri');
+        } else if (\is_resource($file) && \get_resource_type($file) === 'stream') {
+            $meta = \stream_get_meta_data($file);
+            $uri = $meta['uri'] ?? null;
+        }
+
+        if (\is_string($uri) && $uri !== '') {
+            $path = \parse_url($uri, \PHP_URL_PATH);
+            $basename = \basename(\str_replace('\\', '/', \is_string($path) ? $path : $uri));
+            if ($basename !== '' && $basename !== '.' && $basename !== '/') {
+                return $basename;
+            }
+        }
+
+        return $field;
     }
 
     /**
@@ -226,6 +266,9 @@ class Request
             }
         }
 
+        // Response が resource を保持し続けないよう、送信前に安全なメタデータへ変換する。
+        $requestMetaOptions = self::snapshotOptions($options);
+
         // リクエスト
         $response = $this->_client->request(
             $method,
@@ -236,8 +279,38 @@ class Request
         // レスポンスを返す
         return new Response(
             $response,
-            new RequestMeta($method, $uri, $options),
+            new RequestMeta($method, $uri, $requestMetaOptions),
         );
+    }
+
+    /** @param array<string, mixed> $options @return array<string, mixed> */
+    private static function snapshotOptions(array $options): array
+    {
+        if (! isset($options['multipart']) || ! \is_array($options['multipart'])) {
+            return $options;
+        }
+
+        $options['multipart'] = \array_map(static function (mixed $part): mixed {
+            if (! \is_array($part) || ! \array_key_exists('contents', $part)) {
+                return $part;
+            }
+
+            $contents = $part['contents'];
+            if ($contents instanceof StreamInterface) {
+                $size = $contents->getSize();
+            } else if (\is_resource($contents)) {
+                $stat = \fstat($contents);
+                $size = \is_array($stat) && isset($stat['size']) ? $stat['size'] : null;
+            } else {
+                return $part;
+            }
+
+            unset($part['contents']);
+            $part['size'] = $size;
+            return $part;
+        }, $options['multipart']);
+
+        return $options;
     }
 
     /**

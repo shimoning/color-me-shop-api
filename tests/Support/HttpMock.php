@@ -22,6 +22,9 @@ class HttpMock
     /** @var list<array{request: RequestInterface, response: mixed, error: mixed, options: array}> */
     private array $_history = [];
 
+    /** @var list<string> 送信中に materialize したリクエストボディ */
+    private array $_bodies = [];
+
     /**
      * @param array<Psr7Response|\Throwable> $responses 順番に返されるレスポンス
      */
@@ -29,6 +32,10 @@ class HttpMock
     {
         $stack = HandlerStack::create(new MockHandler($responses));
         $stack->push(Middleware::history($this->_history));
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request): RequestInterface {
+            $this->_bodies[] = (string) $request->getBody();
+            return $request;
+        }));
 
         $this->_client = new Client(['handler' => $stack]);
     }
@@ -104,7 +111,12 @@ class HttpMock
      */
     public function body(int $index = 0): string
     {
-        return (string)$this->request($index)->getBody();
+        if (! isset($this->_bodies[$index])) {
+            throw new \OutOfRangeException(
+                \sprintf('%d 番目のリクエストは送信されていない (送信件数: %d)', $index, $this->countRequests()),
+            );
+        }
+        return $this->_bodies[$index];
     }
 
     /**

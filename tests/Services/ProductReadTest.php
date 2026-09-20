@@ -40,6 +40,18 @@ class ProductReadTest extends TestCase
         $this->assertSame(['ids' => '101,102', 'group_ids' => '301,302', 'limit' => '100'], $mock->query());
     }
 
+    public function test_商品一覧の検索条件で明示したnullはクエリから省略する(): void
+    {
+        $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":20,"offset":0}}');
+
+        (new Product('token', $mock->client()))->products(new SearchParameters([
+            'name' => null,
+            'limit' => 20,
+        ]));
+
+        $this->assertSame(['limit' => '20'], $mock->query());
+    }
+
     public function test_商品とバリエーション単体を取得する(): void
     {
         $fixture = self::fixtureArray('products_read.json');

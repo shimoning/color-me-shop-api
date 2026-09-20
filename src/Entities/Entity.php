@@ -61,6 +61,8 @@ class Entity
      * 値では両者を区別できないため、取り込み時のキー集合を別に記録する。
      * 応答 Entity では未初期化のままにし、既存の serialize 表現へプロパティを増やさない。
      * RequestEntity だけがコンストラクタで初期化することで、明示フィールドの永続化も保つ。
+     * 追跡追加前に serialize された RequestEntity では未初期化のまま復元されるため、
+     * toArrayRecursive() は従来の null 省略へフォールバックする。
      *
      * @var array<string, true>
      */
@@ -573,18 +575,19 @@ class Entity
     {
         $array = [];
         $request = $this instanceof RequestEntity;
+        $requestFields = $request ? $this->requestFields() : null;
         foreach (self::resolveProperties(static::class) as $key => $property) {
             if (self::isInternalProperty($key)) {
                 continue;
             }
-            if ($request && ! isset($this->requestFields()[$key])) {
+            if ($request && $requestFields !== null && ! isset($requestFields[$key])) {
                 continue;
             }
             $_key = static::apiFieldName($key);
             $value = $property->isInitialized($this)
                 ? $property->getValue($this)
                 : null;
-            if (! $request && $ignoreNull && $value === null) {
+            if ((! $request || $requestFields === null) && $ignoreNull && $value === null) {
                 continue;
             }
             if (\is_array($value)) {
@@ -611,10 +614,12 @@ class Entity
         $this->_requestFields[$property] = true;
     }
 
-    /** @return array<string, true> */
-    private function requestFields(): array
+    /**
+     * @return array<string, true>|null null は明示フィールド追跡追加前の直列化データ
+     */
+    private function requestFields(): ?array
     {
-        return $this->_requestFields;
+        return isset($this->_requestFields) ? $this->_requestFields : null;
     }
 
     /**

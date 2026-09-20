@@ -24,7 +24,9 @@ class NoContentTest extends TestCase
 
         $this->assertNotInstanceOf(Entity::class, $result);
         $this->assertSame($response, $result->getResponse());
-        $this->assertSame(204, $result->getStatus());
-        $this->assertSame(['request-id'], $result->getRawHeader()['X-Request-Id']);
+        $this->assertSame(204, $result->getResponse()->getStatus());
+        $this->assertSame(['request-id'], $result->getResponse()->getRawHeader()['X-Request-Id']);
+        $this->assertFalse(\method_exists($result, 'getStatus'));
+        $this->assertFalse(\method_exists($result, 'getRawHeader'));
     }
 }

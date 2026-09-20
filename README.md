@@ -338,8 +338,9 @@ if ($saleOrErrors instanceof Errors) {
 
 #### 受注データの更新
 既存の受注から更新用エンティティを生成すると、API が必要とする現在値を引き継げる。
-要求側 Entity は明示したフィールドだけを送信し、コンストラクタ配列で明示した `null` も送信する。
-コンストラクタに指定しなかったフィールドは送信しない。この契約は各種検索条件 Entity にも適用される。
+要求側 Entity は明示したフィールドだけを送信する。JSON ボディの入力 Entity はコンストラクタ配列で
+明示した `null` も送信し、指定しなかったフィールドは送信しない。各種検索条件 Entity も未指定フィールドを
+除外するが、GET クエリでは `http_build_query()` の仕様により明示した `null` も送信されない。
 
 ```php
 $saleOrErrors = $client->getSale($saleId);

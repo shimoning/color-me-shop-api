@@ -183,7 +183,7 @@ class ServiceTest extends TestCase
 
         $this->assertInstanceOf(NoContent::class, $result);
         $this->assertSame($response, $result->getResponse());
-        $this->assertSame(204, $result->getStatus());
+        $this->assertSame(204, $result->getResponse()->getStatus());
     }
 }
 

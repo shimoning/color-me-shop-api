@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Communicator;
 
 /**
  * 実行した HTTP リクエストのメタデータ。
+ * multipart の stream resource は保持せず、filename と size のスナップショットを保持する。
  */
 class RequestMeta
 {
@@ -16,7 +17,7 @@ class RequestMeta
      *
      * @param string $method HTTP メソッド
      * @param string $uri リクエスト URI
-     * @param array<string, mixed> $options HTTP クライアントへ渡したオプション
+     * @param array<string, mixed> $options HTTP クライアントへ渡したオプションの安全なスナップショット
      * @return void
      */
     public function __construct(
@@ -48,7 +49,7 @@ class RequestMeta
         return $this->_uri;
     }
     /**
-     * HTTP クライアントへ渡したオプションを取得する。
+     * HTTP クライアントへ渡したオプションの安全なスナップショットを取得する。
      *
      * @return array<string, mixed>
      */

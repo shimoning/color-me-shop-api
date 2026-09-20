@@ -7,6 +7,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 
 class RequestEntitySerializationTest extends TestCase
 {
@@ -43,6 +44,21 @@ class RequestEntitySerializationTest extends TestCase
         $this->assertSame(['name' => null], $clone->toArrayRecursive());
         $this->assertInstanceOf(RequestSerializationRoot::class, $restored);
         $this->assertSame(['name' => null], $restored->toArrayRecursive());
+    }
+
+    public function test_明示フィールド追跡追加前の直列化データは従来のnull省略で復元する(): void
+    {
+        $encoded = \file_get_contents(__DIR__ . '/../Fixtures/request_entity_before_explicit_fields.base64');
+        $this->assertNotFalse($encoded);
+        $serialized = \base64_decode(\trim($encoded), true);
+        $this->assertNotFalse($serialized);
+
+        $restored = \unserialize($serialized, [
+            'allowed_classes' => [SearchParameters::class],
+        ]);
+
+        $this->assertInstanceOf(SearchParameters::class, $restored);
+        $this->assertSame(['fields' => 'id,name'], $restored->toArrayRecursive());
     }
 
     public function test_ネストした入力Entityとその配列にも明示フィールド契約を再帰適用する(): void
