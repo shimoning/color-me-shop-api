@@ -4,7 +4,7 @@
 
 この文書は、商品 API の Entity 設計と [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) による null 許容判断のため、実 API 応答を記録する。現在のライブラリ仕様ではない。実測の出典はこの文書を追加したコミットであり、[ADR 0000](adr/0000-record-architecture-decisions.md) の収集条件・検証可能性の規則に従う。
 
-収集日は第1回、第2回とも **2026-09-18（Asia/Tokyo）**。対象はテスト用ショップ。本ライブラリの `Communicator\Request::get()` で、認証済みの **GET のみ**を実行した。第1回は一覧3商品・詳細3商品、第2回は一覧6商品・詳細6商品を取得した。以下の件数・型・`null`・欠損の表は、特記しない限り重点ケースを加えた**第2回**の観測である。同一商品の複数 GET は独立した商品件数へ加算していない。公式との比較には、同日取得した [公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json) の `components.schemas.product` と各 GET 応答スキーマを用いた。
+読み取り系の収集日は第1回、第2回とも **2026-09-18（Asia/Tokyo）**。対象はテスト用ショップ。本ライブラリの `Communicator\Request::get()` で、認証済みの **GET のみ**を実行した。第1回は一覧3商品・詳細3商品、第2回は一覧6商品・詳細6商品を取得した。以下の件数・型・`null`・欠損の表は、特記しない限り重点ケースを加えた**第2回**の観測である。同一商品の複数 GET は独立した商品件数へ加算していない。公式との比較には、同日取得した [公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json) の `components.schemas.product` と各 GET 応答スキーマを用いた。書き込み系は後述の「書き込み系の観測」に、別の収集条件と対象範囲を記す。読み取り観測だけを未観測の書き込み動作へ一般化しない。
 
 第2回のリクエストと HTTP ステータスは次のとおり。`<product_id>`、`<variant_id>`、`<group_id>` は実在 ID を伏せた表記、`<nonexistent_id>` は存在しない ID を表す。指定していないクエリパラメータはなし。
 
@@ -311,6 +311,60 @@ object は合計5件。
 
 [既存のエラー応答記録](api-error-responses.md) の商品404と、ステータス・コード・キー構造・メッセージが一致した。他の4xxパターンは今回の収集対象外だった。
 
+## 書き込み系の観測
+
+### 収集条件
+
+収集日は **2026-09-20（Asia/Tokyo）**、対象はテスト用ショップ。新規作成した検証用商品1件だけを操作した。商品・オプション・オプション値・バリエーションなどの実 ID は `<product_id>`、`<option_id>`、`<option_value_id>`、`<variant_id>` として扱い、ショップ識別子、アクセストークン、認証ヘッダー、実 URL、画像の実パスは記録しない。POST、PUT と確認用 GET は本ライブラリの `Communicator\Request`、DELETE と multipart は同じ認証条件の HTTP クライアントで実行した。
+
+終了時に検証用商品を `hidden` に戻し、作成したオプション、オプション値、バリエーション、ピックアップを削除した。画像は作成に失敗したため残存しない。商品自体には削除 API がないため、非表示の商品1件だけが残る。最初の一時記録が消去された後は同じ商品を再観測しており、商品を追加作成していない。商品作成の HTTP ステータス、応答キー集合と null 集合、画像作成の 401 は最初の実測記録に基づく。
+
+### 商品の作成と更新
+
+`POST /v1/products` は `{"product":{"name":"<probe_name>"}}` だけで HTTP 200 となった。応答はトップレベル `product` object で、49キーを持つ。直後の単体 GET とキー集合は同一で、欠損はなく、作成応答との差は観測しなかった。作成応答の `display_state` は `showing` だったため、直後に `hidden` へ更新した。
+
+`PUT /v1/products/<product_id>` の観測は次のとおり。
+
+| 送信した `product` | HTTP | PUT 応答と直後の GET |
+| --- | ---: | --- |
+| `{"display_state":"showing"}` | 200 | 両方とも `showing` |
+| `{"display_state":"hidden"}` | 200 | 両方とも `hidden` |
+| `{"display_state":"showing_for_members"}` | 200 | 両方とも `showing_for_members` |
+| `{"display_state":"sale_for_members"}` | 200 | 両方とも `sale_for_members` |
+| `{"display_state":"members_only"}` | 422 | `errors[]` を返し、GET は直前の `hidden` を保持 |
+| `{"unlisted":true}` | 200 | 両方とも `unlisted: false` のまま |
+| `{"sales_price":null}` | 200 | 事前に整数へ設定した値が、両方で明示的な `null` へ変化 |
+| `{"name":"<renamed_probe_name>"}` | 200 | 前後の GET で変化したのは `name` と `update_date` だけ |
+
+実 API は `display_state` の `showing`、`hidden`、`showing_for_members`、`sale_for_members` を受理し、`members_only` を拒否した。これは OpenAPI の商品グループ作成・更新 request が列挙する `showing`、`hidden`、`members_only` と一致せず、その request 側 enum を商品更新入力へ一般化できない。422 応答は `{"errors":[{"code":422001,"field":"product.disp_flg","message":string,"status":422}]}` の形だった。
+
+`unlisted: true` は成功ステータスを返しても値が変化せず、API は入力を黙って無視した。したがって `unlisted` は書き込みフィールドとして利用できない。`sales_price` では整数値を設定した後に明示的な `null` を送ると値をクリアできた。`name` だけの更新では他フィールドが保持されたため、この操作は全置換ではなく部分更新として動作した。これらは実測したフィールドに限る事実であり、他の入力フィールドへ一般化しない。
+
+### 従属物の作成・更新・削除
+
+| 操作 | HTTP | 応答ボディ |
+| --- | ---: | --- |
+| `POST /v1/products/<product_id>/options` | 201 | `option` object。`account_id`, `id`, `make_date`, `name`, `product_id`, `update_date`, `values` の7キー |
+| `POST /v1/products/<product_id>/options/<option_id>/values` | 201 | `option_value` object。`account_id`, `make_date`, `name`, `option_id`, `product_id`, `update_date`, `value_id` の7キー |
+| `DELETE /v1/products/<product_id>/options/<option_id>/values/<option_value_id>` | 204 | ボディなし |
+| `DELETE /v1/products/<product_id>/options/<option_id>` | 204 | ボディなし |
+| `PUT /v1/products/<product_id>/variants/<variant_id>` | 200 | `variant` object。商品 GET の `variants[]` と同じ22キー |
+| `POST /v1/products/<product_id>/pickups` | 200 | `pickup` object。`account_id`, `make_date`, `order_num`, `pickup_type`, `product_id`, `update_date` の6キー |
+| `PUT /v1/products/<product_id>/pickups` | 200 | 更新後の同じ6キーの `pickup` object |
+| `DELETE /v1/products/<product_id>/pickups/<pickup_type>` | 200 | 空ではなく、削除した同じ6キーの `pickup` object |
+
+オプションを値1件で作成するとバリエーション1件が生成され、オプション値を追加すると2件になった。追加した値の DELETE は 204 でボディなしだった。最後の値を直接削除すると 422 になったが、親オプションの DELETE は 204 となり、その後の商品 GET で `options: []` と `variants: []` を確認した。バリエーションの `stocks` 更新は 200 で、PUT 応答と直後の単体 GET の双方で更新値を確認した。ピックアップの DELETE だけは 200 で、削除した object を返した。
+
+### 画像 API
+
+`POST /v1/products/<product_id>/images` へ生成した PNG 1件と `position=0` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `{"errors":[{"code":401200,"message":string,"status":401}]}` の形である。画像の作成成功、成功時の `product_image`、画像 DELETE、`position` の動作は**未観測**であり、これらについては公式 OpenAPI 定義だけが根拠となる。
+
+### エラー応答
+
+存在しない商品への PUT は HTTP 404 で、`errors[]` の要素は `code`, `message`, `status` を持った。不正な `display_state` と `members_only` は HTTP 422 で、要素に `field` が加わった。一方、最後のオプション値の DELETE も 422 だが、要素は `code`, `message`, `status` だけで `field` はなかった。したがって 422 でも `field` は常に存在するとは限らない。
+
+これらは [既存のエラー応答記録](api-error-responses.md) と整合する。商品 PUT の 404 は同文書の商品 GET 404 と同じ `code: 404100` およびキー構造であり、バリデーションの 422 で `field` が付く観測とも一致した。最後のオプション値の DELETE は、`field` のない 422 の追加例である。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。全くカテゴリーを持たない商品での表現は未検証。
@@ -318,17 +372,28 @@ object は合計5件。
 - `options[].values`、`group_ids`、`unavailable_payment_ids` の `null` 要素や型違い。
 - `images` や `variants` の `null` 値、`variants[].option1: null`。OpenAPI の nullable 記載だけから出現を断定しない。
 - `fields` に他のキーを指定した場合、`offset` を変えた場合、商品一覧に50件超が存在する場合のページング。
-- 書き込み系エンドポイントのリクエスト・応答。今回の GET 観測を作成・更新・削除へ一般化しない。
+- 商品 POST の `name` 以外のフィールド、商品 PUT で個別に試したフィールド以外の受理・無視・検証動作。
+- `sales_price` 以外の nullable フィールドを明示的な `null` でクリアできるか。
+- 画像作成の 201 と `product_image` の実キー、画像 DELETE の 204、`position` の実動作。契約プラン制限のため未観測。
+- 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合動作。
 
 ## 現在のライブラリ実装との関係
 
 商品本体、バリエーション、画像、商品広告の Entity は現時点で未実装である。`Product\Group` 単体応答は既存 Entity で構築・getter 確認済み。`Category` を大・小カテゴリーへ分割する変更は 0.11.0 で実装済み（[ADR 0010](adr/0010-split-category-into-big-and-small.md)）。本記録の `product.category` は ID ペアの小さな object であり、カテゴリー専用 GET の Entity 構造と同一とは限らない。ここから先の Entity の型や nullable の採否は設計判断であり、上記の実測事実と区別する。
 
-## 再収集手順
+## 読み取り観測の再収集手順
 
 1. テスト用ショップで `read_products` スコープの認証を使い、上の表の GET エンドポイントとクエリを実行する。書き込みは行わない。
 2. 通常一覧と6件の詳細で、全キー、JSON の型、明示的 `null`、キー欠損、各配列の要素数を別々に記録する。`display_state` ごとの一覧と `fields=id,name` の射影を別標本として扱う。
 3. バリエーションを持つ1軸・2軸の商品で一覧（既定と `limit=100`）と単体、各商品の画像専用 GET、広告一覧、実在グループ1件、存在しない商品1件の404を確認する。
 4. 公開前に `account_id`、全実 ID、画像 URL の実パス、長文、認証情報、ショップ名・URL がないことを確認する。マスク後もキーの有無、型、`null`、空配列、ゼロと非ゼロの関係、HTTP ステータスを保つ。
+
+## 書き込み観測の再収集手順
+
+1. テスト用ショップで検証専用の商品を `name` だけで1件作成し、直後に `display_state=hidden` へ更新する。他の既存商品は操作しない。
+2. `display_state` の4値と拒否値、`unlisted`、整数設定後の `sales_price=null`、`name` だけの部分更新を、各 PUT 応答と直後の GET の組で確認する。
+3. オプション、オプション値、バリエーション、ピックアップを順に作成・更新・削除し、HTTP ステータス、トップレベルキー、object のキー集合、204 のボディ不在を記録する。
+4. 画像 API を利用できる契約プランでは、仕様で許可された小さな検証画像を1件だけ作成し、応答を記録して削除する。利用できない場合は、401 と成功系が未観測であることを区別する。
+5. 終了時に従属物が残っていないことを GET で確認し、商品を `hidden` にする。公開前に全実 ID、ショップ識別情報、トークン、認証ヘッダー、URL、画像実パスをマスクする。
 
 収集時点以降の API 仕様変更は未検証である。再収集した場合は収集日、条件、件数、全キー統計を新しい観測値で更新する。
