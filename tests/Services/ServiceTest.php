@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Communicator\Response;
@@ -168,6 +169,21 @@ class ServiceTest extends TestCase
         );
 
         $this->assertTrue($result);
+    }
+
+    public function test__handleは204をmapper経由でNoContentに変換できる(): void
+    {
+        $service = new ServiceStub('my-token');
+        $response = $this->makeResponse(204, '');
+
+        $result = $service->handleForTest(
+            $response,
+            fn(?array $data): NoContent => new NoContent($response),
+        );
+
+        $this->assertInstanceOf(NoContent::class, $result);
+        $this->assertSame($response, $result->getResponse());
+        $this->assertSame(204, $result->getStatus());
     }
 }
 
