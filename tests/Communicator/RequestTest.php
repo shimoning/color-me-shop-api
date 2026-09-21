@@ -2,12 +2,17 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Communicator;
 
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\BufferStream;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use GuzzleHttp\Psr7\Response as Psr7Response;
+use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\StreamInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Response;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class RequestTest extends TestCase
@@ -181,6 +186,261 @@ class RequestTest extends TestCase
 
         $this->assertSame('PUT', $mock->request()->getMethod());
         $this->assertSame(['sale' => ['paid' => true]], $mock->jsonBody());
+    }
+
+    // --- DELETE -----------------------------------------------------------
+
+    public function test_DELETEはボディなしでヘッダを付与して送信する(): void
+    {
+        $mock = new HttpMock([new Psr7Response(204, ['X-Request-Id' => 'request-id'])]);
+
+        $response = (new Request(
+            new RequestOptions(['authorization' => 'my-token', 'json' => true]),
+            $mock->client(),
+        ))->delete(
+            'https://api.shop-pro.jp/v1/products/1/options/2',
+            ['X-Custom' => 'value'],
+        );
+
+        $this->assertSame('DELETE', $mock->request()->getMethod());
+        $this->assertSame('', $mock->body());
+        $this->assertNull($mock->header('Content-Type'));
+        $this->assertSame('Bearer my-token', $mock->header('Authorization'));
+        $this->assertSame('value', $mock->header('X-Custom'));
+        $this->assertSame(204, $response->getStatus());
+    }
+
+    public function test_DELETEのエラー応答も例外にせずResponseで返す(): void
+    {
+        $mock = HttpMock::json(422, '{"errors":[]}');
+
+        $response = (new Request(new RequestOptions(), $mock->client()))
+            ->delete('https://api.shop-pro.jp/v1/products/1/options/2');
+
+        $this->assertSame(422, $response->getStatus());
+        $this->assertFalse($response->isSuccess());
+    }
+
+    // --- multipart --------------------------------------------------------
+
+    public function test_multipartはフィールドとファイルパスをJSON化せず送信する(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'colorme-multipart-');
+        $this->assertNotFalse($path);
+        \file_put_contents($path, 'image-content');
+        $mock = HttpMock::json(201, '{}');
+
+        try {
+            $response = (new Request(
+                new RequestOptions(['authorization' => 'my-token', 'json' => true]),
+                $mock->client(),
+            ))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                ['position' => 0],
+                ['image' => $path],
+                ['X-Custom' => 'value'],
+            );
+        } finally {
+            \unlink($path);
+        }
+
+        $body = $mock->body();
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertStringStartsWith('multipart/form-data; boundary=', $mock->header('Content-Type'));
+        $this->assertStringContainsString('name="position"', $body);
+        $this->assertStringContainsString("\r\n\r\n0\r\n", $body);
+        $this->assertStringContainsString('name="image"', $body);
+        $this->assertStringContainsString('filename="' . \basename($path) . '"', $body);
+        $this->assertStringContainsString('image-content', $body);
+        $this->assertStringNotContainsString('{"position":0}', $body);
+        $this->assertSame('Bearer my-token', $mock->header('Authorization'));
+        $this->assertSame('value', $mock->header('X-Custom'));
+        $this->assertArrayHasKey('multipart', $response->getRequestMeta()->getOptions());
+        $this->assertArrayNotHasKey('json', $response->getRequestMeta()->getOptions());
+        $this->assertSame([
+            ['name' => 'position', 'contents' => '0'],
+            ['name' => 'image', 'filename' => \basename($path), 'size' => 13],
+        ], $response->getRequestMeta()->getOptions()['multipart']);
+    }
+
+    public function test_multipartは読み取り可能なストリームを送信できる(): void
+    {
+        $stream = \fopen('php://temp', 'w+b');
+        $this->assertIsResource($stream);
+        \fwrite($stream, 'stream-content');
+        \rewind($stream);
+        $mock = HttpMock::json(201, '{}');
+
+        try {
+            (new Request(new RequestOptions(), $mock->client()))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                ['position' => 1],
+                ['image' => $stream],
+            );
+            $body = $mock->body();
+            $this->assertIsResource($stream);
+        } finally {
+            \fclose($stream);
+        }
+
+        $this->assertStringContainsString('stream-content', $body);
+        $this->assertStringContainsString('filename="temp"', $body);
+    }
+
+    public function test_multipartはPSR7ストリームと明示ファイル名を送信できる(): void
+    {
+        $stream = Utils::streamFor('psr7-stream-content');
+        $mock = HttpMock::json(201, '{}');
+
+        $response = (new Request(new RequestOptions(), $mock->client()))->postMultipart(
+            'https://api.shop-pro.jp/v1/products/1/images',
+            [],
+            ['image' => $stream],
+            [],
+            ['image' => 'product-image.png'],
+        );
+
+        $this->assertStringContainsString('name="image"; filename="product-image.png"', $mock->body());
+        $this->assertStringContainsString('psr7-stream-content', $mock->body());
+        $this->assertSame([
+            'name' => 'image',
+            'filename' => 'product-image.png',
+            'size' => 19,
+        ], $response->getRequestMeta()->getOptions()['multipart'][0]);
+    }
+
+    public function test_multipartはURIのないストリームにフィールド名のfilenameを補う(): void
+    {
+        $stream = new BufferStream();
+        $stream->write('buffer-content');
+        $mock = HttpMock::json(201, '{}');
+
+        (new Request(new RequestOptions(), $mock->client()))->postMultipart(
+            'https://api.shop-pro.jp/v1/products/1/images',
+            [],
+            ['image' => $stream],
+        );
+
+        $this->assertStringContainsString('name="image"; filename="image"', $mock->body());
+    }
+
+    public function test_multipartは内部で開いたファイルを送信後に閉じる(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'colorme-owned-stream-');
+        $this->assertNotFalse($path);
+        \file_put_contents($path, 'owned-stream-content');
+        $capturedStream = null;
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('request')
+            ->willReturnCallback(static function (string $method, string $uri, array $options) use (&$capturedStream): Psr7Response {
+                $capturedStream = $options['multipart'][0]['contents'];
+                return new Psr7Response(201, [], '{}');
+            });
+
+        try {
+            (new Request(new RequestOptions(), $client))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                [],
+                ['image' => $path],
+            );
+        } finally {
+            \unlink($path);
+        }
+
+        $this->assertFalse(\is_resource($capturedStream));
+    }
+
+    public function test_multipartはHTTP送信失敗時も内部で開いたファイルを閉じる(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'colorme-failed-stream-');
+        $this->assertNotFalse($path);
+        \file_put_contents($path, 'failed-stream-content');
+        $capturedStream = null;
+        $client = $this->createMock(ClientInterface::class);
+        $client->method('request')
+            ->willReturnCallback(static function (string $method, string $uri, array $options) use (&$capturedStream): never {
+                $capturedStream = $options['multipart'][0]['contents'];
+                throw new \RuntimeException('HTTP 送信失敗');
+            });
+
+        try {
+            (new Request(new RequestOptions(), $client))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                [],
+                ['image' => $path],
+            );
+            $this->fail('HTTP 送信失敗が伝播しなかった');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('HTTP 送信失敗', $exception->getMessage());
+        } finally {
+            \unlink($path);
+        }
+
+        $this->assertFalse(\is_resource($capturedStream));
+    }
+
+    public function test_multipartは存在しないファイルパスをHTTP送信前に拒否する(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'colorme-missing-');
+        $this->assertNotFalse($path);
+        \unlink($path);
+        $mock = HttpMock::json(201, '{}');
+
+        try {
+            (new Request(new RequestOptions(), $mock->client()))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                [],
+                ['image' => $path],
+            );
+            $this->fail('存在しないファイルパスが受理された');
+        } catch (ParameterException $exception) {
+            $this->assertStringContainsString('フィールド『image』', $exception->getMessage());
+            $this->assertSame(0, $mock->countRequests());
+        }
+    }
+
+    public function test_multipartは読み取り不可のストリームをHTTP送信前に拒否する(): void
+    {
+        $path = \tempnam(\sys_get_temp_dir(), 'colorme-unreadable-');
+        $this->assertNotFalse($path);
+        $stream = \fopen($path, 'wb');
+        $this->assertIsResource($stream);
+        $mock = HttpMock::json(201, '{}');
+
+        try {
+            (new Request(new RequestOptions(), $mock->client()))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                [],
+                ['image' => $stream],
+            );
+            $this->fail('読み取り不可のストリームが受理された');
+        } catch (ParameterException $exception) {
+            $this->assertStringContainsString('フィールド『image』', $exception->getMessage());
+            $this->assertSame(0, $mock->countRequests());
+        } finally {
+            \fclose($stream);
+            \unlink($path);
+        }
+    }
+
+    public function test_multipartは読み取り不可のPSR7ストリームをHTTP送信前に拒否する(): void
+    {
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->method('isReadable')->willReturn(false);
+        $mock = HttpMock::json(201, '{}');
+
+        try {
+            (new Request(new RequestOptions(), $mock->client()))->postMultipart(
+                'https://api.shop-pro.jp/v1/products/1/images',
+                [],
+                ['image' => $stream],
+            );
+            $this->fail('読み取り不可の PSR-7 ストリームが受理された');
+        } catch (ParameterException $exception) {
+            $this->assertStringContainsString('フィールド『image』', $exception->getMessage());
+            $this->assertSame(0, $mock->countRequests());
+        }
     }
 
     public function test_formオプションならフォーム形式で送信する(): void

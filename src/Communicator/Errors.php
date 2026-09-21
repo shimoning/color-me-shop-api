@@ -9,6 +9,8 @@ use Shimoning\ColorMeShopApi\Entities\Error;
 /**
  * API エラーと元のレスポンスを保持するコレクション。
  *
+ * status、headers などの応答情報は NoContent と同じく getResponse() 経由で参照する。
+ *
  * @extends Collection<Error>
  */
 class Errors extends Collection

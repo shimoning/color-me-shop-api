@@ -43,6 +43,20 @@ class SaleUpdaterTest extends TestCase
         );
     }
 
+    public function test_お届け先に明示したnullは更新データに含める(): void
+    {
+        $delivery = new SaleDeliveryUpdater(['memo' => null]);
+        $updater = new SaleUpdater([
+            'id' => 1001,
+            'sale_deliveries' => [$delivery->toArrayRecursive()],
+        ]);
+
+        $this->assertSame(
+            ['id' => 1001, 'sale_deliveries' => [['memo' => null]]],
+            $updater->toArrayRecursive(),
+        );
+    }
+
     public function test_お届け先updaterは親の欠損guardを継承する(): void
     {
         $delivery = new SaleDeliveryUpdater([]);
