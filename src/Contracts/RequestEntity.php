@@ -13,6 +13,7 @@ namespace Shimoning\ColorMeShopApi\Contracts;
  * GET の SearchParameters は http_build_query() を通るため、明示 null もクエリから省略される。
  * 明示フィールド追跡の追加前に serialize された RequestEntity は追跡情報を持たないため、
  * 復元後は従来どおり null を省略し、初期化済みの非 null フィールドを直列化する。
+ * 復元後に setter を使うと、その時点の初期化済み非 null フィールドを追跡の種にする。
  *
  * FallbackEnum の未知値や番兵値を API リクエストに流さない。
  * OBJECT_FIELDS で構築する未マークの子 Entity にも厳格な検証が伝わる。

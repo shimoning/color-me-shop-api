@@ -62,7 +62,8 @@ class Entity
      * 応答 Entity では未初期化のままにし、既存の serialize 表現へプロパティを増やさない。
      * RequestEntity だけがコンストラクタで初期化することで、明示フィールドの永続化も保つ。
      * 追跡追加前に serialize された RequestEntity では未初期化のまま復元されるため、
-     * toArrayRecursive() は従来の null 省略へフォールバックする。
+     * toArrayRecursive() は従来の null 省略へフォールバックする。復元後に setter を使う場合は、
+     * その時点で初期化済みかつ非 null のフィールドを種にしてから明示フィールドを追加する。
      *
      * @var array<string, true>
      */
@@ -605,11 +606,22 @@ class Entity
      *
      * コンストラクタ配列のキーは基底で自動記録するが、既存の
      * SaleUpdater 系が持つ setter も同じ「利用者が明示した値」として扱う。
+     * 旧形式から復元して追跡情報がない場合は、従来の null 省略フォールバックで
+     * 直列化される初期化済みの非 null フィールドを種にし、setter 前の値も保持する。
      */
     protected function markRequestField(string $property): void
     {
         if (! isset($this->_requestFields)) {
             $this->_requestFields = [];
+            foreach (self::resolveProperties(static::class) as $key => $reflection) {
+                if (
+                    ! self::isInternalProperty($key)
+                    && $reflection->isInitialized($this)
+                    && $reflection->getValue($this) !== null
+                ) {
+                    $this->_requestFields[$key] = true;
+                }
+            }
         }
         $this->_requestFields[$property] = true;
     }
