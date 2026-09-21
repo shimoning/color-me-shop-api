@@ -392,7 +392,8 @@ class Product extends Service
      * おすすめ商品情報を削除する。
      *
      * 他の DELETE と異なり、実測では 200 で削除済みの `pickup` object を返すため、NoContent ではなく Pickup を返す。
-     * @throws ParameterException アクセストークンが空の場合
+     * int / string の種別は `PickupType` の値 (0 / 1 / 3 / 4) として検証し、それ以外はパスへ載せずに拒否する。
+     * @throws ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function deletePickup(
@@ -400,11 +401,40 @@ class Product extends Service
         PickupType|int|string $pickupType,
         ?string $accessToken = null,
     ): Pickup|Errors {
-        $type = $pickupType instanceof PickupType ? $pickupType->value : $pickupType;
+        $type = self::pickupTypeValue($pickupType);
         $response = $this->_request([], $accessToken)->delete(
             $this->_endpoint('/products/' . $productId . '/pickups/' . $type),
         );
         return $this->_handle($response, static fn(?array $data): Pickup => new Pickup($data['pickup'] ?? []));
+    }
+
+    /**
+     * ピックアップ種別を `PickupType` のバッキング値へ正規化する。
+     *
+     * 文字列は 10 進整数の表記 (`'3'`) だけを受け付け、`'3.0'` や空文字、パス区切りを含む値は拒否する。
+     * @throws ParameterException `PickupType` に定義のない値の場合
+     */
+    private static function pickupTypeValue(PickupType|int|string $pickupType): int
+    {
+        if ($pickupType instanceof PickupType) {
+            return $pickupType->value;
+        }
+
+        $case = null;
+        if (\is_int($pickupType)) {
+            $case = PickupType::tryFrom($pickupType);
+        } else if (\preg_match('/\A(?:0|[1-9][0-9]*)\z/', $pickupType) === 1) {
+            $case = PickupType::tryFrom((int) $pickupType);
+        }
+        if ($case === null) {
+            throw new ParameterException(\sprintf(
+                'pickup_type は PickupType の値 (%s) で指定してください (指定値: %s)。',
+                \implode(' / ', \array_map(static fn(PickupType $type): int => $type->value, PickupType::cases())),
+                \var_export($pickupType, true),
+            ));
+        }
+
+        return $case->value;
     }
 
     /**

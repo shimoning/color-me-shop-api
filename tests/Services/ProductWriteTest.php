@@ -346,6 +346,33 @@ class ProductWriteTest extends TestCase
         ];
     }
 
+    #[DataProvider('invalidPickupTypeProvider')]
+    public function test_ピックアップ削除はPickupTypeにない種別を送信前に拒否する(int|string $pickupType): void
+    {
+        $mock = HttpMock::json(200, self::fixture('product_pickup.json'));
+
+        try {
+            (new Product('token', $mock->client()))->deletePickup(101, $pickupType);
+            $this->fail('ParameterException が送出されていません。');
+        } catch (ParameterException $exception) {
+            $this->assertStringContainsString('pickup_type', $exception->getMessage());
+        }
+        $this->assertSame(0, $mock->countRequests());
+    }
+
+    /** @return array<string, array{int|string}> */
+    public static function invalidPickupTypeProvider(): array
+    {
+        return [
+            'undefined int' => [2],
+            'undefined string' => ['2'],
+            'non numeric' => ['abc'],
+            'path segment' => ['3/../999'],
+            'empty' => [''],
+            'float-like' => ['3.0'],
+        ];
+    }
+
     public function test_ピックアップのエラーレスポンス(): void
     {
         $mock = HttpMock::json(404, self::fixture('errors_401.json'));

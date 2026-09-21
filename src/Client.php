@@ -261,7 +261,7 @@ class Client
 
     /**
      * おすすめ商品情報を削除する。実測では 200 で削除済みの pickup を返す。
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function deleteProductPickup(
