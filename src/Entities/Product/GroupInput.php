@@ -33,7 +33,8 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
  *
  * `meta_tag` は `MetaTagInput` へ変換する。`title` / `keywords` / `description` のいずれも持たない配列は
- * JSON で `[]` になり OpenAPI の object 定義に合わないため、構築時に `InvalidFieldException` で拒否する。
+ * JSON で `[]` になり OpenAPI の object 定義に合わないため、またそれ以外のキーを持つ配列は
+ * `additionalProperties: false` に反し利用者の誤りを隠すため、構築時に `InvalidFieldException` で拒否する。
  * 値の範囲 (`maxLength` など) は API 側の検証に委ね、ライブラリでは検証しない。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json

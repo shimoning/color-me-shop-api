@@ -106,6 +106,7 @@ class CategoryInputTest extends TestCase
             'meta_tag empty array (JSON で [] になる)' => ['meta_tag', []],
             'meta_tag list' => ['meta_tag', ['title']],
             'meta_tag unknown keys only' => ['meta_tag', ['titel' => 'x']],
+            'meta_tag unknown key beside a valid key (黙って捨てない)' => ['meta_tag', ['title' => 'x', 'titel' => 'typo']],
             'meta_tag keywords int' => ['meta_tag', ['keywords' => 1]],
         ];
 

@@ -686,7 +686,7 @@ if ($groupsOrErrors instanceof Errors) {
 
 #### 商品グループを作成・更新
 作成と更新は同じ `GroupInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。
-`parent_group_id` は作成専用で、どの操作でどのフィールドが有効かは公式 API の契約に従う。`meta_tag` はネストした連想配列 (`title` / `keywords` / `description`) で指定する。
+`parent_group_id` は作成専用で、どの操作でどのフィールドが有効かは公式 API の契約に従う。`meta_tag` はネストした連想配列 (`title` / `keywords` / `description`) で指定し、これらのキーを1つも持たない配列や、これら以外のキーを含む配列は生成時に `InvalidFieldException` になる。
 
 ```php
 $groupOrErrors = $client->createProductGroup(new GroupInput([

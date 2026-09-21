@@ -32,6 +32,39 @@ class MetaTagInputTest extends TestCase
         );
     }
 
+    public function test_親の入力に公式キーだけの配列とnullと配列以外は通す(): void
+    {
+        MetaTagInput::assertOwnerField(MetaTagInput::class, ['title' => 'x', 'keywords' => null, 'description' => '']);
+        MetaTagInput::assertOwnerField(MetaTagInput::class, null);
+        MetaTagInput::assertOwnerField(MetaTagInput::class, 'string'); // 型は親の構築時に検証する
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * 公式 OpenAPI の meta_tag は additionalProperties: false。公式キーと並んだ未知キーも
+     * 黙って捨てずに拒否し、利用者の誤り (typo など) を隠さない。
+     */
+    #[DataProvider('unknownKeyProvider')]
+    public function test_親の入力に公式キー以外のキーがあれば拒否する(array $value): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('meta_tag');
+        MetaTagInput::assertOwnerField(MetaTagInput::class, $value);
+    }
+
+    /** @return array<string, array{array<mixed>}> */
+    public static function unknownKeyProvider(): array
+    {
+        return [
+            'typo beside valid key' => [['title' => 'x', 'titel' => 'typo']],
+            'unknown keys only' => [['titel' => 'x']],
+            'empty array' => [[]],
+            'list' => [['title']],
+            'valid key and list element' => [['title' => 'x', 'y']],
+        ];
+    }
+
     #[DataProvider('invalidFieldProvider')]
     public function test_文字列以外を拒否する(string $field, mixed $value): void
     {
