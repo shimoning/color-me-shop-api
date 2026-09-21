@@ -332,6 +332,39 @@ class ProductWriteTest extends TestCase
         (new Product('token', $mock->client()))->updateCategory(9001, new CategoryInput(['name' => 'x']));
     }
 
+    /**
+     * 応答の `category` が配列でなければ `Category::fromArray()` の TypeError ではなく、
+     * Phase 2 の `categories[n]` と同じく InvalidFieldException にする。
+     */
+    #[DataProvider('scalarCategoryResponseProvider')]
+    public function test_カテゴリー書き込みの応答のcategoryが配列以外なら例外になる(string $body, string $expectedType): void
+    {
+        $mock = HttpMock::json(200, $body);
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('category』が不正です。' . BigCategory::class . ' を期待しましたが ' . $expectedType . ' でした。');
+        (new Product('token', $mock->client()))->updateCategory(9001, new CategoryInput(['name' => 'x']));
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function scalarCategoryResponseProvider(): array
+    {
+        return [
+            'string' => ['{"category":"x"}', 'string'],
+            'int' => ['{"category":1}', 'int'],
+            'bool' => ['{"category":true}', 'bool'],
+        ];
+    }
+
+    public function test_小カテゴリー書き込みの応答のcategoryが配列以外なら例外になる(): void
+    {
+        $mock = HttpMock::json(201, '{"category":"x"}');
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(SmallCategory::class . ' を期待しましたが string でした。');
+        (new Product('token', $mock->client()))->createCategoryChild(9001, new CategoryChildInput(['name' => 'x']));
+    }
+
     public function test_カテゴリー書き込みの404と422はErrorsになる(): void
     {
         $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');

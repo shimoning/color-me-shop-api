@@ -258,7 +258,7 @@ class Product extends Service
      * 公式 OpenAPI では `name` が required だが、更新と入力 Entity を共用するため送信前には検証せず、
      * `name` のない要求は API の検証 (422 の `Errors`) に委ねる。
      * @throws ParameterException アクセストークンが空の場合
-     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `BigCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createCategory(CategoryInput $input, ?string $accessToken = null): BigCategory|Errors
@@ -276,7 +276,7 @@ class Product extends Service
     /**
      * 大カテゴリーを更新する。明示したフィールドだけを送る部分更新で、応答の `category` を `BigCategory` として返す。
      * @throws ParameterException アクセストークンが空の場合
-     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `BigCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateCategory(int|string $id, CategoryInput $input, ?string $accessToken = null): BigCategory|Errors
@@ -296,7 +296,7 @@ class Product extends Service
      *
      * `name` の required 指定の扱いは大カテゴリーの作成と同じで、API の検証に委ねる。
      * @throws ParameterException アクセストークンが空の場合
-     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `SmallCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createCategoryChild(
@@ -317,7 +317,7 @@ class Product extends Service
     /**
      * 小カテゴリーを更新する。明示したフィールドだけを送る部分更新で、応答の `category` を `SmallCategory` として返す。
      * @throws ParameterException アクセストークンが空の場合
-     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `SmallCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateCategoryChild(
@@ -341,15 +341,22 @@ class Product extends Service
      *
      * ADR 0010 の厳格方針に従い、`id_small` の欠損・型不正はもちろん、大カテゴリーの操作で
      * `id_small !== 0` の応答が返る (またはその逆) 場合も誤分類を隠さず例外にする。
+     * `category` が配列以外 (文字列などのスカラー) の場合も、`categories()` の `categories[n]` と同じく
+     * `TypeError` ではなく `InvalidFieldException` に正規化する。
      *
      * @template T of BigCategory|SmallCategory
      * @param class-string<T> $expected
      * @return T
-     * @throws InvalidFieldException `Category::fromArray()` で変換できない、または期待した型でない場合
+     * @throws InvalidFieldException `category` が配列以外、`Category::fromArray()` で変換できない、または期待した型でない場合
      */
     private static function categoryFromResponse(?array $data, string $expected): BigCategory|SmallCategory
     {
-        $category = Category::fromArray($data['category'] ?? []);
+        $raw = $data['category'] ?? [];
+        if (! \is_array($raw)) {
+            throw InvalidFieldException::for(self::class, 'category', $expected, $raw);
+        }
+
+        $category = Category::fromArray($raw);
         if (! $category instanceof $expected) {
             throw InvalidFieldException::for(self::class, 'category', $expected, $category);
         }

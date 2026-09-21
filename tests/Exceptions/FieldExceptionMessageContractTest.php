@@ -472,8 +472,19 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
-            'InvalidFieldException::for/カテゴリー書き込み応答の親子型不一致' => [
+            'InvalidFieldException::for/カテゴリー書き込み応答のcategoryが配列以外' => [
                 self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    $mock = HttpMock::json(200, '{"category":"x"}');
+                    (new Product('my-token', $mock->client()))->updateCategory(
+                        1,
+                        new \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput(['name' => 'x']),
+                    );
+                },
+                null,
+            ],
+            'InvalidFieldException::for/カテゴリー書き込み応答の親子型不一致' => [
+                self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 2),
                 static function (): void {
                     $mock = HttpMock::json(201, '{"category":{"id_big":1,"id_small":5}}');
                     (new Product('my-token', $mock->client()))->createCategory(

@@ -330,7 +330,7 @@ class Client
     /**
      * 大カテゴリーを作成する。
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `BigCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createProductCategory(ProductCategoryInput $input, ?string $accessToken = null): BigCategoryEntity|Errors
@@ -341,7 +341,7 @@ class Client
     /**
      * 大カテゴリーを更新する。明示したフィールドだけを送る部分更新。
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `BigCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateProductCategory(
@@ -355,7 +355,7 @@ class Client
     /**
      * 小カテゴリーを作成する。
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `SmallCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createProductCategoryChild(
@@ -369,7 +369,7 @@ class Client
     /**
      * 小カテゴリーを更新する。明示したフィールドだけを送る部分更新。
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `SmallCategory` でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateProductCategoryChild(
