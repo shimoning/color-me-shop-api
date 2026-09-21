@@ -35,20 +35,22 @@ class Pickup extends Entity
 
     /**
      * 商品ID。商品内 pickups[] の応答にはなく、書き込み応答にだけ含まれる。
+     * フィールド追加前に serialize された Pickup では未初期化のため null を返す。
      * @return ?int
      */
     public function getProductId(): ?int
     {
-        return $this->productId;
+        return $this->productId ?? null;
     }
 
     /**
      * ショップアカウントID。商品内 pickups[] の応答にはなく、書き込み応答にだけ含まれる。
+     * フィールド追加前に serialize された Pickup では未初期化のため null を返す。
      * @return ?string
      */
     public function getAccountId(): ?string
     {
-        return $this->accountId;
+        return $this->accountId ?? null;
     }
 
     /**
