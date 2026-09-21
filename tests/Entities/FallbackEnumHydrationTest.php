@@ -107,6 +107,28 @@ class FallbackEnumHydrationTest extends TestCase
         new SearchParameters(['sex' => '__unknown__']);
     }
 
+    public function test_要求Entityでは番兵caseのインスタンスも拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new SearchParameters(['sex' => Sex::UNKNOWN]);
+    }
+
+    public function test_要求Entityは既知caseのインスタンスを受け付ける(): void
+    {
+        $parameters = new SearchParameters(['sex' => Sex::MALE]);
+
+        $this->assertSame(Sex::MALE, $parameters->toArray()['sex']);
+        $this->assertSame('male', $parameters->toArrayRecursive()['sex']);
+    }
+
+    public function test_応答Entityも既知caseのインスタンスを受け付ける(): void
+    {
+        $customer = new Customer(['sex' => Sex::FEMALE]);
+
+        $this->assertSame(Sex::FEMALE, $customer->toArray()['sex']);
+    }
+
     public function test_要求Entityの未マークの子では未知のenum値を拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -92,6 +93,14 @@ class ProductInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('display_state');
         new ProductInput(['display_state' => 'members_only']);
+    }
+
+    public function test_display_stateはenumインスタンスでも指定できバッキング値で送信する(): void
+    {
+        $input = new ProductInput(['display_state' => ProductDisplayState::HIDDEN]);
+
+        $this->assertSame(ProductDisplayState::HIDDEN, $input->toArray()['display_state']);
+        $this->assertSame(['display_state' => 'hidden'], $input->toArrayRecursive());
     }
 
     public function test_書き込みできないunlistedは入力フィールドに持たない(): void

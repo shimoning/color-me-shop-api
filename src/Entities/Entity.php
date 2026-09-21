@@ -485,7 +485,8 @@ class Entity
      */
     private function buildEnum(string $enum, mixed $value): BackedEnum
     {
-        $case = $enum::tryFrom($value);
+        // 同じ enum のインスタンスはバッキング値と同じ扱いにする (要求側の番兵拒否は下で共通に適用する)。
+        $case = $value instanceof $enum ? $value : $enum::tryFrom($value);
         if (\is_subclass_of($enum, FallbackEnum::class)) {
             $strict = $this instanceof RequestEntity || self::$_requestContext;
             if ($strict && $case === $enum::fallbackCase()) {

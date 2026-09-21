@@ -547,7 +547,7 @@ if (! $groupOrErrors instanceof Errors) {
 
 #### 商品を作成・更新
 作成と更新は同じ `ProductInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作する。
-`display_state` は `showing` / `hidden` / `showing_for_members` / `sale_for_members` (`ProductDisplayState` の値) だけを受け付け、
+`display_state` は `showing` / `hidden` / `showing_for_members` / `sale_for_members` (`ProductDisplayState` の値、または同 enum のインスタンス) だけを受け付け、
 `members_only` は生成時に `InvalidFieldException` になる。読み取り専用の `unlisted` は入力に含められない。
 
 ```php
@@ -619,12 +619,12 @@ $client->deleteProductOption($productId, $optionId); // NoContent|Errors
 その場合は親のオプションを削除する。
 
 #### おすすめ商品情報 (ピックアップ) を作成・更新・削除
-`pickup_type` は `PickupType` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) で指定する。
-削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。
+`pickup_type` は `PickupType` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) または `PickupType` のインスタンスで指定する。
+削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。削除の種別に `PickupType` にない値を渡すと送信前に `ParameterException` になる。
 
 ```php
 $pickupOrErrors = $client->createProductPickup($productId, new PickupInput([
-    'pickup_type' => PickupType::NEW_ARRIVAL->value,
+    'pickup_type' => PickupType::NEW_ARRIVAL, // enum インスタンスは値 (3) として送信される
     'order_num' => 1,
 ]));
 if (! $pickupOrErrors instanceof Errors) {

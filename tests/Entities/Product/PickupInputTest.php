@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use Shimoning\ColorMeShopApi\Constants\PickupType;
+use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -28,6 +29,21 @@ class PickupInputTest extends TestCase
             ['pickup_type' => 0, 'order_num' => null],
             (new PickupInput(['pickup_type' => 0, 'order_num' => null]))->toArrayRecursive(),
         );
+    }
+
+    public function test_種別はenumインスタンスでも指定できバッキング値で送信する(): void
+    {
+        $input = new PickupInput(['pickup_type' => PickupType::NEW_ARRIVAL, 'order_num' => 1]);
+
+        $this->assertSame(PickupType::NEW_ARRIVAL, $input->toArray()['pickup_type']);
+        $this->assertSame(['pickup_type' => 3, 'order_num' => 1], $input->toArrayRecursive());
+    }
+
+    public function test_別のenumのインスタンスは拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('pickup_type');
+        new PickupInput(['pickup_type' => ProductDisplayState::HIDDEN]);
     }
 
     public function test_未定義の種別は要求側なので拒否する(): void

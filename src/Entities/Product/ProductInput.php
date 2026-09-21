@@ -30,9 +30,9 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * `sale_for_members` の4値 (`ProductDisplayState`) だけを受け付け、`members_only` は拒否する。
  * `unlisted` は実測で書き込みできなかったため入力フィールドに持たない。
  *
- * 値は API の生の形で指定する。enum はバッキング値の文字列、`stocks` は整数または
- * `['increment' => int]`、`variants` は `option1_value` / `option2_value` / `stocks` を持つ
- * 連想配列のリストで、いずれもそのまま送信される。
+ * 値は API の生の形で指定する。enum はバッキング値の文字列または同じ enum のインスタンス
+ * (バッキング値へ正規化して送信する)、`stocks` は整数または `['increment' => int]`、`variants` は
+ * `option1_value` / `option2_value` / `stocks` を持つ連想配列のリストで、いずれもそのまま送信される。
  *
  * 要求側は厳格に検証する (ADR 0013 / 0014)。`group_ids` の要素は int、`stocks` の object は
  * `increment` キーだけを持つ int、`variants` は上記3キー以外を持たないリストとし、公式 OpenAPI の
