@@ -94,6 +94,9 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
@@ -681,6 +684,34 @@ if ($groupsOrErrors instanceof Errors) {
 
 `Client::getProductGroups()` は、内部で `Services\Product::groups(?string $accessToken = null)` を呼び出す。
 
+#### 商品グループを作成・更新
+作成と更新は同じ `GroupInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。
+`parent_group_id` は作成専用で、どの操作でどのフィールドが有効かは公式 API の契約に従う。`meta_tag` はネストした連想配列 (`title` / `keywords` / `description`) で指定する。
+
+```php
+$groupOrErrors = $client->createProductGroup(new GroupInput([
+    'name' => '夏物',
+    'expl' => '暑い夏を涼しく乗り切る夏物衣類',
+    'display_state' => 'showing',
+    'parent_group_id' => null, // 特定のグループ配下に作らない場合は null
+    'meta_tag' => ['title' => '夏物特集', 'keywords' => '夏物,衣類'],
+]));
+if (! $groupOrErrors instanceof Errors) {
+    $groupId = $groupOrErrors->getId();
+}
+
+$updatedOrErrors = $client->updateProductGroup($groupId, new GroupInput([
+    'display_state' => 'hidden',
+    'expl' => null, // 明示した null で説明をクリア
+]));
+if ($updatedOrErrors instanceof Errors) {
+    // 存在しないグループは 404、不正な値は 422
+}
+```
+
+**注意**: `GroupInput` の `display_state` は、応答と同じ `ProductDisplayState` の値 (`showing` / `hidden` / `showing_for_members` / `sale_for_members`) を受け付ける。
+公式 OpenAPI のグループ作成・更新 request は `showing` / `hidden` / `members_only` の3値と記載されており応答と一致しないが、グループ入力の受理値は実 API で未検証のため、確定後に見直す。
+
 ### 商品カテゴリー
 #### 商品カテゴリー一覧を取得
 ```php
@@ -710,6 +741,35 @@ if ($categoriesOrErrors instanceof Errors) {
 
 `Client::getProductCategories()` は、内部で `Services\Product::categories(?string $accessToken = null)` を呼び出す。
 `meta_tag` が省略または `null` の場合、`Category::getMetaTag()` は `null` を返す。
+
+#### 商品カテゴリーを作成・更新
+大カテゴリーは `CategoryInput`、小カテゴリーは `CategoryChildInput` を使い、それぞれ作成と更新で共用する。両者は同じフィールド (`name` / `expl` / `sort` / `display_state` / `meta_tag`) を持つが、応答の `BigCategory` / `SmallCategory` に合わせた別の型で互いに代入できない。
+指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。作成では公式 API が `name` を必須とするが、ライブラリは送信前に検証せず API の `422` に委ねる。
+`display_state` は `showing` / `hidden` / `members_only` (`CategoryDisplayState` の値、または同 enum のインスタンス) を受け付ける。
+
+```php
+$categoryOrErrors = $client->createProductCategory(new CategoryInput([
+    'name' => 'Tシャツ',
+    'sort' => 1,
+    'display_state' => 'showing',
+    'meta_tag' => ['title' => 'Tシャツ一覧', 'description' => '高品質なTシャツを取り揃えています'],
+]));
+if (! $categoryOrErrors instanceof Errors) {
+    $categoryId = $categoryOrErrors->getIdBig(); // BigCategory
+}
+
+$childOrErrors = $client->createProductCategoryChild($categoryId, new CategoryChildInput([
+    'name' => '半袖',
+]));
+if (! $childOrErrors instanceof Errors) {
+    $childId = $childOrErrors->getIdSmall(); // SmallCategory
+}
+
+$client->updateProductCategory($categoryId, new CategoryInput(['expl' => null])); // BigCategory|Errors
+$client->updateProductCategoryChild($categoryId, $childId, new CategoryChildInput(['display_state' => 'hidden'])); // SmallCategory|Errors
+```
+
+応答の `category` は `Category::fromArray()` で変換し、大カテゴリーの操作で `id_small` が `0` 以外の応答が返るなど期待した親子の型でない場合は `InvalidFieldException` になる。
 
 ### 決済
 #### 決済設定の一覧を取得
@@ -805,7 +865,6 @@ $pagination->getOffset();
 ## 未実装
 
 * [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
-* [商品グループ・商品カテゴリーの登録・更新](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
