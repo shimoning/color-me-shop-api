@@ -9,8 +9,23 @@ enum ErrorCode: string implements FallbackEnum
 {
     case UNAUTHORIZED = '401010'; // 認証または権限のエラー
     case NOT_FOUND = '404100'; // 対象レコードが存在しない
+    /**
+     * 実測で観測 (2026-09-21、グループ・カテゴリーの書き込み)。公式 OpenAPI にコード固有の説明なし。
+     * 応答メッセージは「showing, hidden, members_only のいずれかを選択してください。」
+     * (`field: group.display_state`)、「Disp flgを正しく選択してください。」(`field: product_category.disp_flg`)
+     * で、いずれも選択肢にない値に対して返った。商品 PUT の不正な `display_state` (2026-09-20) も同コード。
+     * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     */
+    case VALIDATE_ERROR_CHOICE = '422001';
     /** 実測で観測。公式 OpenAPI にコード固有の意味の説明なし。message() は汎用文言。 */
     case VALIDATE_ERROR_422007 = '422007';
+    /**
+     * 実測で観測 (2026-09-21、カテゴリーの `sort: -1`)。公式 OpenAPI にコード固有の説明なし。
+     * 応答メッセージは「Order numは0以上の値を入力してください。」(`field: product_category.order_num`) で、
+     * 数値の範囲外に対して返った。他のフィールドでの観測はない。
+     * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     */
+    case VALIDATE_ERROR_RANGE = '422014';
     /** 公式 OpenAPI: バリエーション間で在庫数の設定状態が揃わないエラー。 */
     case VALIDATE_ERROR_STOCK = '422022';
     case VALIDATE_ERROR_FIELD = '422210'; // 必須パラメータの不足
@@ -36,7 +51,9 @@ enum ErrorCode: string implements FallbackEnum
         return [
             self::UNAUTHORIZED->value => 'このリソースにアクセスできません。有効なアクセストークンが見つからないか、必要なスコープが付与されていません。',
             self::NOT_FOUND->value => 'レコードが見つかりませんでした。',
+            self::VALIDATE_ERROR_CHOICE->value => '選択肢にない値が指定されています。',
             self::VALIDATE_ERROR_422007->value => '入力内容に誤りがあります。',
+            self::VALIDATE_ERROR_RANGE->value => '数値が許容範囲外です。',
             self::VALIDATE_ERROR_STOCK->value => 'バリエーションの在庫数をすべて指定してください。',
             self::VALIDATE_ERROR_FIELD->value => 'パラメータが指定されていません。',
             self::INTERNAL_SERVER_ERROR->value => 'Internal Server Error',
