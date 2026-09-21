@@ -121,4 +121,58 @@ class ProductInputTest extends TestCase
             'variants scalar' => ['variants', 'S'],
         ];
     }
+
+    #[DataProvider('validNestedShapeProvider')]
+    public function test_ネストした入力値の正しい形状を受け付ける(string $field, mixed $value): void
+    {
+        $this->assertSame([$field => $value], (new ProductInput([$field => $value]))->toArrayRecursive());
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    public static function validNestedShapeProvider(): array
+    {
+        return [
+            'group_ids empty' => ['group_ids', []],
+            'group_ids int list' => ['group_ids', [301, 302]],
+            'stocks int' => ['stocks', 0],
+            'stocks increment' => ['stocks', ['increment' => -1]],
+            'variants empty' => ['variants', []],
+            'variants element without stocks' => ['variants', [['option1_value' => 'S', 'option2_value' => '赤']]],
+            'variants element stocks int' => ['variants', [['option1_value' => 'S', 'stocks' => 3]]],
+            'variants element stocks increment' => ['variants', [['option1_value' => 'S', 'stocks' => ['increment' => 2]]]],
+            'variants element stocks null' => ['variants', [['option1_value' => 'S', 'stocks' => null]]],
+        ];
+    }
+
+    #[DataProvider('invalidNestedShapeProvider')]
+    public function test_ネストした入力値の要素型と形状が不正なら拒否する(string $field, mixed $value): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage($field);
+        new ProductInput([$field => $value]);
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    public static function invalidNestedShapeProvider(): array
+    {
+        return [
+            'group_ids string element' => ['group_ids', [301, '302']],
+            'group_ids null element' => ['group_ids', [null]],
+            'group_ids hash' => ['group_ids', ['a' => 301]],
+            'stocks empty array' => ['stocks', []],
+            'stocks increment string' => ['stocks', ['increment' => '2']],
+            'stocks increment null' => ['stocks', ['increment' => null]],
+            'stocks unknown key' => ['stocks', ['incr' => 2]],
+            'stocks extra key' => ['stocks', ['increment' => 2, 'x' => 1]],
+            'stocks list' => ['stocks', [2]],
+            'variants hash instead of list' => ['variants', ['option1_value' => 'S']],
+            'variants scalar element' => ['variants', ['S']],
+            'variants null element' => ['variants', [null]],
+            'variants option1_value int' => ['variants', [['option1_value' => 1]]],
+            'variants option2_value null' => ['variants', [['option2_value' => null]]],
+            'variants stocks string' => ['variants', [['option1_value' => 'S', 'stocks' => '3']]],
+            'variants stocks increment string' => ['variants', [['option1_value' => 'S', 'stocks' => ['increment' => '2']]]],
+            'variants unknown key' => ['variants', [['option1_value' => 'S', 'weight' => 1]]],
+        ];
+    }
 }
