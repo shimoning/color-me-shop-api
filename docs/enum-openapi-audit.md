@@ -5,9 +5,12 @@
 `src/Constants/` の backed enum 23 個を公式 OpenAPI と突き合わせた。レスポンス側の
 `enum:` と比較できる箇所では、現行ライブラリに既知の仕様値の不足はない。
 `Sex::NOT_APPLICABLE` と `AuthScope` の不足 4 case は、監査基点までに追加済みである。
-`PointState` と `ProductDisplayState` には OpenAPI のリクエスト・レスポンス間の不一致が残る。
+`PointState` と商品グループの `display_state` には OpenAPI のリクエスト・レスポンス間の不一致が残る。
 `PointState` の実 API 受理値は未検証だが、`ProductDisplayState` は商品入力で現行4値の受理と
-`members_only` の 422 拒否を確認した。仕様と実測だけでは将来の値追加頻度までは確定できない。
+`members_only` の 422 拒否を確認した。商品グループは 2026-09-21 の実測で request 側の 3 値
+（`showing` / `hidden` / `members_only`）が正しいと確認し、監査後に追加した `GroupDisplayState` へ
+分離した（`productGroup` response の `showing_for_members` / `sale_for_members` は書き込みで 422、
+読み取りでも未観測）。仕様と実測だけでは将来の値追加頻度までは確定できない。
 
 ## 調査方法
 
@@ -49,6 +52,7 @@
 | `DomainPlan`: `cmsp_sub_domain`, `own_domain`, `own_sub_domain` | `Shop\Shop.domainPlan` | `shop.domain_plan`: 同じ 3 値 | なし / なし | サイト URL の意味に関係するプラン種別 | 無 |
 | `ErrorCode`: `401010`, `404100`, `422210`（string） | `src/` から未使用。`Entities\Error.code` は string | `enum:` なし。`info.description` にコード表、エラースキーマの `code` は integer | 正式な enum 比較は不能。代表コードのみで網羅目的ではない | エラーコードは開集合。`buildEnum()` 非経由 | 無 |
 | `ExternalAccountProvider`: `0`, 番兵 `-1` | `Customer\ExternalAccount.provider` | `customer.external_accounts[].provider`: `[0]` | なし / 番兵 `-1`（仕様値ではない） | 外部連携先は追加され得る | **有** |
+| `GroupDisplayState`: `showing`, `hidden`, `members_only`（監査後の 2026-09-21 に追加） | `Product\Group.displayState`、`Product\GroupInput.displayState` | グループ作成・更新リクエスト: 同じ 3 値。`productGroup` レスポンス: `showing`, `hidden`, `showing_for_members`, `sale_for_members` | リクエスト側と差分なし。レスポンス側は `showing_for_members` / `sale_for_members` 不足、`members_only` 余りだが、実 API（2026-09-21）は `members_only` を返し、前 2 値は PUT で 422 かつ読み取りでも未観測のため採用しない | 表示・会員限定に影響 | 無 |
 | `KouzaType`: `saving`, `checking`, 番兵 `__unknown__` | `Payment\Financial.kouzaType` | `payment.financial.kouza_type`: 正規の 2 値 | なし / 番兵 `__unknown__`（仕様値ではない） | 普通・当座の口座分類はほぼ閉集合 | **有** |
 | `MailState`: `not_yet`, `sent`, `pass` | `Sales\Sale` の 3 メール状態、`Sales\SearchParameters` | `sale` の 3 状態と `GET /v1/sales` 検索条件: 同じ 3 値 | なし / なし | 状態遷移。入力にも使用 | 無 |
 | `MailType`: `accepted`, `paid`, `delivered` | `Sales::sendMail()` / `Client::sendMail()` の引数 | `POST /v1/sales/{sale_id}/mails` の `mail.type`: 同じ 3 値 | なし / なし | 送信操作の入力種別。`buildEnum()` 非経由 | 無 |
@@ -56,7 +60,7 @@
 | `PaymentType`: 整数 `0`〜`45`（46 正規 case）、番兵 `-1` | `Payment\Payment.type` | `payment.type` に `enum:` なし。説明表に `0`〜`45` | 正式な enum 比較は不能。説明表の 46 値と一致。番兵 `-1` は仕様値ではない | 決済方法のカタログは追加され得る | **有** |
 | `PointState`: `assumed`, `fixed`, `canceled` | `Sales\Sale` の 3 ポイント状態、`Sales\SaleUpdater.pointState` | `sale` レスポンス: 同じ 3 値。`PUT /v1/sales/{sale_id}` のリクエストだけ `cenceled` | レスポンス差分なし。リクエストは `cenceled` 不足 / `canceled` 余り（仕様 typo の疑い、未検証） | 状態遷移。更新入力にも使用 | 無 |
 | `Prefecture`: 整数 `1`〜`48` | `Customer\Customer`、`Shop\Shop`、`Sales\SaleDelivery`、`Delivery\Area` の `prefId` と更新入力 | 各 `pref_id` に `enum:` なし。説明は多くが海外 `48` を含み、一部は `47` まで | 正式な enum 比較は不能。海外 `48` のフィールド別の扱いは未検証 | 地理的分類としてほぼ閉集合 | 無 |
-| `ProductDisplayState`: `showing`, `hidden`, `showing_for_members`, `sale_for_members` | `Product\Group.displayState`、商品書き込み入力 | `productGroup` レスポンス: 同じ 4 値。グループ作成・更新リクエスト: `showing`, `hidden`, `members_only` | 商品入力の実測で現行4値を受理し、`members_only` は 422。グループ入力の実 API 挙動は未検証であり、OpenAPI 定義の正否は未確定 | 表示・購入可否に影響 | 無 |
+| `ProductDisplayState`: `showing`, `hidden`, `showing_for_members`, `sale_for_members` | `Product\Product.displayState`、商品書き込み入力、商品・広告の検索条件 | `product.display_state`: 同じ 4 値（`productGroup` レスポンスも同じ 4 値を列挙するが、グループは `GroupDisplayState` へ分離した） | なし / なし。商品入力の実測で現行4値を受理し、`members_only` は 422 | 表示・購入可否に影響 | 無 |
 | `Sex`: `male`, `female`, `not_applicable`, 番兵 `__unknown__` | `Customer\Customer.sex`、`Customer\SearchParameters.sex`、`Sale.customer` | `customer.sex`、`sale.customer.sex`、顧客検索: 正規の 3 値。`POST /v1/sales` の customer 入力だけ前 2 値 | レスポンス・検索は正規値に差分なし。番兵 `__unknown__` は仕様値ではない。受注作成 request では `not_applicable` 余り。受理値は未検証 | 顧客属性は仕様拡張され得る | **有** |
 | `ShopState`: `enabled`, `suspended`, `unsigned` | `Shop\Shop.state` | `shop.state`: 同じ 3 値 | なし / なし | アカウント状態の遷移 | 無 |
 | `TaxRoundingMethod`: `round_off`, `round_down`, `round_up` | `Shop\Shop.taxRoundingMethod` | `shop.tax_rounding_method`: 同じ 3 値 | なし / なし | 丸めの三方式でほぼ閉集合 | 無 |
@@ -68,12 +72,13 @@ OpenAPI の `enum:` は宣言時点の値を示すが、今後の追加頻度や
 `PaymentType` と `Prefecture` の説明文の値は `enum:` 制約ではない。
 `ErrorCode` は現行 `src/` から参照されず、`AuthScope` も独自解析であり、
 これらに `FallbackEnum` を実装するだけでは Entity の変換経路に接続されない。
-`CategoryDisplayState` と `ProductDisplayState` は別リソースの表示状態として比較した。
+`CategoryDisplayState`、`GroupDisplayState`、`ProductDisplayState` は別リソースの表示状態として比較した。
 
-`PointState`、`ProductDisplayState`、`Prefecture` の仕様内の不一致は
+`PointState`、商品グループの `display_state`、`Prefecture` の仕様内の不一致は
 [Entity フィールド監査](entity-field-audit.md)にも記録されている。
 `PointState` の `cenceled` は typo の疑いにとどまり、リクエストで実際に受理される値は未検証。
 `ProductDisplayState` の商品入力実測は [商品 API 応答構造の実測記録](api-product-structure.md#書き込み系の観測)（`b1ceab5`）による。
+`GroupDisplayState` のグループ書き込み実測は同記録の [2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）](api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test) による。
 `review.sex` の `no_answer` は顧客の `Sex` と別リソースの値である。
 `ExternalAccountProvider` の `-1` は [ADR 0009](adr/0009-opt-in-enum-fallback.md) で定めた番兵である。
 

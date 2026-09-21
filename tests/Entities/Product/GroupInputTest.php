@@ -6,6 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
@@ -26,7 +27,7 @@ class GroupInputTest extends TestCase
         ]);
 
         $this->assertInstanceOf(RequestEntity::class, $input);
-        $this->assertSame(ProductDisplayState::HIDDEN, $input->toArray()['display_state']);
+        $this->assertSame(GroupDisplayState::HIDDEN, $input->toArray()['display_state']);
         $this->assertInstanceOf(MetaTagInput::class, $input->toArray()['meta_tag']);
         $this->assertSame([
             'name' => '夏物',
@@ -56,9 +57,19 @@ class GroupInputTest extends TestCase
 
     public function test_表示状態はenumインスタンスでも指定できバッキング値で送信する(): void
     {
-        $input = new GroupInput(['display_state' => ProductDisplayState::SHOWING_FOR_MEMBERS]);
+        $input = new GroupInput(['display_state' => GroupDisplayState::MEMBERS_ONLY]);
 
-        $this->assertSame(['display_state' => 'showing_for_members'], $input->toArrayRecursive());
+        $this->assertSame(['display_state' => 'members_only'], $input->toArrayRecursive());
+    }
+
+    /**
+     * 実 API のグループ PUT は showing / hidden / members_only を受理する (2026-09-21 観測)。
+     */
+    public function test_会員限定の表示状態を文字列で指定できる(): void
+    {
+        $input = new GroupInput(['display_state' => 'members_only']);
+
+        $this->assertSame(['display_state' => 'members_only'], $input->toArrayRecursive());
     }
 
     #[DataProvider('invalidFieldProvider')]
@@ -76,9 +87,11 @@ class GroupInputTest extends TestCase
             'name int' => ['name', 1],
             'expl int' => ['expl', 1],
             'parent_group_id string' => ['parent_group_id', '1'],
-            'display_state members_only (request 定義の値だが応答 enum にない)' => ['display_state', 'members_only'],
+            'display_state showing_for_members (商品の値。実 API は 422)' => ['display_state', 'showing_for_members'],
+            'display_state sale_for_members (商品の値。実 API は 422)' => ['display_state', 'sale_for_members'],
             'display_state unknown' => ['display_state', 'unknown'],
-            'display_state other enum' => ['display_state', CategoryDisplayState::HIDDEN],
+            'display_state category enum' => ['display_state', CategoryDisplayState::HIDDEN],
+            'display_state product enum' => ['display_state', ProductDisplayState::HIDDEN],
             'meta_tag string' => ['meta_tag', 'title'],
             'meta_tag empty array (JSON で [] になる)' => ['meta_tag', []],
             'meta_tag list' => ['meta_tag', ['title']],

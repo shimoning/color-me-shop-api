@@ -10,6 +10,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
+use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
@@ -183,7 +184,7 @@ class ProductWriteTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('group_created.json'));
 
         $group = (new Product('token', $mock->client()))->updateGroup(401, new GroupInput([
-            'expl' => null, 'display_state' => ProductDisplayState::HIDDEN,
+            'expl' => null, 'display_state' => GroupDisplayState::HIDDEN,
         ]));
 
         $this->assertInstanceOf(Group::class, $group);

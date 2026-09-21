@@ -3,7 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 
 /**
  * 商品グループ
@@ -14,7 +14,7 @@ class Group extends Entity
 {
     const OBJECT_FIELDS = [
         'displayState' => [
-            'enum' => ProductDisplayState::class,
+            'enum' => GroupDisplayState::class,
         ],
         'metaTag' => [
             'allowNull' => true,
@@ -31,7 +31,7 @@ class Group extends Entity
     protected ?string $expl;
 
     protected ?int $sort;
-    protected ProductDisplayState $displayState;
+    protected GroupDisplayState $displayState;
 
     protected ?int $parentGroupId;
     protected ?MetaTag $metaTag;
@@ -98,9 +98,15 @@ class Group extends Entity
 
     /**
      * 表示状態
-     * @return ProductDisplayState
+     *
+     * 0.13.0 で戻り型を `ProductDisplayState` (4値) から `GroupDisplayState` (`showing` / `hidden` /
+     * `members_only`) へ変更した。実 API が `members_only` のグループを返すため、旧型では会員限定の
+     * グループが1件でもあると一覧・単体取得が `InvalidFieldException` で失敗していた。
+     * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     *
+     * @return GroupDisplayState
      */
-    public function getDisplayState(): ProductDisplayState
+    public function getDisplayState(): GroupDisplayState
     {
         $this->assertFieldInitialized('displayState');
 

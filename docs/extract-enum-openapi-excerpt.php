@@ -76,10 +76,13 @@ const ENUM_PATHS = [
         '/components/schemas/customer/properties/pref_id',
         '/components/schemas/shop/properties/pref_id',
     ],
-    'ProductDisplayState' => [
+    'GroupDisplayState' => [
         '/components/schemas/productGroup/properties/display_state',
         '/components/schemas/productGroupCreateRequest/properties/group/properties/display_state',
         '/components/schemas/productGroupUpdateRequest/properties/group/properties/display_state',
+    ],
+    'ProductDisplayState' => [
+        '/components/schemas/product/properties/display_state',
     ],
     'Sex' => [
         '/components/schemas/customer/properties/sex',

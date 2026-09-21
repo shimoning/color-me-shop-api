@@ -5,7 +5,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
@@ -29,7 +29,35 @@ class ProductTest extends TestCase
         $this->assertSame(2, $groups->count());
         $this->assertContainsOnlyInstancesOf(Group::class, $groups->all());
         $this->assertSame('新着商品', $groups[0]->getName());
-        $this->assertSame(ProductDisplayState::SHOWING, $groups[0]->getDisplayState());
+        $this->assertSame(GroupDisplayState::SHOWING, $groups[0]->getDisplayState());
+    }
+
+    /**
+     * 実 API は members_only のグループを返す (2026-09-21 観測)。一覧に1件でも含まれると
+     * 一覧全体が読めなくなっていた不具合の回帰テスト。
+     */
+    public function test_会員限定のグループを含む一覧を取得できる(): void
+    {
+        $mock = HttpMock::json(200, '{"groups":['
+            . '{"id":1,"account_id":"my-shop","name":"会員限定","display_state":"members_only","parent_group_id":null},'
+            . '{"id":2,"account_id":"my-shop","name":"新着商品","display_state":"showing","parent_group_id":null}'
+            . ']}');
+
+        $groups = (new Product('my-token', $mock->client()))->groups();
+
+        $this->assertInstanceOf(Collection::class, $groups);
+        $this->assertSame(GroupDisplayState::MEMBERS_ONLY, $groups[0]->getDisplayState());
+        $this->assertSame(GroupDisplayState::SHOWING, $groups[1]->getDisplayState());
+    }
+
+    public function test_会員限定のグループを単体で取得できる(): void
+    {
+        $mock = HttpMock::json(200, '{"group":{"id":1,"account_id":"my-shop","name":"会員限定","display_state":"members_only","parent_group_id":null}}');
+
+        $group = (new Product('my-token', $mock->client()))->group(1);
+
+        $this->assertInstanceOf(Group::class, $group);
+        $this->assertSame(GroupDisplayState::MEMBERS_ONLY, $group->getDisplayState());
     }
 
     public function test_商品グループは正しいエンドポイントにGETする(): void

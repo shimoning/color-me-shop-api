@@ -711,8 +711,8 @@ if ($updatedOrErrors instanceof Errors) {
 
 実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定だけが永続化され、以後の更新 (一部キーのみ、全キー `null`、`meta_tag` 自体の `null` を含む) は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。詳細は [商品 API 応答構造の実測記録](docs/api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)。
 
-**注意**: `GroupInput` の `display_state` は、応答と同じ `ProductDisplayState` の値 (`showing` / `hidden` / `showing_for_members` / `sale_for_members`) を受け付ける。
-公式 OpenAPI のグループ作成・更新 request は `showing` / `hidden` / `members_only` の3値と記載されており応答と一致しないが、グループ入力の受理値は実 API で未検証のため、確定後に見直す。
+`display_state` は `showing` / `hidden` / `members_only` (`GroupDisplayState` の値、または同 enum のインスタンス) を受け付け、商品の `showing_for_members` / `sale_for_members` は生成時に `InvalidFieldException` になる (実 API でも 422)。
+応答の `Group::getDisplayState()` も同じ `GroupDisplayState` を返す (0.13.0 で `ProductDisplayState` から変更。実 API が返す `members_only` を読めるようにするため)。
 
 ### 商品カテゴリー
 #### 商品カテゴリー一覧を取得

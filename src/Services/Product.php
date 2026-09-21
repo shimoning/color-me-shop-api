@@ -222,8 +222,8 @@ class Product extends Service
     /**
      * 商品グループを作成する。成功は 201 で、応答の `group` を返す。
      *
-     * `display_state` の受理値は実 API で未検証 (公式 OpenAPI の request 定義は `members_only` を含む
-     * 3値で、応答の `ProductDisplayState` と異なる)。入力 Entity は応答側の4値を使う。
+     * `display_state` は `GroupDisplayState` (`showing` / `hidden` / `members_only`) で、実 API の観測
+     * (2026-09-21) と公式 OpenAPI の request 定義に一致する。
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */

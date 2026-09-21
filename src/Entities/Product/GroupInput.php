@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -22,12 +22,10 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * - 公式 OpenAPI で nullable なのは `expl` と `parent_group_id` と `meta_tag` の各値だけだが、
  *   ProductInput と同じく全フィールドを nullable にし、`null` の受理は API 側に委ねる。
  *
- * `display_state` について: 公式 OpenAPI のグループ作成・更新 request は `showing` / `hidden` /
- * `members_only` の3値を列挙し、グループ応答 (`ProductDisplayState` の `showing` / `hidden` /
- * `showing_for_members` / `sale_for_members`) と一致しない。商品入力の実測では応答側の4値が受理され
- * `members_only` は 422 だった一方、グループ入力の受理値は実 API で未確認である。本 Entity は応答と
- * 同じ `ProductDisplayState` を使い、`members_only` は構築時に拒否する。smoke test で受理値が確定したら
- * 更新する (docs/enum-openapi-audit.md、ADR 0014)。
+ * `display_state` は `GroupDisplayState` (`showing` / `hidden` / `members_only`) で、公式 OpenAPI の
+ * グループ作成・更新 request の enum と一致する。実 API の観測 (2026-09-21) でも同じ3値が受理され、
+ * 商品の `showing_for_members` / `sale_for_members` は 422 で拒否されたため、構築時に拒否する。
+ * 応答の `Group` も同じ enum を使う (docs/enum-openapi-audit.md、ADR 0014)。
  *
  * 実 API の観測 (2026-09-21) では、`expl` は明示した `null` でクリアできた。一方 `meta_tag` は初回設定
  * (null から値へ) だけが永続化され、以後の PUT (一部キーのみ、全キー新値、全キー `null`、`meta_tag: null`) は
@@ -43,13 +41,13 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 class GroupInput extends Entity implements RequestEntity
 {
     public const OBJECT_FIELDS = [
-        'displayState' => ['enum' => ProductDisplayState::class],
+        'displayState' => ['enum' => GroupDisplayState::class],
         'metaTag' => ['allowNull' => true, 'entity' => MetaTagInput::class],
     ];
 
     protected ?string $name;
     protected ?string $expl;
-    protected ?ProductDisplayState $displayState;
+    protected ?GroupDisplayState $displayState;
     /** @var int|null 作成専用 */
     protected ?int $parentGroupId;
     protected ?MetaTagInput $metaTag;
