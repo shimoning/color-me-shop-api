@@ -37,6 +37,8 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 要求側は厳格に検証する (ADR 0013 / 0014)。`group_ids` の要素は int、`stocks` の object は
  * `increment` キーだけを持つ int、`variants` は上記3キー以外を持たないリストとし、公式 OpenAPI の
  * 配列・object 定義に合わない形状は構築時に `InvalidFieldException` で拒否する。
+ * ネストした `variants[].stocks` は OpenAPI に nullable 指定がなく実測もないため `null` を受け付けない
+ * (ADR 0012)。トップレベルの nullable 化はネストした object のキーへは及ぼさない。
  * 値の範囲 (`minimum` など) は API 側の検証に委ね、ライブラリでは検証しない。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
@@ -64,12 +66,12 @@ class ProductInput extends Entity implements RequestEntity
     protected int|array|null $stocks;
     /** @var list<int>|null 更新専用 */
     protected ?array $groupIds;
-    /** @var list<array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}|null}>|null 更新専用 */
+    /** @var list<array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}}>|null 更新専用 */
     protected ?array $variants;
     protected ?bool $taxReduced;
 
     private const STOCKS_SHAPE = 'int|array{increment: int}';
-    private const VARIANT_SHAPE = 'array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}|null}';
+    private const VARIANT_SHAPE = 'array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}}';
 
     /**
      * @param array<string, mixed> $data
@@ -142,8 +144,7 @@ class ProductInput extends Entity implements RequestEntity
         foreach ($variant as $key => $element) {
             $valid = match ($key) {
                 'option1_value', 'option2_value' => \is_string($element),
-                'stocks' => $element === null
-                    || \is_int($element)
+                'stocks' => \is_int($element)
                     || (\is_array($element) && \array_keys($element) === ['increment'] && \is_int($element['increment'])),
                 default => false,
             };

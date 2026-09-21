@@ -140,7 +140,6 @@ class ProductInputTest extends TestCase
             'variants element without stocks' => ['variants', [['option1_value' => 'S', 'option2_value' => '赤']]],
             'variants element stocks int' => ['variants', [['option1_value' => 'S', 'stocks' => 3]]],
             'variants element stocks increment' => ['variants', [['option1_value' => 'S', 'stocks' => ['increment' => 2]]]],
-            'variants element stocks null' => ['variants', [['option1_value' => 'S', 'stocks' => null]]],
         ];
     }
 
@@ -171,6 +170,7 @@ class ProductInputTest extends TestCase
             'variants option1_value int' => ['variants', [['option1_value' => 1]]],
             'variants option2_value null' => ['variants', [['option2_value' => null]]],
             'variants stocks string' => ['variants', [['option1_value' => 'S', 'stocks' => '3']]],
+            'variants stocks null' => ['variants', [['option1_value' => 'S', 'stocks' => null]]],
             'variants stocks increment string' => ['variants', [['option1_value' => 'S', 'stocks' => ['increment' => '2']]]],
             'variants unknown key' => ['variants', [['option1_value' => 'S', 'weight' => 1]]],
         ];
