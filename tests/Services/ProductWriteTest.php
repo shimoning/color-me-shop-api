@@ -90,6 +90,24 @@ class ProductWriteTest extends TestCase
         );
     }
 
+    public function test_空の商品入力はJSONの空objectとして送信する(): void
+    {
+        $mock = HttpMock::json(200, self::productJson());
+
+        (new Product('token', $mock->client()))->update(101, new ProductInput([]));
+
+        $this->assertSame('{"product":{}}', $mock->body());
+    }
+
+    public function test_空の商品入力の作成もJSONの空objectとして送信する(): void
+    {
+        $mock = HttpMock::json(200, self::productJson());
+
+        (new Product('token', $mock->client()))->create(new ProductInput([]));
+
+        $this->assertSame('{"product":{}}', $mock->body());
+    }
+
     public function test_商品更新の404と422はErrorsになる(): void
     {
         $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');
@@ -143,6 +161,15 @@ class ProductWriteTest extends TestCase
         $this->assertSame('{"variant":{"stocks":3,"weight":null}}', $mock->body());
     }
 
+    public function test_空のバリエーション入力はJSONの空objectとして送信する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('products_read.json'));
+
+        (new Product('token', $mock->client()))->updateVariant(101, 301, new VariantInput([]));
+
+        $this->assertSame('{"variant":{}}', $mock->body());
+    }
+
     public function test_バリエーション更新のエラーレスポンス(): void
     {
         $mock = HttpMock::json(404, self::fixture('errors_401.json'));
@@ -170,6 +197,18 @@ class ProductWriteTest extends TestCase
             ['option' => ['name' => 'サイズ', 'values' => [['name' => 'S'], ['name' => 'M']]]],
             $mock->jsonBody(),
         );
+    }
+
+    public function test_空のオプション入力とオプション値入力もJSONの空objectとして送信する(): void
+    {
+        $option = HttpMock::json(201, self::fixture('product_option_created.json'));
+        $value = HttpMock::json(201, self::fixture('product_option_value_created.json'));
+
+        (new Product('token', $option->client()))->createOption(101, new OptionInput([]));
+        (new Product('token', $value->client()))->createOptionValue(101, 201, new OptionValueInput([]));
+
+        $this->assertSame('{"option":{}}', $option->body());
+        $this->assertSame('{"option_value":{}}', $value->body());
     }
 
     public function test_オプション削除はボディなしでDELETEし204をNoContentで返す(): void

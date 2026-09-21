@@ -227,7 +227,7 @@ class Product extends Service
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products'),
-            ['product' => $input->toArrayRecursive()],
+            ['product' => self::_jsonObject($input->toArrayRecursive())],
         );
         return $this->_handle($response, static fn(?array $data): ProductEntity => new ProductEntity($data['product'] ?? []));
     }
@@ -243,7 +243,7 @@ class Product extends Service
     {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/products/' . $id),
-            ['product' => $input->toArrayRecursive()],
+            ['product' => self::_jsonObject($input->toArrayRecursive())],
         );
         return $this->_handle($response, static fn(?array $data): ProductEntity => new ProductEntity($data['product'] ?? []));
     }
@@ -261,7 +261,7 @@ class Product extends Service
     ): Variant|Errors {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/products/' . $productId . '/variants/' . $id),
-            ['variant' => $input->toArrayRecursive()],
+            ['variant' => self::_jsonObject($input->toArrayRecursive())],
         );
         return $this->_handle($response, static fn(?array $data): Variant => new Variant($data['variant'] ?? []));
     }
@@ -275,7 +275,7 @@ class Product extends Service
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products/' . $productId . '/options'),
-            ['option' => $input->toArrayRecursive()],
+            ['option' => self::_jsonObject($input->toArrayRecursive())],
         );
         return $this->_handle($response, static fn(?array $data): Option => new Option($data['option'] ?? []));
     }
@@ -306,7 +306,7 @@ class Product extends Service
     ): OptionValue|Errors {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products/' . $productId . '/options/' . $optionId . '/values'),
-            ['option_value' => $input->toArrayRecursive()],
+            ['option_value' => self::_jsonObject($input->toArrayRecursive())],
         );
         return $this->_handle($response, static fn(?array $data): OptionValue => new OptionValue($data['option_value'] ?? []));
     }

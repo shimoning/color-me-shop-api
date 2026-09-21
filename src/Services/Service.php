@@ -67,6 +67,20 @@ abstract class Service
     }
 
     /**
+     * 要求 Entity の直列化結果を JSON の object として送るための値へ変換する。
+     *
+     * 明示フィールドのない入力 Entity は空配列になり、そのまま JSON 化すると `[]` (配列) になる。
+     * API のスキーマは object を要求するため、空のときだけ `{}` になる stdClass へ置き換える。
+     *
+     * @param array<string, mixed> $fields 要求 Entity の toArrayRecursive() の結果
+     * @return array<string, mixed>|\stdClass
+     */
+    protected static function _jsonObject(array $fields): array|\stdClass
+    {
+        return $fields === [] ? new \stdClass() : $fields;
+    }
+
+    /**
      * API レスポンスのエラーを処理し、成功時のボディを変換する。
      *
      * @template T
