@@ -20,7 +20,12 @@ class Option extends Entity
     protected string $name;
     /** @var list<string> */
     protected array $values;
-    protected int $makeDate;
+    /**
+     * 公式 OpenAPI は integer で nullable 指定がないが、実 API のオプション作成 201 応答と
+     * 直後の商品 GET で明示的な null を観測したため nullable にする (ADR 0012)。
+     * 出典: docs/api-product-structure.md「2026-09-21 の追加観測」(dee9609)。
+     */
+    protected ?int $makeDate;
     protected int $updateDate;
 
     /** @param array<string, mixed> $data */
@@ -88,11 +93,18 @@ class Option extends Entity
 
     /**
      * オプション作成日時
-     * @return DateTimeImmutable
+     *
+     * 公式 OpenAPI は integer だが、実 API はオプション作成の 201 応答と直後の商品 GET の
+     * 双方で `make_date: null` を返す。実測に基づき null を許容する (ADR 0012)。
+     * 出典: docs/api-product-structure.md「2026-09-21 の追加観測」(dee9609)。
+     * @return DateTimeImmutable|null
      */
-    public function getMakeDate(): DateTimeImmutable
+    public function getMakeDate(): ?DateTimeImmutable
     {
         $this->assertFieldInitialized('makeDate');
+        if ($this->makeDate === null) {
+            return null;
+        }
         return (new DateTimeImmutable())->setTimestamp($this->makeDate);
     }
 
