@@ -84,15 +84,22 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\MailType;
+use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
@@ -538,6 +545,124 @@ if (! $groupOrErrors instanceof Errors) {
 }
 ```
 
+#### 商品を作成・更新
+作成と更新は同じ `ProductInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作する。
+`display_state` は `showing` / `hidden` / `showing_for_members` / `sale_for_members` (`ProductDisplayState` の値、または同 enum のインスタンス) だけを受け付け、
+`members_only` は生成時に `InvalidFieldException` になる。読み取り専用の `unlisted` は入力に含められない。
+
+```php
+$createdOrErrors = $client->createProduct(new ProductInput([
+    'name' => 'Tシャツ',
+    'sales_price' => 1500,
+    'display_state' => 'hidden',
+    'stock_managed' => true,
+]));
+if (! $createdOrErrors instanceof Errors) {
+    $productId = $createdOrErrors->getId();
+}
+
+// 明示した null は「未設定へ戻す」要求として送信される (例: 販売価格のクリア)
+$updatedOrErrors = $client->updateProduct($productId, new ProductInput([
+    'sales_price' => null,
+    'stocks' => ['increment' => 5], // 整数の絶対値、または increment object
+    'variants' => [
+        ['option1_value' => 'S', 'option2_value' => '赤', 'stocks' => 3],
+    ],
+]));
+if ($updatedOrErrors instanceof Errors) {
+    // 存在しない商品は 404、不正な値は 422
+}
+```
+
+`stocks` / `group_ids` / `variants` / `category_id_small` は更新専用のフィールドで、どの操作でどのフィールドが有効かは公式 API の契約に従う。
+商品自体を削除する API は公式に存在しない。
+
+#### バリエーションを更新
+```php
+$variantOrErrors = $client->updateProductVariant($productId, 301, new VariantInput([
+    'stocks' => 10,
+    'option_price' => 1600,
+    'weight' => null, // 明示した null で未設定へ戻す
+]));
+if (! $variantOrErrors instanceof Errors) {
+    $variantOrErrors->getStocks();
+}
+```
+
+#### オプションとオプション値を作成・削除
+オプションの `name` と `values` は必須で、`null` は受け付けない。削除は成功時に `204` を返すため、結果は `NoContent` になる。
+
+```php
+$optionOrErrors = $client->createProductOption($productId, new OptionInput([
+    'name' => 'サイズ',
+    'values' => [['name' => 'S'], ['name' => 'M']],
+]));
+if (! $optionOrErrors instanceof Errors) {
+    $optionId = $optionOrErrors->getId();
+    $optionOrErrors->getValues(); // ['S', 'M']
+}
+
+$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new OptionValueInput(['name' => 'L']));
+if (! $valueOrErrors instanceof Errors) {
+    $valueId = $valueOrErrors->getValueId();
+}
+
+$deletedOrErrors = $client->deleteProductOptionValue($productId, $optionId, $valueId);
+if ($deletedOrErrors instanceof NoContent) {
+    $deletedOrErrors->getResponse()->getStatus(); // 204
+}
+
+$client->deleteProductOption($productId, $optionId); // NoContent|Errors
+```
+
+オプションを値 1 件で作成するとバリエーションが生成され、最後のオプション値を直接削除すると `422` になる。
+その場合は親のオプションを削除する。
+
+#### おすすめ商品情報 (ピックアップ) を作成・更新・削除
+`pickup_type` は `PickupType` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) または `PickupType` のインスタンスで指定する。
+削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。削除の種別に `PickupType` にない値を渡すと送信前に `ParameterException` になる。
+
+```php
+$pickupOrErrors = $client->createProductPickup($productId, new PickupInput([
+    'pickup_type' => PickupType::NEW_ARRIVAL, // enum インスタンスは値 (3) として送信される
+    'order_num' => 1,
+]));
+if (! $pickupOrErrors instanceof Errors) {
+    $pickupOrErrors->getPickupType();
+    $pickupOrErrors->getProductId(); // 書き込み応答にだけ含まれる
+}
+
+$client->updateProductPickup($productId, new PickupInput([
+    'pickup_type' => PickupType::NEW_ARRIVAL->value,
+    'order_num' => 2,
+]));
+
+$deletedPickupOrErrors = $client->deleteProductPickup($productId, PickupType::NEW_ARRIVAL);
+if (! $deletedPickupOrErrors instanceof Errors) {
+    $deletedPickupOrErrors->getPickupType(); // 削除した pickup の内容
+}
+```
+
+#### 商品画像を作成・削除
+画像は `multipart/form-data` で送信する。第 2 引数はファイルパスまたは読み取り可能なストリーム、第 3 引数の `position` は `0`〜`49`。
+読み取れないファイルは送信前に `ParameterException` になる。
+送信するファイル名は省略するとパスの末尾になる。ストリームでは `memory` のように拡張子が付かないため、第 5 引数で拡張子付きの名前を指定する。
+
+```php
+$imageOrErrors = $client->createProductImage($productId, '/path/to/image.png', 0);
+if (! $imageOrErrors instanceof Errors) {
+    $imageOrErrors->getUrl();
+    $imageOrErrors->getPosition();
+}
+
+$client->createProductImage($productId, $stream, 1, null, 'image.png'); // ストリームにはファイル名を指定
+
+$client->deleteProductImage($productId, 0); // NoContent|Errors
+```
+
+**注意**: 画像の作成・削除は契約プランの制限により実 API で成功を検証できていない (実測は `401`)。
+成功時の `201` と応答形 (`position` / `url`) は公式 OpenAPI 定義に基づく。
+
 ### 商品グループ
 #### 商品グループ一覧を取得
 ```php
@@ -680,7 +805,7 @@ $pagination->getOffset();
 ## 未実装
 
 * [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
-* [商品の登録・更新・削除](https://developer.shop-pro.jp/docs/colorme-api#tag/product)
+* [商品グループ・商品カテゴリーの登録・更新](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)

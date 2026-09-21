@@ -335,8 +335,11 @@ object は合計5件。
 | `{"unlisted":true}` | 200 | 両方とも `unlisted: false` のまま |
 | `{"sales_price":null}` | 200 | 事前に整数へ設定した値が、両方で明示的な `null` へ変化 |
 | `{"name":"<renamed_probe_name>"}` | 200 | 前後の GET で変化したのは `name` と `update_date` だけ |
+| `{}` (空 object) | 422 | `errors[]` を返し、GET は `name` と `hidden` を保持 |
 
 実 API は `display_state` の `showing`、`hidden`、`showing_for_members`、`sale_for_members` を受理し、`members_only` を拒否した。これは OpenAPI の商品グループ作成・更新 request が列挙する `showing`、`hidden`、`members_only` と一致せず、その request 側 enum を商品更新入力へ一般化できない。422 応答は `{"errors":[{"code":422001,"field":"product.disp_flg","message":string,"status":422}]}` の形だった。
+
+空の `product` object (`{"product":{}}`) は HTTP 422 で拒否され、`errors[]` の `code` は `VALIDATE_ERROR_FIELD`、`field` は `product` だった (収集日 **2026-09-21（Asia/Tokyo）**、本ライブラリの `Services\Product::update()` に空の `ProductInput` を渡して観測)。直後の GET では `name` と `display_state: hidden` が保持され、商品の状態は変化しなかった。ライブラリは `Errors` を返し例外は送出しない。空入力の事前拒否はライブラリ側では行わず、API の検証に委ねる。
 
 `unlisted: true` は成功ステータスを返しても値が変化せず、API は入力を黙って無視した。したがって `unlisted` は書き込みフィールドとして利用できない。`sales_price` では整数値を設定した後に明示的な `null` を送ると値をクリアできた。`name` だけの更新では他フィールドが保持されたため、この操作は全置換ではなく部分更新として動作した。これらは実測したフィールドに限る事実であり、他の入力フィールドへ一般化しない。
 
@@ -365,6 +368,23 @@ object は合計5件。
 
 これらは [既存のエラー応答記録](api-error-responses.md) と整合する。商品 PUT の 404 は同文書の商品 GET 404 と同じ `code: 404100` およびキー構造であり、バリデーションの 422 で `field` が付く観測とも一致した。最後のオプション値の DELETE は、`field` のない 422 の追加例である。
 
+### 2026-09-21 の追加観測（ライブラリ経由の書き込み smoke test）
+
+収集日は **2026-09-21（Asia/Tokyo）**、対象は上記と同じテスト用ショップの既存の検証用商品1件（`hidden`）。本ライブラリの `Client` の書き込み系メソッド（`updateProduct`、`createProductOption`、`createProductOptionValue`、`updateProductVariant`、`deleteProductOptionValue`、`deleteProductOption`、`createProductPickup`、`updateProductPickup`、`deleteProductPickup`、`createProductImage`、`deleteProductImage`）と確認用 GET で実行し、終了時に従属物を削除して商品を初期状態へ戻した。実 ID、ショップ識別子、認証情報、応答本文は記録しない。
+
+| 観測 | 内容 |
+| --- | --- |
+| オプション作成応答の `make_date` | `POST /v1/products/<product_id>/options` の 201 応答 `option.make_date` は明示的な **`null`** だった。直後の `GET /v1/products/<product_id>` の `options[].make_date` も `null` で、`update_date` は integer。応答 `option` の各キーの型は `id`: integer、`product_id`: integer、`account_id`: string、`name`: string、`values`: string の配列、`make_date`: null、`update_date`: integer。2026-09-20 のオプション作成でも同じ応答で `make_date: null` を記録していたが、上の表にはキー名だけを記していた。公式 OpenAPI の `option.make_date` は integer で nullable 指定がない |
+| 他の従属物の `make_date` | 同日の `option_value`（201）、`variant`（200）、`pickup`（200）の各応答では `make_date` は integer だった |
+| 商品 PUT の `price` | `{"price":-1}` は HTTP 422 ではなく **200** で受理され、応答と直後の GET で `price: -1` が保存された。`{"price":null}` の PUT で `null` へ戻せた。公式 OpenAPI の `price` には `minimum` がない |
+| 商品 PUT の `name` | `{"name":""}` は HTTP 422 で、`errors[]` 要素は `field: "product.name"` を持った |
+| 商品 PUT の `sales_price` と `display_state` | 整数設定後の `{"sales_price":null}` によるクリアと、`showing_for_members` → `hidden` の往復を再確認した |
+| バリエーション PUT の `null` | `{"model_number":null}` は 200 で、応答と直後の単体 GET の双方で `model_number: null` へ戻った |
+| オプション削除後の商品 `stocks` | バリエーションの `stocks` を 3 へ更新した状態で親オプションを削除すると、商品 GET の `stocks` が 0 から 3 へ変化した（バリエーション削除時に商品在庫がバリエーションの値へ置き換わる）。`{"stocks":0}` の PUT で戻した |
+| 画像 DELETE | `DELETE /v1/products/<product_id>/images/0` は、画像作成が契約プラン制限で 401 となる同じショップで、401 ではなく **422** だった。`errors[]` 要素は `field` を持ち、`code`、`message`、`status` を含む。プラン制限は DELETE には効かず、バリデーションが先に走る。画像 DELETE の 204 は引き続き未観測 |
+
+`option.make_date` の `null` は、[ADR 0012](adr/0012-allow-nullability-from-api-observations.md) の条件（実 API での明示的な `null` の確認）を満たす。`price` の負値は API 側で検証されないため、ライブラリ側でも値の範囲を検証しない現行方針を維持する根拠になる。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。全くカテゴリーを持たない商品での表現は未検証。
@@ -373,8 +393,8 @@ object は合計5件。
 - `images` や `variants` の `null` 値、`variants[].option1: null`。OpenAPI の nullable 記載だけから出現を断定しない。
 - `fields` に他のキーを指定した場合、`offset` を変えた場合、商品一覧に50件超が存在する場合のページング。
 - 商品 POST の `name` 以外のフィールド、商品 PUT で個別に試したフィールド以外の受理・無視・検証動作。
-- `sales_price` 以外の nullable フィールドを明示的な `null` でクリアできるか。
-- 画像作成の 201 と `product_image` の実キー、画像 DELETE の 204、`position` の実動作。契約プラン制限のため未観測。
+- `sales_price`、`price`、バリエーションの `model_number` 以外の nullable フィールドを明示的な `null` でクリアできるか。
+- 画像作成の 201 と `product_image` の実キー、画像 DELETE の 204、`position` の実動作。契約プラン制限のため未観測（画像 DELETE は 422 だけを観測）。
 - 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合動作。
 
 ## 現在のライブラリ実装との関係

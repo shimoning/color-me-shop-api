@@ -2,7 +2,10 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
+use Psr\Http\Message\StreamInterface;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising;
@@ -10,11 +13,19 @@ use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\Option;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
+use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -201,5 +212,272 @@ class Product extends Service
                 return new Collection($items);
             },
         );
+    }
+
+    // --- 書き込み系 (ADR 0014) ---------------------------------------------
+
+    /**
+     * 商品を作成する。
+     *
+     * 実測では `name` だけの POST が 200 で、応答の `product` は GET と同じキー集合だった。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function create(ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/products'),
+            ['product' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): ProductEntity => new ProductEntity($data['product'] ?? []));
+    }
+
+    /**
+     * 商品を更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     *
+     * 実測では `name` だけの PUT で他フィールドが保持され、`sales_price: null` で値をクリアできた。
+     * 空の `ProductInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
+     * で拒否して `Errors` が返る。ライブラリ側では事前に拒否しない。
+     * 実測の出典: docs/api-product-structure.md「書き込み系の観測」。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function update(int|string $id, ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/products/' . $id),
+            ['product' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): ProductEntity => new ProductEntity($data['product'] ?? []));
+    }
+
+    /**
+     * バリエーションを更新する。応答の `variant` は商品 GET の `variants[]` と同じ形。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateVariant(
+        int|string $productId,
+        int|string $id,
+        VariantInput $input,
+        ?string $accessToken = null,
+    ): Variant|Errors {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/products/' . $productId . '/variants/' . $id),
+            ['variant' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): Variant => new Variant($data['variant'] ?? []));
+    }
+
+    /**
+     * オプションを作成する。成功は 201 で、応答の `option` を返す。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createOption(int|string $productId, OptionInput $input, ?string $accessToken = null): Option|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/products/' . $productId . '/options'),
+            ['option' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): Option => new Option($data['option'] ?? []));
+    }
+
+    /**
+     * オプションを削除する。成功は 204 でボディがないため NoContent を返す。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteOption(int|string $productId, int|string $id, ?string $accessToken = null): NoContent|Errors
+    {
+        $response = $this->_request([], $accessToken)->delete(
+            $this->_endpoint('/products/' . $productId . '/options/' . $id),
+        );
+        return $this->_handle($response, static fn(?array $_data): NoContent => new NoContent($response));
+    }
+
+    /**
+     * オプション値を作成する。成功は 201 で、応答の `option_value` を返す。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createOptionValue(
+        int|string $productId,
+        int|string $optionId,
+        OptionValueInput $input,
+        ?string $accessToken = null,
+    ): OptionValue|Errors {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/products/' . $productId . '/options/' . $optionId . '/values'),
+            ['option_value' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): OptionValue => new OptionValue($data['option_value'] ?? []));
+    }
+
+    /**
+     * オプション値を削除する。成功は 204 でボディがないため NoContent を返す。
+     * 実測では最後の1件の削除は 422 で、`field` のない Errors になる。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteOptionValue(
+        int|string $productId,
+        int|string $optionId,
+        int|string $id,
+        ?string $accessToken = null,
+    ): NoContent|Errors {
+        $response = $this->_request([], $accessToken)->delete(
+            $this->_endpoint('/products/' . $productId . '/options/' . $optionId . '/values/' . $id),
+        );
+        return $this->_handle($response, static fn(?array $_data): NoContent => new NoContent($response));
+    }
+
+    /**
+     * おすすめ商品情報を作成する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
+     *
+     * 公式 OpenAPI は要求ボディを required とし、API は `pickup_type` で対象を特定するため、
+     * 両フィールドが未指定の入力は送信前に拒否する (明示した `null` は送信する)。
+     * @throws ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createPickup(int|string $productId, PickupInput $input, ?string $accessToken = null): Pickup|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/products/' . $productId . '/pickups'),
+            self::requirePickupFields($input),
+        );
+        return $this->_handle($response, static fn(?array $data): Pickup => new Pickup($data['pickup'] ?? []));
+    }
+
+    /**
+     * おすすめ商品情報を更新する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
+     *
+     * 作成と同じく、`pickup_type` / `order_num` が未指定の入力は送信前に拒否する。
+     * @throws ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updatePickup(int|string $productId, PickupInput $input, ?string $accessToken = null): Pickup|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/products/' . $productId . '/pickups'),
+            self::requirePickupFields($input),
+        );
+        return $this->_handle($response, static fn(?array $data): Pickup => new Pickup($data['pickup'] ?? []));
+    }
+
+    /**
+     * ピックアップ入力の `pickup_type` と `order_num` が明示されていることを送信前に確認する。
+     *
+     * 公式 OpenAPI の pickups スキーマに両フィールドの required 指定はないが、要求ボディ自体は
+     * required で、空や片方だけのボディは意味を持たない。明示した `null` は API へ委ねる。
+     *
+     * @return array<string, mixed>
+     * @throws ParameterException いずれかが未指定の場合
+     */
+    private static function requirePickupFields(PickupInput $input): array
+    {
+        $fields = $input->toArrayRecursive();
+        $missing = \array_diff(['pickup_type', 'order_num'], \array_keys($fields));
+        if ($missing !== []) {
+            throw new ParameterException(\sprintf(
+                'おすすめ商品情報の入力には pickup_type と order_num を指定してください (未指定: %s)。',
+                \implode(', ', $missing),
+            ));
+        }
+
+        return $fields;
+    }
+
+    /**
+     * おすすめ商品情報を削除する。
+     *
+     * 他の DELETE と異なり、実測では 200 で削除済みの `pickup` object を返すため、NoContent ではなく Pickup を返す。
+     * int / string の種別は `PickupType` の値 (0 / 1 / 3 / 4) として検証し、それ以外はパスへ載せずに拒否する。
+     * @throws ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deletePickup(
+        int|string $productId,
+        PickupType|int|string $pickupType,
+        ?string $accessToken = null,
+    ): Pickup|Errors {
+        $type = self::pickupTypeValue($pickupType);
+        $response = $this->_request([], $accessToken)->delete(
+            $this->_endpoint('/products/' . $productId . '/pickups/' . $type),
+        );
+        return $this->_handle($response, static fn(?array $data): Pickup => new Pickup($data['pickup'] ?? []));
+    }
+
+    /**
+     * ピックアップ種別を `PickupType` のバッキング値へ正規化する。
+     *
+     * 文字列は 10 進整数の表記 (`'3'`) だけを受け付け、`'3.0'` や空文字、パス区切りを含む値は拒否する。
+     * @throws ParameterException `PickupType` に定義のない値の場合
+     */
+    private static function pickupTypeValue(PickupType|int|string $pickupType): int
+    {
+        if ($pickupType instanceof PickupType) {
+            return $pickupType->value;
+        }
+
+        $case = null;
+        if (\is_int($pickupType)) {
+            $case = PickupType::tryFrom($pickupType);
+        } else if (\preg_match('/\A(?:0|[1-9][0-9]*)\z/', $pickupType) === 1) {
+            $case = PickupType::tryFrom((int) $pickupType);
+        }
+        if ($case === null) {
+            throw new ParameterException(\sprintf(
+                'pickup_type は PickupType の値 (%s) で指定してください (指定値: %s)。',
+                \implode(' / ', \array_map(static fn(PickupType $type): int => $type->value, PickupType::cases())),
+                \var_export($pickupType, true),
+            ));
+        }
+
+        return $case->value;
+    }
+
+    /**
+     * 商品画像を作成する。`multipart/form-data` で `image` と `position` (0〜49) を送信する。
+     *
+     * 実 API 未検証 (プラン制限)。成功の 201 と応答 `product_image` (`position` / `url`) は
+     * 公式 OpenAPI 定義に基づく。実測では契約プランの制限により 401 だった。
+     *
+     * @param string|resource|StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
+     * @param string|null $filename multipart で送るファイル名。省略時はパスまたはストリーム URI の末尾
+     *   (php://memory などでは拡張子のない `memory`) になるため、ストリーム入力では拡張子付きの名前を指定する
+     * @throws ParameterException アクセストークンが空、またはファイル/ストリームを読み取れない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createImage(
+        int|string $productId,
+        mixed $image,
+        int $position,
+        ?string $accessToken = null,
+        ?string $filename = null,
+    ): ProductImage|Errors {
+        $response = $this->_request([], $accessToken)->postMultipart(
+            $this->_endpoint('/products/' . $productId . '/images'),
+            ['position' => $position],
+            ['image' => $image],
+            [],
+            $filename === null ? [] : ['image' => $filename],
+        );
+        return $this->_handle($response, static fn(?array $data): ProductImage => new ProductImage($data['product_image'] ?? []));
+    }
+
+    /**
+     * 商品画像を削除する。成功は 204 でボディがないため NoContent を返す。
+     *
+     * 実 API 未検証 (プラン制限)。公式 OpenAPI 定義に基づく。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteImage(int|string $productId, int $position, ?string $accessToken = null): NoContent|Errors
+    {
+        $response = $this->_request([], $accessToken)->delete(
+            $this->_endpoint('/products/' . $productId . '/images/' . $position),
+        );
+        return $this->_handle($response, static fn(?array $_data): NoContent => new NoContent($response));
     }
 }

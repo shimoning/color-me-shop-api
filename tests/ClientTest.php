@@ -7,11 +7,17 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\MailType;
+use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
@@ -88,6 +94,42 @@ class ClientTest extends TestCase
             }],
             'getProductGroup' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductGroup(401, $accessToken);
+            }],
+            'createProduct' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProduct(new ProductInput(['name' => '商品']), $accessToken);
+            }],
+            'updateProduct' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateProduct(101, new ProductInput(['name' => '商品']), $accessToken);
+            }],
+            'updateProductVariant' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateProductVariant(101, 301, new VariantInput(['stocks' => 1]), $accessToken);
+            }],
+            'createProductOption' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductOption(101, new OptionInput(['name' => '色', 'values' => [['name' => '赤']]]), $accessToken);
+            }],
+            'deleteProductOption' => [static function (Client $client, ?string $accessToken): void {
+                $client->deleteProductOption(101, 201, $accessToken);
+            }],
+            'createProductOptionValue' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductOptionValue(101, 201, new OptionValueInput(['name' => '青']), $accessToken);
+            }],
+            'deleteProductOptionValue' => [static function (Client $client, ?string $accessToken): void {
+                $client->deleteProductOptionValue(101, 201, 3, $accessToken);
+            }],
+            'createProductPickup' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductPickup(101, new PickupInput(['pickup_type' => 0]), $accessToken);
+            }],
+            'updateProductPickup' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateProductPickup(101, new PickupInput(['pickup_type' => 0]), $accessToken);
+            }],
+            'deleteProductPickup' => [static function (Client $client, ?string $accessToken): void {
+                $client->deleteProductPickup(101, PickupType::RECOMMENDED, $accessToken);
+            }],
+            'createProductImage' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductImage(101, __FILE__, 0, $accessToken);
+            }],
+            'deleteProductImage' => [static function (Client $client, ?string $accessToken): void {
+                $client->deleteProductImage(101, 0, $accessToken);
             }],
         ];
     }

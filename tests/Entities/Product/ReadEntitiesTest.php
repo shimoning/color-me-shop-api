@@ -82,6 +82,30 @@ class ReadEntitiesTest extends TestCase
         $product->getId();
     }
 
+    public function test_オプションのmake_dateは実測どおり明示的なnullを許容する(): void
+    {
+        $data = self::fixtureArray('products_read.json')['product'];
+        $optionData = $data['options'][0];
+        $optionData['make_date'] = null;
+
+        $option = new Option($optionData);
+        $this->assertNull($option->getMakeDate());
+        $this->assertInstanceOf(DateTimeImmutable::class, $option->getUpdateDate());
+
+        $data['options'] = [$optionData];
+        $product = new Product($data);
+        $this->assertNull($product->getOptions()[0]->getMakeDate());
+        $this->assertSame(['赤', '青'], $product->getOptions()[0]->getValues());
+    }
+
+    public function test_オプションのmake_dateが整数ならDateTimeImmutableになる(): void
+    {
+        $option = new Option(self::fixtureArray('products_read.json')['product']['options'][0]);
+
+        $this->assertInstanceOf(DateTimeImmutable::class, $option->getMakeDate());
+        $this->assertSame(1700000000, $option->getMakeDate()->getTimestamp());
+    }
+
     #[DataProvider('invalidFieldProvider')]
     public function test_不正型は固有例外になる(string $class, string $field, mixed $value): void
     {
