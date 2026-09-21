@@ -705,9 +705,11 @@ $updatedOrErrors = $client->updateProductGroup($groupId, new GroupInput([
     'expl' => null, // 明示した null で説明をクリア
 ]));
 if ($updatedOrErrors instanceof Errors) {
-    // 存在しないグループは 404、不正な値は 422
+    // 存在しないグループは 404、不正な値は 422、空の入力は 422
 }
 ```
+
+実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定だけが永続化され、以後の更新 (一部キーのみ、全キー `null`、`meta_tag` 自体の `null` を含む) は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。詳細は [商品 API 応答構造の実測記録](docs/api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)。
 
 **注意**: `GroupInput` の `display_state` は、応答と同じ `ProductDisplayState` の値 (`showing` / `hidden` / `showing_for_members` / `sale_for_members`) を受け付ける。
 公式 OpenAPI のグループ作成・更新 request は `showing` / `hidden` / `members_only` の3値と記載されており応答と一致しないが、グループ入力の受理値は実 API で未検証のため、確定後に見直す。
@@ -744,7 +746,7 @@ if ($categoriesOrErrors instanceof Errors) {
 
 #### 商品カテゴリーを作成・更新
 大カテゴリーは `CategoryInput`、小カテゴリーは `CategoryChildInput` を使い、それぞれ作成と更新で共用する。両者は同じフィールド (`name` / `expl` / `sort` / `display_state` / `meta_tag`) を持つが、応答の `BigCategory` / `SmallCategory` に合わせた別の型で互いに代入できない。
-指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。作成では公式 API が `name` を必須とするが、ライブラリは送信前に検証せず API の `422` に委ねる。
+指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` はそのまま送信される。ただし実 API の観測 (2026-09-21) では、カテゴリーの `expl` は `null` を送っても旧値のまま残り、空文字 `''` は保存された (説明を消すには空文字を送る)。`meta_tag` の部分更新はマージではなく置換で、送らなかったキーは `null` になる。作成では公式 API が `name` を必須とするが、ライブラリは送信前に検証せず API の `422` に委ねる。
 `display_state` は `showing` / `hidden` / `members_only` (`CategoryDisplayState` の値、または同 enum のインスタンス) を受け付ける。
 
 ```php
@@ -765,7 +767,7 @@ if (! $childOrErrors instanceof Errors) {
     $childId = $childOrErrors->getIdSmall(); // SmallCategory
 }
 
-$client->updateProductCategory($categoryId, new CategoryInput(['expl' => null])); // BigCategory|Errors
+$client->updateProductCategory($categoryId, new CategoryInput(['expl' => ''])); // BigCategory|Errors。説明を消すには空文字を送る (null はクリアされない)
 $client->updateProductCategoryChild($categoryId, $childId, new CategoryChildInput(['display_state' => 'hidden'])); // SmallCategory|Errors
 ```
 

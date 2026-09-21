@@ -25,6 +25,10 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * `display_state` は request 定義と応答の双方で `showing` / `hidden` / `members_only`
  * (`CategoryDisplayState`) で、商品・グループの `showing_for_members` などは拒否する。
+ * 実 API の観測 (2026-09-21) では、`expl` は明示した `null` を送っても旧値のまま残り (クリアされない)、
+ * 空文字 `""` は保存された。`meta_tag` の部分更新はマージではなく置換で、送らなかったキーは `null` になる。
+ * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+ *
  * `meta_tag` は `MetaTagInput` へ変換する。`title` / `keywords` / `description` のいずれも持たない配列は
  * JSON で `[]` になり OpenAPI の object 定義に合わないため、構築時に `InvalidFieldException` で拒否する。
  * 値の範囲 (`sort` の `minimum` など) は API 側の検証に委ね、ライブラリでは検証しない。

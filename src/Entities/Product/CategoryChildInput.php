@@ -20,7 +20,9 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * (ADR 0010) に合わせて別の型にし、互いに代入できないようにしている。
  *
  * 直列化の契約、`display_state` (`CategoryDisplayState`)、`meta_tag` (`MetaTagInput`) の扱いは
- * `CategoryInput` と同じ。
+ * `CategoryInput` と同じ。実 API の観測 (2026-09-21) で `expl` の明示 `null` がクリアされず
+ * `meta_tag` の部分更新が置換になる点も大カテゴリーと同じ。
+ * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */

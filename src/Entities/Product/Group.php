@@ -124,6 +124,10 @@ class Group extends Entity
      *
      * meta_tag が欠損または null の場合は null、空オブジェクトの場合は MetaTag を返す。
      *
+     * 実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定 (null から値へ) だけが永続化され、
+     * 以後の PUT は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。
+     * 更新直後の応答の値と、後から取得した値が一致しない場合がある。出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     *
      * @return MetaTag|null
      */
     public function getMetaTag(): ?MetaTag

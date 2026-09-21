@@ -116,6 +116,16 @@
 
 2026-09-12 の実測では親カテゴリー2件中1件で `meta_tag` キー自体が欠損している。この実測に基づく nullable 化の判断は [ADR 0012](adr/0012-allow-nullability-from-api-observations.md) に記録した。`BigCategory::$children` は非 nullable の `array` であり、親応答で `children` が欠損した場合は `getChildren()` で `MissingFieldException` になる。`SmallCategory` には `getChildren()` がない。この親子の構造差は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) で解決した。
 
+## 書き込み時の観測
+
+2026-09-21 に本ライブラリの `createProductCategory` / `updateProductCategory` / `createProductCategoryChild` / `updateProductCategoryChild` で行った smoke test の記録は、[商品 API 応答構造の実測記録](api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)にまとめている。カテゴリーに関する要点は次のとおり。
+
+- `display_state` は大・小とも `showing` / `hidden` / `members_only` の 3 値で、`CategoryDisplayState` と一致する。`showing_for_members` / `sale_for_members` は 422（`field: "product_category.disp_flg"`）。
+- `expl` は明示的な `null` を送っても応答・GET とも旧値のままでクリアされない。`""`（空文字）は保存される。
+- `meta_tag` の部分更新はマージではなく置換で、送らなかった `keywords` / `description` は `null` になる。
+- 大カテゴリーは作成直後の GET に `meta_tag` キー自体が無く `getMetaTag()` は `null` を返す。一度設定すると 3 キーとも `null` に戻してもキーが残る。これは上記 2026-09-12 の「親カテゴリー 2 件中 1 件で `meta_tag` が欠損」と整合する。
+- 空入力 `{"category":{}}` は 422（`code: 422210`）、存在しない ID は 404（`code: 404100`）、`sort: -1` は 422（`code: 422014`、`field: "product_category.order_num"`）。
+
 ## 今後の計画
 
 大カテゴリーと小カテゴリーの分割は [Issue #27](https://github.com/shimoning/color-me-shop-api/issues/27) と [ADR 0010](adr/0010-split-category-into-big-and-small.md) に従って実装済みである。今後の再収集では、親カテゴリーで `children` キーが欠損する場合や、トップレベルに小カテゴリーが現れる場合があるかを確認する。

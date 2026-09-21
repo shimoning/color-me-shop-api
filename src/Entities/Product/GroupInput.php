@@ -29,6 +29,11 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 同じ `ProductDisplayState` を使い、`members_only` は構築時に拒否する。smoke test で受理値が確定したら
  * 更新する (docs/enum-openapi-audit.md、ADR 0014)。
  *
+ * 実 API の観測 (2026-09-21) では、`expl` は明示した `null` でクリアできた。一方 `meta_tag` は初回設定
+ * (null から値へ) だけが永続化され、以後の PUT (一部キーのみ、全キー新値、全キー `null`、`meta_tag: null`) は
+ * 応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。
+ * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+ *
  * `meta_tag` は `MetaTagInput` へ変換する。`title` / `keywords` / `description` のいずれも持たない配列は
  * JSON で `[]` になり OpenAPI の object 定義に合わないため、構築時に `InvalidFieldException` で拒否する。
  * 値の範囲 (`maxLength` など) は API 側の検証に委ね、ライブラリでは検証しない。
