@@ -335,8 +335,11 @@ object は合計5件。
 | `{"unlisted":true}` | 200 | 両方とも `unlisted: false` のまま |
 | `{"sales_price":null}` | 200 | 事前に整数へ設定した値が、両方で明示的な `null` へ変化 |
 | `{"name":"<renamed_probe_name>"}` | 200 | 前後の GET で変化したのは `name` と `update_date` だけ |
+| `{}` (空 object) | 422 | `errors[]` を返し、GET は `name` と `hidden` を保持 |
 
 実 API は `display_state` の `showing`、`hidden`、`showing_for_members`、`sale_for_members` を受理し、`members_only` を拒否した。これは OpenAPI の商品グループ作成・更新 request が列挙する `showing`、`hidden`、`members_only` と一致せず、その request 側 enum を商品更新入力へ一般化できない。422 応答は `{"errors":[{"code":422001,"field":"product.disp_flg","message":string,"status":422}]}` の形だった。
+
+空の `product` object (`{"product":{}}`) は HTTP 422 で拒否され、`errors[]` の `code` は `VALIDATE_ERROR_FIELD`、`field` は `product` だった (収集日 **2026-09-21（Asia/Tokyo）**、本ライブラリの `Services\Product::update()` に空の `ProductInput` を渡して観測)。直後の GET では `name` と `display_state: hidden` が保持され、商品の状態は変化しなかった。ライブラリは `Errors` を返し例外は送出しない。空入力の事前拒否はライブラリ側では行わず、API の検証に委ねる。
 
 `unlisted: true` は成功ステータスを返しても値が変化せず、API は入力を黙って無視した。したがって `unlisted` は書き込みフィールドとして利用できない。`sales_price` では整数値を設定した後に明示的な `null` を送ると値をクリアできた。`name` だけの更新では他フィールドが保持されたため、この操作は全置換ではなく部分更新として動作した。これらは実測したフィールドに限る事実であり、他の入力フィールドへ一般化しない。
 

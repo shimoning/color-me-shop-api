@@ -236,6 +236,9 @@ class Product extends Service
      * 商品を更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
      * 実測では `name` だけの PUT で他フィールドが保持され、`sales_price: null` で値をクリアできた。
+     * 空の `ProductInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
+     * で拒否して `Errors` が返る。ライブラリ側では事前に拒否しない。
+     * 実測の出典: docs/api-product-structure.md「書き込み系の観測」。
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
