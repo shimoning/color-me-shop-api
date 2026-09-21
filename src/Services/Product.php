@@ -331,30 +331,58 @@ class Product extends Service
 
     /**
      * おすすめ商品情報を作成する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
-     * @throws ParameterException アクセストークンが空の場合
+     *
+     * 公式 OpenAPI は要求ボディを required とし、API は `pickup_type` で対象を特定するため、
+     * 両フィールドが未指定の入力は送信前に拒否する (明示した `null` は送信する)。
+     * @throws ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createPickup(int|string $productId, PickupInput $input, ?string $accessToken = null): Pickup|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products/' . $productId . '/pickups'),
-            $input->toArrayRecursive(),
+            self::requirePickupFields($input),
         );
         return $this->_handle($response, static fn(?array $data): Pickup => new Pickup($data['pickup'] ?? []));
     }
 
     /**
      * おすすめ商品情報を更新する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
-     * @throws ParameterException アクセストークンが空の場合
+     *
+     * 作成と同じく、`pickup_type` / `order_num` が未指定の入力は送信前に拒否する。
+     * @throws ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updatePickup(int|string $productId, PickupInput $input, ?string $accessToken = null): Pickup|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/products/' . $productId . '/pickups'),
-            $input->toArrayRecursive(),
+            self::requirePickupFields($input),
         );
         return $this->_handle($response, static fn(?array $data): Pickup => new Pickup($data['pickup'] ?? []));
+    }
+
+    /**
+     * ピックアップ入力の `pickup_type` と `order_num` が明示されていることを送信前に確認する。
+     *
+     * 公式 OpenAPI の pickups スキーマに両フィールドの required 指定はないが、要求ボディ自体は
+     * required で、空や片方だけのボディは意味を持たない。明示した `null` は API へ委ねる。
+     *
+     * @return array<string, mixed>
+     * @throws ParameterException いずれかが未指定の場合
+     */
+    private static function requirePickupFields(PickupInput $input): array
+    {
+        $fields = $input->toArrayRecursive();
+        $missing = \array_diff(['pickup_type', 'order_num'], \array_keys($fields));
+        if ($missing !== []) {
+            throw new ParameterException(\sprintf(
+                'おすすめ商品情報の入力には pickup_type と order_num を指定してください (未指定: %s)。',
+                \implode(', ', $missing),
+            ));
+        }
+
+        return $fields;
     }
 
     /**

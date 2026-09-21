@@ -279,6 +279,34 @@ class ProductWriteTest extends TestCase
         $this->assertSame('{"pickup_type":3,"order_num":1}', $mock->body());
     }
 
+    #[DataProvider('incompletePickupInputProvider')]
+    public function test_ピックアップの作成と更新はpickup_typeとorder_numが未指定なら送信前に拒否する(array $fields): void
+    {
+        $mock = HttpMock::json(200, self::fixture('product_pickup.json'));
+        $service = new Product('token', $mock->client());
+
+        foreach (['createPickup', 'updatePickup'] as $method) {
+            try {
+                $service->$method(101, new PickupInput($fields));
+                $this->fail($method . ' が ParameterException を投げませんでした。');
+            } catch (ParameterException $exception) {
+                $this->assertStringContainsString('pickup_type', $exception->getMessage());
+                $this->assertStringContainsString('order_num', $exception->getMessage());
+            }
+        }
+        $this->assertSame(0, $mock->countRequests());
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function incompletePickupInputProvider(): array
+    {
+        return [
+            'empty' => [[]],
+            'pickup_type only' => [['pickup_type' => 3]],
+            'order_num only' => [['order_num' => 1]],
+        ];
+    }
+
     public function test_ピックアップ更新はトップレベルのJSONをPUTする(): void
     {
         $mock = HttpMock::json(200, self::fixture('product_pickup.json'));

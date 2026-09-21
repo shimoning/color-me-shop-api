@@ -235,7 +235,7 @@ class Client
 
     /**
      * おすすめ商品情報を作成する。
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createProductPickup(
@@ -248,7 +248,7 @@ class Client
 
     /**
      * おすすめ商品情報を更新する。
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateProductPickup(
