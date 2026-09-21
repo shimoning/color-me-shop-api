@@ -75,7 +75,7 @@ class ProductWriteTest extends TestCase
         $this->assertSame('{"product":{"sales_price":null,"display_state":"showing"}}', $mock->body());
     }
 
-    public function test_商品更新はincrementと変数のstocksをそのまま送信する(): void
+    public function test_商品更新はincrementとバリエーションのstocksをそのまま送信する(): void
     {
         $mock = HttpMock::json(200, self::productJson());
 
