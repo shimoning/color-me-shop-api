@@ -81,11 +81,11 @@ class ProductWriteTest extends TestCase
 
         (new Product('token', $mock->client()))->update('101', new ProductInput([
             'stocks' => ['increment' => 5],
-            'variants' => [['option1_value' => 'S', 'stocks' => null]],
+            'variants' => [['option1_value' => 'S', 'stocks' => 3]],
         ]));
 
         $this->assertSame(
-            '{"product":{"stocks":{"increment":5},"variants":[{"option1_value":"S","stocks":null}]}}',
+            '{"product":{"stocks":{"increment":5},"variants":[{"option1_value":"S","stocks":3}]}}',
             $mock->body(),
         );
     }
