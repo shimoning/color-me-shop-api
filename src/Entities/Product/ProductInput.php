@@ -18,8 +18,13 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * 直列化の契約:
  * - コンストラクタ配列で明示したフィールドだけを送信する。
- * - 明示した `null` も送信する。実測では `sales_price` を `null` でクリアできた。
+ * - 明示した `null` も送信する。実測では `sales_price` と `price` を `null` でクリアできた。
  * - 指定しなかったフィールドは送信しない。実測では `name` だけの PUT が部分更新として動作した。
+ *
+ * 公式 OpenAPI の `product` request は全フィールドとも nullable 指定がないが、本 Entity は
+ * ADR 0014 の「明示した `null` はクリア要求」の契約に従い全フィールドを nullable にしている。
+ * 実測の出典: docs/api-product-structure.md「書き込み系の観測」(b1ceab5、dee9609)。
+ * `null` を受理するかは API 側の判断であり、実測していないフィールドへは一般化しない。
  *
  * `display_state` は実測で受理された `showing` / `hidden` / `showing_for_members` /
  * `sale_for_members` の4値 (`ProductDisplayState`) だけを受け付け、`members_only` は拒否する。
