@@ -68,6 +68,22 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Product\PickupInput::class,
                 'order_num',
             ],
+            'Product\\GroupInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\GroupInput::class,
+                'parent_group_id',
+            ],
+            'Product\\CategoryInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput::class,
+                'expl',
+            ],
+            'Product\\CategoryChildInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput::class,
+                'expl',
+            ],
+            'Product\\MetaTagInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\MetaTagInput::class,
+                'title',
+            ],
             'Product\\ProductInput' => [
                 \Shimoning\ColorMeShopApi\Entities\Product\ProductInput::class,
                 'sales_price',

@@ -465,6 +465,13 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \TypeError::class,
             ],
+            'InvalidFieldException::for/グループ入力のmeta_tagの形状不一致' => [
+                self::site('src/Entities/Product/MetaTagInput.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\GroupInput(['meta_tag' => []]);
+                },
+                null,
+            ],
             'InvalidFieldException::forArrayElement/広告の色' => [
                 self::site('src/Entities/Product/Advertising.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
