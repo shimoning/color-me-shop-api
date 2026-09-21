@@ -269,9 +269,11 @@
         "value_id"
     ],
     "Product\\Pickup": [
+        "account_id",
         "make_date",
         "order_num",
         "pickup_type",
+        "product_id",
         "update_date"
     ],
     "Product\\Product": [

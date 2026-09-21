@@ -8,15 +8,17 @@ use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * 商品内 pickups[] の応答。
- * OpenAPI の productPickup スキーマは product_id / account_id も載せるが、
- * 商品内の実応答にはないためこの Entity では宣言しない。
- * 出典: docs/api-product-structure.md (fa4bfbb)。
+ * 商品内 pickups[] と、ピックアップ書き込み API (POST / PUT / DELETE) の `pickup` 応答。
+ * OpenAPI の productPickup スキーマにある product_id / account_id は、商品内の実応答にはなく、
+ * 書き込み応答の6キーには含まれるため nullable として宣言する。
+ * 出典: docs/api-product-structure.md (fa4bfbb、書き込み観測 b1ceab5)。
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */
 class Pickup extends Entity
 {
     protected int $pickupType;
+    protected ?int $productId;
+    protected ?string $accountId;
     protected ?int $orderNum;
     protected int $makeDate;
     protected int $updateDate;
@@ -29,6 +31,24 @@ class Pickup extends Entity
     {
         $this->assertFieldInitialized('pickupType');
         return $this->pickupType;
+    }
+
+    /**
+     * 商品ID。商品内 pickups[] の応答にはなく、書き込み応答にだけ含まれる。
+     * @return ?int
+     */
+    public function getProductId(): ?int
+    {
+        return $this->productId;
+    }
+
+    /**
+     * ショップアカウントID。商品内 pickups[] の応答にはなく、書き込み応答にだけ含まれる。
+     * @return ?string
+     */
+    public function getAccountId(): ?string
+    {
+        return $this->accountId;
     }
 
     /**
