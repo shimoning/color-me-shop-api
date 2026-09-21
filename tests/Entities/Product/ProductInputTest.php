@@ -176,6 +176,8 @@ class ProductInputTest extends TestCase
             'variants hash instead of list' => ['variants', ['option1_value' => 'S']],
             'variants scalar element' => ['variants', ['S']],
             'variants null element' => ['variants', [null]],
+            'variants empty element' => ['variants', [[]]],
+            'variants second element empty' => ['variants', [['option1_value' => 'S'], []]],
             'variants option1_value int' => ['variants', [['option1_value' => 1]]],
             'variants option2_value null' => ['variants', [['option2_value' => null]]],
             'variants stocks string' => ['variants', [['option1_value' => 'S', 'stocks' => '3']]],

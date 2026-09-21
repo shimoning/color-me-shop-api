@@ -35,8 +35,9 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * `option1_value` / `option2_value` / `stocks` を持つ連想配列のリストで、いずれもそのまま送信される。
  *
  * 要求側は厳格に検証する (ADR 0013 / 0014)。`group_ids` の要素は int、`stocks` の object は
- * `increment` キーだけを持つ int、`variants` は上記3キー以外を持たないリストとし、公式 OpenAPI の
- * 配列・object 定義に合わない形状は構築時に `InvalidFieldException` で拒否する。
+ * `increment` キーだけを持つ int、`variants` は上記3キーのいずれかを持ち他のキーを持たない object の
+ * リストとし (空の要素は JSON で `[]` になるため拒否する)、公式 OpenAPI の配列・object 定義に合わない
+ * 形状は構築時に `InvalidFieldException` で拒否する。
  * ネストした `variants[].stocks` は OpenAPI に nullable 指定がなく実測もないため `null` を受け付けない
  * (ADR 0012)。トップレベルの nullable 化はネストした object のキーへは及ぼさない。
  * 値の範囲 (`minimum` など) は API 側の検証に委ね、ライブラリでは検証しない。
@@ -138,9 +139,15 @@ class ProductInput extends Entity implements RequestEntity
         }
     }
 
-    /** @param array<mixed> $variant */
+    /**
+     * 空の配列は JSON で object ではなく `[]` になり OpenAPI の object 定義に合わないため、要素として認めない。
+     * @param array<mixed> $variant
+     */
     private static function isVariantShape(array $variant): bool
     {
+        if ($variant === []) {
+            return false;
+        }
         foreach ($variant as $key => $element) {
             $valid = match ($key) {
                 'option1_value', 'option2_value' => \is_string($element),
