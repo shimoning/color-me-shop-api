@@ -386,6 +386,46 @@
         "model_number",
         "offset"
     ],
+    "Product\\ProductInput": [
+        "category_id_big",
+        "category_id_small",
+        "cost",
+        "display_state",
+        "expl",
+        "group_ids",
+        "members_price",
+        "model_number",
+        "name",
+        "price",
+        "sales_price",
+        "simple_expl",
+        "smartphone_expl",
+        "stock_managed",
+        "stocks",
+        "tax_reduced",
+        "variants"
+    ],
+    "Product\\VariantInput": [
+        "few_num",
+        "model_number",
+        "option_cost",
+        "option_market_price",
+        "option_members_price",
+        "option_price",
+        "stocks",
+        "weight"
+    ],
+    "Product\\OptionInput": [
+        "name",
+        "values"
+    ],
+    "Product\\OptionValueInput": [
+        "name"
+    ],
+    "Product\\PickupInput": [
+        "order_num",
+        "pickup_type"
+    ],
     "Product\\VariantOption": [
         "id",
         "name",

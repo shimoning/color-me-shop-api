@@ -64,9 +64,21 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters::class,
                 'limit',
             ],
+            'Product\\PickupInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\PickupInput::class,
+                'order_num',
+            ],
+            'Product\\ProductInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\ProductInput::class,
+                'sales_price',
+            ],
             'Product\\SearchParameters' => [
                 \Shimoning\ColorMeShopApi\Entities\Product\SearchParameters::class,
                 'name',
+            ],
+            'Product\\VariantInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
+                'stocks',
             ],
             'Product\\VariantSearchParameters' => [
                 \Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters::class,
@@ -166,7 +178,7 @@ class EntityContractTest extends TestCase
     {
         $requestClasses = [];
         foreach (self::sourceEntityClasses() as $class) {
-            if (\preg_match('/(?:SearchParameters|Updater)$/', $class) !== 1) {
+            if (\preg_match('/(?:SearchParameters|Updater|Input)$/', $class) !== 1) {
                 continue;
             }
             $requestClasses[] = $class;
