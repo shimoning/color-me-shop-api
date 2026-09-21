@@ -1,0 +1,19 @@
+{
+    "category": {
+        "id_big": 9001,
+        "id_small": 5,
+        "account_id": "TEST_ACCOUNT",
+        "name": "半袖",
+        "image_url": null,
+        "expl": null,
+        "sort": 0,
+        "display_state": "showing",
+        "make_date": 1700000000,
+        "update_date": 1700000000,
+        "meta_tag": {
+            "title": null,
+            "keywords": null,
+            "description": null
+        }
+    }
+}

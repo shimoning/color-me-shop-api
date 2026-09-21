@@ -472,6 +472,16 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
+            'InvalidFieldException::for/カテゴリー書き込み応答の親子型不一致' => [
+                self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    $mock = HttpMock::json(201, '{"category":{"id_big":1,"id_small":5}}');
+                    (new Product('my-token', $mock->client()))->createCategory(
+                        new \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput(['name' => 'x']),
+                    );
+                },
+                null,
+            ],
             'InvalidFieldException::forArrayElement/広告の色' => [
                 self::site('src/Entities/Product/Advertising.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {

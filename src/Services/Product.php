@@ -12,7 +12,10 @@ use Shimoning\ColorMeShopApi\Entities\Product\Advertising;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
@@ -212,6 +215,146 @@ class Product extends Service
                 return new Collection($items);
             },
         );
+    }
+
+    // --- グループ・カテゴリーの書き込み系 (ADR 0010 / 0014) ----------------
+
+    /**
+     * 商品グループを作成する。成功は 201 で、応答の `group` を返す。
+     *
+     * `display_state` の受理値は実 API で未検証 (公式 OpenAPI の request 定義は `members_only` を含む
+     * 3値で、応答の `ProductDisplayState` と異なる)。入力 Entity は応答側の4値を使う。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createGroup(GroupInput $input, ?string $accessToken = null): Group|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/groups'),
+            ['group' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): Group => new Group($data['group'] ?? []));
+    }
+
+    /**
+     * 商品グループを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     *
+     * 公式 OpenAPI の更新 request に `parent_group_id` はない (作成専用)。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateGroup(int|string $id, GroupInput $input, ?string $accessToken = null): Group|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/groups/' . $id),
+            ['group' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle($response, static fn(?array $data): Group => new Group($data['group'] ?? []));
+    }
+
+    /**
+     * 大カテゴリーを作成する。成功は 201 で、応答の `category` を `BigCategory` として返す。
+     *
+     * 公式 OpenAPI では `name` が required だが、更新と入力 Entity を共用するため送信前には検証せず、
+     * `name` のない要求は API の検証 (422 の `Errors`) に委ねる。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createCategory(CategoryInput $input, ?string $accessToken = null): BigCategory|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/categories'),
+            ['category' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle(
+            $response,
+            static fn(?array $data): BigCategory => self::categoryFromResponse($data, BigCategory::class),
+        );
+    }
+
+    /**
+     * 大カテゴリーを更新する。明示したフィールドだけを送る部分更新で、応答の `category` を `BigCategory` として返す。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateCategory(int|string $id, CategoryInput $input, ?string $accessToken = null): BigCategory|Errors
+    {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/categories/' . $id),
+            ['category' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle(
+            $response,
+            static fn(?array $data): BigCategory => self::categoryFromResponse($data, BigCategory::class),
+        );
+    }
+
+    /**
+     * 小カテゴリーを作成する。成功は 201 で、応答の `category` を `SmallCategory` として返す。
+     *
+     * `name` の required 指定の扱いは大カテゴリーの作成と同じで、API の検証に委ねる。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createCategoryChild(
+        int|string $categoryId,
+        CategoryChildInput $input,
+        ?string $accessToken = null,
+    ): SmallCategory|Errors {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/categories/' . $categoryId . '/children'),
+            ['category' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle(
+            $response,
+            static fn(?array $data): SmallCategory => self::categoryFromResponse($data, SmallCategory::class),
+        );
+    }
+
+    /**
+     * 小カテゴリーを更新する。明示したフィールドだけを送る部分更新で、応答の `category` を `SmallCategory` として返す。
+     * @throws ParameterException アクセストークンが空の場合
+     * @throws InvalidFieldException 応答の `category` が `Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateCategoryChild(
+        int|string $categoryId,
+        int|string $id,
+        CategoryChildInput $input,
+        ?string $accessToken = null,
+    ): SmallCategory|Errors {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/categories/' . $categoryId . '/children/' . $id),
+            ['category' => self::_jsonObject($input->toArrayRecursive())],
+        );
+        return $this->_handle(
+            $response,
+            static fn(?array $data): SmallCategory => self::categoryFromResponse($data, SmallCategory::class),
+        );
+    }
+
+    /**
+     * 書き込み応答の `category` を `Category::fromArray()` で変換し、操作が期待する親子の型であることを確認する。
+     *
+     * ADR 0010 の厳格方針に従い、`id_small` の欠損・型不正はもちろん、大カテゴリーの操作で
+     * `id_small !== 0` の応答が返る (またはその逆) 場合も誤分類を隠さず例外にする。
+     *
+     * @template T of BigCategory|SmallCategory
+     * @param class-string<T> $expected
+     * @return T
+     * @throws InvalidFieldException `Category::fromArray()` で変換できない、または期待した型でない場合
+     */
+    private static function categoryFromResponse(?array $data, string $expected): BigCategory|SmallCategory
+    {
+        $category = Category::fromArray($data['category'] ?? []);
+        if (! $category instanceof $expected) {
+            throw InvalidFieldException::for(self::class, 'category', $expected, $category);
+        }
+
+        return $category;
     }
 
     // --- 書き込み系 (ADR 0014) ---------------------------------------------

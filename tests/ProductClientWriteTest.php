@@ -10,6 +10,11 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
+use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
@@ -19,6 +24,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -119,6 +125,36 @@ class ProductClientWriteTest extends TestCase
             'deleteProductImage' => [
                 'deleteProductImage', [101, 0],
                 204, '', 'DELETE', '/v1/products/101/images/0', NoContent::class, '',
+            ],
+            'createProductGroup' => [
+                'createProductGroup', [new GroupInput(['name' => '夏物', 'parent_group_id' => null])],
+                201, '{"group":{"id":401,"name":"夏物"}}', 'POST', '/v1/groups', Group::class,
+                '{"group":{"name":"夏物","parent_group_id":null}}',
+            ],
+            'updateProductGroup' => [
+                'updateProductGroup', [401, new GroupInput(['expl' => null, 'meta_tag' => ['title' => 't']])],
+                200, '{"group":{"id":401}}', 'PUT', '/v1/groups/401', Group::class,
+                '{"group":{"expl":null,"meta_tag":{"title":"t"}}}',
+            ],
+            'createProductCategory' => [
+                'createProductCategory', [new CategoryInput(['name' => 'Tシャツ'])],
+                201, '{"category":{"id_big":9001,"id_small":0,"children":[]}}', 'POST', '/v1/categories', BigCategory::class,
+                '{"category":{"name":"Tシャツ"}}',
+            ],
+            'updateProductCategory' => [
+                'updateProductCategory', [9001, new CategoryInput(['sort' => 2])],
+                200, '{"category":{"id_big":9001,"id_small":0}}', 'PUT', '/v1/categories/9001', BigCategory::class,
+                '{"category":{"sort":2}}',
+            ],
+            'createProductCategoryChild' => [
+                'createProductCategoryChild', [9001, new CategoryChildInput(['name' => '半袖'])],
+                201, '{"category":{"id_big":9001,"id_small":5}}', 'POST', '/v1/categories/9001/children', SmallCategory::class,
+                '{"category":{"name":"半袖"}}',
+            ],
+            'updateProductCategoryChild' => [
+                'updateProductCategoryChild', [9001, 5, new CategoryChildInput(['display_state' => 'hidden'])],
+                200, '{"category":{"id_big":9001,"id_small":5}}', 'PUT', '/v1/categories/9001/children/5', SmallCategory::class,
+                '{"category":{"display_state":"hidden"}}',
             ],
         ];
     }

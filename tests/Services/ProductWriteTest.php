@@ -8,8 +8,14 @@ use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
@@ -19,8 +25,10 @@ use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -140,6 +148,201 @@ class ProductWriteTest extends TestCase
         (new Product('token', $mock->client()))->create(new ProductInput(['name' => 'x']), 'other-token');
 
         $this->assertSame('Bearer other-token', $mock->header('Authorization'));
+    }
+
+    // --- group (Phase 3) --------------------------------------------------
+
+    public function test_商品グループ作成はgroupキーのJSONをPOSTし201のGroupを返す(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('group_created.json'));
+
+        $group = (new Product('token', $mock->client()))->createGroup(new GroupInput([
+            'name' => '夏物',
+            'display_state' => 'showing',
+            'parent_group_id' => null,
+            'meta_tag' => ['title' => '夏物特集'],
+        ]));
+
+        $this->assertInstanceOf(Group::class, $group);
+        $this->assertSame(401, $group->getId());
+        $this->assertSame('夏物', $group->getName());
+        $this->assertSame('夏物特集', $group->getMetaTag()?->getTitle());
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/groups', $mock->uri());
+        $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
+        $this->assertSame('Bearer token', $mock->header('Authorization'));
+        $this->assertSame(
+            ['group' => ['name' => '夏物', 'display_state' => 'showing', 'parent_group_id' => null, 'meta_tag' => ['title' => '夏物特集']]],
+            $mock->jsonBody(),
+        );
+        $this->assertStringContainsString('"parent_group_id":null', $mock->body());
+    }
+
+    public function test_商品グループ更新はgroupキーのJSONをPUTし明示したnullを送信し未指定を省略する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('group_created.json'));
+
+        $group = (new Product('token', $mock->client()))->updateGroup(401, new GroupInput([
+            'expl' => null, 'display_state' => ProductDisplayState::HIDDEN,
+        ]));
+
+        $this->assertInstanceOf(Group::class, $group);
+        $this->assertSame('PUT', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/groups/401', $mock->uri());
+        $this->assertSame('{"group":{"expl":null,"display_state":"hidden"}}', $mock->body());
+    }
+
+    public function test_空の商品グループ入力はJSONの空objectとして送信する(): void
+    {
+        $create = HttpMock::json(201, self::fixture('group_created.json'));
+        $update = HttpMock::json(200, self::fixture('group_created.json'));
+
+        (new Product('token', $create->client()))->createGroup(new GroupInput([]));
+        (new Product('token', $update->client()))->updateGroup('401', new GroupInput([]));
+
+        $this->assertSame('{"group":{}}', $create->body());
+        $this->assertSame('{"group":{}}', $update->body());
+    }
+
+    public function test_商品グループ書き込みの404と422はErrorsになる(): void
+    {
+        $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');
+        $invalid = HttpMock::json(422, '{"errors":[{"code":422001,"field":"name","message":"商品グループ名は必須です","status":422}]}');
+
+        $errors404 = (new Product('token', $notFound->client()))->updateGroup(999, new GroupInput(['name' => 'x']));
+        $errors422 = (new Product('token', $invalid->client()))->createGroup(new GroupInput([]));
+
+        $this->assertInstanceOf(Errors::class, $errors404);
+        $this->assertSame(404, $errors404->getResponse()->getStatus());
+        $this->assertInstanceOf(Errors::class, $errors422);
+        $this->assertSame('name', $errors422[0]->getField());
+    }
+
+    // --- category (Phase 3) -----------------------------------------------
+
+    public function test_大カテゴリー作成はcategoryキーのJSONをPOSTし201のBigCategoryを返す(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('category_created.json'));
+
+        $category = (new Product('token', $mock->client()))->createCategory(new CategoryInput([
+            'name' => 'Tシャツ', 'sort' => 1, 'display_state' => 'members_only', 'meta_tag' => ['keywords' => null],
+        ]));
+
+        $this->assertInstanceOf(BigCategory::class, $category);
+        $this->assertSame(9001, $category->getIdBig());
+        $this->assertSame(0, $category->getIdSmall());
+        $this->assertSame([], $category->getChildren());
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/categories', $mock->uri());
+        $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
+        $this->assertSame('Bearer token', $mock->header('Authorization'));
+        $this->assertSame(
+            ['category' => ['name' => 'Tシャツ', 'sort' => 1, 'display_state' => 'members_only', 'meta_tag' => ['keywords' => null]]],
+            $mock->jsonBody(),
+        );
+        $this->assertStringContainsString('"meta_tag":{"keywords":null}', $mock->body());
+    }
+
+    public function test_大カテゴリー更新はcategoryキーのJSONをPUTし明示したnullを送信し未指定を省略する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('category_created.json'));
+
+        $category = (new Product('token', $mock->client()))->updateCategory(9001, new CategoryInput([
+            'expl' => null, 'display_state' => CategoryDisplayState::HIDDEN,
+        ]));
+
+        $this->assertInstanceOf(BigCategory::class, $category);
+        $this->assertSame('PUT', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/categories/9001', $mock->uri());
+        $this->assertSame('{"category":{"expl":null,"display_state":"hidden"}}', $mock->body());
+    }
+
+    public function test_小カテゴリー作成はcategoryキーのJSONをPOSTし201のSmallCategoryを返す(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('category_child_created.json'));
+
+        $category = (new Product('token', $mock->client()))->createCategoryChild(9001, new CategoryChildInput([
+            'name' => '半袖', 'meta_tag' => ['title' => '半袖', 'description' => null],
+        ]));
+
+        $this->assertInstanceOf(SmallCategory::class, $category);
+        $this->assertSame(9001, $category->getIdBig());
+        $this->assertSame(5, $category->getIdSmall());
+        $this->assertSame('半袖', $category->getName());
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/categories/9001/children', $mock->uri());
+        $this->assertSame(
+            ['category' => ['name' => '半袖', 'meta_tag' => ['title' => '半袖', 'description' => null]]],
+            $mock->jsonBody(),
+        );
+        $this->assertStringContainsString('"description":null}', $mock->body());
+    }
+
+    public function test_小カテゴリー更新はcategoryキーのJSONをPUTしSmallCategoryを返す(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('category_child_created.json'));
+
+        $category = (new Product('token', $mock->client()))->updateCategoryChild('9001', '5', new CategoryChildInput([
+            'sort' => null,
+        ]));
+
+        $this->assertInstanceOf(SmallCategory::class, $category);
+        $this->assertSame('PUT', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/categories/9001/children/5', $mock->uri());
+        $this->assertSame('{"category":{"sort":null}}', $mock->body());
+    }
+
+    public function test_空のカテゴリー入力はJSONの空objectとして送信する(): void
+    {
+        $big = HttpMock::json(201, self::fixture('category_created.json'));
+        $small = HttpMock::json(201, self::fixture('category_child_created.json'));
+
+        (new Product('token', $big->client()))->createCategory(new CategoryInput([]));
+        (new Product('token', $small->client()))->createCategoryChild(9001, new CategoryChildInput([]));
+
+        $this->assertSame('{"category":{}}', $big->body());
+        $this->assertSame('{"category":{}}', $small->body());
+    }
+
+    public function test_大カテゴリー書き込みの応答が小カテゴリーなら例外になる(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('category_child_created.json'));
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('BigCategory');
+        (new Product('token', $mock->client()))->createCategory(new CategoryInput(['name' => 'x']));
+    }
+
+    public function test_小カテゴリー書き込みの応答が大カテゴリーなら例外になる(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('category_created.json'));
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('SmallCategory');
+        (new Product('token', $mock->client()))->updateCategoryChild(9001, 5, new CategoryChildInput(['name' => 'x']));
+    }
+
+    public function test_カテゴリー書き込みの応答にid_smallがなければ例外になる(): void
+    {
+        $mock = HttpMock::json(200, '{"category":{"id_big":9001}}');
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('id_small');
+        (new Product('token', $mock->client()))->updateCategory(9001, new CategoryInput(['name' => 'x']));
+    }
+
+    public function test_カテゴリー書き込みの404と422はErrorsになる(): void
+    {
+        $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');
+        $invalid = HttpMock::json(422, self::fixture('errors_422.json'));
+
+        $errors404 = (new Product('token', $notFound->client()))->updateCategoryChild(9001, 999, new CategoryChildInput(['name' => 'x']));
+        $errors422 = (new Product('token', $invalid->client()))->createCategory(new CategoryInput([]));
+
+        $this->assertInstanceOf(Errors::class, $errors404);
+        $this->assertSame(404, $errors404->getResponse()->getStatus());
+        $this->assertInstanceOf(Errors::class, $errors422);
+        $this->assertSame(2, $errors422->count());
     }
 
     // --- variant ----------------------------------------------------------

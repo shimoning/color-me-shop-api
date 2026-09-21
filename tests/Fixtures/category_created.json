@@ -1,0 +1,20 @@
+{
+    "category": {
+        "id_big": 9001,
+        "id_small": 0,
+        "account_id": "TEST_ACCOUNT",
+        "name": "Tシャツ",
+        "image_url": null,
+        "expl": "高品質Tシャツ",
+        "sort": 1,
+        "display_state": "showing",
+        "make_date": 1700000000,
+        "update_date": 1700000000,
+        "meta_tag": {
+            "title": "Tシャツ一覧",
+            "keywords": "Tシャツ",
+            "description": "Tシャツの一覧"
+        },
+        "children": []
+    }
+}
