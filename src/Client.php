@@ -4,7 +4,9 @@ namespace Shimoning\ColorMeShopApi;
 
 use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\MailType;
+use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 
@@ -38,7 +40,15 @@ use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory as BigCategoryEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory as SmallCategoryEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput as ProductVariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option as ProductOptionEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionInput as ProductOptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValue as ProductOptionValueEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput as ProductOptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup as ProductPickupEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\PickupInput as ProductPickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage as ProductImageEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising as ProductAdvertisingEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
@@ -136,6 +146,155 @@ class Client
     public function getProductGroup(int|string $id, ?string $accessToken = null): GroupEntity|Errors
     {
         return $this->productService($accessToken)->group($id, $accessToken);
+    }
+
+    /**
+     * 商品を作成する。実測では `name` だけで作成できる。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProduct(ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    {
+        return $this->productService($accessToken)->create($input, $accessToken);
+    }
+
+    /**
+     * 商品を更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateProduct(int|string $id, ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    {
+        return $this->productService($accessToken)->update($id, $input, $accessToken);
+    }
+
+    /**
+     * 商品バリエーションを更新する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateProductVariant(
+        int|string $productId,
+        int|string $id,
+        ProductVariantInput $input,
+        ?string $accessToken = null,
+    ): ProductVariantEntity|Errors {
+        return $this->productService($accessToken)->updateVariant($productId, $id, $input, $accessToken);
+    }
+
+    /**
+     * 商品オプションを作成する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductOption(
+        int|string $productId,
+        ProductOptionInput $input,
+        ?string $accessToken = null,
+    ): ProductOptionEntity|Errors {
+        return $this->productService($accessToken)->createOption($productId, $input, $accessToken);
+    }
+
+    /**
+     * 商品オプションを削除する。成功は 204 で NoContent を返す。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteProductOption(int|string $productId, int|string $id, ?string $accessToken = null): NoContent|Errors
+    {
+        return $this->productService($accessToken)->deleteOption($productId, $id, $accessToken);
+    }
+
+    /**
+     * 商品オプション値を作成する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductOptionValue(
+        int|string $productId,
+        int|string $optionId,
+        ProductOptionValueInput $input,
+        ?string $accessToken = null,
+    ): ProductOptionValueEntity|Errors {
+        return $this->productService($accessToken)->createOptionValue($productId, $optionId, $input, $accessToken);
+    }
+
+    /**
+     * 商品オプション値を削除する。成功は 204 で NoContent を返す。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteProductOptionValue(
+        int|string $productId,
+        int|string $optionId,
+        int|string $id,
+        ?string $accessToken = null,
+    ): NoContent|Errors {
+        return $this->productService($accessToken)->deleteOptionValue($productId, $optionId, $id, $accessToken);
+    }
+
+    /**
+     * おすすめ商品情報を作成する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductPickup(
+        int|string $productId,
+        ProductPickupInput $input,
+        ?string $accessToken = null,
+    ): ProductPickupEntity|Errors {
+        return $this->productService($accessToken)->createPickup($productId, $input, $accessToken);
+    }
+
+    /**
+     * おすすめ商品情報を更新する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateProductPickup(
+        int|string $productId,
+        ProductPickupInput $input,
+        ?string $accessToken = null,
+    ): ProductPickupEntity|Errors {
+        return $this->productService($accessToken)->updatePickup($productId, $input, $accessToken);
+    }
+
+    /**
+     * おすすめ商品情報を削除する。実測では 200 で削除済みの pickup を返す。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteProductPickup(
+        int|string $productId,
+        PickupType|int|string $pickupType,
+        ?string $accessToken = null,
+    ): ProductPickupEntity|Errors {
+        return $this->productService($accessToken)->deletePickup($productId, $pickupType, $accessToken);
+    }
+
+    /**
+     * 商品画像を作成する。実 API 未検証 (プラン制限) で、公式 OpenAPI 定義に基づく。
+     * @param string|resource|\Psr\Http\Message\StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、またはファイル/ストリームを読み取れない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductImage(
+        int|string $productId,
+        mixed $image,
+        int $position,
+        ?string $accessToken = null,
+    ): ProductImageEntity|Errors {
+        return $this->productService($accessToken)->createImage($productId, $image, $position, $accessToken);
+    }
+
+    /**
+     * 商品画像を削除する。実 API 未検証 (プラン制限)。成功は 204 で NoContent を返す。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function deleteProductImage(int|string $productId, int $position, ?string $accessToken = null): NoContent|Errors
+    {
+        return $this->productService($accessToken)->deleteImage($productId, $position, $accessToken);
     }
 
     private function productService(?string $accessToken): Product
