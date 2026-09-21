@@ -414,6 +414,8 @@ class Product extends Service
      * 公式 OpenAPI 定義に基づく。実測では契約プランの制限により 401 だった。
      *
      * @param string|resource|StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
+     * @param string|null $filename multipart で送るファイル名。省略時はパスまたはストリーム URI の末尾
+     *   (php://memory などでは拡張子のない `memory`) になるため、ストリーム入力では拡張子付きの名前を指定する
      * @throws ParameterException アクセストークンが空、またはファイル/ストリームを読み取れない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -422,11 +424,14 @@ class Product extends Service
         mixed $image,
         int $position,
         ?string $accessToken = null,
+        ?string $filename = null,
     ): ProductImage|Errors {
         $response = $this->_request([], $accessToken)->postMultipart(
             $this->_endpoint('/products/' . $productId . '/images'),
             ['position' => $position],
             ['image' => $image],
+            [],
+            $filename === null ? [] : ['image' => $filename],
         );
         return $this->_handle($response, static fn(?array $data): ProductImage => new ProductImage($data['product_image'] ?? []));
     }

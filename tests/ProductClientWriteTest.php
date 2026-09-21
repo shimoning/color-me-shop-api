@@ -123,6 +123,21 @@ class ProductClientWriteTest extends TestCase
         ];
     }
 
+    public function test_画像作成ファサードは送信ファイル名をServiceへ渡す(): void
+    {
+        $stream = \fopen('php://memory', 'r+');
+        $this->assertNotFalse($stream);
+        \fwrite($stream, 'image');
+        \rewind($stream);
+        $mock = new HttpMock([new Psr7Response(201, ['Content-Type' => 'application/json'], '{"product_image":{"position":0,"url":"https://example.invalid/a.jpg"}}')]);
+        $client = new Client('token', $mock->client());
+
+        $result = $client->createProductImage(101, $stream, 0, null, 'photo.png');
+
+        $this->assertInstanceOf(ProductImage::class, $result);
+        $this->assertStringContainsString('name="image"; filename="photo.png"', $mock->body());
+    }
+
     public function test_書き込みファサードのエラーはErrorsとして返る(): void
     {
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));

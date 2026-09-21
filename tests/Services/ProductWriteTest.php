@@ -398,6 +398,33 @@ class ProductWriteTest extends TestCase
         $this->assertStringContainsString('stream-bytes', $mock->body());
     }
 
+    public function test_画像作成はストリームに送信ファイル名を指定できる(): void
+    {
+        $stream = \fopen('php://memory', 'r+');
+        $this->assertNotFalse($stream);
+        \fwrite($stream, 'stream-bytes');
+        \rewind($stream);
+        $mock = HttpMock::json(201, self::fixture('product_image_created.json'));
+
+        $image = (new Product('token', $mock->client()))->createImage(101, $stream, 5, null, 'photo.png');
+
+        $this->assertInstanceOf(ProductImage::class, $image);
+        $this->assertStringContainsString('name="image"; filename="photo.png"', $mock->body());
+    }
+
+    public function test_画像作成はファイル名を省略するとストリームのURIの末尾を送る(): void
+    {
+        $stream = \fopen('php://memory', 'r+');
+        $this->assertNotFalse($stream);
+        \fwrite($stream, 'stream-bytes');
+        \rewind($stream);
+        $mock = HttpMock::json(201, self::fixture('product_image_created.json'));
+
+        (new Product('token', $mock->client()))->createImage(101, $stream, 5);
+
+        $this->assertStringContainsString('name="image"; filename="memory"', $mock->body());
+    }
+
     public function test_画像作成は読めないファイルを送信前に拒否する(): void
     {
         $mock = HttpMock::json(201, self::fixture('product_image_created.json'));

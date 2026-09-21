@@ -275,6 +275,7 @@ class Client
     /**
      * 商品画像を作成する。実 API 未検証 (プラン制限) で、公式 OpenAPI 定義に基づく。
      * @param string|resource|\Psr\Http\Message\StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
+     * @param string|null $filename multipart で送るファイル名。ストリーム入力では拡張子付きの名前を指定する
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、またはファイル/ストリームを読み取れない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -283,8 +284,9 @@ class Client
         mixed $image,
         int $position,
         ?string $accessToken = null,
+        ?string $filename = null,
     ): ProductImageEntity|Errors {
-        return $this->productService($accessToken)->createImage($productId, $image, $position, $accessToken);
+        return $this->productService($accessToken)->createImage($productId, $image, $position, $accessToken, $filename);
     }
 
     /**

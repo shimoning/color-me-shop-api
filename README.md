@@ -646,6 +646,7 @@ if (! $deletedPickupOrErrors instanceof Errors) {
 #### 商品画像を作成・削除
 画像は `multipart/form-data` で送信する。第 2 引数はファイルパスまたは読み取り可能なストリーム、第 3 引数の `position` は `0`〜`49`。
 読み取れないファイルは送信前に `ParameterException` になる。
+送信するファイル名は省略するとパスの末尾になる。ストリームでは `memory` のように拡張子が付かないため、第 5 引数で拡張子付きの名前を指定する。
 
 ```php
 $imageOrErrors = $client->createProductImage($productId, '/path/to/image.png', 0);
@@ -653,6 +654,8 @@ if (! $imageOrErrors instanceof Errors) {
     $imageOrErrors->getUrl();
     $imageOrErrors->getPosition();
 }
+
+$client->createProductImage($productId, $stream, 1, null, 'image.png'); // ストリームにはファイル名を指定
 
 $client->deleteProductImage($productId, 0); // NoContent|Errors
 ```
