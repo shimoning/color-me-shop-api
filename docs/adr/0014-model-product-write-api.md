@@ -97,6 +97,13 @@ OpenAPI の商品グループ作成・更新 request が列挙する3値とは�
 - 入力 Entity の取り込みと直列化は、通常のインスタンスプロパティだけを対象とする
   [ADR 0006](0006-limit-entity-property-kinds.md) の契約に従う。static や virtual property を要求へ
   混入させない。出典: `326f1ac8`、`0c7b73d`。
+- 入力 Entity の必須フィールドが未指定の要求は、ライブラリが送信前に `ParameterException` で拒否する。
+  対象は、公式 OpenAPI が要求ボディを `required` とし、かつ API がそのフィールドで操作対象を特定する
+  ものに限る。ピックアップの作成・更新における `pickup_type` と `order_num` がこれに当たり、
+  スキーマ上の `required` 指定がなくても両方を要求する。一方、商品の作成・更新のように要求ボディにも
+  子プロパティにも `required` 指定がない操作では、空の入力を事前に拒否せず API の検証に委ねる
+  (実測では空の `product` は `422`)。いずれの場合も明示した `null` は送信し、その受理は API に委ねる。
+  出典: `d58cfec`、`66e604d`。
 - `Communicator\Request` に DELETE 送信を追加する。商品書き込み系で使う3つの `204` DELETE と、
   削除済み `pickup` を返す `200` DELETE の双方を、同じ成功判定と既存の `Errors` 経路で扱う。
   出典: 公式 OpenAPI（2026-09-20 取得）、`10cf216`、`a6688cf`。
@@ -163,3 +170,4 @@ nullable フィールドを明示的な `null` でクリアできる。既存の
 - `RequestEntity` と `Sales\SaleUpdater` の要求側契約の出典コミット: `0c7b73d`
 - `Entity` の null 初期化と直列化契約の出典コミット: `01ba9bd`
 - `Communicator\Request` の現行 HTTP メソッドの出典コミット: `10cf216`
+- 必須フィールド未指定の送信前拒否と、商品の空入力を API へ委ねる観測の出典コミット: `d58cfec`、`66e604d`
