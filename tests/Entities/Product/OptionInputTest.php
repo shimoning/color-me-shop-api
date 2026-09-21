@@ -51,6 +51,8 @@ class OptionInputTest extends TestCase
             'values null' => ['values', null],
             'values string' => ['values', 'S'],
             'values element string' => ['values', ['S']],
+            'values hash instead of list' => ['values', [1 => ['name' => 'S']]],
+            'values string keyed hash' => ['values', ['s' => ['name' => 'S']]],
             'values element name int' => ['values', [['name' => 1]]],
         ];
     }

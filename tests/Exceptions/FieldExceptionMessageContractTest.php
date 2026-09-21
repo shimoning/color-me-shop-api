@@ -451,6 +451,13 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \TypeError::class,
             ],
+            'InvalidFieldException::for/オプション入力のvaluesのリスト形状不一致' => [
+                self::site('src/Entities/Product/OptionInput.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\OptionInput(['values' => [1 => ['name' => 'S']]]);
+                },
+                null,
+            ],
             'InvalidFieldException::forArrayElement/広告の色' => [
                 self::site('src/Entities/Product/Advertising.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
