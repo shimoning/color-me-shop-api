@@ -805,7 +805,7 @@ $pagination->getOffset();
 ## 未実装
 
 * [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
-* [商品グループ・商品カテゴリーの登録・更新・削除](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
+* [商品グループ・商品カテゴリーの登録・更新](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
