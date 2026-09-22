@@ -287,6 +287,8 @@ object は合計5件。
 | `keywords` | string | 0 | 0 | string / nullable: true |
 | `description` | string | 0 | 0 | string / nullable: true |
 
+この単体観測では `group.meta_tag` は object 1 件だけだったが、2026-09-22 の `GET /v1/groups` では 5 件中 1 件が `null` だった（後述の「2026-09-22 の追加観測（管理画面で設定された既存グループの読み取り）」）。
+
 ## 一覧の `meta` と `fields`
 
 商品一覧の `meta` は次の3キーで、調べた3応答では `null`・欠損がなかった。
@@ -425,6 +427,23 @@ object は合計5件。
 
 `422001` は選択肢にない値、`422014` は数値の範囲外に対して返った。いずれも公式 OpenAPI にコード固有の説明はなく、意味は応答メッセージから読み取ったものである。`ErrorCode` へはこの観測を出典として case を追加した。
 
+### 2026-09-22 の追加観測（管理画面で設定された既存グループの読み取り）
+
+収集日は **2026-09-22（Asia/Tokyo）**、対象は上記と同じテスト用ショップ。オーナーが管理画面で「会員限定」に設定したグループ 1 件を含む既存の全 5 グループを、本ライブラリの `Communicator\Request::get()` による **GET のみ**（`GET /v1/groups` と `GET /v1/groups/<group_id>`）で観測した。書き込みは行っていない。実 ID、ショップ識別子、認証情報は記録しない。
+
+#### `display_state` の応答値
+
+| 対象 | HTTP | 応答 |
+| --- | ---: | --- |
+| `GET /v1/groups`（パラメータなし。OpenAPI 上 `limit` 等は未定義） | 200 | 5 件。`display_state` は `hidden` 2 件、`showing` 2 件、`members_only` 1 件 |
+| `GET /v1/groups/<group_id>`（管理画面で会員限定に設定したグループ） | 200 | `display_state` は `members_only`（一覧の値と一致） |
+
+管理画面で会員限定に設定したグループは、一覧・単体とも `display_state: "members_only"` を返した。2026-09-21 の生 PUT で書き込んだ値だけでなく、管理画面で設定された既存グループでも同じ値が返るため、`GroupDisplayState` の実測 3 値（`showing` / `hidden` / `members_only`）は読み取り側でも裏付けられた。公式 OpenAPI の `productGroup` response 定義が列挙する `showing_for_members` / `sale_for_members` は、今回のショップの 5 グループには現れなかった（他のショップや設定で現れないことの証明ではない）。参考として、同日の `GET /v1/products` は OpenAPI どおり `showing_for_members` / `sale_for_members` を返しており、グループと商品では `display_state` の語彙が異なる。
+
+#### `meta_tag` と `parent_group_id` の応答値
+
+一覧の各要素のキーは `id`, `account_id`, `name`, `image_url`, `expl`, `sort`, `display_state`, `parent_group_id`, `meta_tag` で、2026-09-18 の単体観測と同じだった。`meta_tag` は 5 件中 4 件が `{"title":"","description":"","keywords":""}`（管理画面で未設定でも 3 キーが空文字で揃った object）、1 件が `null` だった。したがって、グループの `meta_tag` は object と `null` のどちらも起こり得る（OpenAPI の `nullable: true` と一致し、既存の `Product\Group::getMetaTag()` の nullable と整合する）。`parent_group_id` は 4 件が `null`、1 件が integer（親グループの id）だった。2026-09-18 の単体観測の表は、この 5 件を加算していない。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。全くカテゴリーを持たない商品での表現は未検証。
@@ -440,7 +459,7 @@ object は合計5件。
 - グループ・カテゴリーの `image_url` の書き込み、`POST /v1/groups` / `POST /v1/categories` / `POST /v1/categories/<category_id>/children` の新規作成応答（既存の同名の検証用データを再利用したため、作成の 201 は未観測）、小カテゴリーの `expl: ""` と `sort` の範囲外。
 - 小カテゴリー（`PUT /v1/categories/<category_id>/children/<child_id>`）の `display_state` に `hidden` 以外（`showing` / `members_only`、および 422 になる `showing_for_members` / `sale_for_members`）を送った場合の挙動。
 - `PUT /v1/groups/<group_id>` への `parent_group_id` の送信。公式 OpenAPI の更新 request は `parent_group_id` を持たず `additionalProperties: false` なので 422 になり得るが未観測（`GroupInput` は作成・更新共用のため送信を許し、利用者に委ねている）。
-- `GET /v1/groups` / `GET /v1/groups/<group_id>` が `showing_for_members` / `sale_for_members` を返すか。公式 OpenAPI の `productGroup` response 定義にはあるが、PUT では 422 で、管理画面等で設定された既存グループでの出現は未観測。
+- `GET /v1/groups` / `GET /v1/groups/<group_id>` が `showing_for_members` / `sale_for_members` を返すか。公式 OpenAPI の `productGroup` response 定義にはあるが、PUT では 422 で、管理画面で会員限定に設定した既存グループも `members_only` を返した（2026-09-22、5 グループ）。別のショップや契約プラン、管理画面の他の設定で返るかは未観測。
 
 ## 現在のライブラリ実装との関係
 

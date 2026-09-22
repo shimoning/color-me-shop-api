@@ -104,7 +104,10 @@ class Group extends Entity
      * `InvalidFieldException` で失敗していた。`GroupDisplayState` は実測の 3 値 (`showing` / `hidden` /
      * `members_only`) に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` /
      * `sale_for_members` も応答の受理のみを目的として持つ (PUT では 422、読み取りでは未観測)。
-     * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     * 応答で `members_only` を管理画面設定のグループでも観測 (2026-09-22): 生 PUT で書き込んだ値だけでなく、
+     * オーナーが管理画面で会員限定に設定した既存グループも一覧・単体とも `members_only` を返した。
+     * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」
+     * と「2026-09-22 の追加観測（管理画面で設定された既存グループの読み取り）」。
      *
      * @return GroupDisplayState
      */
