@@ -399,7 +399,7 @@ object は合計5件。
 | `PUT /v1/categories/<category_id>` | `showing` / `hidden` / `members_only` | 200 | 応答・GET とも送信値 |
 | `PUT /v1/categories/<category_id>`（生 PUT） | `showing_for_members` / `sale_for_members` | 422 | `{"errors":[{"code":422001,"field":"product_category.disp_flg","message":"Disp flgを正しく選択してください。","status":422}]}`。GET は直前の値を保持 |
 
-したがって、**グループの `display_state` は `showing`、`hidden`、`members_only` の 3 値**であり、公式 OpenAPI のグループ作成・更新 request の enum と一致する。`productGroup` response の enum が列挙する `showing_for_members` / `sale_for_members` は、書き込みで拒否され、読み取りでも観測しなかった。逆に response の enum にない `members_only` を GET が返すため、当時の `Product\Group`（`ProductDisplayState` の 4 値）は `members_only` のグループを含む `GET /v1/groups` と `GET /v1/groups/<group_id>` を `InvalidFieldException` で読めなかった（本 smoke test で再現し、生 PUT で `hidden` に戻して復旧した）。カテゴリー（大・小）の 3 値は既存の `CategoryDisplayState` と一致する。
+したがって、**グループの `display_state` は `showing`、`hidden`、`members_only` の 3 値**であり、公式 OpenAPI のグループ作成・更新 request の enum と一致する。`productGroup` response の enum が列挙する `showing_for_members` / `sale_for_members` は、書き込みで拒否され、読み取りでも観測しなかった。逆に response の enum にない `members_only` を GET が返すため、当時の `Product\Group`（`ProductDisplayState` の 4 値）は `members_only` のグループを含む `GET /v1/groups` と `GET /v1/groups/<group_id>` を `InvalidFieldException` で読めなかった（本 smoke test で再現し、生 PUT で `hidden` に戻して復旧した）。カテゴリーの 3 値は大カテゴリーで観測し、既存の `CategoryDisplayState` と一致する。小カテゴリー（`PUT /v1/categories/<category_id>/children/<child_id>`）は `hidden` の送信だけを観測した（`showing` / `members_only` と 422 になる値は未観測。OpenAPI の定義は大カテゴリーと同一）。
 
 #### `expl` と `meta_tag` の更新
 
@@ -438,6 +438,9 @@ object は合計5件。
 - 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合動作。
 - グループの `meta_tag` が初回設定以後の PUT で GET に反映されない原因。API 側の挙動と考えられるが未解決。
 - グループ・カテゴリーの `image_url` の書き込み、`POST /v1/groups` / `POST /v1/categories` / `POST /v1/categories/<category_id>/children` の新規作成応答（既存の同名の検証用データを再利用したため、作成の 201 は未観測）、小カテゴリーの `expl: ""` と `sort` の範囲外。
+- 小カテゴリー（`PUT /v1/categories/<category_id>/children/<child_id>`）の `display_state` に `hidden` 以外（`showing` / `members_only`、および 422 になる `showing_for_members` / `sale_for_members`）を送った場合の挙動。
+- `PUT /v1/groups/<group_id>` への `parent_group_id` の送信。公式 OpenAPI の更新 request は `parent_group_id` を持たず `additionalProperties: false` なので 422 になり得るが未観測（`GroupInput` は作成・更新共用のため送信を許し、利用者に委ねている）。
+- `GET /v1/groups` / `GET /v1/groups/<group_id>` が `showing_for_members` / `sale_for_members` を返すか。公式 OpenAPI の `productGroup` response 定義にはあるが、PUT では 422 で、管理画面等で設定された既存グループでの出現は未観測。
 
 ## 現在のライブラリ実装との関係
 
