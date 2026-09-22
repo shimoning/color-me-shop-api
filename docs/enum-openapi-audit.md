@@ -9,8 +9,10 @@
 `PointState` の実 API 受理値は未検証だが、`ProductDisplayState` は商品入力で現行4値の受理と
 `members_only` の 422 拒否を確認した。商品グループは 2026-09-21 の実測で request 側の 3 値
 （`showing` / `hidden` / `members_only`）が正しいと確認し、監査後に追加した `GroupDisplayState` へ
-分離した（`productGroup` response の `showing_for_members` / `sale_for_members` は書き込みで 422、
-読み取りでも未観測）。仕様と実測だけでは将来の値追加頻度までは確定できない。
+分離した。`productGroup` response の `showing_for_members` / `sale_for_members` は書き込みで 422、
+読み取りでも未観測だが、公式 response 定義に基づき応答の受理のみを目的として `GroupDisplayState` に
+含め（管理画面等で設定された既存グループが返す可能性を否定できないため）、`GroupInput` は送信前に
+3 値へ限定する。仕様と実測だけでは将来の値追加頻度までは確定できない。
 
 ## 調査方法
 
@@ -52,7 +54,7 @@
 | `DomainPlan`: `cmsp_sub_domain`, `own_domain`, `own_sub_domain` | `Shop\Shop.domainPlan` | `shop.domain_plan`: 同じ 3 値 | なし / なし | サイト URL の意味に関係するプラン種別 | 無 |
 | `ErrorCode`: `401010`, `404100`, `422210`（string） | `src/` から未使用。`Entities\Error.code` は string | `enum:` なし。`info.description` にコード表、エラースキーマの `code` は integer | 正式な enum 比較は不能。代表コードのみで網羅目的ではない | エラーコードは開集合。`buildEnum()` 非経由 | 無 |
 | `ExternalAccountProvider`: `0`, 番兵 `-1` | `Customer\ExternalAccount.provider` | `customer.external_accounts[].provider`: `[0]` | なし / 番兵 `-1`（仕様値ではない） | 外部連携先は追加され得る | **有** |
-| `GroupDisplayState`: `showing`, `hidden`, `members_only`（監査後の 2026-09-21 に追加） | `Product\Group.displayState`、`Product\GroupInput.displayState` | グループ作成・更新リクエスト: 同じ 3 値。`productGroup` レスポンス: `showing`, `hidden`, `showing_for_members`, `sale_for_members` | リクエスト側と差分なし。レスポンス側は `showing_for_members` / `sale_for_members` 不足、`members_only` 余りだが、実 API（2026-09-21）は `members_only` を返し、前 2 値は PUT で 422 かつ読み取りでも未観測のため採用しない | 表示・会員限定に影響 | 無 |
+| `GroupDisplayState`: `showing`, `hidden`, `members_only`, `showing_for_members`, `sale_for_members`（監査後の 2026-09-21 に追加。`GroupInput` が送信できるのは前 3 値） | `Product\Group.displayState`、`Product\GroupInput.displayState` | グループ作成・更新リクエスト: `showing`, `hidden`, `members_only`。`productGroup` レスポンス: `showing`, `hidden`, `showing_for_members`, `sale_for_members` | リクエスト側・レスポンス側の和集合で差分なし。実 API（2026-09-21）は `members_only` を返し、`showing_for_members` / `sale_for_members` は PUT で 422 かつ読み取りでも未観測だが、公式レスポンス定義に基づき応答の受理のみを目的として保持する | 表示・会員限定に影響 | 無 |
 | `KouzaType`: `saving`, `checking`, 番兵 `__unknown__` | `Payment\Financial.kouzaType` | `payment.financial.kouza_type`: 正規の 2 値 | なし / 番兵 `__unknown__`（仕様値ではない） | 普通・当座の口座分類はほぼ閉集合 | **有** |
 | `MailState`: `not_yet`, `sent`, `pass` | `Sales\Sale` の 3 メール状態、`Sales\SearchParameters` | `sale` の 3 状態と `GET /v1/sales` 検索条件: 同じ 3 値 | なし / なし | 状態遷移。入力にも使用 | 無 |
 | `MailType`: `accepted`, `paid`, `delivered` | `Sales::sendMail()` / `Client::sendMail()` の引数 | `POST /v1/sales/{sale_id}/mails` の `mail.type`: 同じ 3 値 | なし / なし | 送信操作の入力種別。`buildEnum()` 非経由 | 無 |

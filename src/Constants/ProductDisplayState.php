@@ -11,7 +11,8 @@ namespace Shimoning\ColorMeShopApi\Constants;
  * 商品グループには使わない。公式 OpenAPI の `productGroup` response は本 enum と同じ4値を列挙するが、
  * 実 API の観測 (2026-09-21) ではグループの `display_state` は `showing` / `hidden` / `members_only` の
  * 3値で、`showing_for_members` / `sale_for_members` は書き込みで 422、読み取りでも観測されなかった。
- * グループは `GroupDisplayState` を使う (docs/enum-openapi-audit.md)。
+ * グループは `GroupDisplayState` (実測の 3 値に response 定義の 2 値を加えた 5 値) を使う
+ * (docs/enum-openapi-audit.md)。
  */
 enum ProductDisplayState: string
 {

@@ -46,7 +46,7 @@ class ProductTest extends TestCase
         $groups = (new Product('my-token', $mock->client()))->groups();
 
         $this->assertInstanceOf(Collection::class, $groups);
-        $this->assertSame(GroupDisplayState::MEMBERS_ONLY, $groups[0]->getDisplayState());
+        $this->assertSame(GroupDisplayState::MEMBER_ONLY, $groups[0]->getDisplayState());
         $this->assertSame(GroupDisplayState::SHOWING, $groups[1]->getDisplayState());
     }
 
@@ -57,7 +57,7 @@ class ProductTest extends TestCase
         $group = (new Product('my-token', $mock->client()))->group(1);
 
         $this->assertInstanceOf(Group::class, $group);
-        $this->assertSame(GroupDisplayState::MEMBERS_ONLY, $group->getDisplayState());
+        $this->assertSame(GroupDisplayState::MEMBER_ONLY, $group->getDisplayState());
     }
 
     public function test_商品グループは正しいエンドポイントにGETする(): void

@@ -222,8 +222,9 @@ class Product extends Service
     /**
      * 商品グループを作成する。成功は 201 で、応答の `group` を返す。
      *
-     * `display_state` は `GroupDisplayState` (`showing` / `hidden` / `members_only`) で、実 API の観測
-     * (2026-09-21) と公式 OpenAPI の request 定義に一致する。
+     * `display_state` は `GroupInput::WRITABLE_DISPLAY_STATES` の 3 値 (`showing` / `hidden` / `members_only`) で、
+     * 実 API の観測 (2026-09-21) と公式 OpenAPI の request 定義に一致する。`GroupDisplayState` の応答専用の
+     * 2 値 (`showing_for_members` / `sale_for_members`) は `GroupInput` の構築時に拒否される。
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */

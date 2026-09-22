@@ -57,7 +57,7 @@ class GroupInputTest extends TestCase
 
     public function test_表示状態はenumインスタンスでも指定できバッキング値で送信する(): void
     {
-        $input = new GroupInput(['display_state' => GroupDisplayState::MEMBERS_ONLY]);
+        $input = new GroupInput(['display_state' => GroupDisplayState::MEMBER_ONLY]);
 
         $this->assertSame(['display_state' => 'members_only'], $input->toArrayRecursive());
     }
@@ -70,6 +70,29 @@ class GroupInputTest extends TestCase
         $input = new GroupInput(['display_state' => 'members_only']);
 
         $this->assertSame(['display_state' => 'members_only'], $input->toArrayRecursive());
+    }
+
+    /**
+     * 応答用の GroupDisplayState は 5 値だが、公式 OpenAPI の作成・更新 request と実 API の観測 (2026-09-21) は
+     * showing / hidden / members_only の 3 値なので、送信前に残り 2 値を拒否する。
+     */
+    public function test_送信できる表示状態は3値に限定する(): void
+    {
+        $this->assertSame(
+            [GroupDisplayState::SHOWING, GroupDisplayState::HIDDEN, GroupDisplayState::MEMBER_ONLY],
+            GroupInput::WRITABLE_DISPLAY_STATES,
+        );
+        foreach (GroupInput::WRITABLE_DISPLAY_STATES as $state) {
+            $this->assertSame(['display_state' => $state->value], (new GroupInput(['display_state' => $state]))->toArrayRecursive());
+            $this->assertSame(['display_state' => $state->value], (new GroupInput(['display_state' => $state->value]))->toArrayRecursive());
+        }
+    }
+
+    public function test_response専用の表示状態は構築時に3値を示すメッセージで拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage("'showing'|'hidden'|'members_only'");
+        new GroupInput(['display_state' => GroupDisplayState::SALE_FOR_MEMBERS]);
     }
 
     #[DataProvider('invalidFieldProvider')]
@@ -87,8 +110,10 @@ class GroupInputTest extends TestCase
             'name int' => ['name', 1],
             'expl int' => ['expl', 1],
             'parent_group_id string' => ['parent_group_id', '1'],
-            'display_state showing_for_members (商品の値。実 API は 422)' => ['display_state', 'showing_for_members'],
-            'display_state sale_for_members (商品の値。実 API は 422)' => ['display_state', 'sale_for_members'],
+            'display_state showing_for_members (response 専用の値。実 API の PUT は 422)' => ['display_state', 'showing_for_members'],
+            'display_state sale_for_members (response 専用の値。実 API の PUT は 422)' => ['display_state', 'sale_for_members'],
+            'display_state showing_for_members enum (response 専用の case)' => ['display_state', GroupDisplayState::SHOWING_FOR_MEMBERS],
+            'display_state sale_for_members enum (response 専用の case)' => ['display_state', GroupDisplayState::SALE_FOR_MEMBERS],
             'display_state unknown' => ['display_state', 'unknown'],
             'display_state category enum' => ['display_state', CategoryDisplayState::HIDDEN],
             'display_state product enum' => ['display_state', ProductDisplayState::HIDDEN],

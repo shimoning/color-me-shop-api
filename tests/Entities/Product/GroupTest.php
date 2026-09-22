@@ -55,17 +55,30 @@ class GroupTest extends TestCase
     {
         $group = $this->makeGroup(['display_state' => 'members_only']);
 
-        $this->assertSame(GroupDisplayState::MEMBERS_ONLY, $group->getDisplayState());
+        $this->assertSame(GroupDisplayState::MEMBER_ONLY, $group->getDisplayState());
     }
 
     /**
-     * OpenAPI の productGroup response には showing_for_members / sale_for_members が列挙されているが、
-     * 実 API では書き込みで拒否され読み取りでも観測されなかったため、未知値として扱う。
+     * OpenAPI の productGroup response には showing_for_members / sale_for_members が列挙されている。
+     * 実 API では PUT で 422 になり読み取りでも観測されなかったが、管理画面等で設定された既存グループが
+     * 応答で返す可能性を否定できないため、応答では受理する (未知値で一覧全体が読めなくなるのを避ける)。
      */
-    public function test_商品の会員向け表示状態は不正な値として拒否する(): void
+    public function test_公式response定義の会員向け表示状態を読める(): void
+    {
+        $this->assertSame(
+            GroupDisplayState::SHOWING_FOR_MEMBERS,
+            $this->makeGroup(['display_state' => 'showing_for_members'])->getDisplayState(),
+        );
+        $this->assertSame(
+            GroupDisplayState::SALE_FOR_MEMBERS,
+            $this->makeGroup(['display_state' => 'sale_for_members'])->getDisplayState(),
+        );
+    }
+
+    public function test_未知の表示状態は不正な値として拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('display_state');
-        $this->makeGroup(['display_state' => 'showing_for_members']);
+        $this->makeGroup(['display_state' => 'unknown']);
     }
 }

@@ -99,9 +99,11 @@ class Group extends Entity
     /**
      * 表示状態
      *
-     * 0.13.0 で戻り型を `ProductDisplayState` (4値) から `GroupDisplayState` (`showing` / `hidden` /
-     * `members_only`) へ変更した。実 API が `members_only` のグループを返すため、旧型では会員限定の
-     * グループが1件でもあると一覧・単体取得が `InvalidFieldException` で失敗していた。
+     * 0.13.0 で戻り型を `ProductDisplayState` (4値) から `GroupDisplayState` へ変更した。実 API が
+     * `members_only` のグループを返すため、旧型では会員限定のグループが1件でもあると一覧・単体取得が
+     * `InvalidFieldException` で失敗していた。`GroupDisplayState` は実測の 3 値 (`showing` / `hidden` /
+     * `members_only`) に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` /
+     * `sale_for_members` も応答の受理のみを目的として持つ (PUT では 422、読み取りでは未観測)。
      * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
      *
      * @return GroupDisplayState

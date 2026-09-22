@@ -177,7 +177,9 @@ OpenAPI との差分として削除・追加の対象にはしない。
 - グループの `display_state`: `productGroup` response の定義は `showing` / `hidden` /
   `showing_for_members` / `sale_for_members` だが、グループ作成・更新 request の定義は `showing` /
   `hidden` / `members_only`。2026-09-21 の実 API 観測では request 側の 3 値が正しく (`members_only` を
-  受理し GET も返す。response 側の 2 値は 422)、本ライブラリは `GroupDisplayState` (3 値) を採用した
+  受理し GET も返す。response 側の 2 値は 422)、本ライブラリは両定義の和集合 `GroupDisplayState` (5 値) を
+  採用し、`GroupInput` の送信は request 側の 3 値に限定した。response 側の 2 値は読み取りでも未観測だが、
+  既存グループが返す可能性を否定できないため応答の受理のみを目的として保持する
   ([enum と公式 OpenAPI の突合記録](enum-openapi-audit.md))。
 - `saleDelivery.pref_id`（別 Issue 候補）: 説明は北海道 1 〜 沖縄 47 までで、海外 48 に言及しない。
   他の `pref_id` の説明には海外 48 が含まれる。実 API での扱いは未検証。
