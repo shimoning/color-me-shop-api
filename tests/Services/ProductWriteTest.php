@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
@@ -208,7 +209,8 @@ class ProductWriteTest extends TestCase
     public function test_商品グループ書き込みの404と422はErrorsになる(): void
     {
         $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');
-        $invalid = HttpMock::json(422, '{"errors":[{"code":422001,"field":"name","message":"商品グループ名は必須です","status":422}]}');
+        // 空入力 {"group":{}} の実測 (2026-09-21): 422210 / field "group" / 「パラメータが指定されていません。」
+        $invalid = HttpMock::json(422, '{"errors":[{"code":422210,"field":"group","message":"パラメータが指定されていません。","status":422}]}');
 
         $errors404 = (new Product('token', $notFound->client()))->updateGroup(999, new GroupInput(['name' => 'x']));
         $errors422 = (new Product('token', $invalid->client()))->createGroup(new GroupInput([]));
@@ -216,7 +218,9 @@ class ProductWriteTest extends TestCase
         $this->assertInstanceOf(Errors::class, $errors404);
         $this->assertSame(404, $errors404->getResponse()->getStatus());
         $this->assertInstanceOf(Errors::class, $errors422);
-        $this->assertSame('name', $errors422[0]->getField());
+        $this->assertSame(ErrorCode::VALIDATE_ERROR_FIELD, $errors422[0]->getErrorCode());
+        $this->assertSame('group', $errors422[0]->getField());
+        $this->assertSame('パラメータが指定されていません。', $errors422[0]->getMessage());
     }
 
     // --- category (Phase 3) -----------------------------------------------
@@ -365,14 +369,21 @@ class ProductWriteTest extends TestCase
         (new Product('token', $mock->client()))->createCategoryChild(9001, new CategoryChildInput(['name' => 'x']));
     }
 
-    public function test_カテゴリー書き込みの404と422はErrorsになる(): void
+    /**
+     * 公式 OpenAPI はカテゴリーの 4 操作に 403 を列挙する (未観測)。Errors 経路は 2xx 以外を一律に扱う。
+     */
+    public function test_カテゴリー書き込みの403と404と422はErrorsになる(): void
     {
+        $forbidden = HttpMock::json(403, '{"errors":[{"code":403000,"message":"forbidden","status":403}]}');
         $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');
         $invalid = HttpMock::json(422, self::fixture('errors_422.json'));
 
+        $errors403 = (new Product('token', $forbidden->client()))->updateCategory(9001, new CategoryInput(['name' => 'x']));
         $errors404 = (new Product('token', $notFound->client()))->updateCategoryChild(9001, 999, new CategoryChildInput(['name' => 'x']));
         $errors422 = (new Product('token', $invalid->client()))->createCategory(new CategoryInput([]));
 
+        $this->assertInstanceOf(Errors::class, $errors403);
+        $this->assertSame(403, $errors403->getResponse()->getStatus());
         $this->assertInstanceOf(Errors::class, $errors404);
         $this->assertSame(404, $errors404->getResponse()->getStatus());
         $this->assertInstanceOf(Errors::class, $errors422);
