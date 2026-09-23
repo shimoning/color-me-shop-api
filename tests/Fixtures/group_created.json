@@ -1,0 +1,17 @@
+{
+    "group": {
+        "id": 401,
+        "account_id": "TEST_ACCOUNT",
+        "name": "夏物",
+        "image_url": null,
+        "expl": "夏物の衣類",
+        "sort": 1,
+        "display_state": "showing",
+        "parent_group_id": null,
+        "meta_tag": {
+            "title": "夏物特集",
+            "keywords": "夏物,衣類",
+            "description": "夏物の一覧"
+        }
+    }
+}

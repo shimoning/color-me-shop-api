@@ -107,6 +107,10 @@ abstract class Category extends Entity
 
     /**
      * 商品カテゴリー説明
+     *
+     * 実 API の観測 (2026-09-21) では、書き込みで明示的な `null` を送っても旧値のまま残り、
+     * 空文字 `""` は保存された。出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     *
      * @return string|null
      */
     public function getExpl(): ?string
@@ -119,7 +123,9 @@ abstract class Category extends Entity
      *
      * 公式 OpenAPI（2026-09-16 確認）では meta_tag 自体は nullable ではない。
      * 2026-09-12 の実 API 検証では親カテゴリー2件中1件で meta_tag の欠損を確認したため、
-     * 欠損または明示的な null の場合は null を返す。
+     * 欠損または明示的な null の場合は null を返す。2026-09-21 の書き込み観測では、大カテゴリーは
+     * 作成直後は meta_tag キー自体が無く、一度設定すると全キーを null に戻してもキーが残った。
+     * また部分更新はマージではなく置換で、送らなかったキーは null になる。出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
      *
      * @return MetaTag|null
      */

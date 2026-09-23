@@ -94,6 +94,9 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
@@ -681,6 +684,36 @@ if ($groupsOrErrors instanceof Errors) {
 
 `Client::getProductGroups()` は、内部で `Services\Product::groups(?string $accessToken = null)` を呼び出す。
 
+#### 商品グループを作成・更新
+作成と更新は同じ `GroupInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。
+`parent_group_id` は作成専用で、どの操作でどのフィールドが有効かは公式 API の契約に従う。`meta_tag` はネストした連想配列 (`title` / `keywords` / `description`) で指定し、これらのキーを1つも持たない配列や、これら以外のキーを含む配列は生成時に `InvalidFieldException` になる。
+
+```php
+$groupOrErrors = $client->createProductGroup(new GroupInput([
+    'name' => '夏物',
+    'expl' => '暑い夏を涼しく乗り切る夏物衣類',
+    'display_state' => 'showing',
+    'parent_group_id' => null, // 特定のグループ配下に作らない場合は null
+    'meta_tag' => ['title' => '夏物特集', 'keywords' => '夏物,衣類'],
+]));
+if (! $groupOrErrors instanceof Errors) {
+    $groupId = $groupOrErrors->getId();
+}
+
+$updatedOrErrors = $client->updateProductGroup($groupId, new GroupInput([
+    'display_state' => 'hidden',
+    'expl' => null, // 明示した null で説明をクリア
+]));
+if ($updatedOrErrors instanceof Errors) {
+    // 存在しないグループは 404、不正な値は 422、空の入力は 422
+}
+```
+
+実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定だけが永続化され、以後の更新 (一部キーのみ、全キー `null`、`meta_tag` 自体の `null` を含む) は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。詳細は [商品 API 応答構造の実測記録](docs/api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)。
+
+`display_state` は `showing` / `hidden` / `members_only` (`GroupInput::WRITABLE_DISPLAY_STATES`。`GroupDisplayState` の値、または同 enum のインスタンス) を受け付け、`showing_for_members` / `sale_for_members` は生成時に `InvalidFieldException` になる (実 API の PUT でも 422)。
+応答の `Group::getDisplayState()` は `GroupDisplayState` を返す (0.13.0 で `ProductDisplayState` から変更。実 API が返す `members_only` を読めるようにするため)。`GroupDisplayState` は実測の 3 値に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` / `sale_for_members` も応答の受理のみを目的として持つ (管理画面等で設定された既存グループが返す可能性を否定できないため。読み取りでは未観測)。
+
 ### 商品カテゴリー
 #### 商品カテゴリー一覧を取得
 ```php
@@ -710,6 +743,35 @@ if ($categoriesOrErrors instanceof Errors) {
 
 `Client::getProductCategories()` は、内部で `Services\Product::categories(?string $accessToken = null)` を呼び出す。
 `meta_tag` が省略または `null` の場合、`Category::getMetaTag()` は `null` を返す。
+
+#### 商品カテゴリーを作成・更新
+大カテゴリーは `CategoryInput`、小カテゴリーは `CategoryChildInput` を使い、それぞれ作成と更新で共用する。両者は同じフィールド (`name` / `expl` / `sort` / `display_state` / `meta_tag`) を持つが、応答の `BigCategory` / `SmallCategory` に合わせた別の型で互いに代入できない。
+指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` はそのまま送信される。ただし実 API の観測 (2026-09-21) では、カテゴリーの `expl` は `null` を送っても旧値のまま残り、空文字 `''` は保存された (説明を消すには空文字を送る)。`meta_tag` の部分更新はマージではなく置換で、送らなかったキーは `null` になる。作成では公式 API が `name` を必須とするが、ライブラリは送信前に検証せず API の `422` に委ねる。
+`display_state` は `showing` / `hidden` / `members_only` (`CategoryDisplayState` の値、または同 enum のインスタンス) を受け付ける。
+
+```php
+$categoryOrErrors = $client->createProductCategory(new CategoryInput([
+    'name' => 'Tシャツ',
+    'sort' => 1,
+    'display_state' => 'showing',
+    'meta_tag' => ['title' => 'Tシャツ一覧', 'description' => '高品質なTシャツを取り揃えています'],
+]));
+if (! $categoryOrErrors instanceof Errors) {
+    $categoryId = $categoryOrErrors->getIdBig(); // BigCategory
+}
+
+$childOrErrors = $client->createProductCategoryChild($categoryId, new CategoryChildInput([
+    'name' => '半袖',
+]));
+if (! $childOrErrors instanceof Errors) {
+    $childId = $childOrErrors->getIdSmall(); // SmallCategory
+}
+
+$client->updateProductCategory($categoryId, new CategoryInput(['expl' => ''])); // BigCategory|Errors。説明を消すには空文字を送る (null はクリアされない)
+$client->updateProductCategoryChild($categoryId, $childId, new CategoryChildInput(['display_state' => 'hidden'])); // SmallCategory|Errors
+```
+
+応答の `category` は `Category::fromArray()` で変換し、大カテゴリーの操作で `id_small` が `0` 以外の応答が返るなど期待した親子の型でない場合は `InvalidFieldException` になる。
 
 ### 決済
 #### 決済設定の一覧を取得
@@ -805,7 +867,6 @@ $pagination->getOffset();
 ## 未実装
 
 * [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
-* [商品グループ・商品カテゴリーの登録・更新](https://developer.shop-pro.jp/docs/colorme-api#tag/group)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)

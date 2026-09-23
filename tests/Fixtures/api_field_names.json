@@ -428,6 +428,32 @@
         "order_num",
         "pickup_type"
     ],
+    "Product\\GroupInput": [
+        "display_state",
+        "expl",
+        "meta_tag",
+        "name",
+        "parent_group_id"
+    ],
+    "Product\\CategoryInput": [
+        "display_state",
+        "expl",
+        "meta_tag",
+        "name",
+        "sort"
+    ],
+    "Product\\CategoryChildInput": [
+        "display_state",
+        "expl",
+        "meta_tag",
+        "name",
+        "sort"
+    ],
+    "Product\\MetaTagInput": [
+        "description",
+        "keywords",
+        "title"
+    ],
     "Product\\VariantOption": [
         "id",
         "name",

@@ -10,7 +10,7 @@ class ErrorCodeTest extends TestCase
     public function test_enumとしてロードできる(): void
     {
         $this->assertTrue(\enum_exists(ErrorCode::class));
-        $this->assertCount(7, ErrorCode::cases());
+        $this->assertCount(9, ErrorCode::cases());
     }
 
     /**
@@ -28,7 +28,9 @@ class ErrorCodeTest extends TestCase
         $this->assertSame('401010', ErrorCode::UNAUTHORIZED->value);
         $this->assertSame('404100', ErrorCode::NOT_FOUND->value);
         $this->assertSame('422210', ErrorCode::VALIDATE_ERROR_FIELD->value);
+        $this->assertSame('422001', ErrorCode::VALIDATE_ERROR_CHOICE->value);
         $this->assertSame('422007', ErrorCode::VALIDATE_ERROR_422007->value);
+        $this->assertSame('422014', ErrorCode::VALIDATE_ERROR_RANGE->value);
         $this->assertSame('422022', ErrorCode::VALIDATE_ERROR_STOCK->value);
         $this->assertSame('500000', ErrorCode::INTERNAL_SERVER_ERROR->value);
         $this->assertSame('__unknown__', ErrorCode::UNKNOWN->value);
@@ -37,7 +39,9 @@ class ErrorCodeTest extends TestCase
     public function test_APIが返すエラーコードから復元できる(): void
     {
         $this->assertSame(ErrorCode::UNAUTHORIZED, ErrorCode::tryFrom('401010'));
+        $this->assertSame(ErrorCode::VALIDATE_ERROR_CHOICE, ErrorCode::tryFrom('422001'));
         $this->assertSame(ErrorCode::VALIDATE_ERROR_422007, ErrorCode::tryFrom('422007'));
+        $this->assertSame(ErrorCode::VALIDATE_ERROR_RANGE, ErrorCode::tryFrom('422014'));
         $this->assertSame(ErrorCode::VALIDATE_ERROR_STOCK, ErrorCode::tryFrom('422022'));
         $this->assertSame(ErrorCode::INTERNAL_SERVER_ERROR, ErrorCode::tryFrom('500000'));
         $this->assertNull(ErrorCode::tryFrom('999999'));
@@ -65,6 +69,8 @@ class ErrorCodeTest extends TestCase
         $this->assertSame('パラメータが指定されていません。', $messages[ErrorCode::VALIDATE_ERROR_FIELD->value]);
         $this->assertStringContainsString('有効なアクセストークンが見つからない', $messages[ErrorCode::UNAUTHORIZED->value]);
         $this->assertSame('入力内容に誤りがあります。', $messages[ErrorCode::VALIDATE_ERROR_422007->value]);
+        $this->assertSame('選択肢にない値が指定されています。', $messages[ErrorCode::VALIDATE_ERROR_CHOICE->value]);
+        $this->assertSame('数値が許容範囲外です。', $messages[ErrorCode::VALIDATE_ERROR_RANGE->value]);
         $this->assertSame('バリエーションの在庫数をすべて指定してください。', $messages[ErrorCode::VALIDATE_ERROR_STOCK->value]);
         $this->assertSame('Internal Server Error', $messages[ErrorCode::INTERNAL_SERVER_ERROR->value]);
     }

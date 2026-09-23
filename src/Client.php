@@ -37,8 +37,11 @@ use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput as ProductGroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\BigCategory as BigCategoryEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory as SmallCategoryEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput as ProductCategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput as ProductCategoryChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
@@ -297,6 +300,87 @@ class Client
     public function deleteProductImage(int|string $productId, int $position, ?string $accessToken = null): NoContent|Errors
     {
         return $this->productService($accessToken)->deleteImage($productId, $position, $accessToken);
+    }
+
+    /**
+     * 商品グループを作成する。
+     *
+     * `display_state` は `GroupInput::WRITABLE_DISPLAY_STATES` の 3 値 (`showing` / `hidden` / `members_only`) で、
+     * 実 API の観測 (2026-09-21) と公式 OpenAPI の request 定義に一致する。`GroupDisplayState` の応答専用の
+     * 2 値 (`showing_for_members` / `sale_for_members`) は `GroupInput` の構築時に拒否される。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductGroup(ProductGroupInput $input, ?string $accessToken = null): GroupEntity|Errors
+    {
+        return $this->productService($accessToken)->createGroup($input, $accessToken);
+    }
+
+    /**
+     * 商品グループを更新する。明示したフィールドだけを送る部分更新。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateProductGroup(
+        int|string $id,
+        ProductGroupInput $input,
+        ?string $accessToken = null,
+    ): GroupEntity|Errors {
+        return $this->productService($accessToken)->updateGroup($id, $input, $accessToken);
+    }
+
+    /**
+     * 大カテゴリーを作成する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductCategory(ProductCategoryInput $input, ?string $accessToken = null): BigCategoryEntity|Errors
+    {
+        return $this->productService($accessToken)->createCategory($input, $accessToken);
+    }
+
+    /**
+     * 大カテゴリーを更新する。明示したフィールドだけを送る部分更新。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `BigCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateProductCategory(
+        int|string $id,
+        ProductCategoryInput $input,
+        ?string $accessToken = null,
+    ): BigCategoryEntity|Errors {
+        return $this->productService($accessToken)->updateCategory($id, $input, $accessToken);
+    }
+
+    /**
+     * 小カテゴリーを作成する。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createProductCategoryChild(
+        int|string $categoryId,
+        ProductCategoryChildInput $input,
+        ?string $accessToken = null,
+    ): SmallCategoryEntity|Errors {
+        return $this->productService($accessToken)->createCategoryChild($categoryId, $input, $accessToken);
+    }
+
+    /**
+     * 小カテゴリーを更新する。明示したフィールドだけを送る部分更新。
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException 応答の `category` が配列以外、`Category::fromArray()` で変換できない、または `SmallCategory` でない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateProductCategoryChild(
+        int|string $categoryId,
+        int|string $id,
+        ProductCategoryChildInput $input,
+        ?string $accessToken = null,
+    ): SmallCategoryEntity|Errors {
+        return $this->productService($accessToken)->updateCategoryChild($categoryId, $id, $input, $accessToken);
     }
 
     private function productService(?string $accessToken): Product

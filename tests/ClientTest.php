@@ -13,6 +13,9 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
@@ -124,6 +127,24 @@ class ClientTest extends TestCase
             }],
             'deleteProductPickup' => [static function (Client $client, ?string $accessToken): void {
                 $client->deleteProductPickup(101, PickupType::RECOMMENDED, $accessToken);
+            }],
+            'createProductGroup' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductGroup(new GroupInput(['name' => 'g']), $accessToken);
+            }],
+            'updateProductGroup' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateProductGroup(401, new GroupInput(['name' => 'g']), $accessToken);
+            }],
+            'createProductCategory' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductCategory(new CategoryInput(['name' => 'c']), $accessToken);
+            }],
+            'updateProductCategory' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateProductCategory(9001, new CategoryInput(['name' => 'c']), $accessToken);
+            }],
+            'createProductCategoryChild' => [static function (Client $client, ?string $accessToken): void {
+                $client->createProductCategoryChild(9001, new CategoryChildInput(['name' => 'c']), $accessToken);
+            }],
+            'updateProductCategoryChild' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateProductCategoryChild(9001, 5, new CategoryChildInput(['name' => 'c']), $accessToken);
             }],
             'createProductImage' => [static function (Client $client, ?string $accessToken): void {
                 $client->createProductImage(101, __FILE__, 0, $accessToken);

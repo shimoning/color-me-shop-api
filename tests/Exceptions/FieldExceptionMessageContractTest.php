@@ -465,6 +465,41 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \TypeError::class,
             ],
+            'InvalidFieldException::for/グループ入力のmeta_tagの形状不一致' => [
+                self::site('src/Entities/Product/MetaTagInput.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\GroupInput(['meta_tag' => []]);
+                },
+                null,
+            ],
+            'InvalidFieldException::for/グループ入力のdisplay_stateが応答専用の値' => [
+                self::site('src/Entities/Product/GroupInput.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Product\GroupInput(['display_state' => 'sale_for_members']);
+                },
+                null,
+            ],
+            'InvalidFieldException::for/カテゴリー書き込み応答のcategoryが配列以外' => [
+                self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 1),
+                static function (): void {
+                    $mock = HttpMock::json(200, '{"category":"x"}');
+                    (new Product('my-token', $mock->client()))->updateCategory(
+                        1,
+                        new \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput(['name' => 'x']),
+                    );
+                },
+                null,
+            ],
+            'InvalidFieldException::for/カテゴリー書き込み応答の親子型不一致' => [
+                self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 2),
+                static function (): void {
+                    $mock = HttpMock::json(201, '{"category":{"id_big":1,"id_small":5}}');
+                    (new Product('my-token', $mock->client()))->createCategory(
+                        new \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput(['name' => 'x']),
+                    );
+                },
+                null,
+            ],
             'InvalidFieldException::forArrayElement/広告の色' => [
                 self::site('src/Entities/Product/Advertising.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {

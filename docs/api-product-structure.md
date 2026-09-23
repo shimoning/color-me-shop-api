@@ -287,6 +287,8 @@ object は合計5件。
 | `keywords` | string | 0 | 0 | string / nullable: true |
 | `description` | string | 0 | 0 | string / nullable: true |
 
+この単体観測では `group.meta_tag` は object 1 件だけだったが、2026-09-22 の `GET /v1/groups` では 5 件中 1 件が `null` だった（後述の「2026-09-22 の追加観測（管理画面で設定された既存グループの読み取り）」）。
+
 ## 一覧の `meta` と `fields`
 
 商品一覧の `meta` は次の3キーで、調べた3応答では `null`・欠損がなかった。
@@ -385,6 +387,63 @@ object は合計5件。
 
 `option.make_date` の `null` は、[ADR 0012](adr/0012-allow-nullability-from-api-observations.md) の条件（実 API での明示的な `null` の確認）を満たす。`price` の負値は API 側で検証されないため、ライブラリ側でも値の範囲を検証しない現行方針を維持する根拠になる。
 
+### 2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）
+
+収集日は **2026-09-21（UTC 11:29 頃、Asia/Tokyo では同日 20 時台）**、対象は上記と同じテスト用ショップ。本ライブラリの `Client` の書き込み系メソッド（`createProductGroup`、`updateProductGroup`、`createProductCategory`、`updateProductCategory`、`createProductCategoryChild`、`updateProductCategoryChild`）と確認用 GET で実行し、入力 Entity が構築時に拒否する `display_state` 値だけは `Communicator\Request` で同じエンドポイントへ生 JSON を PUT して API 側の受理を確認した（下表で「生 PUT」と表記）。検証用のグループ 1 件、大カテゴリー 1 件、小カテゴリー 2 件を `hidden` で残した（削除 API がない）。実 ID、ショップ識別子、認証情報、応答本文は記録しない。
+
+#### グループ・カテゴリーの `display_state` の受理値
+
+| 対象 | 送信値 | HTTP | 応答と直後の GET |
+| --- | --- | ---: | --- |
+| `PUT /v1/groups/<group_id>` | `showing` / `hidden` | 200 | 応答・GET とも送信値 |
+| `PUT /v1/groups/<group_id>` | `showing_for_members` / `sale_for_members` | 422 | `{"errors":[{"code":422001,"field":"group.display_state","message":"showing, hidden, members_only のいずれかを選択してください。","status":422}]}`。GET は直前の値を保持 |
+| `PUT /v1/groups/<group_id>`（生 PUT） | `members_only` | 200 | 生 GET の `group.display_state` は `members_only` |
+| `PUT /v1/categories/<category_id>` | `showing` / `hidden` / `members_only` | 200 | 応答・GET とも送信値 |
+| `PUT /v1/categories/<category_id>`（生 PUT） | `showing_for_members` / `sale_for_members` | 422 | `{"errors":[{"code":422001,"field":"product_category.disp_flg","message":"Disp flgを正しく選択してください。","status":422}]}`。GET は直前の値を保持 |
+
+したがって、**グループの `display_state` は `showing`、`hidden`、`members_only` の 3 値**であり、公式 OpenAPI のグループ作成・更新 request の enum と一致する。`productGroup` response の enum が列挙する `showing_for_members` / `sale_for_members` は、書き込みで拒否され、読み取りでも観測しなかった。逆に response の enum にない `members_only` を GET が返すため、当時の `Product\Group`（`ProductDisplayState` の 4 値）は `members_only` のグループを含む `GET /v1/groups` と `GET /v1/groups/<group_id>` を `InvalidFieldException` で読めなかった（本 smoke test で再現し、生 PUT で `hidden` に戻して復旧した）。カテゴリーの 3 値は大カテゴリーで観測し、既存の `CategoryDisplayState` と一致する。小カテゴリー（`PUT /v1/categories/<category_id>/children/<child_id>`）は `hidden` の送信だけを観測した（`showing` / `members_only` と 422 になる値は未観測。OpenAPI の定義は大カテゴリーと同一）。
+
+#### `expl` と `meta_tag` の更新
+
+| 対象 | 送信した内容 | HTTP | 応答と直後の GET（2 秒後にも再確認） |
+| --- | --- | ---: | --- |
+| グループ | `{"expl":"<text>"}` → `{"expl":null}` | 200 | 応答・GET とも `null` へ戻った（明示 `null` でクリアできる） |
+| グループ | `meta_tag` の初回設定（`null` → `title` / `keywords` / `description`） | 200 | 応答・GET とも送信値 |
+| グループ | 初回設定後の `meta_tag` 更新（`title` のみ、3 キーとも新値、3 キーとも `null`、`meta_tag: null`、`expl` や `name` との同時送信） | 200 | **応答には反映されるが、直後および数分後の GET では初回設定の値のまま**。API 側の挙動と考えられるが原因は未解決 |
+| 大カテゴリー・小カテゴリー | `{"expl":null}` | 200 | 応答・GET とも**旧値のまま**（明示 `null` ではクリアされない） |
+| 大カテゴリー | `{"expl":""}` | 200 | 応答・GET とも空文字（空文字は保存される） |
+| 大カテゴリー・小カテゴリー | `meta_tag` を 3 キーで設定した後に `{"meta_tag":{"title":"<new>"}}` | 200 | 応答・GET とも `title` は新値で `keywords` / `description` は **`null`**（部分更新はマージではなく置換） |
+| 大カテゴリー・小カテゴリー | `{"meta_tag":{"title":null,"keywords":null,"description":null}}` | 200 | 応答・GET とも 3 キーとも `null` |
+| 大カテゴリー | 作成直後の GET | — | `meta_tag` キー自体が無い（`getMetaTag()` は `null`）。一度 `meta_tag` を設定すると、3 キーとも `null` に戻してもキーが残る |
+
+#### エラー応答
+
+| 操作 | HTTP | 応答 |
+| --- | ---: | --- |
+| `PUT /v1/groups/<group_id>`、`PUT /v1/categories/<category_id>`、`PUT /v1/categories/<category_id>/children/<child_id>`、`POST /v1/categories` の空入力 `{"group":{}}` / `{"category":{}}` | 422 | `code: 422210`、`field: "group"` または `"category"`、`message: "パラメータが指定されていません。"` |
+| 存在しない ID への `PUT /v1/groups/<id>`、`PUT /v1/categories/<id>`、`PUT /v1/categories/<category_id>/children/<id>`、`PUT /v1/categories/<id>/children/<child_id>` | 404 | `code: 404100`、`message: "データが見つかりません。"`、`field` なし |
+| `PUT /v1/categories/<category_id>` の `{"sort":-1}` | 422 | `code: 422014`、`field: "product_category.order_num"`、`message: "Order numは0以上の値を入力してください。"` |
+| 上表の `display_state` 不正値 | 422 | `code: 422001`、`field` は `group.display_state` / `product_category.disp_flg` |
+
+`422001` は選択肢にない値、`422014` は数値の範囲外に対して返った。いずれも公式 OpenAPI にコード固有の説明はなく、意味は応答メッセージから読み取ったものである。`ErrorCode` へはこの観測を出典として case を追加した。
+
+### 2026-09-22 の追加観測（管理画面で設定された既存グループの読み取り）
+
+収集日は **2026-09-22（Asia/Tokyo）**、対象は上記と同じテスト用ショップ。オーナーが管理画面で「会員限定」に設定したグループ 1 件を含む既存の全 5 グループを、本ライブラリの `Communicator\Request::get()` による **GET のみ**（`GET /v1/groups` と `GET /v1/groups/<group_id>`）で観測した。書き込みは行っていない。実 ID、ショップ識別子、認証情報は記録しない。
+
+#### `display_state` の応答値
+
+| 対象 | HTTP | 応答 |
+| --- | ---: | --- |
+| `GET /v1/groups`（パラメータなし。OpenAPI 上 `limit` 等は未定義） | 200 | 5 件。`display_state` は `hidden` 2 件、`showing` 2 件、`members_only` 1 件 |
+| `GET /v1/groups/<group_id>`（管理画面で会員限定に設定したグループ） | 200 | `display_state` は `members_only`（一覧の値と一致） |
+
+管理画面で会員限定に設定したグループは、一覧・単体とも `display_state: "members_only"` を返した。2026-09-21 の生 PUT で書き込んだ値だけでなく、管理画面で設定された既存グループでも同じ値が返るため、`GroupDisplayState` の実測 3 値（`showing` / `hidden` / `members_only`）は読み取り側でも裏付けられた。公式 OpenAPI の `productGroup` response 定義が列挙する `showing_for_members` / `sale_for_members` は、今回のショップの 5 グループには現れなかった（他のショップや設定で現れないことの証明ではない）。参考として、同日の `GET /v1/products` は OpenAPI どおり `showing_for_members` / `sale_for_members` を返しており、グループと商品では `display_state` の語彙が異なる。
+
+#### `meta_tag` と `parent_group_id` の応答値
+
+一覧の各要素のキーは `id`, `account_id`, `name`, `image_url`, `expl`, `sort`, `display_state`, `parent_group_id`, `meta_tag` で、2026-09-18 の単体観測と同じだった。`meta_tag` は 5 件中 4 件が `{"title":"","description":"","keywords":""}`（管理画面で未設定でも 3 キーが空文字で揃った object）、1 件が `null` だった。したがって、グループの `meta_tag` は object と `null` のどちらも起こり得る（OpenAPI の `nullable: true` と一致し、既存の `Product\Group::getMetaTag()` の nullable と整合する）。`parent_group_id` は 4 件が `null`、1 件が integer（親グループの id）だった。2026-09-18 の単体観測の表は、この 5 件を加算していない。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。全くカテゴリーを持たない商品での表現は未検証。
@@ -396,6 +455,11 @@ object は合計5件。
 - `sales_price`、`price`、バリエーションの `model_number` 以外の nullable フィールドを明示的な `null` でクリアできるか。
 - 画像作成の 201 と `product_image` の実キー、画像 DELETE の 204、`position` の実動作。契約プラン制限のため未観測（画像 DELETE は 422 だけを観測）。
 - 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合動作。
+- グループの `meta_tag` が初回設定以後の PUT で GET に反映されない原因。API 側の挙動と考えられるが未解決。
+- グループ・カテゴリーの `image_url` の書き込み、`POST /v1/groups` / `POST /v1/categories` / `POST /v1/categories/<category_id>/children` の新規作成応答（既存の同名の検証用データを再利用したため、作成の 201 は未観測）、小カテゴリーの `expl: ""` と `sort` の範囲外。
+- 小カテゴリー（`PUT /v1/categories/<category_id>/children/<child_id>`）の `display_state` に `hidden` 以外（`showing` / `members_only`、および 422 になる `showing_for_members` / `sale_for_members`）を送った場合の挙動。
+- `PUT /v1/groups/<group_id>` への `parent_group_id` の送信。公式 OpenAPI の更新 request は `parent_group_id` を持たず `additionalProperties: false` なので 422 になり得るが未観測（`GroupInput` は作成・更新共用のため送信を許し、利用者に委ねている）。
+- `GET /v1/groups` / `GET /v1/groups/<group_id>` が `showing_for_members` / `sale_for_members` を返すか。公式 OpenAPI の `productGroup` response 定義にはあるが、PUT では 422 で、管理画面で会員限定に設定した既存グループも `members_only` を返した（2026-09-22、5 グループ）。別のショップや契約プラン、管理画面の他の設定で返るかは未観測。
 
 ## 現在のライブラリ実装との関係
 
@@ -414,6 +478,7 @@ object は合計5件。
 2. `display_state` の4値と拒否値、`unlisted`、整数設定後の `sales_price=null`、`name` だけの部分更新を、各 PUT 応答と直後の GET の組で確認する。
 3. オプション、オプション値、バリエーション、ピックアップを順に作成・更新・削除し、HTTP ステータス、トップレベルキー、object のキー集合、204 のボディ不在を記録する。
 4. 画像 API を利用できる契約プランでは、仕様で許可された小さな検証画像を1件だけ作成し、応答を記録して削除する。利用できない場合は、401 と成功系が未観測であることを区別する。
-5. 終了時に従属物が残っていないことを GET で確認し、商品を `hidden` にする。公開前に全実 ID、ショップ識別情報、トークン、認証ヘッダー、URL、画像実パスをマスクする。
+5. グループ・カテゴリーは `hidden` の検証用データを名前で再利用し、`display_state` の受理値、`expl` と `meta_tag` の明示 `null` と部分更新、空入力、存在しない ID、`sort` の範囲外を、各 PUT 応答と直後の GET の組で確認する。削除 API がないため、終了時に `hidden` へ戻す。
+6. 終了時に従属物が残っていないことを GET で確認し、商品を `hidden` にする。公開前に全実 ID、ショップ識別情報、トークン、認証ヘッダー、URL、画像実パスをマスクする。
 
 収集時点以降の API 仕様変更は未検証である。再収集した場合は収集日、条件、件数、全キー統計を新しい観測値で更新する。

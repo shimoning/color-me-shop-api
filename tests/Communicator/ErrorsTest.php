@@ -91,6 +91,27 @@ class ErrorsTest extends TestCase
         $this->assertSame('499999', $errors[1]->toArrayRecursive()['code']);
     }
 
+    /**
+     * 2026-09-21 のグループ・カテゴリー書き込み smoke test で観測した 422 応答 (選択肢にない値、数値の範囲外)。
+     * 観測時は両コードとも UNKNOWN へフォールバックしていた。
+     */
+    public function test_グループとカテゴリーの書き込みで観測した422コードを既知caseへ解釈する(): void
+    {
+        $choice = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"code":422001,"field":"group.display_state","message":"showing, hidden, members_only のいずれかを選択してください。","status":422}]}',
+        ));
+        $range = Errors::build($this->makeResponse(
+            422,
+            '{"errors":[{"code":422014,"field":"product_category.order_num","message":"Order numは0以上の値を入力してください。","status":422}]}',
+        ));
+
+        $this->assertSame(ErrorCode::VALIDATE_ERROR_CHOICE, $choice[0]->getErrorCode());
+        $this->assertSame('group.display_state', $choice[0]->getField());
+        $this->assertSame(ErrorCode::VALIDATE_ERROR_RANGE, $range[0]->getErrorCode());
+        $this->assertSame('product_category.order_num', $range[0]->getField());
+    }
+
     public function test_整数のAPIコードを文字列へ正規化して既知caseへ解釈する(): void
     {
         $errors = Errors::build($this->makeResponse(

@@ -161,7 +161,7 @@
       "/components/schemas/customer/properties/pref_id/enum": null,
       "/components/schemas/shop/properties/pref_id/enum": null
     },
-    "ProductDisplayState": {
+    "GroupDisplayState": {
       "/components/schemas/productGroup/properties/display_state/enum": [
         "showing",
         "hidden",
@@ -177,6 +177,14 @@
         "showing",
         "hidden",
         "members_only"
+      ]
+    },
+    "ProductDisplayState": {
+      "/components/schemas/product/properties/display_state/enum": [
+        "showing",
+        "hidden",
+        "showing_for_members",
+        "sale_for_members"
       ]
     },
     "Sex": {
