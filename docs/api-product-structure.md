@@ -227,6 +227,12 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 
 存在しない商品 ID への GET は HTTP 404 で、`errors` は array、各要素は `code: 404100`、`message: string`、`status: 404` を持ち、欠損・`null` はなかった。[エラー応答の実測記録](api-error-responses.md) の商品 404 と status、code、キー構造、message が一致した。他の 4xx pattern はこの読み取り収集の対象外だった。
 
+マスク済みの実応答は次の形だった。
+
+```json
+{"errors":[{"code":404100,"message":"データが見つかりません。","status":404}]}
+```
+
 ## 書き込み系の観測
 
 ### 収集条件

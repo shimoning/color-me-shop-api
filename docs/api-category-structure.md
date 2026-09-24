@@ -36,7 +36,78 @@
 | `meta_tag` | object | 欠損することがある | 常に存在 |
 | `children` | array<object> | 常に存在し、非空を観測 | 欠損 |
 
-観測した `meta_tag` object は `title`、`keywords`、`description` を持ち、各値には空文字列があり得た。識別につながる生レスポンスやダミー置換した個別レコードは掲載しない。
+観測した `meta_tag` object は `title`、`keywords`、`description` を持ち、各値には空文字列があり得た。識別につながる値を含む生レスポンスは掲載しない。
+
+## 代表的なマスク済み応答
+
+以下は、識別につながる値をマスクした実応答の代表例である。キーの有無、値の型、`null`、空文字列は観測どおりに保っている。
+
+### 親カテゴリー（`children` を含む）
+
+`meta_tag` を持つ親カテゴリーと、その `children` に含まれた子カテゴリーの構造を示す。
+
+```json
+{
+  "id_big": 999999999,
+  "id_small": 0,
+  "account_id": "<account_id>",
+  "name": "<親カテゴリー名>",
+  "image_url": null,
+  "expl": null,
+  "sort": null,
+  "display_state": "showing",
+  "make_date": 1700000000,
+  "update_date": 1700000100,
+  "meta_tag": {
+    "title": "",
+    "keywords": "",
+    "description": ""
+  },
+  "children": [
+    {
+      "id_big": 999999999,
+      "id_small": 999999998,
+      "account_id": "<account_id>",
+      "name": "<子カテゴリー名>",
+      "image_url": null,
+      "expl": "",
+      "sort": null,
+      "display_state": "showing",
+      "make_date": 1700000000,
+      "update_date": 1700000100,
+      "meta_tag": {
+        "title": "",
+        "keywords": "",
+        "description": ""
+      }
+    }
+  ]
+}
+```
+
+### 子カテゴリー
+
+同じ構造の子カテゴリーを単独で示す。親と異なり、`children` キー自体がない。
+
+```json
+{
+  "id_big": 999999999,
+  "id_small": 999999998,
+  "account_id": "<account_id>",
+  "name": "<子カテゴリー名>",
+  "image_url": null,
+  "expl": "",
+  "sort": null,
+  "display_state": "showing",
+  "make_date": 1700000000,
+  "update_date": 1700000100,
+  "meta_tag": {
+    "title": "",
+    "keywords": "",
+    "description": ""
+  }
+}
+```
 
 ## 公式 OpenAPI との対応
 

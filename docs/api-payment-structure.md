@@ -33,6 +33,72 @@
 
 `changeable=true` でも `Payment.fee` は消えない。この値が実決済時の手数料計算に使われるかは未観測である。`fees=[]` も未観測であり、その場合の `fee_max` の意味は推測しない。
 
+### 代表的なマスク済み応答
+
+以下は各設定の代表例である。識別につながる値はマスクし、キーの有無、値の型、`null`、手数料設定値は観測どおりに保っている。
+
+#### 一律手数料
+
+`cod.changeable` が `false` の場合、`fees`、`fee_max`、`changeable_by_total` は存在しなかった。
+
+```json
+{
+  "id": "<payment_id>",
+  "account_id": "<account_id>",
+  "name": "<決済方法名>",
+  "type": 0,
+  "fee": 300,
+  "cod": {
+    "changeable": false
+  }
+}
+```
+
+#### 区分手数料、上限手数料未設定
+
+`cod.changeable` が `true` で上限手数料が未設定の場合、`fees`、`fee_max`、`changeable_by_total` が存在し、`fee_max` は `null` だった。
+
+```json
+{
+  "id": "<payment_id>",
+  "account_id": "<account_id>",
+  "name": "<決済方法名>",
+  "type": 0,
+  "fee": 123,
+  "cod": {
+    "changeable": true,
+    "fees": [
+      [500, 200]
+    ],
+    "fee_max": null,
+    "changeable_by_total": false
+  }
+}
+```
+
+#### 区分手数料、上限手数料設定済み
+
+上限手数料が設定された場合、`fee_max` は integer だった。
+
+```json
+{
+  "id": "<payment_id>",
+  "account_id": "<account_id>",
+  "name": "<決済方法名>",
+  "type": 0,
+  "fee": 987,
+  "cod": {
+    "changeable": true,
+    "fees": [
+      [300, 100],
+      [500, 70]
+    ],
+    "fee_max": 10,
+    "changeable_by_total": true
+  }
+}
+```
+
 ## 区分手数料の設定上の境界
 
 管理画面の「円未満」「上記金額以上」という表記と GET 応答を突き合わせ、`cod.fees` の各タプルの第1要素が、設定上、その区分に含まれない**排他的上限**であることを確認した。第2要素はその上限未満の区分に設定された手数料である。最大の上限以上には、設定されていれば `cod.fee_max` が対応する。
@@ -82,6 +148,19 @@
 | `branch_number` | 明示的な `null`、キーは存在 | 管理画面に対応欄なし |
 
 `branch_number` は公式 OpenAPI に定義されていない。他の設定でも常に `null` になるとは判断できない。
+
+口座情報を追加でマスクした `financial` の実応答は次の形だった。
+
+```json
+{
+  "name": "***",
+  "branch_name": "***",
+  "kouza_type": "saving",
+  "kouza_number": "***",
+  "kouza_name": "***",
+  "branch_number": null
+}
+```
 
 ![銀行振込決済の設定フォーム](images/financial-form.png)
 

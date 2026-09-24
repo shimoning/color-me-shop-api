@@ -65,9 +65,79 @@ ColorMe API 本体では、トップレベルの `errors` は配列で、各要�
 
 これらは実測したコード・構造であり、すべての同一 HTTP status が同じ `code` になるとは一般化しない。
 
+### 代表的なマスク済み応答
+
+以下は各構造の代表例である。API の `code`、`message`、`status`、`field` は観測どおりに保っている。
+
+#### 401: 認証失敗
+
+```json
+{
+  "errors": [
+    {
+      "code": 401010,
+      "message": "このリソースにアクセスできません。有効なアクセストークンが見つからないか、必要なスコープが付与されていません。",
+      "status": 401
+    }
+  ]
+}
+```
+
+#### 404: 存在しないリソース
+
+```json
+{
+  "errors": [
+    {
+      "code": 404100,
+      "message": "データが見つかりません。",
+      "status": 404
+    }
+  ]
+}
+```
+
+#### 422: `field` 付きのバリデーションエラー
+
+```json
+{
+  "errors": [
+    {
+      "code": 422007,
+      "field": "product_group.name",
+      "message": "Nameを入力してください。",
+      "status": 422
+    }
+  ]
+}
+```
+
+#### 500: 壊れた JSON body
+
+```json
+{
+  "errors": [
+    {
+      "code": 500000,
+      "message": "Internal Server Error",
+      "status": 500
+    }
+  ]
+}
+```
+
 ## OAuth のエラー形式
 
 `POST /oauth/token` のエラーは ColorMe API 本体の `errors` 配列ではなく、OAuth 2.0 の形式で返った。不正なダミークライアント情報と認可コードを送信したとき、`error: "invalid_client"` と `error_description: "クライアント認証に失敗しました。クライアントIDが正しいかご確認ください。"` を観測した。
+
+代表的な実応答は次の形だった。クライアント情報や認可コードは含まれていない。
+
+```json
+{
+  "error": "invalid_client",
+  "error_description": "クライアント認証に失敗しました。クライアントIDが正しいかご確認ください。"
+}
+```
 
 この応答を ColorMe API 本体と同じ `errors` 配列として解釈してはならない。ライブラリでは OAuth エラーを専用クラスで扱う。
 
