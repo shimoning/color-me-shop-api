@@ -2,10 +2,9 @@
 
 ## 結論
 
-公式 OpenAPI と現行の宣言プロパティを突合した結果、プロパティ名の差分は **18 件・7 Entity**
-だった。内訳はレスポンス 12 件、リクエスト 6 件である。リクエストの `before` / `after` 2 件は
-既存コメントどおり同義の `make_date_min` / `make_date_max` を使うため見送り、**追加候補は 16 件・
-7 Entity** とする。
+公式 OpenAPI と現行の宣言プロパティを突合し、プロパティ名の差分を下表に整理した。
+リクエストの `before` / `after` は、既存コメントどおり同義の `make_date_min` / `make_date_max` を
+使うため見送り、それ以外を追加候補とする。
 
 構造化された不足フィールドの型は [ADR 0008](adr/0008-model-structured-response-fields-as-entities.md)
 に従い、専用 Entity を提案する。この監査文書を作成した調査時点では `src/` と `tests/` を変更しておらず、
