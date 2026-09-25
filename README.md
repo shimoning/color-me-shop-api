@@ -200,7 +200,20 @@ $limit->get(); // 50
 ```
 
 * `Values\DateTime`: `YYYY-MM-DD` または `YYYY-MM-DD hh:mm:ss` 形式の文字列、もしくは `DateTimeInterface` を受け付ける
-* `Values\Furigana`: `ァ`〜`ヶ`、長音符、半角・全角スペースと空文字を受け付ける (`^[ァ-ヶー 　]*$`)。公式 OpenAPI が許容する `ヷヸヹヺ` は、2026-09-25 の実 API で422拒否を確認したため除外している。
+* `Values\Furigana`: `ァ`〜`ヶ`、長音符、半角・全角スペースと空文字を受け付ける (`^[ァ-ヶー 　]*$`)。公式 OpenAPI が許容する `ヷヸヹヺ` は、2026-09-25 の実 API で422拒否を確認したため除外している
+
+`Values\Furigana` は `Values\FallbackValue` を実装しており、**応答側では検証に通らない値でも生の文字列を保持する**。管理画面から `ヷヸヹヺ` を入力した顧客は、API の応答で HTML 数値文字参照 (`&#12535;` など) を含む文字列を返すためである。この場合も顧客の取得と一覧取得は失敗せず、`isValid()` で妥当性を判定できる。
+
+```php
+$furigana = $customerOrErrors->getFurigana();
+$furigana->get();      // 'テストカナ&#12535;&#12536;&#12537;&#12538;'
+$furigana->isValid();  // false
+
+// 必要なら利用者側でデコードする (ライブラリは API が返した値を書き換えない)
+\html_entity_decode($furigana->get(), \ENT_QUOTES | \ENT_HTML5, 'UTF-8'); // 'テストカナヷヸヹヺ'
+```
+
+要求側では従来どおり検証され、検証に通らない値は拒否される。例外の型は経路によって異なり、値オブジェクトを直接構築した場合は `ParameterException`、`CustomerCreateInput` などの要求 Entity を経由した場合は `InvalidFieldException` に包まれる。
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
 
@@ -942,6 +955,12 @@ $pagination->getOffset();
 ### フリガナの検証
 
 `Values\Furigana` の許容文字を `^[ァ-ヶー 　]*$` とし、空文字を受け付けるようにした。従来は空文字を拒否していた。公式 OpenAPI が許容する `ヷヸヹヺ` は実 API が 422 で拒否するため含めない (2026-09-25 の観測)。
+
+### 応答側の値オブジェクトのフォールバック
+
+`Values\FallbackValue` を導入し、`Values\Furigana` に実装した ([ADR 0017](docs/adr/0017-opt-in-value-fallback.md))。応答側では検証に通らない値でも生の文字列を保持するため、管理画面から入力された数値文字参照を含むフリガナを持つ顧客でも、単体取得と一覧取得が失敗しなくなる。0.13.0 以前は `InvalidFieldException` になっていた。
+
+要求側の厳格さは変わらない。フォールバックは `FallbackValue` を実装した値オブジェクトにだけ適用され、`Values\DateTime` や `Values\Limit` の挙動は変わらない。
 
 -----
 
