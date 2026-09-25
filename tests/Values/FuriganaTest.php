@@ -25,7 +25,6 @@ class FuriganaTest extends TestCase
             '全角スペース区切り' => ['ヤマダ　タロウ'],
             '濁点付き' => ['ヴァイオリン'],
             'ヶ' => ['ヶ'],
-            'ワ行の濁点付き' => ['ヷヸヹヺ'],
             '空文字' => [''],
         ];
     }
@@ -42,6 +41,10 @@ class FuriganaTest extends TestCase
     public static function invalidProvider(): array
     {
         return [
+            'ヷ' => ['ヷ'],
+            'ヸ' => ['ヸ'],
+            'ヹ' => ['ヹ'],
+            'ヺ' => ['ヺ'],
             'ひらがな' => ['やまだたろう'],
             '漢字' => ['山田太郎'],
             '英字' => ['Yamada'],

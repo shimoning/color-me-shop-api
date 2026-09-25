@@ -196,7 +196,7 @@ $limit->get(); // 50
 ```
 
 * `Values\DateTime`: `YYYY-MM-DD` または `YYYY-MM-DD hh:mm:ss` 形式の文字列、もしくは `DateTimeInterface` を受け付ける
-* `Values\Furigana`: 全角カタカナ、長音符、半角・全角スペース、ワ行の濁点付き (`ヷヸヹヺ`) と空文字を受け付ける (0.14.0 で公式 OpenAPI の `^[ァ-ヶー 　ヷヸヹヺ]*$` に合わせて拡張。従来は `ヷヸヹヺ` と空文字を拒否していた)
+* `Values\Furigana`: `ァ`〜`ヶ`、長音符、半角・全角スペースと空文字を受け付ける (`^[ァ-ヶー 　]*$`)。公式 OpenAPI が許容する `ヷヸヹヺ` は、2026-09-25 の実 API で422拒否を確認したため除外している。
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
 
