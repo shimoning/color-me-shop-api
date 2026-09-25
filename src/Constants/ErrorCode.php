@@ -28,7 +28,18 @@ enum ErrorCode: string implements FallbackEnum
     case VALIDATE_ERROR_RANGE = '422014';
     /** 公式 OpenAPI: バリエーション間で在庫数の設定状態が揃わないエラー。 */
     case VALIDATE_ERROR_STOCK = '422022';
+    /**
+     * 実測で観測 (2026-09-25、顧客ポイント増減で `points` が欠落または null)。
+     * 応答メッセージは「リクエストパラメータの形式が不正です。」(`field: points`)。
+     */
+    case VALIDATE_ERROR_FORMAT = '422100';
     case VALIDATE_ERROR_FIELD = '422210'; // 必須パラメータの不足
+    /**
+     * 実測で観測 (2026-09-25、顧客のフリガナに ヷヸヹヺ を含めたとき)。
+     * 応答メッセージは「利用できない文字 ヷ が含まれています。」など、拒否した文字を含む。
+     * message() の X は拒否した文字を表す。
+     */
+    case VALIDATE_ERROR_CHARACTER = '422250';
     /** 実測で観測。応答メッセージは Internal Server Error。 */
     case INTERNAL_SERVER_ERROR = '500000';
     /** API 仕様上の値ではない、未知のコード用の番兵。 */
@@ -55,7 +66,9 @@ enum ErrorCode: string implements FallbackEnum
             self::VALIDATE_ERROR_422007->value => '入力内容に誤りがあります。',
             self::VALIDATE_ERROR_RANGE->value => '数値が許容範囲外です。',
             self::VALIDATE_ERROR_STOCK->value => 'バリエーションの在庫数をすべて指定してください。',
+            self::VALIDATE_ERROR_FORMAT->value => 'リクエストパラメータの形式が不正です。',
             self::VALIDATE_ERROR_FIELD->value => 'パラメータが指定されていません。',
+            self::VALIDATE_ERROR_CHARACTER->value => '利用できない文字 X が含まれています。',
             self::INTERNAL_SERVER_ERROR->value => 'Internal Server Error',
             self::UNKNOWN->value => '不明なエラーが発生しました。',
         ];

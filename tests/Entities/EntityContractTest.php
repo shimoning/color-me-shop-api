@@ -92,16 +92,16 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Product\SearchParameters::class,
                 'name',
             ],
-            'Product\\VariantInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
+            'Product\\VariantUpdateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput::class,
                 'stocks',
             ],
             'Product\\VariantSearchParameters' => [
                 \Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters::class,
                 'model_number',
             ],
-            'Sales\\SaleDeliveryUpdater' => [
-                \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater::class,
+            'Sales\\SaleDeliveryUpdateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput::class,
                 'memo',
             ],
             'Sales\\SearchParameters' => [

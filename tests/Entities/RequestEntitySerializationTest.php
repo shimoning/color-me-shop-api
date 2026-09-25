@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 
 class RequestEntitySerializationTest extends TestCase
 {
@@ -62,6 +62,10 @@ class RequestEntitySerializationTest extends TestCase
         $this->assertSame(['fields' => 'id,name'], $restored->toArrayRecursive());
     }
 
+    /**
+     * 固定データは 0.14.0 の改名前に旧クラス名 `Sales\SaleUpdater` で直列化したものである。
+     * 旧名は Aliases の遅延 autoloader で新クラスへ解決されるため、allowed_classes には旧名を渡す。
+     */
     public function test_明示フィールド追跡追加前の直列化データへsetterで値を追加しても既存値を保持する(): void
     {
         $encoded = \file_get_contents(__DIR__ . '/../Fixtures/request_entity_with_setter_before_explicit_fields.base64');
@@ -69,11 +73,12 @@ class RequestEntitySerializationTest extends TestCase
         $serialized = \base64_decode(\trim($encoded), true);
         $this->assertNotFalse($serialized);
 
+        $legacy = 'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater';
         $restored = \unserialize($serialized, [
-            'allowed_classes' => [SaleUpdater::class],
+            'allowed_classes' => [$legacy],
         ]);
 
-        $this->assertInstanceOf(SaleUpdater::class, $restored);
+        $this->assertInstanceOf(SaleUpdateInput::class, $restored);
         $restored->setPaid(true);
         $this->assertSame(['id' => 1001, 'paid' => true], $restored->toArrayRecursive());
     }

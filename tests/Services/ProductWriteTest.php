@@ -19,9 +19,9 @@ use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
@@ -29,7 +29,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Product;
@@ -398,7 +398,7 @@ class ProductWriteTest extends TestCase
         $variant['stocks'] = 3;
         $mock = HttpMock::json(200, \json_encode(['variant' => $variant]));
 
-        $result = (new Product('token', $mock->client()))->updateVariant(101, 301, new VariantInput([
+        $result = (new Product('token', $mock->client()))->updateVariant(101, 301, new VariantUpdateInput([
             'stocks' => 3, 'weight' => null,
         ]));
 
@@ -413,7 +413,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('products_read.json'));
 
-        (new Product('token', $mock->client()))->updateVariant(101, 301, new VariantInput([]));
+        (new Product('token', $mock->client()))->updateVariant(101, 301, new VariantUpdateInput([]));
 
         $this->assertSame('{"variant":{}}', $mock->body());
     }
@@ -423,7 +423,7 @@ class ProductWriteTest extends TestCase
         $mock = HttpMock::json(404, self::fixture('errors_401.json'));
 
         $this->assertInstanceOf(Errors::class, (new Product('token', $mock->client()))
-            ->updateVariant(101, 999, new VariantInput(['stocks' => 3])));
+            ->updateVariant(101, 999, new VariantUpdateInput(['stocks' => 3])));
     }
 
     // --- option -----------------------------------------------------------
@@ -432,7 +432,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(201, self::fixture('product_option_created.json'));
 
-        $option = (new Product('token', $mock->client()))->createOption(101, new OptionInput([
+        $option = (new Product('token', $mock->client()))->createOption(101, new OptionCreateInput([
             'name' => 'サイズ', 'values' => [['name' => 'S'], ['name' => 'M']],
         ]));
 
@@ -452,8 +452,8 @@ class ProductWriteTest extends TestCase
         $option = HttpMock::json(201, self::fixture('product_option_created.json'));
         $value = HttpMock::json(201, self::fixture('product_option_value_created.json'));
 
-        (new Product('token', $option->client()))->createOption(101, new OptionInput([]));
-        (new Product('token', $value->client()))->createOptionValue(101, 201, new OptionValueInput([]));
+        (new Product('token', $option->client()))->createOption(101, new OptionCreateInput([]));
+        (new Product('token', $value->client()))->createOptionValue(101, 201, new OptionValueCreateInput([]));
 
         $this->assertSame('{"option":{}}', $option->body());
         $this->assertSame('{"option_value":{}}', $value->body());
@@ -479,7 +479,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(201, self::fixture('product_option_value_created.json'));
 
-        $value = (new Product('token', $mock->client()))->createOptionValue(101, 201, new OptionValueInput(['name' => 'L']));
+        $value = (new Product('token', $mock->client()))->createOptionValue(101, 201, new OptionValueCreateInput(['name' => 'L']));
 
         $this->assertInstanceOf(OptionValue::class, $value);
         $this->assertSame(3, $value->getValueId());

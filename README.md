@@ -23,6 +23,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [決済](#決済)
   * [配送](#配送)
   * [ページネーション](#ページネーション)
+* [0.14.0 の変更](#0140-の変更)
 * [未実装](#未実装)
 * [開発者向け](#開発者向け)
 * [CLI](#cli)
@@ -90,6 +91,9 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
@@ -97,14 +101,14 @@ use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
@@ -196,7 +200,7 @@ $limit->get(); // 50
 ```
 
 * `Values\DateTime`: `YYYY-MM-DD` または `YYYY-MM-DD hh:mm:ss` 形式の文字列、もしくは `DateTimeInterface` を受け付ける
-* `Values\Furigana`: 全角カタカナ、長音符、半角・全角スペースを受け付ける
+* `Values\Furigana`: `ァ`〜`ヶ`、長音符、半角・全角スペースと空文字を受け付ける (`^[ァ-ヶー 　]*$`)。公式 OpenAPI が許容する `ヷヸヹヺ` は、2026-09-25 の実 API で422拒否を確認したため除外している。
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
 
@@ -355,7 +359,7 @@ if ($saleOrErrors instanceof Errors) {
 ```php
 $saleOrErrors = $client->getSale($saleId);
 if (! $saleOrErrors instanceof Errors) {
-    $updater = SaleUpdater::convert($saleOrErrors);
+    $updater = SaleUpdateInput::convert($saleOrErrors);
     $updater->setPaid(true);
     $updater->setPointState(PointState::FIXED);
 
@@ -436,7 +440,60 @@ if ($customerOrErrors instanceof Errors) {
 `Client::getCustomer()` は、内部で `Services\Customer::one(int|string $id, ?string $accessToken = null)` を呼び出す。
 
 #### 顧客データを追加
-現在は未実装。`Services\Customer` に追加用のメソッドはまだ存在しない。
+```php
+$customerOrErrors = $client->createCustomer(new CustomerCreateInput([
+    'name' => 'カラーミー太郎',
+    'mail' => 'taro@example.com',
+    'pref_id' => 13,
+    'postal' => '1508512',
+    'address1' => '渋谷区桜丘町26-1',
+    'tel' => '03-5456-2622',
+    // 任意
+    'furigana' => 'カラーミータロウ',
+    'sex' => 'male',
+    'add_member' => true,
+]));
+```
+
+`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は必須で、いずれかを指定しないと送信前に `ParameterException` が投げられる。`add_member` に `true` を指定すると会員として登録される。
+
+`sex` は公式 OpenAPI の作成 request にないが、実 API では作成時にも反映されることを確認している (2026-09-25)。`tel_mobile` は作成・更新とも書き込めないため入力に持たない。
+
+`Client::createCustomer()` は、内部で `Services\Customer::create(CustomerCreateInput $input, ?string $accessToken = null)` を呼び出す。必要な scope は `write_sales` で、顧客専用の scope は存在しない。
+
+#### 顧客データを更新
+```php
+$customerOrErrors = $client->updateCustomer($customerId, new CustomerUpdateInput([
+    'name' => 'カラーミー花子',
+    'address1' => '渋谷区桜丘町26-1',
+    'sex' => 'female',
+    'fax' => null, // 明示した null はクリア要求として送信される
+]));
+```
+
+明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。
+
+公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、いずれかを指定しないと送信前に `ParameterException` が投げられる。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
+
+`Client::updateCustomer()` は、内部で `Services\Customer::update(int|string $id, CustomerUpdateInput $input, ?string $accessToken = null)` を呼び出す。
+
+#### ショップポイントを増減
+```php
+$pointsOrErrors = $client->changeCustomerPoints($customerId, new CustomerPointsInput([
+    'points' => 100, // 負の値で減算
+]));
+
+if ($pointsOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $pointsOrErrors->getCustomerId();
+    $pointsOrErrors->getPoints(); // 増減後の保有ポイント数
+}
+```
+
+この API の応答は他の顧客 API と異なり `customer` などのキーで包まれないため、専用の `Entities\Customer\Points` を返す。保有ポイントを超える減算は API 側で `422` になる。
+
+`Client::changeCustomerPoints()` は、内部で `Services\Customer::changePoints(int|string $id, CustomerPointsInput $input, ?string $accessToken = null)` を呼び出す。
 
 ### 商品
 #### 商品一覧を取得
@@ -582,7 +639,7 @@ if ($updatedOrErrors instanceof Errors) {
 
 #### バリエーションを更新
 ```php
-$variantOrErrors = $client->updateProductVariant($productId, 301, new VariantInput([
+$variantOrErrors = $client->updateProductVariant($productId, 301, new VariantUpdateInput([
     'stocks' => 10,
     'option_price' => 1600,
     'weight' => null, // 明示した null で未設定へ戻す
@@ -596,7 +653,7 @@ if (! $variantOrErrors instanceof Errors) {
 オプションの `name` と `values` は必須で、`null` は受け付けない。削除は成功時に `204` を返すため、結果は `NoContent` になる。
 
 ```php
-$optionOrErrors = $client->createProductOption($productId, new OptionInput([
+$optionOrErrors = $client->createProductOption($productId, new OptionCreateInput([
     'name' => 'サイズ',
     'values' => [['name' => 'S'], ['name' => 'M']],
 ]));
@@ -605,7 +662,7 @@ if (! $optionOrErrors instanceof Errors) {
     $optionOrErrors->getValues(); // ['S', 'M']
 }
 
-$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new OptionValueInput(['name' => 'L']));
+$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new OptionValueCreateInput(['name' => 'L']));
 if (! $valueOrErrors instanceof Errors) {
     $valueId = $valueOrErrors->getValueId();
 }
@@ -864,9 +921,32 @@ $pagination->getOffset();
 
 -----
 
+## 0.14.0 の変更
+
+### 要求側入力クラスの改名
+
+書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残しており、次のメジャーな変更で削除する。
+
+| 旧クラス名 | 新クラス名 |
+| --- | --- |
+| `Entities\Product\OptionInput` | `Entities\Product\OptionCreateInput` |
+| `Entities\Product\OptionValueInput` | `Entities\Product\OptionValueCreateInput` |
+| `Entities\Product\VariantInput` | `Entities\Product\VariantUpdateInput` |
+| `Entities\Sales\SaleUpdater` | `Entities\Sales\SaleUpdateInput` |
+| `Entities\Sales\SaleDeliveryUpdater` | `Entities\Sales\SaleDeliveryUpdateInput` |
+
+作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、子要素の `MetaTagInput` は据え置いた。検索条件の `SearchParameters` 系も今回の対象外である。
+
+旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` はいずれも従来どおり動作する (`unserialize()` の `allowed_classes` には旧名を渡すこと)。
+
+### フリガナの検証
+
+`Values\Furigana` の許容文字を `^[ァ-ヶー 　]*$` とし、空文字を受け付けるようにした。従来は空文字を拒否していた。公式 OpenAPI が許容する `ヷヸヹヺ` は実 API が 422 で拒否するため含めない (2026-09-25 の観測)。
+
+-----
+
 ## 未実装
 
-* [顧客データの追加](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers)
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)

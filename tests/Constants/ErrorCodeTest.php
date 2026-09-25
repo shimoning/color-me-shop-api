@@ -10,7 +10,7 @@ class ErrorCodeTest extends TestCase
     public function test_enumとしてロードできる(): void
     {
         $this->assertTrue(\enum_exists(ErrorCode::class));
-        $this->assertCount(9, ErrorCode::cases());
+        $this->assertCount(11, ErrorCode::cases());
     }
 
     /**
@@ -81,5 +81,17 @@ class ErrorCodeTest extends TestCase
 
         $this->assertNotNull($code);
         $this->assertArrayHasKey($code->value, ErrorCode::message());
+    }
+
+    public function test_顧客書き込みで実測したコードとメッセージを復元できる(): void
+    {
+        foreach ([
+            '422100' => 'リクエストパラメータの形式が不正です。',
+            '422250' => '利用できない文字 X が含まれています。',
+        ] as $value => $message) {
+            $code = ErrorCode::tryFrom((string) $value);
+            $this->assertNotNull($code);
+            $this->assertSame($message, ErrorCode::message()[$code->value]);
+        }
     }
 }

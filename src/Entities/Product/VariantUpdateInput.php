@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
@@ -15,7 +16,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */
-class VariantInput extends Entity implements RequestEntity
+class VariantUpdateInput extends Entity implements RequestEntity
 {
     protected ?int $stocks;
     protected ?int $fewNum;
@@ -26,3 +27,7 @@ class VariantInput extends Entity implements RequestEntity
     protected ?int $optionMarketPrice;
     protected ?int $optionCost;
 }
+
+// 0.14.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(VariantUpdateInput::class);

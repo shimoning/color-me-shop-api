@@ -16,12 +16,12 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -51,7 +51,7 @@ class ClientTest extends TestCase
                 $client->getSale(1001, $accessToken);
             }],
             'updateSale' => [static function (Client $client, ?string $accessToken): void {
-                $client->updateSale(new SaleUpdater(['id' => 1001]), $accessToken);
+                $client->updateSale(new SaleUpdateInput(['id' => 1001]), $accessToken);
             }],
             'cancelSale' => [static function (Client $client, ?string $accessToken): void {
                 $client->cancelSale(1001, false, $accessToken);
@@ -105,16 +105,16 @@ class ClientTest extends TestCase
                 $client->updateProduct(101, new ProductInput(['name' => '商品']), $accessToken);
             }],
             'updateProductVariant' => [static function (Client $client, ?string $accessToken): void {
-                $client->updateProductVariant(101, 301, new VariantInput(['stocks' => 1]), $accessToken);
+                $client->updateProductVariant(101, 301, new VariantUpdateInput(['stocks' => 1]), $accessToken);
             }],
             'createProductOption' => [static function (Client $client, ?string $accessToken): void {
-                $client->createProductOption(101, new OptionInput(['name' => '色', 'values' => [['name' => '赤']]]), $accessToken);
+                $client->createProductOption(101, new OptionCreateInput(['name' => '色', 'values' => [['name' => '赤']]]), $accessToken);
             }],
             'deleteProductOption' => [static function (Client $client, ?string $accessToken): void {
                 $client->deleteProductOption(101, 201, $accessToken);
             }],
             'createProductOptionValue' => [static function (Client $client, ?string $accessToken): void {
-                $client->createProductOptionValue(101, 201, new OptionValueInput(['name' => '青']), $accessToken);
+                $client->createProductOptionValue(101, 201, new OptionValueCreateInput(['name' => '青']), $accessToken);
             }],
             'deleteProductOptionValue' => [static function (Client $client, ?string $accessToken): void {
                 $client->deleteProductOptionValue(101, 201, 3, $accessToken);
@@ -316,7 +316,7 @@ class ClientTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
         (new Client('my-token', $mock->client()))
-            ->updateSale(new SaleUpdater(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']));
+            ->updateSale(new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']));
 
         $this->assertSame('PUT', $mock->request()->getMethod());
         $this->assertSame('https://api.shop-pro.jp/v1/sales/1001', $mock->uri());
