@@ -220,6 +220,13 @@
         "tel",
         "tel_mobile"
     ],
+    "Customer\\CustomerPointsInput": [
+        "points"
+    ],
+    "Customer\\Points": [
+        "customer_id",
+        "points"
+    ],
     "Product\\Group": [
         "account_id",
         "display_state",

@@ -7,7 +7,9 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Customer;
@@ -186,5 +188,65 @@ class CustomerWriteTest extends TestCase
 
         (new Customer('', (new HttpMock([]))->client()))
             ->update(501, new CustomerUpdateInput(['name' => 'カラーミー花子']));
+    }
+
+    // --- changePoints -----------------------------------------------------
+
+    public function test_ポイント増減はトップレベルのJSONをPOSTしPointsを返す(): void
+    {
+        $mock = HttpMock::json(200, '{"customer_id":501,"points":220}');
+
+        $points = (new Customer('my-token', $mock->client()))
+            ->changePoints(501, new CustomerPointsInput(['points' => 100]));
+
+        $this->assertInstanceOf(Points::class, $points);
+        $this->assertSame(501, $points->getCustomerId());
+        $this->assertSame(220, $points->getPoints());
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/customers/501/points', $mock->uri());
+        $this->assertSame(['points' => 100], $mock->jsonBody());
+    }
+
+    public function test_ポイント減算は負の値をそのまま送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"customer_id":501,"points":120}');
+
+        (new Customer('my-token', $mock->client()))
+            ->changePoints(501, new CustomerPointsInput(['points' => -100]));
+
+        $this->assertSame(['points' => -100], $mock->jsonBody());
+    }
+
+    public function test_ポイント数が未指定の入力は送信前に拒否する(): void
+    {
+        $mock = HttpMock::json(200, '{"customer_id":501,"points":120}');
+
+        try {
+            (new Customer('my-token', $mock->client()))->changePoints(501, new CustomerPointsInput([]));
+            $this->fail('points の欠落が拒否されなかった');
+        } catch (ParameterException $e) {
+            $this->assertStringContainsString('points', $e->getMessage());
+        }
+
+        $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
+    }
+
+    public function test_ポイント増減の失敗はErrorsとして返す(): void
+    {
+        $mock = HttpMock::json(422, self::fixture('errors_422.json'));
+
+        $errors = (new Customer('my-token', $mock->client()))
+            ->changePoints(501, new CustomerPointsInput(['points' => -100000]));
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertSame(422, $errors->getResponse()->getStatus());
+    }
+
+    public function test_ポイント増減はアクセストークンが空だと拒否する(): void
+    {
+        $this->expectException(ParameterException::class);
+
+        (new Customer('', (new HttpMock([]))->client()))
+            ->changePoints(501, new CustomerPointsInput(['points' => 1]));
     }
 }

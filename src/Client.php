@@ -24,7 +24,9 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points as CustomerPoints;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 
 use Shimoning\ColorMeShopApi\Services\Payment;
@@ -659,6 +661,21 @@ class Client
         ?string $accessToken = null,
     ): CustomerEntity|Errors {
         return $this->customerService($accessToken)->update($id, $input, $accessToken);
+    }
+
+    /**
+     * 顧客のショップポイントを増減する。正の値が加算、負の値が減算。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または `points` が未指定の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function changeCustomerPoints(
+        int|string $id,
+        CustomerPointsInput $input,
+        ?string $accessToken = null,
+    ): CustomerPoints|Errors {
+        return $this->customerService($accessToken)->changePoints($id, $input, $accessToken);
     }
 
     /**

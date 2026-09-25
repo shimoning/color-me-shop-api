@@ -7,7 +7,9 @@ use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
@@ -125,6 +127,57 @@ class Customer extends Service
             $response,
             static fn(?array $data): CustomerEntity => new CustomerEntity($data['customer'] ?? []),
         );
+    }
+
+    /**
+     * 顧客ショップポイントの増減
+     *
+     * 正の値が加算、負の値が減算を表す。応答は `customer` などで包まれず、`customer_id` と
+     * 増減後の `points` をトップレベルに持つ。必要な scope は `write_sales`。
+     *
+     * 公式 OpenAPI は要求ボディと `points` を required とし、`points` がなければ操作を特定できないため、
+     * 未指定の要求は送信前に拒否する (ADR 0014 のピックアップ入力と同じ扱い)。
+     * 保有ポイントを超える減算など値の範囲は公式 OpenAPI に定義がなく、API 側の判断に委ねる。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
+     * @param int|string $id
+     * @param CustomerPointsInput $input
+     * @param string|null $accessToken
+     * @return Points|Errors
+     * @throws ParameterException 実効アクセストークンが空文字、または `points` が未指定の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function changePoints(
+        int|string $id,
+        CustomerPointsInput $input,
+        ?string $accessToken = null,
+    ): Points|Errors {
+        $response = $this->_request(['json' => true], $accessToken)->post(
+            $this->_endpoint('/customers/' . $id . '/points'),
+            self::requirePointsField($input),
+        );
+
+        return $this->_handle($response, static fn(?array $data): Points => new Points($data ?? []));
+    }
+
+    /**
+     * ポイント増減の入力に `points` が明示されていることを送信前に確認する。
+     *
+     * @return array<string, mixed>
+     * @throws ParameterException `points` が未指定の場合
+     */
+    private static function requirePointsField(CustomerPointsInput $input): array
+    {
+        $fields = $input->toArrayRecursive();
+        $missing = \array_diff(CustomerPointsInput::REQUIRED_FIELDS, \array_keys($fields));
+        if ($missing !== []) {
+            throw new ParameterException(\sprintf(
+                'ショップポイントの増減には %s を指定してください。',
+                \implode(', ', CustomerPointsInput::REQUIRED_FIELDS),
+            ));
+        }
+
+        return $fields;
     }
 
     /**
