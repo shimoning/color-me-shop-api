@@ -975,6 +975,8 @@ $pagination->getOffset();
 
 ## 開発者向け
 
+ブランチ名、コミット規約、プルリクエストの手順、リリース手順は [CONTRIBUTING.md](CONTRIBUTING.md) にまとめている。
+
 リポジトリを `git clone` し、`composer install` を実行した後に以下のコマンドを利用できる。
 
 ```bash
