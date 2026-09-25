@@ -42,20 +42,27 @@ API 以外の経路で設定された値は未検証であることを記した�
 
 - `Values\FallbackValue` を導入する。`Values\Value` を継承し、検証に通らない生の値から
   インスタンスを作る手段と、保持している値が API 仕様どおりかを判定する手段を持つ。
+  出典: `79d2c20`。
 - `Entity` が `OBJECT_FIELDS` の `value` を構築する際、対象が `FallbackValue` を実装しており、かつ
   コンストラクタが検証失敗で例外を投げた場合に限り、**応答文脈でのみ**生の値を保持した
-  インスタンスへフォールバックする。
+  インスタンスへフォールバックする。適用は文字列の値に限り、それ以外の型はフォールバックせず
+  原因例外をそのまま伝える。出典: `d1960c1`（拡張前の `buildObject()`）、`79d2c20`。
 - 要求文脈では従来どおり例外を投げる。文脈の判定には、`buildEnum()` が enum のフォールバックで
   使っているものと同じ `$this instanceof RequestEntity || self::$_requestContext` を用いる。
   要求側を厳格に保つ [ADR 0013](0013-expand-opt-in-enum-fallback.md) の契約を維持する判断である。
+  出典: `d1960c1`（`buildEnum()` の既存判定）、`79d2c20`。
 - フォールバックは `FallbackValue` を実装したクラスにだけ適用する opt-in とする。`Values\DateTime` や
   `Values\Limit` など他の値オブジェクトの挙動は変えない。ADR 0009 の enum と同じ方針である。
+  出典: [ADR 0009](0009-opt-in-enum-fallback.md)、`79d2c20`。
 - `Values\Furigana` に `FallbackValue` を実装する。応答で検証に通らない値が来ても、生の文字列を
-  保持したまま Entity を構築できるようにする。
+  保持したまま Entity を構築できるようにする。`fallback()` はコンストラクタを経由しないため、
+  コンストラクタで初期化する状態を持つ実装は `fallback()` を上書きする責任を負う。
+  出典: `79d2c20`。
 - フォールバックした値をライブラリ側でデコードや正規化はしない。`get()` は API が返した文字列を
   そのまま返し、値が API 仕様どおりかは利用者が判定できるようにする。数値文字参照を文字へ戻すかは
-  利用者の判断に委ねる。
+  利用者の判断に委ねる。出典: `79d2c20`。
 - 実測したエラーコード `422003` を `Constants\ErrorCode` に追加する。
+  出典: 2026-09-25 の[顧客 API 応答構造の実測記録](../api-customer-structure.md)（`43a8858`）、`79d2c20`。
 
 ## 代替案と却下理由
 
@@ -94,4 +101,6 @@ API 以外の経路で設定された値は未検証であることを記した�
 - [ADR 0009: 未知の enum 値を opt-in でフォールバックする](0009-opt-in-enum-fallback.md)
 - [ADR 0013: 応答に使う enum のフォールバック対象を拡張する](0013-expand-opt-in-enum-fallback.md)
 - [ADR 0015: 顧客書き込み API の入力を作成と更新で分ける](0015-model-customer-write-api.md)
-- [顧客 API 応答構造の実測記録](../api-customer-structure.md)
+- [顧客 API 応答構造の実測記録](../api-customer-structure.md)（出典コミット: `43a8858`）
+- `FallbackValue` の導入と `Entity::buildObject()` の拡張の出典コミット: `79d2c20`
+- 拡張前の `buildObject()` と `buildEnum()` の既存判定の出典コミット: `d1960c1`
