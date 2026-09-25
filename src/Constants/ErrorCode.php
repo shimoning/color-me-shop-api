@@ -17,6 +17,11 @@ enum ErrorCode: string implements FallbackEnum
      * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
      */
     case VALIDATE_ERROR_CHOICE = '422001';
+    /**
+     * 実測で観測 (2026-09-25、顧客のフリガナに数値文字参照を含めて PUT したとき)。
+     * 応答メッセージは「フリガナを正しく入力してください。」(`field: customer.furigana`)。
+     */
+    case VALIDATE_ERROR_FURIGANA = '422003';
     /** 実測で観測。公式 OpenAPI にコード固有の意味の説明なし。message() は汎用文言。 */
     case VALIDATE_ERROR_422007 = '422007';
     /**
@@ -63,6 +68,7 @@ enum ErrorCode: string implements FallbackEnum
             self::UNAUTHORIZED->value => 'このリソースにアクセスできません。有効なアクセストークンが見つからないか、必要なスコープが付与されていません。',
             self::NOT_FOUND->value => 'レコードが見つかりませんでした。',
             self::VALIDATE_ERROR_CHOICE->value => '選択肢にない値が指定されています。',
+            self::VALIDATE_ERROR_FURIGANA->value => 'フリガナを正しく入力してください。',
             self::VALIDATE_ERROR_422007->value => '入力内容に誤りがあります。',
             self::VALIDATE_ERROR_RANGE->value => '数値が許容範囲外です。',
             self::VALIDATE_ERROR_STOCK->value => 'バリエーションの在庫数をすべて指定してください。',
