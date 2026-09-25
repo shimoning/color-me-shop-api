@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class CustomerClientWriteTest extends TestCase
@@ -59,6 +60,11 @@ class CustomerClientWriteTest extends TestCase
                 200, '{"customer":{"id":501}}', 'POST', '/v1/customers', CustomerEntity::class,
                 '{"customer":{"name":"カラーミー太郎","mail":"taro@example.com","pref_id":13,'
                     . '"postal":"1508512","address1":"渋谷区桜丘町26-1","tel":"03-5456-2622"}}',
+            ],
+            'updateCustomer' => [
+                'updateCustomer', [501, new CustomerUpdateInput(['name' => 'カラーミー花子', 'fax' => null])],
+                200, '{"customer":{"id":501}}', 'PUT', '/v1/customers/501', CustomerEntity::class,
+                '{"customer":{"name":"カラーミー花子","fax":null}}',
             ],
         ];
     }

@@ -199,6 +199,27 @@
         "receive_mail_magazine",
         "tel"
     ],
+    "Customer\\CustomerUpdateInput": [
+        "address1",
+        "address2",
+        "answer_free_form1",
+        "answer_free_form2",
+        "answer_free_form3",
+        "birthday",
+        "busho",
+        "fax",
+        "furigana",
+        "hojin",
+        "mail",
+        "name",
+        "other",
+        "postal",
+        "pref_id",
+        "receive_mail_magazine",
+        "sex",
+        "tel",
+        "tel_mobile"
+    ],
     "Product\\Group": [
         "account_id",
         "display_state",

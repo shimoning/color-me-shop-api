@@ -24,6 +24,7 @@ use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 
 use Shimoning\ColorMeShopApi\Services\Payment;
@@ -643,6 +644,21 @@ class Client
     public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
     {
         return $this->customerService($accessToken)->create($input, $accessToken);
+    }
+
+    /**
+     * 顧客データを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateCustomer(
+        int|string $id,
+        CustomerUpdateInput $input,
+        ?string $accessToken = null,
+    ): CustomerEntity|Errors {
+        return $this->customerService($accessToken)->update($id, $input, $accessToken);
     }
 
     /**

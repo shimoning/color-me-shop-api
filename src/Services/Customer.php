@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
@@ -87,6 +88,37 @@ class Customer extends Service
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/customers'),
             ['customer' => self::requireCreateFields($input)],
+        );
+
+        return $this->_handle(
+            $response,
+            static fn(?array $data): CustomerEntity => new CustomerEntity($data['customer'] ?? []),
+        );
+    }
+
+    /**
+     * 顧客データの更新
+     *
+     * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     * 更新の `customer` には required 指定の子プロパティがないため、空の入力を送信前に拒否せず
+     * API の検証 (422 の `Errors`) に委ねる (ADR 0015)。必要な scope は `write_sales`。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
+     * @param int|string $id
+     * @param CustomerUpdateInput $input
+     * @param string|null $accessToken
+     * @return CustomerEntity|Errors
+     * @throws ParameterException 実効アクセストークンが空文字の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function update(
+        int|string $id,
+        CustomerUpdateInput $input,
+        ?string $accessToken = null,
+    ): CustomerEntity|Errors {
+        $response = $this->_request(['json' => true], $accessToken)->put(
+            $this->_endpoint('/customers/' . $id),
+            ['customer' => self::_jsonObject($input->toArrayRecursive())],
         );
 
         return $this->_handle(
