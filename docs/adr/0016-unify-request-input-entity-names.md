@@ -30,17 +30,19 @@
 ## 判断
 
 - JSON ボディの入力 Entity の命名を `<対象><操作>Input` に統一する。作成と更新で共用するものは
-  操作名を持たず `<対象>Input` のままとする。子要素の入力も操作名を持たない。
+  操作名を持たず `<対象>Input` のままとする。子要素の入力も操作名を持たない。出典: `435757c`。
 - この規則により、次のとおり改名する。
   - `Product\OptionInput` → `Product\OptionCreateInput`（作成専用）
   - `Product\OptionValueInput` → `Product\OptionValueCreateInput`（作成専用）
   - `Product\VariantInput` → `Product\VariantUpdateInput`（更新専用）
   - `Sales\SaleUpdater` → `Sales\SaleUpdateInput`（更新専用）
   - `Sales\SaleDeliveryUpdater` → `Sales\SaleDeliveryUpdateInput`（更新専用）
+
+  出典: `435757c`。
 - `Product\ProductInput`、`GroupInput`、`CategoryInput`、`CategoryChildInput`、`PickupInput` は
-  作成と更新で共用するため据え置く。`MetaTagInput` は子要素のため据え置く。
+  作成と更新で共用するため据え置く。`MetaTagInput` は子要素のため据え置く。出典: `435757c`。
 - 検索条件の `SearchParameters` 系は今回の統一対象に含めない。GET クエリ専用で性質が異なり、
-  現行の命名で用途が明確なためである。
+  現行の命名で用途が明確なためである。出典: `435757c`。
 - 旧クラス名は `Shimoning\ColorMeShopApi\Aliases` の対応表に載せ、非推奨の別名として残す。
   別名の登録経路は2つ用意し、どちらから先に参照されても旧名が成立するようにする。
   - 旧名が先に参照される経路（旧名での `new`、旧名での `unserialize()`）は、
@@ -48,18 +50,20 @@
     `autoload.files` に置いた `bootstrap/aliases.php` から1度だけ行う。
   - 新名が先に参照される経路は、改名した5クラスの定義直後に `Aliases::defineLegacyAlias()` を
     呼んで解決する。
+
+  出典: `435757c`（遅延 autoloader）、`78fabe0`（クラス定義直後の登録）。
 - 新名の経路を別に用意するのは、遅延 autoloader だけでは新クラスから生成したオブジェクトに対する
   旧名の `instanceof` が成立しないためである。`instanceof` は右辺クラスの autoload を起こさないため、
   旧名が一度も autoload されていない状態では `false` になる。旧名を引数型に宣言した関数への
-  受け渡しも失敗する。後方互換のための別名がその目的を果たせない。
+  受け渡しも失敗する。後方互換のための別名がその目的を果たせない。出典: `78fabe0`。
 - 対応表は `Aliases::MAP` を唯一の出典とし、二重定義は `class_exists($legacy, false)` で防ぐ。
-  どちらの経路でも対応先クラスを網羅的に読み込むことはない。
+  どちらの経路でも対応先クラスを網羅的に読み込むことはない。出典: `435757c`、`78fabe0`。
 - クラス定義ファイルで `class_alias()` を呼ぶことは、ファイルに副作用を持たせないという PSR-1 の
   推奨に反する。後方互換のための一時的な措置であり、次のメジャーな変更で旧名ごと削除するため、
-  各呼び出し箇所にその旨をコメントで残す。
+  各呼び出し箇所にその旨をコメントで残す。出典: `78fabe0`。
 - `class_alias()` による真の別名であり、旧名で `unserialize()` された直列化データも復元できる。
-  `allowed_classes` には直列化された旧名を渡す必要がある。
-- 旧名は次のメジャーな変更で削除する。README に移行表を載せて告知する。
+  `allowed_classes` には直列化された旧名を渡す必要がある。出典: `435757c`。
+- 旧名は次のメジャーな変更で削除する。README に移行表を載せて告知する。出典: `e79ce04`、`cfea011`。
 
 ## 代替案と却下理由
 
@@ -94,3 +98,6 @@
 - [ADR 0000: アーキテクチャ上の意思決定を記録する](0000-record-architecture-decisions.md)
 - [ADR 0014: 商品書き込み API の入力と空レスポンスを表現する](0014-model-product-write-api.md)
 - [ADR 0015: 顧客書き込み API の入力を作成と更新で分ける](0015-model-customer-write-api.md)
+- 改名と遅延 autoloader の出典コミット: `435757c`
+- クラス定義直後の別名登録の出典コミット: `78fabe0`
+- README の移行表と別名の説明の出典コミット: `e79ce04`、`cfea011`
