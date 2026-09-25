@@ -23,6 +23,7 @@ use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 
 use Shimoning\ColorMeShopApi\Services\Payment;
@@ -629,10 +630,30 @@ class Client
      */
     public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {
+        return $this->customerService($accessToken)->one($id, $accessToken);
+    }
+
+    /**
+     * 顧客データを追加する。必須フィールドは CustomerCreateInput の構築時に検証される。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
+    {
+        return $this->customerService($accessToken)->create($input, $accessToken);
+    }
+
+    /**
+     * 顧客 API のサービスを、引数のアクセストークンを優先して生成する。
+     */
+    private function customerService(?string $accessToken): Customer
+    {
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return (new Customer($this->accessToken ?? '', $this->httpClient))->one($id, $accessToken);
+        return new Customer($this->accessToken ?? '', $this->httpClient);
     }
 
     /**
