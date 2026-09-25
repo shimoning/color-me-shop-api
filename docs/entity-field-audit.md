@@ -47,6 +47,9 @@ query parameter の `?T` は値として `null` を送れるという意味で�
 | `Sales\SaleUpdateInput` | `PUT /v1/sales/{sale_id}` (`updateSale`) の `requestBody.application/json.sale`。`$id` は path の `sale_id` を表す |
 | `Sales\SaleDeliveryUpdateInput` | 同 `updateSale` の `sale.sale_deliveries[]`。`SaleDelivery` からの継承プロパティを含めた |
 | `Customer\SearchParameters` | `GET /v1/customers` (`getCustomers`) の query parameters |
+| `Customer\CustomerCreateInput` | `POST /v1/customers` (`postCustomers`) の `requestBody.application/json.customer`。`sex` は OpenAPI になく、実測で書き込めたため持つ |
+| `Customer\CustomerUpdateInput` | `PUT /v1/customers/{customer_id}` (`updateCustomers`) の同 `customer`。`tel_mobile` は OpenAPI にあるが実測で書き込めないため持たない |
+| `Customer\CustomerPointsInput` | `POST /v1/customers/{customer_id}/points` (`postCustomerPoints`) の `requestBody.application/json` |
 | `OAuth\Options` | OpenAPI `info.description` に記載された認可 URL (`GET /oauth/authorize`) の query とトークン交換 (`POST /oauth/token`) の form parameter。これらは `paths` にはない |
 
 主なレスポンス対応は `getSales` / `getSale` / `updateSale`、`statSale`、`getShop`、
@@ -95,6 +98,10 @@ ADR 0008 の方針を満たす説明用の候補名であり、実装コミッ�
 | Sales | `Sales\Stat` | 不足なし。`GET /v1/sales/stat` の `sales_stat` |
 | Sales request | `Sales\SaleUpdateInput` | 不足なし。`updateSale` body の `sale` 3項目を保持し、`$id` は path 用 |
 | Sales request | `Sales\SaleDeliveryUpdateInput` | 不足なし。`updateSale` body の nested 28項目は継承分を含めて宣言済み |
+| Customer request | `Customer\CustomerCreateInput` | `postCustomers` body の `customer` を保持。OpenAPI との差は `sex` の追加のみ ([ADR 0015](adr/0015-model-customer-write-api.md)) |
+| Customer request | `Customer\CustomerUpdateInput` | `updateCustomers` body の `customer` を保持。OpenAPI との差は `tel_mobile` の除外のみ ([ADR 0015](adr/0015-model-customer-write-api.md)) |
+| Customer request | `Customer\CustomerPointsInput` | 不足なし。`postCustomerPoints` body の `points` |
+| Customer | `Customer\Points` | 不足なし。`postCustomerPoints` の応答。`customer` などで包まれずトップレベルに `customer_id` と `points` を持つ |
 | Shop | `Shop\Shop` | 不足なし。`GET /v1/shop` の `shop`。数字付きメール項目は `FIELD_NAMES` も確認済み |
 | Delivery | `Delivery\Delivery` | 不足なし。`GET /v1/deliveries` の items |
 | Delivery | `Delivery\Charge` | 不足なし。`delivery.charge` |
