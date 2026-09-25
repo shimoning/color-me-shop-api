@@ -197,6 +197,7 @@
         "postal",
         "pref_id",
         "receive_mail_magazine",
+        "sex",
         "tel"
     ],
     "Customer\\CustomerUpdateInput": [

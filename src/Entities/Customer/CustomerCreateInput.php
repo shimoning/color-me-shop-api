@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
+use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
@@ -12,8 +13,9 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 /**
  * 顧客データの追加 (POST /v1/customers) の `customer` 入力。
  *
- * 公式 OpenAPI の作成 request だけに現れるフィールドを持ち、更新専用の `sex` / `tel_mobile` は持たない
- * (ADR 0015)。作成と更新で required 指定が異なるため、更新の CustomerUpdateInput とは別の型にしている。
+ * `sex` は公式 OpenAPI の作成 request にないが、2026-09-25 の実測で反映されたため持たせている。
+ * `tel_mobile` / `memo` / `points` / `member` / `sales_count` は作成時に無視されるため持たせない。
+ * 作成と更新で必須フィールドが異なるため、更新の CustomerUpdateInput とは別の型にしている。
  *
  * 直列化の契約:
  * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する (ADR 0014)。
@@ -37,6 +39,7 @@ class CustomerCreateInput extends Entity implements RequestEntity
     public const OBJECT_FIELDS = [
         'furigana' => ['allowNull' => true, 'value' => Furigana::class],
         'prefId' => ['enum' => Prefecture::class],
+        'sex' => ['enum' => Sex::class],
     ];
 
     /**
@@ -55,6 +58,7 @@ class CustomerCreateInput extends Entity implements RequestEntity
     protected ?string $address2;
     protected ?Furigana $furigana;
     protected ?string $fax;
+    protected ?Sex $sex;
     protected ?string $birthday;
     protected ?string $hojin;
     protected ?string $busho;

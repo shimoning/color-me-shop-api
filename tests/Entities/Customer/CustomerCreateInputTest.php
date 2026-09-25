@@ -116,15 +116,37 @@ class CustomerCreateInputTest extends TestCase
         $this->assertNull($fields['furigana']);
     }
 
-    public function test_作成では性別と携帯電話番号を送信しない(): void
+    public function test_作成では性別を送信し携帯電話番号は送信しない(): void
     {
         $fields = (new CustomerCreateInput(self::required([
             'sex' => Sex::MALE,
             'tel_mobile' => '090-1234-5678',
         ])))->toArrayRecursive();
 
-        $this->assertArrayNotHasKey('sex', $fields);
+        $this->assertSame('male', $fields['sex']);
         $this->assertArrayNotHasKey('tel_mobile', $fields);
+    }
+
+    public function test_性別は文字列で指定でき明示したnullも送信する(): void
+    {
+        $input = new CustomerCreateInput(['sex' => 'female']);
+        $this->assertSame(Sex::FEMALE, $input->toArray()['sex']);
+        $this->assertSame(['sex' => 'female'], $input->toArrayRecursive());
+        $this->assertSame(['sex' => null], (new CustomerCreateInput(['sex' => null]))->toArrayRecursive());
+    }
+
+    public function test_性別の番兵値は要求側なので拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('sex');
+        new CustomerCreateInput(['sex' => Sex::UNKNOWN]);
+    }
+
+    public function test_未知の性別は要求側なので拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('sex');
+        new CustomerCreateInput(['sex' => 'unknown-value']);
     }
 
     public function test_未定義の都道府県は要求側なので拒否する(): void
