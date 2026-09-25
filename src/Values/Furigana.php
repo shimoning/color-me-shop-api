@@ -6,6 +6,10 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * フリガナ (カタカナ)
+ *
+ * 許容する文字は公式 OpenAPI の顧客の `furigana` (`^[ァ-ヶー 　ヷヸヹヺ]*$`) に揃えている。
+ * 空文字と、ワ行の濁点付き (ヷヸヹヺ) を含む。
+ * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */
 class Furigana implements Value
 {
@@ -41,6 +45,6 @@ class Furigana implements Value
      */
     public function validate(mixed $value): bool
     {
-        return preg_match('/\A[ァ-ヶー 　]+\z/u', $value);
+        return preg_match('/\A[ァ-ヶー 　ヷヸヹヺ]*\z/u', $value) === 1;
     }
 }
