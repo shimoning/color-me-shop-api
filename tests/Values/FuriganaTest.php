@@ -13,6 +13,8 @@ class FuriganaTest extends TestCase
     public function test_カタカナを受け取りそのまま保持する(string $input): void
     {
         $this->assertSame($input, (new Furigana($input))->get());
+        $this->assertTrue((new Furigana($input))->isValid());
+        $this->assertTrue(Furigana::fallback($input)->isValid());
     }
 
     public static function validProvider(): array
@@ -41,6 +43,7 @@ class FuriganaTest extends TestCase
     public static function invalidProvider(): array
     {
         return [
+            '実測の数値文字参照' => ['テストカナ&#12535;&#12536;&#12537;&#12538;'],
             'ヷ' => ['ヷ'],
             'ヸ' => ['ヸ'],
             'ヹ' => ['ヹ'],
@@ -62,5 +65,15 @@ class FuriganaTest extends TestCase
         $this->assertTrue($furigana->validate('タロウ'));
         $this->assertTrue($furigana->validate(''));
         $this->assertFalse($furigana->validate('たろう'));
+    }
+
+    #[DataProvider('invalidProvider')]
+    public function test_フォールバックは不正な生値をそのまま保持する(string $input): void
+    {
+        $value = Furigana::fallback($input);
+
+        $this->assertInstanceOf(\Shimoning\ColorMeShopApi\Values\FallbackValue::class, $value);
+        $this->assertSame($input, $value->get());
+        $this->assertFalse($value->isValid());
     }
 }

@@ -15,6 +15,8 @@ use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
+use Shimoning\ColorMeShopApi\Values\FallbackValue;
 use Shimoning\ColorMeShopApi\Values\Value;
 
 /**
@@ -475,6 +477,13 @@ class Entity
         self::$_requestContext = $previous || $this instanceof RequestEntity;
         try {
             return new $class($value);
+        } catch (ParameterException $exception) {
+            $strict = $this instanceof RequestEntity || self::$_requestContext;
+            // 明示的に対応した値だけ、応答側の検証失敗時に生値を保持する。
+            if (! $strict && \is_subclass_of($class, FallbackValue::class) && \is_string($value)) {
+                return $class::fallback($value);
+            }
+            throw $exception;
         } finally {
             self::$_requestContext = $previous;
         }
