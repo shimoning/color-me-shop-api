@@ -937,7 +937,7 @@ $pagination->getOffset();
 
 作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、子要素の `MetaTagInput` は据え置いた。検索条件の `SearchParameters` 系も今回の対象外である。
 
-別名は `Shimoning\ColorMeShopApi\Aliases` の遅延 autoloader が解決するため、旧名を参照するまで新クラスは読み込まれない。旧名で `serialize()` されたデータも `unserialize()` で復元できる (`allowed_classes` には旧名を渡すこと)。
+旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` はいずれも従来どおり動作する (`unserialize()` の `allowed_classes` には旧名を渡すこと)。
 
 ### フリガナの検証
 
