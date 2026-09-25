@@ -51,47 +51,53 @@ TODO コメントだけが残っていた。出典: `bbff143`。
 - 顧客の作成と更新は、`Entities\Customer\CustomerCreateInput` と
   `Entities\Customer\CustomerUpdateInput` の別々の入力 Entity で表す。両操作で required 指定と
   有効なプロパティ集合が異なり、その差を型で表せるためである。ADR 0014 が商品で共用を選んだ
-  根拠（必須性の差を型で表せない）は顧客には当てはまらない。
+  根拠（必須性の差を型で表せない）は顧客には当てはまらない。出典: `2fdf813`、`3711dc1`。
 - ポイント増減の入力は `Entities\Customer\CustomerPointsInput` とする。応答は他の顧客 API と異なり
   `customer` などのキーで包まれないため、`Entities\Customer\Points` という専用の応答 Entity で表す。
-  `customer_id` と、増減後の保有ポイント数である `points` を持つ。
+  `customer_id` と、増減後の保有ポイント数である `points` を持つ。出典: `d19bf38`。
 - 作成・更新の応答 `customer` は、公式 OpenAPI 上も実測上も GET の `customer` と同じ形であるため、
-  既存の `Entities\Customer\Customer` を再利用する。
+  既存の `Entities\Customer\Customer` を再利用する。出典: `2fdf813`、`3711dc1`。
 - 必須フィールドの送信前検証は Service 側に置く。`Services\Customer::create()` は公式 OpenAPI が
   required とする6フィールド、`update()` は実測で必須だった `name` と `address1`、`changePoints()` は
   `points` の明示を確認し、欠けていれば `ParameterException` で拒否する。各入力 Entity は
   `REQUIRED_FIELDS` として対象を公開するだけで、自身では検証しない。
+  出典: `2fdf813`（作成）、`f2aad6b`（更新）、`d19bf38`（ポイント）。
 - 検証を入力 Entity のコンストラクタに置かないのは、空配列での構築を前提とする `EntityContractTest` の
   横断契約を保つためである。ADR 0014 のピックアップ入力（`requirePickupFields`）と同じ置き場所になる。
+  出典: `2fdf813`。
 - 更新の必須検証は、公式 OpenAPI の required 指定ではなく実測に基づく。ADR 0014 が定めた「OpenAPI が
   要求ボディを required とし、かつ API がそのフィールドで操作対象を特定するものに限る」という基準の
-  外にあるため、この差異を実装の PHPDoc に明記する。
+  外にあるため、この差異を実装の PHPDoc に明記する。出典: `f2aad6b`。
 - `CustomerCreateInput` は `sex` を持つ。公式 OpenAPI の作成 request にはないが、実測で反映された
   ためである。`tel_mobile` / `memo` / `points` / `member` / `sales_count` は実測で無視されたため
-  持たせない。
+  持たせない。出典: `4e6d6c2`。
 - `CustomerUpdateInput` は `tel_mobile` を持たない。公式 OpenAPI の更新 request にはあるが、実測で
   書き込めなかったためである。ADR 0014 が商品の `unlisted` を `ProductInput` から外したのと同じ判断で
   ある。書き込めないフィールドを入力に残すと、利用者は黙って無視される値を送ることになる。
+  出典: `586179a`。
 - `CustomerUpdateInput` の null 許容は公式 OpenAPI の `nullable` 指定に従う。`name` / `mail` /
   `pref_id` / `postal` / `address1` / `tel` は nullable 指定がなく、作成では required でもあるため、
   明示した `null` を型として拒否する。ADR 0014 が `ProductInput` の全フィールドを nullable にした
   判断は、この Entity には適用しない。nullable なフィールドは実測で明示した `null` によりクリア
-  できた（`receive_mail_magazine` だけは `null` を送ると `false` になった）。
+  できた（`receive_mail_magazine` だけは `null` を送ると `false` になった）。出典: `3711dc1`。
 - `sex` には応答と同じ `Constants\Sex` を共用する。要求側では未知値のフォールバックを適用せず、
   番兵の `UNKNOWN` と未定義の文字列を構築時に拒否する。[ADR 0013](0013-expand-opt-in-enum-fallback.md)
   の要求側契約を維持する判断である。実測でも未定義値は `422` で拒否された。
+  出典: `3711dc1`、`4e6d6c2`。
 - `pref_id` には応答と同じ `Constants\Prefecture` を共用する。1〜48 という公式 OpenAPI の範囲と、
-  enum の case が一致する。
+  enum の case が一致する。出典: `2fdf813`。
 - `Values\Furigana` の許容文字は `^[ァ-ヶー 　]*$` とする。公式 OpenAPI のパターンより狭いが、
   実 API が `ヷヸヹヺ` を拒否したためである。[ADR 0012](0012-allow-nullability-from-api-observations.md)
   と同じく、公式定義と実測が食い違う場合は実測を採る。空文字は実測で受理されたため許容する。
   この Value は応答側でも使うため、利用者にとっては検証が緩む方向（空文字の許容）と厳しくなる方向
-  （`ヷヸヹヺ` の拒否）の両方の挙動変更になる。
+  （`ヷヸヹヺ` の拒否）の両方の挙動変更になる。出典: `05029e1`、`5086b51`。
 - `CustomerPointsInput` の `points` は非 null の int として宣言する。公式 OpenAPI が
   `nullable: false` とし、実測でも欠落と `null` がともに `422` になったためである。実 API は文字列の
   `"100"` も受理したが、ライブラリは整数だけを受け付ける。要求側を厳格に保つ既存の方針に従う。
+  出典: `d19bf38`。
 - 顧客を削除する API は提供しない。公式 API に該当操作がないためである。実 API の検証で作成した
   顧客はショップに残る。これは削除不能による検証環境の運用であり、ライブラリの仕様ではない。
+  出典: 公式 OpenAPI（2026-09-24 取得）。
 
 ## 代替案と却下理由
 
@@ -138,5 +144,8 @@ TODO コメントだけが残っていた。出典: `bbff143`。
 - [ADR 0013: 応答に使う enum のフォールバック対象を拡張する](0013-expand-opt-in-enum-fallback.md)
 - [ADR 0014: 商品書き込み API の入力と空レスポンスを表現する](0014-model-product-write-api.md)
 - [ADR 0016: 要求側入力 Entity の命名を統一し、旧名を非推奨の別名で残す](0016-unify-request-input-entity-names.md)
-- [顧客 API 応答構造の実測記録](../api-customer-structure.md)
+- [顧客 API 応答構造の実測記録](../api-customer-structure.md)（出典コミット: `03463df`）
 - [公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json)（2026-09-24 取得）
+- 顧客の作成・更新・ポイント増減の実装の出典コミット: `2fdf813`、`3711dc1`、`d19bf38`
+- 実測に基づく調整の出典コミット: `5086b51`（フリガナ）、`4e6d6c2`（作成の `sex`）、
+  `586179a`（更新の `tel_mobile`）、`f2aad6b`（更新の必須検証）、`5958161`（エラーコード）
