@@ -206,8 +206,8 @@ class Customer extends Service
      * 顧客作成の入力に、公式 OpenAPI が required とする6フィールドが明示されていることを確認する。
      *
      * 作成の request では `customer` とその6つの子プロパティに required 指定があるため、
-     * 空の要求を API へ送らず送信前に拒否する (ADR 0015)。明示した `null` は送信し、
-     * その受理は API に委ねる。
+     * 必須フィールドが未指定の要求は送信前に拒否する (ADR 0015)。必須6項目は非 null の
+     * プロパティであり、明示した `null` は CustomerCreateInput の構築時に InvalidFieldException で拒否される。
      *
      * @return array<string, mixed>
      * @throws ParameterException 未指定の必須フィールドがある場合

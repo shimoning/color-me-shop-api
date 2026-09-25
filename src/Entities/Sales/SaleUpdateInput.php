@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 
 /**
@@ -119,3 +120,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
         ]);
     }
 }
+
+// 0.14.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(SaleUpdateInput::class);

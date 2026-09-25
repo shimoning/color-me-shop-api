@@ -637,10 +637,10 @@ class Client
     }
 
     /**
-     * 顧客データを追加する。必須フィールドは CustomerCreateInput の構築時に検証される。
+     * 顧客データを追加する。必須フィールドの未指定は Services\Customer::create() 呼び出し時に検証される。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
@@ -652,7 +652,7 @@ class Client
      * 顧客データを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateCustomer(
