@@ -218,8 +218,7 @@
         "pref_id",
         "receive_mail_magazine",
         "sex",
-        "tel",
-        "tel_mobile"
+        "tel"
     ],
     "Customer\\CustomerPointsInput": [
         "points"

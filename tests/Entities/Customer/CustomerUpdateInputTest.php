@@ -44,7 +44,6 @@ class CustomerUpdateInputTest extends TestCase
         $this->assertSame([
             'furigana' => null,
             'address2' => null,
-            'tel_mobile' => null,
             'fax' => null,
             'sex' => null,
             'birthday' => null,
@@ -70,12 +69,12 @@ class CustomerUpdateInputTest extends TestCase
         }
     }
 
-    public function test_更新専用の性別と携帯電話番号を送信できる(): void
+    public function test_性別は送信でき携帯電話番号は送信しない(): void
     {
         $input = new CustomerUpdateInput(['sex' => 'female', 'tel_mobile' => '090-1234-5678']);
 
         $this->assertSame(Sex::FEMALE, $input->toArray()['sex']);
-        $this->assertSame(['tel_mobile' => '090-1234-5678', 'sex' => 'female'], $input->toArrayRecursive());
+        $this->assertSame(['sex' => 'female'], $input->toArrayRecursive());
     }
 
     public function test_性別はenumインスタンスでも指定できバッキング値で送信する(): void

@@ -13,9 +13,13 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 /**
  * 顧客データの更新 (PUT /v1/customers/{customer_id}) の `customer` 入力。
  *
- * 公式 OpenAPI の更新 request だけに現れる `sex` / `tel_mobile` を持ち、作成専用の `add_member` は
- * 持たない。作成の `customer` には required 指定の子プロパティが6つあるのに対し、更新の `customer` には
- * required 指定がないため、作成の CustomerCreateInput とは別の型にしている (ADR 0015)。
+ * 作成専用の `add_member` は持たない。
+ * `tel_mobile` は公式 OpenAPI の更新 request にあるが、2026-09-25 の実測で
+ * null → 値 → 別の値 → null の全パターンが200でも PUT 応答と直後の GET は常に null だった。
+ * 書き込めないため、ProductInput の `unlisted` と同じ判断で持たせない (ADR 0014)。
+ * 公式 OpenAPI には required 指定がないが、2026-09-25 の実測で `name` / `address1` が
+ * 必須だったため、REQUIRED_FIELDS として公開し、Services\Customer::update() が送信前に検証する。
+ * 同日の実測で、省略したフィールドは保持される部分更新として機能することも確認した。
  *
  * 直列化の契約:
  * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する (ADR 0014)。
@@ -41,6 +45,9 @@ class CustomerUpdateInput extends Entity implements RequestEntity
         'sex' => ['enum' => Sex::class],
     ];
 
+    /** 実 API で必須と確認したフィールド。送信前に Service 側で明示を確認する。 */
+    public const REQUIRED_FIELDS = ['name', 'address1'];
+
     protected string $name;
     protected string $mail;
     protected Prefecture $prefId;
@@ -50,7 +57,6 @@ class CustomerUpdateInput extends Entity implements RequestEntity
 
     protected ?Furigana $furigana;
     protected ?string $address2;
-    protected ?string $telMobile;
     protected ?string $fax;
     protected ?Sex $sex;
     protected ?string $birthday;
