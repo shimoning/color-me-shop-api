@@ -140,12 +140,12 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('customer.json'));
 
         $customer = (new Customer('my-token', $mock->client()))
-            ->update(501, new CustomerUpdateInput(['name' => 'カラーミー花子']));
+            ->update(501, new CustomerUpdateInput(['name' => 'カラーミー花子', 'address1' => '渋谷区']));
 
         $this->assertInstanceOf(CustomerEntity::class, $customer);
         $this->assertSame('PUT', $mock->request()->getMethod());
         $this->assertSame('https://api.shop-pro.jp/v1/customers/501', $mock->uri());
-        $this->assertSame(['customer' => ['name' => 'カラーミー花子']], $mock->jsonBody());
+        $this->assertSame(['customer' => ['name' => 'カラーミー花子', 'address1' => '渋谷区']], $mock->jsonBody());
     }
 
     public function test_顧客更新は明示したnullをクリア要求として送信する(): void
@@ -153,22 +153,42 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('customer.json'));
 
         (new Customer('my-token', $mock->client()))
-            ->update(501, new CustomerUpdateInput(['fax' => null, 'other' => null]));
+            ->update(501, new CustomerUpdateInput([
+                'name' => 'カラーミー花子', 'address1' => '渋谷区', 'fax' => null, 'other' => null,
+            ]));
 
-        $this->assertSame(['customer' => ['fax' => null, 'other' => null]], $mock->jsonBody());
+        $this->assertSame(['customer' => [
+            'name' => 'カラーミー花子', 'address1' => '渋谷区', 'fax' => null, 'other' => null,
+        ]], $mock->jsonBody());
     }
 
-    /**
-     * 更新の `customer` には required 指定の子プロパティがないため、空の入力は送信前に拒否せず
-     * API の検証へ委ねる (ADR 0015)。要求ボディの `customer` は JSON で object になる必要がある。
-     */
-    public function test_空の入力は空のobjectとして送信する(): void
+    public function test_空の更新入力は送信前に拒否する(): void
     {
         $mock = HttpMock::json(200, self::fixture('customer.json'));
 
-        (new Customer('my-token', $mock->client()))->update(501, new CustomerUpdateInput([]));
+        try {
+            (new Customer('my-token', $mock->client()))->update(501, new CustomerUpdateInput([]));
+            $this->fail('必須フィールドの欠落が拒否されなかった');
+        } catch (ParameterException $e) {
+            $this->assertStringContainsString('未指定: name, address1', $e->getMessage());
+        }
+        $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
+    }
 
-        $this->assertSame('{"customer":{}}', $mock->body());
+    public function test_更新の必須フィールドが一方でも欠けると送信前に拒否する(): void
+    {
+        foreach (['name', 'address1'] as $missing) {
+            $mock = HttpMock::json(200, self::fixture('customer.json'));
+            $data = ['name' => 'カラーミー花子', 'address1' => '渋谷区'];
+            unset($data[$missing]);
+            try {
+                (new Customer('my-token', $mock->client()))->update(501, new CustomerUpdateInput($data));
+                $this->fail('必須フィールドの欠落が拒否されなかった');
+            } catch (ParameterException $e) {
+                $this->assertStringContainsString('未指定: ' . $missing, $e->getMessage());
+            }
+            $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
+        }
     }
 
     public function test_顧客更新の404はErrorsとして返す(): void
@@ -176,7 +196,7 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(404, '{"errors":[{"code":"404100","message":"データが見つかりません。","status":404}]}');
 
         $errors = (new Customer('my-token', $mock->client()))
-            ->update(999, new CustomerUpdateInput(['name' => 'カラーミー花子']));
+            ->update(999, new CustomerUpdateInput(['name' => 'カラーミー花子', 'address1' => '渋谷区']));
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame(404, $errors->getResponse()->getStatus());
@@ -187,7 +207,7 @@ class CustomerWriteTest extends TestCase
         $this->expectException(ParameterException::class);
 
         (new Customer('', (new HttpMock([]))->client()))
-            ->update(501, new CustomerUpdateInput(['name' => 'カラーミー花子']));
+            ->update(501, new CustomerUpdateInput(['name' => 'カラーミー花子', 'address1' => '渋谷区']));
     }
 
     // --- changePoints -----------------------------------------------------

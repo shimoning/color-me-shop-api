@@ -102,15 +102,16 @@ class Customer extends Service
      * 顧客データの更新
      *
      * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
-     * 更新の `customer` には required 指定の子プロパティがないため、空の入力を送信前に拒否せず
-     * API の検証 (422 の `Errors`) に委ねる (ADR 0015)。必要な scope は `write_sales`。
+     * 公式 OpenAPI には required 指定がないが、2026-09-25 の実測で `name` / `address1` が
+     * 必須だったため、ライブラリ側で送信前に検証する。省略したフィールドが保持されることも
+     * 同日の実測で確認した。必要な scope は `write_sales`。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
      * @param int|string $id
      * @param CustomerUpdateInput $input
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
-     * @throws ParameterException 実効アクセストークンが空文字の場合
+     * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function update(
@@ -120,7 +121,7 @@ class Customer extends Service
     ): CustomerEntity|Errors {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/customers/' . $id),
-            ['customer' => self::_jsonObject($input->toArrayRecursive())],
+            ['customer' => self::requireUpdateFields($input)],
         );
 
         return $this->_handle(
@@ -158,6 +159,27 @@ class Customer extends Service
         );
 
         return $this->_handle($response, static fn(?array $data): Points => new Points($data ?? []));
+    }
+
+    /**
+     * 顧客更新の入力に、実 API で必須と確認したフィールドが明示されていることを確認する。
+     *
+     * @return array<string, mixed>
+     * @throws ParameterException 未指定の必須フィールドがある場合
+     */
+    private static function requireUpdateFields(CustomerUpdateInput $input): array
+    {
+        $fields = $input->toArrayRecursive();
+        $missing = \array_diff(CustomerUpdateInput::REQUIRED_FIELDS, \array_keys($fields));
+        if ($missing !== []) {
+            throw new ParameterException(\sprintf(
+                '顧客データの更新には %s を指定してください (未指定: %s)。',
+                \implode(', ', CustomerUpdateInput::REQUIRED_FIELDS),
+                \implode(', ', $missing),
+            ));
+        }
+
+        return $fields;
     }
 
     /**
