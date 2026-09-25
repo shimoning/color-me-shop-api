@@ -6,7 +6,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -94,14 +94,14 @@ class Sales extends Service
      * 受注データの更新
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
-     * @param SaleUpdater $updater
+     * @param SaleUpdateInput $updater
      * @param string|null $accessToken
      * @return Sale|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function update(
-        SaleUpdater $updater,
+        SaleUpdateInput $updater,
         ?string $accessToken = null,
     ): Sale|Errors {
         $response = $this->_request([

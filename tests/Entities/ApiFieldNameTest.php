@@ -49,7 +49,7 @@ class ApiFieldNameTest extends TestCase
 
     /** @var array<string, array<string, string>> 公式フィールド外の内部フィールドと理由 */
     private const INTERNAL_FIELDS = [
-        'Sales\\SaleUpdater' => [
+        'Sales\\SaleUpdateInput' => [
             'id' => 'PUT /v1/sales/{sale_id} の path parameter 由来。現行実装では body にも含めて送信される (Issue #53)',
         ],
     ];

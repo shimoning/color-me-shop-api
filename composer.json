@@ -33,7 +33,10 @@
     "autoload": {
         "psr-4": {
             "Shimoning\\ColorMeShopApi\\": "src/"
-        }
+        },
+        "files": [
+            "bootstrap/aliases.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

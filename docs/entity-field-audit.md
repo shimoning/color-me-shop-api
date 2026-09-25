@@ -44,8 +44,8 @@ query parameter の `?T` は値として `null` を送れるという意味で�
 | Entity | 突合対象 |
 | --- | --- |
 | `Sales\SearchParameters` | `GET /v1/sales` (`operationId: getSales`) の query parameters |
-| `Sales\SaleUpdater` | `PUT /v1/sales/{sale_id}` (`updateSale`) の `requestBody.application/json.sale`。`$id` は path の `sale_id` を表す |
-| `Sales\SaleDeliveryUpdater` | 同 `updateSale` の `sale.sale_deliveries[]`。`SaleDelivery` からの継承プロパティを含めた |
+| `Sales\SaleUpdateInput` | `PUT /v1/sales/{sale_id}` (`updateSale`) の `requestBody.application/json.sale`。`$id` は path の `sale_id` を表す |
+| `Sales\SaleDeliveryUpdateInput` | 同 `updateSale` の `sale.sale_deliveries[]`。`SaleDelivery` からの継承プロパティを含めた |
 | `Customer\SearchParameters` | `GET /v1/customers` (`getCustomers`) の query parameters |
 | `OAuth\Options` | OpenAPI `info.description` に記載された認可 URL (`GET /oauth/authorize`) の query とトークン交換 (`POST /oauth/token`) の form parameter。これらは `paths` にはない |
 
@@ -93,8 +93,8 @@ ADR 0008 の方針を満たす説明用の候補名であり、実装コミッ�
 | --- | --- | --- |
 | Sales | `Sales\SaleDelivery` | 不足なし。`sale.sale_deliveries[]` / `saleDelivery` |
 | Sales | `Sales\Stat` | 不足なし。`GET /v1/sales/stat` の `sales_stat` |
-| Sales request | `Sales\SaleUpdater` | 不足なし。`updateSale` body の `sale` 3項目を保持し、`$id` は path 用 |
-| Sales request | `Sales\SaleDeliveryUpdater` | 不足なし。`updateSale` body の nested 28項目は継承分を含めて宣言済み |
+| Sales request | `Sales\SaleUpdateInput` | 不足なし。`updateSale` body の `sale` 3項目を保持し、`$id` は path 用 |
+| Sales request | `Sales\SaleDeliveryUpdateInput` | 不足なし。`updateSale` body の nested 28項目は継承分を含めて宣言済み |
 | Shop | `Shop\Shop` | 不足なし。`GET /v1/shop` の `shop`。数字付きメール項目は `FIELD_NAMES` も確認済み |
 | Delivery | `Delivery\Delivery` | 不足なし。`GET /v1/deliveries` の items |
 | Delivery | `Delivery\Charge` | 不足なし。`delivery.charge` |

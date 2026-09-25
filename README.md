@@ -97,14 +97,14 @@ use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
@@ -355,7 +355,7 @@ if ($saleOrErrors instanceof Errors) {
 ```php
 $saleOrErrors = $client->getSale($saleId);
 if (! $saleOrErrors instanceof Errors) {
-    $updater = SaleUpdater::convert($saleOrErrors);
+    $updater = SaleUpdateInput::convert($saleOrErrors);
     $updater->setPaid(true);
     $updater->setPointState(PointState::FIXED);
 
@@ -582,7 +582,7 @@ if ($updatedOrErrors instanceof Errors) {
 
 #### バリエーションを更新
 ```php
-$variantOrErrors = $client->updateProductVariant($productId, 301, new VariantInput([
+$variantOrErrors = $client->updateProductVariant($productId, 301, new VariantUpdateInput([
     'stocks' => 10,
     'option_price' => 1600,
     'weight' => null, // 明示した null で未設定へ戻す
@@ -596,7 +596,7 @@ if (! $variantOrErrors instanceof Errors) {
 オプションの `name` と `values` は必須で、`null` は受け付けない。削除は成功時に `204` を返すため、結果は `NoContent` になる。
 
 ```php
-$optionOrErrors = $client->createProductOption($productId, new OptionInput([
+$optionOrErrors = $client->createProductOption($productId, new OptionCreateInput([
     'name' => 'サイズ',
     'values' => [['name' => 'S'], ['name' => 'M']],
 ]));
@@ -605,7 +605,7 @@ if (! $optionOrErrors instanceof Errors) {
     $optionOrErrors->getValues(); // ['S', 'M']
 }
 
-$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new OptionValueInput(['name' => 'L']));
+$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new OptionValueCreateInput(['name' => 'L']));
 if (! $valueOrErrors instanceof Errors) {
     $valueId = $valueOrErrors->getValueId();
 }

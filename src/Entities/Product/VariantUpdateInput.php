@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */
-class VariantInput extends Entity implements RequestEntity
+class VariantUpdateInput extends Entity implements RequestEntity
 {
     protected ?int $stocks;
     protected ?int $fewNum;

@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -244,7 +244,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $updater = new SaleUpdater(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']);
+        $updater = new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']);
         $sale = (new Sales('my-token', $mock->client()))->update($updater);
 
         $this->assertInstanceOf(Sale::class, $sale);
@@ -256,7 +256,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $updater = new SaleUpdater(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']);
+        $updater = new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']);
         (new Sales('my-token', $mock->client()))->update($updater);
 
         $this->assertSame(
@@ -270,7 +270,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $updater = new SaleUpdater(['id' => 1001]);
+        $updater = new SaleUpdateInput(['id' => 1001]);
         $updater->setPaid(true);
         (new Sales('my-token', $mock->client()))->update($updater);
 
@@ -285,7 +285,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
 
         $errors = (new Sales('my-token', $mock->client()))
-            ->update(new SaleUpdater(['id' => 1001, 'paid' => true, 'point_state' => PointState::FIXED->value]));
+            ->update(new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => PointState::FIXED->value]));
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame(2, $errors->count());

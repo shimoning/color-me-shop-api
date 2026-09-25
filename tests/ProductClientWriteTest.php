@@ -16,9 +16,9 @@ use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
@@ -26,7 +26,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class ProductClientWriteTest extends TestCase
@@ -81,12 +81,12 @@ class ProductClientWriteTest extends TestCase
                 '{"product":{"sales_price":null}}',
             ],
             'updateProductVariant' => [
-                'updateProductVariant', [101, 301, new VariantInput(['stocks' => 3])],
+                'updateProductVariant', [101, 301, new VariantUpdateInput(['stocks' => 3])],
                 200, '{"variant":{"id":301}}', 'PUT', '/v1/products/101/variants/301', Variant::class,
                 '{"variant":{"stocks":3}}',
             ],
             'createProductOption' => [
-                'createProductOption', [101, new OptionInput(['name' => '色', 'values' => [['name' => '赤']]])],
+                'createProductOption', [101, new OptionCreateInput(['name' => '色', 'values' => [['name' => '赤']]])],
                 201, '{"option":{"id":201}}', 'POST', '/v1/products/101/options', Option::class,
                 '{"option":{"name":"色","values":[{"name":"赤"}]}}',
             ],
@@ -95,7 +95,7 @@ class ProductClientWriteTest extends TestCase
                 204, '', 'DELETE', '/v1/products/101/options/201', NoContent::class, '',
             ],
             'createProductOptionValue' => [
-                'createProductOptionValue', [101, 201, new OptionValueInput(['name' => '青'])],
+                'createProductOptionValue', [101, 201, new OptionValueCreateInput(['name' => '青'])],
                 201, '{"option_value":{"value_id":3}}', 'POST', '/v1/products/101/options/201/values', OptionValue::class,
                 '{"option_value":{"name":"青"}}',
             ],

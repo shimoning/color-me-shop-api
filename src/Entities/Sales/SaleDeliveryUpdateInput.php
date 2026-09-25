@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
-class SaleDeliveryUpdater extends SaleDelivery implements RequestEntity
+class SaleDeliveryUpdateInput extends SaleDelivery implements RequestEntity
 {
     /**
      * 宛名を設定

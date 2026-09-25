@@ -22,7 +22,7 @@ use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
 use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
 
 use Shimoning\ColorMeShopApi\Services\Payment;
@@ -45,11 +45,11 @@ use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput as ProductCateg
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput as ProductVariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput as ProductVariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option as ProductOptionEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput as ProductOptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput as ProductOptionCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue as ProductOptionValueEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput as ProductOptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput as ProductOptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup as ProductPickupEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput as ProductPickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage as ProductImageEntity;
@@ -179,7 +179,7 @@ class Client
     public function updateProductVariant(
         int|string $productId,
         int|string $id,
-        ProductVariantInput $input,
+        ProductVariantUpdateInput $input,
         ?string $accessToken = null,
     ): ProductVariantEntity|Errors {
         return $this->productService($accessToken)->updateVariant($productId, $id, $input, $accessToken);
@@ -192,7 +192,7 @@ class Client
      */
     public function createProductOption(
         int|string $productId,
-        ProductOptionInput $input,
+        ProductOptionCreateInput $input,
         ?string $accessToken = null,
     ): ProductOptionEntity|Errors {
         return $this->productService($accessToken)->createOption($productId, $input, $accessToken);
@@ -216,7 +216,7 @@ class Client
     public function createProductOptionValue(
         int|string $productId,
         int|string $optionId,
-        ProductOptionValueInput $input,
+        ProductOptionValueCreateInput $input,
         ?string $accessToken = null,
     ): ProductOptionValueEntity|Errors {
         return $this->productService($accessToken)->createOptionValue($productId, $optionId, $input, $accessToken);
@@ -505,13 +505,13 @@ class Client
      * 受注データの更新
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
-     * @param SaleUpdater $updater
+     * @param SaleUpdateInput $updater
      * @param string|null $accessToken
      * @return Sale|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function updateSale(SaleUpdater $updater, ?string $accessToken = null): Sale|Errors
+    public function updateSale(SaleUpdateInput $updater, ?string $accessToken = null): Sale|Errors
     {
         return $this->salesService($accessToken)->update($updater, $accessToken);
     }

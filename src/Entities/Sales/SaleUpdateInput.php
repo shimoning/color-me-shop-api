@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
-class SaleUpdater extends Entity implements RequestEntity
+class SaleUpdateInput extends Entity implements RequestEntity
 {
     const OBJECT_FIELDS = [
         'pointState' => [
@@ -19,7 +19,7 @@ class SaleUpdater extends Entity implements RequestEntity
         ],
         'saleDeliveries' => [
             'array' => true,
-            'entity' => SaleDeliveryUpdater::class,
+            'entity' => SaleDeliveryUpdateInput::class,
         ],
     ];
 
@@ -82,7 +82,7 @@ class SaleUpdater extends Entity implements RequestEntity
 
     /**
      * お届け先
-     * @return SaleDeliveryUpdater[]
+     * @return SaleDeliveryUpdateInput[]
      */
     public function getSaleDeliveries(): array
     {
@@ -92,7 +92,7 @@ class SaleUpdater extends Entity implements RequestEntity
 
     /**
      * お届け先を設定
-     * @param SaleDeliveryUpdater[] $saleDeliveries
+     * @param SaleDeliveryUpdateInput[] $saleDeliveries
      * @return void
      */
     public function setSaleDeliveries($saleDeliveries)

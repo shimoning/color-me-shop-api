@@ -6,22 +6,22 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
-class OptionInputTest extends TestCase
+class OptionCreateInputTest extends TestCase
 {
     public function test_名前と値の配列をoptionボディ形式へ変換する(): void
     {
-        $input = new OptionInput([
+        $input = new OptionCreateInput([
             'name' => 'サイズ',
             'values' => [['name' => 'S'], ['name' => 'M']],
         ]);
 
         $this->assertInstanceOf(RequestEntity::class, $input);
-        $this->assertContainsOnlyInstancesOf(OptionValueInput::class, $input->toArray()['values']);
+        $this->assertContainsOnlyInstancesOf(OptionValueCreateInput::class, $input->toArray()['values']);
         $this->assertSame([
             'name' => 'サイズ',
             'values' => [['name' => 'S'], ['name' => 'M']],
@@ -30,8 +30,8 @@ class OptionInputTest extends TestCase
 
     public function test_未指定のフィールドは送信しない(): void
     {
-        $this->assertSame([], (new OptionInput([]))->toArrayRecursive());
-        $this->assertSame(['name' => '色'], (new OptionInput(['name' => '色']))->toArrayRecursive());
+        $this->assertSame([], (new OptionCreateInput([]))->toArrayRecursive());
+        $this->assertSame(['name' => '色'], (new OptionCreateInput(['name' => '色']))->toArrayRecursive());
     }
 
     #[DataProvider('invalidFieldProvider')]
@@ -39,7 +39,7 @@ class OptionInputTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage($field);
-        new OptionInput([$field => $value]);
+        new OptionCreateInput([$field => $value]);
     }
 
     /** @return array<string, array{string, mixed}> */

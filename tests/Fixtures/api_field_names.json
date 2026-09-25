@@ -407,7 +407,7 @@
         "tax_reduced",
         "variants"
     ],
-    "Product\\VariantInput": [
+    "Product\\VariantUpdateInput": [
         "few_num",
         "model_number",
         "option_cost",
@@ -417,11 +417,11 @@
         "stocks",
         "weight"
     ],
-    "Product\\OptionInput": [
+    "Product\\OptionCreateInput": [
         "name",
         "values"
     ],
-    "Product\\OptionValueInput": [
+    "Product\\OptionValueCreateInput": [
         "name"
     ],
     "Product\\PickupInput": [
@@ -648,12 +648,12 @@
         "message",
         "status"
     ],
-    "Sales\\SaleUpdater": [
+    "Sales\\SaleUpdateInput": [
         "paid",
         "point_state",
         "sale_deliveries"
     ],
-    "Sales\\SaleDeliveryUpdater": [
+    "Sales\\SaleDeliveryUpdateInput": [
         "account_id",
         "address1",
         "address2",

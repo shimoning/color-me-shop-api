@@ -17,9 +17,9 @@ use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueInput;
+use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
@@ -28,7 +28,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -410,7 +410,7 @@ class Product extends Service
     public function updateVariant(
         int|string $productId,
         int|string $id,
-        VariantInput $input,
+        VariantUpdateInput $input,
         ?string $accessToken = null,
     ): Variant|Errors {
         $response = $this->_request(['json' => true], $accessToken)->put(
@@ -425,7 +425,7 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function createOption(int|string $productId, OptionInput $input, ?string $accessToken = null): Option|Errors
+    public function createOption(int|string $productId, OptionCreateInput $input, ?string $accessToken = null): Option|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products/' . $productId . '/options'),
@@ -455,7 +455,7 @@ class Product extends Service
     public function createOptionValue(
         int|string $productId,
         int|string $optionId,
-        OptionValueInput $input,
+        OptionValueCreateInput $input,
         ?string $accessToken = null,
     ): OptionValue|Errors {
         $response = $this->_request(['json' => true], $accessToken)->post(
