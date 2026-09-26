@@ -215,6 +215,8 @@ $furigana->isValid();  // false
 
 要求側では従来どおり検証され、検証に通らない値は拒否される。例外の型は経路によって異なり、値オブジェクトを直接構築した場合は `ParameterException`、`CustomerCreateInput` などの要求 Entity を経由した場合は `InvalidFieldException` に包まれる。
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
+
+各 API に必要なスコープは、`Services` と `Client` の対応するメソッドの PHPDoc に記載している。公式 OpenAPI でスコープの宣言が空の 6 操作 (ショップ・決済・配送の取得、商品グループ一覧・単体、商品カテゴリー一覧) には記載がない。その一覧と推測は [docs/auth-scope-audit.md](docs/auth-scope-audit.md) にまとめている。
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
 
 `SalesSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。

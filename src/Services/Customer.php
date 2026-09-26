@@ -20,6 +20,8 @@ class Customer extends Service
     /**
      * 顧客データのリストを取得
      *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
@@ -51,6 +53,8 @@ class Customer extends Service
     /**
      * 顧客データの取得
      *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
      * @param int|string $id
      * @param string|null $accessToken
@@ -75,7 +79,9 @@ class Customer extends Service
     /**
      * 顧客データの追加
      *
-     * 必要な scope は `write_sales` で、顧客専用の scope は存在しない。
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
+     *
+     * 顧客専用の scope は存在しない。
      * 公式 OpenAPI が required とする6フィールドは、送信前に明示を確認する (ADR 0015)。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
@@ -104,7 +110,9 @@ class Customer extends Service
      * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      * 公式 OpenAPI には required 指定がないが、2026-09-25 の実測で `name` / `address1` が
      * 必須だったため、ライブラリ側で送信前に検証する。省略したフィールドが保持されることも
-     * 同日の実測で確認した。必要な scope は `write_sales`。
+     * 同日の実測で確認した。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
      * @param int|string $id
@@ -134,11 +142,13 @@ class Customer extends Service
      * 顧客ショップポイントの増減
      *
      * 正の値が加算、負の値が減算を表す。応答は `customer` などで包まれず、`customer_id` と
-     * 増減後の `points` をトップレベルに持つ。必要な scope は `write_sales`。
+     * 増減後の `points` をトップレベルに持つ。
      *
      * 公式 OpenAPI は要求ボディと `points` を required とし、`points` がなければ操作を特定できないため、
      * 未指定の要求は送信前に拒否する (ADR 0014 のピックアップ入力と同じ扱い)。
      * 保有ポイントを超える減算など値の範囲は公式 OpenAPI に定義がなく、API 側の判断に委ねる。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
      * @param int|string $id
