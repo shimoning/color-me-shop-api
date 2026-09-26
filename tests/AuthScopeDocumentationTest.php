@@ -12,9 +12,11 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Services\Delivery;
+use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Services\Sales;
+use Shimoning\ColorMeShopApi\Services\Service;
 use Shimoning\ColorMeShopApi\Services\Shop;
 
 class AuthScopeDocumentationTest extends TestCase
@@ -88,15 +90,19 @@ class AuthScopeDocumentationTest extends TestCase
 
     public function test_全Service公開APIとClientファサードが対応表に含まれる(): void
     {
+        $providedServiceClasses = [];
         $providedServices = [];
         $providedClientMethods = [];
         foreach (self::apiMethodProvider() as [$serviceClass, $serviceMethod, $clientMethod]) {
+            $providedServiceClasses[] = $serviceClass;
             $providedServices[] = $serviceClass . '::' . $serviceMethod;
             $providedClientMethods[] = $clientMethod;
         }
+        $providedServiceClasses = \array_values(\array_unique($providedServiceClasses));
 
         $declaredServices = [];
-        foreach ([Customer::class, Delivery::class, Payment::class, Product::class, Sales::class, Shop::class] as $class) {
+        $declaredServiceClasses = self::sourceServiceClasses();
+        foreach ($declaredServiceClasses as $class) {
             foreach ((new ReflectionClass($class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
                 if ($method->getDeclaringClass()->getName() === $class) {
                     $declaredServices[] = $class . '::' . $method->getName();
@@ -112,13 +118,54 @@ class AuthScopeDocumentationTest extends TestCase
             }
         }
 
+        \sort($providedServiceClasses);
         \sort($providedServices);
         \sort($declaredServices);
         \sort($providedClientMethods);
         \sort($declaredClientMethods);
 
+        $this->assertSame($declaredServiceClasses, $providedServiceClasses);
         $this->assertSame($declaredServices, $providedServices);
         $this->assertSame($declaredClientMethods, $providedClientMethods);
+    }
+
+    /**
+     * src/Services 配下の全 Service サブクラスを集める。
+     *
+     * @return list<class-string<Service>>
+     */
+    private static function sourceServiceClasses(): array
+    {
+        $classes = [];
+        $base = \realpath(__DIR__ . '/../src/Services');
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($base));
+        $excluded = [
+            // Service は各 API サービスの共通処理を持つ抽象基底クラスであり、公開 API ではない。
+            Service::class,
+            // OAuth はトークンエンドポイントを扱い、通常の API とはスコープの概念が異なる。
+            OAuth::class,
+        ];
+
+        foreach ($iterator as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            $relative = \substr($file->getPathname(), \strlen($base) + 1);
+            $class = 'Shimoning\\ColorMeShopApi\\Services\\'
+                . \str_replace([\DIRECTORY_SEPARATOR, '.php'], ['\\', ''], $relative);
+
+            if (\in_array($class, $excluded, true) || ! \class_exists($class)) {
+                continue;
+            }
+            $reflection = new ReflectionClass($class);
+            if ($reflection->isAbstract() || ! $reflection->isSubclassOf(Service::class)) {
+                continue;
+            }
+            $classes[] = $class;
+        }
+
+        \sort($classes);
+        return $classes;
     }
 
     /** @param list<AuthScope> $scopes */
