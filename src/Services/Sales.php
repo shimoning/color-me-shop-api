@@ -19,6 +19,8 @@ class Sales extends Service
     /**
      * 受注データのリストを取得
      *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
@@ -50,6 +52,8 @@ class Sales extends Service
     /**
      * 受注データの取得
      *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
      * @param int|string $id
      * @param string|null $accessToken
@@ -68,6 +72,8 @@ class Sales extends Service
 
     /**
      * 売上集計の取得
+     *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
      * @param \DateTimeInterface $dateTime
@@ -92,6 +98,8 @@ class Sales extends Service
 
     /**
      * 受注データの更新
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
      * @param SaleUpdateInput $updater
@@ -118,6 +126,8 @@ class Sales extends Service
 
     /**
      * 受注のキャンセル
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
      * @param int|string $id
@@ -146,6 +156,8 @@ class Sales extends Service
 
     /**
      * メールの送信
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/sendSalesMail
      * @param int|string $id

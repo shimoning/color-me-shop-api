@@ -219,6 +219,8 @@ $furigana->isValid();  // false
 
 `SalesSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
 
+各 API に必要なスコープは、`Services` と `Client` の対応するメソッドの PHPDoc に記載している。公式 OpenAPI でスコープの宣言が空の 6 操作 (ショップ・決済・配送の取得、商品グループ一覧・単体、商品カテゴリー一覧) には記載がない。その一覧と推測は [docs/auth-scope-audit.md](docs/auth-scope-audit.md) にまとめている。
+
 ### OAuth
 #### 認証情報
 以下のものを PHP で扱えるようにしておく。
