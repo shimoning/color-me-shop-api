@@ -1,0 +1,22 @@
+{
+    "delivery_date": {
+        "account_id": "my-shop",
+        "days": {
+            "enabled": true,
+            "default": null,
+            "min": 2,
+            "max": 14,
+            "comment": ""
+        },
+        "times": {
+            "enabled": true,
+            "periods": [
+                "午前中",
+                "14時から16時"
+            ],
+            "comment": "配送時間帯を選択してください"
+        },
+        "make_date": 1725148800,
+        "update_date": 1725235200
+    }
+}

@@ -65,6 +65,9 @@ class ClientTest extends TestCase
             'getDeliveries' => [static function (Client $client, ?string $accessToken): void {
                 $client->getDeliveries($accessToken);
             }],
+            'getDeliveryDateSetting' => [static function (Client $client, ?string $accessToken): void {
+                $client->getDeliveryDateSetting($accessToken);
+            }],
             'getCustomers' => [static function (Client $client, ?string $accessToken): void {
                 $client->getCustomers(null, $accessToken);
             }],
@@ -363,6 +366,26 @@ class ClientTest extends TestCase
 
         $this->assertSame(1, $deliveries->count());
         $this->assertSame('https://api.shop-pro.jp/v1/deliveries', $mock->uri());
+    }
+
+    public function test_getDeliveryDateSettingは配送日時設定を取得する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('delivery_date.json'));
+
+        $deliveryDate = (new Client('my-token', $mock->client()))->getDeliveryDateSetting();
+
+        $this->assertSame('my-shop', $deliveryDate->getAccountId());
+        $this->assertSame('https://api.shop-pro.jp/v1/deliveries/date', $mock->uri());
+    }
+
+    public function test_getDeliveryDateSettingは引数のアクセストークンを優先する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('delivery_date.json'));
+
+        (new Client('my-token', $mock->client()))
+            ->getDeliveryDateSetting('override-token');
+
+        $this->assertSame('Bearer override-token', $mock->header('Authorization'));
     }
 
     public function test_getCustomersは顧客一覧を取得する(): void

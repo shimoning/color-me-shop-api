@@ -885,7 +885,31 @@ if ($deliveriesOrErrors instanceof Errors) {
 `Client::getDeliveries()` は、内部で `Services\Delivery::all(?string $accessToken = null)` を呼び出す。
 
 #### 配送日時設定を取得
-現在は未実装。`Services\Delivery` に配送日時設定取得用のメソッドはまだ存在しない。
+```php
+$settingOrErrors = $client->getDeliveryDateSetting();
+
+if ($settingOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $days = $settingOrErrors->getDays();
+    $days->getEnabled();   // 配送希望日選択が有効か
+    $days->getMin();       // 選択できる最も早い配送日 (注文日から n 日後)
+    $days->getMax();       // 選択できる最も遅い配送日 (注文日から n 日後)
+    $days->getDefault();   // 既定で選択される希望日。未設定なら null
+    $days->getComment();
+
+    $times = $settingOrErrors->getTimes();
+    $times->getEnabled();  // 配送時間帯選択が有効か
+    $times->getPeriods();  // 時間帯の選択肢 (list<string>)
+    $times->getComment();
+
+    $settingOrErrors->getUpdateDate(); // ?DateTimeImmutable
+}
+```
+
+`days` と `times` は `Entities\Delivery\DeliveryDateDays` と `Entities\Delivery\DeliveryDateTimes` として返る。`enabled` / `default` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。
+
+`Client::getDeliveryDateSetting()` は、内部で `Services\Delivery::dateSetting(?string $accessToken = null)` を呼び出す。
 
 ### ページネーション
 受注一覧と顧客一覧は `Entities\Page` を返す。`Page` は `Entities\Collection` を継承しているため、`foreach`、`count()`、`all()`、配列アクセスが利用できる。
@@ -971,7 +995,6 @@ $pagination->getOffset();
 * [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
-* [配送日時設定の取得](https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting)
 
 -----
 
