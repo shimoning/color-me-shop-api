@@ -681,6 +681,25 @@
         "offset",
         "total"
     ],
+    "Delivery\\DeliveryDate": [
+        "account_id",
+        "days",
+        "make_date",
+        "times",
+        "update_date"
+    ],
+    "Delivery\\DeliveryDateDays": [
+        "comment",
+        "default",
+        "enabled",
+        "max",
+        "min"
+    ],
+    "Delivery\\DeliveryDateTimes": [
+        "comment",
+        "enabled",
+        "periods"
+    ],
     "Delivery\\Area": [
         "charge",
         "pref_id",

@@ -1,0 +1,76 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shimoning\ColorMeShopApi\Entities\Delivery;
+
+use DateTimeImmutable;
+use Shimoning\ColorMeShopApi\Entities\Entity;
+
+/**
+ * 配送日時設定。
+ *
+ * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting
+ */
+class DeliveryDate extends Entity
+{
+    public const OBJECT_FIELDS = [
+        'days' => ['entity' => DeliveryDateDays::class],
+        'times' => ['entity' => DeliveryDateTimes::class],
+    ];
+
+    protected string $accountId;
+    protected DeliveryDateDays $days;
+    protected DeliveryDateTimes $times;
+    protected ?int $makeDate;
+    protected ?int $updateDate;
+
+    /**
+     * ショップアカウントID。
+     */
+    public function getAccountId(): string
+    {
+        $this->assertFieldInitialized('accountId');
+        return $this->accountId;
+    }
+
+    /**
+     * 配送希望日の設定。
+     */
+    public function getDays(): DeliveryDateDays
+    {
+        $this->assertFieldInitialized('days');
+        return $this->days;
+    }
+
+    /**
+     * 配送時間帯の設定。
+     */
+    public function getTimes(): DeliveryDateTimes
+    {
+        $this->assertFieldInitialized('times');
+        return $this->times;
+    }
+
+    /**
+     * 配送日時設定作成日時。
+     */
+    public function getMakeDate(): ?DateTimeImmutable
+    {
+        if ($this->makeDate === null) {
+            return null;
+        }
+        return (new DateTimeImmutable())->setTimestamp($this->makeDate);
+    }
+
+    /**
+     * 配送日時設定更新日時。
+     */
+    public function getUpdateDate(): ?DateTimeImmutable
+    {
+        if ($this->updateDate === null) {
+            return null;
+        }
+        return (new DateTimeImmutable())->setTimestamp($this->updateDate);
+    }
+}

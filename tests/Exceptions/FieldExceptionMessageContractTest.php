@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Charge;
+use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDateTimes;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
@@ -413,6 +414,13 @@ class FieldExceptionMessageContractTest extends TestCase
                 self::site('src/Entities/Product/Option.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
                     new \Shimoning\ColorMeShopApi\Entities\Product\Option(['values' => [1]]);
+                },
+                \TypeError::class,
+            ],
+            'InvalidFieldException::forArrayElement/配送時間帯' => [
+                self::site('src/Entities/Delivery/DeliveryDateTimes.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new DeliveryDateTimes(['periods' => [1]]);
                 },
                 \TypeError::class,
             ],

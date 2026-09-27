@@ -33,6 +33,7 @@ class AuthScopeDocumentationTest extends TestCase
             'Customer::update' => [Customer::class, 'update', 'updateCustomer', [AuthScope::WRITE_SALES]],
             'Customer::changePoints' => [Customer::class, 'changePoints', 'changeCustomerPoints', [AuthScope::WRITE_SALES]],
             'Delivery::all' => [Delivery::class, 'all', 'getDeliveries', []],
+            'Delivery::dateSetting' => [Delivery::class, 'dateSetting', 'getDeliveryDateSetting', []],
             'Payment::all' => [Payment::class, 'all', 'getPayments', []],
             'Product::products' => [Product::class, 'products', 'getProducts', [AuthScope::READ_PRODUCTS]],
             'Product::product' => [Product::class, 'product', 'getProduct', [AuthScope::READ_PRODUCTS]],
