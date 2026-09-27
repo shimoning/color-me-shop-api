@@ -60,6 +60,7 @@ class DeliveryDateTest extends TestCase
         $this->assertNull($deliveryDate->getDays()->getDefault());
         $this->assertNull($deliveryDate->getDays()->getComment());
         $this->assertNull($deliveryDate->getTimes()->getEnabled());
+        $this->assertSame([], $deliveryDate->getTimes()->getPeriods());
         $this->assertNull($deliveryDate->getTimes()->getComment());
         $this->assertNull($deliveryDate->getMakeDate());
         $this->assertNull($deliveryDate->getUpdateDate());

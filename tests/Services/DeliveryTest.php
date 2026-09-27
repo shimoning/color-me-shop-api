@@ -76,6 +76,25 @@ class DeliveryTest extends TestCase
         $this->assertSame(1725148800, $deliveryDate->getMakeDate()?->getTimestamp());
     }
 
+    public function test_delivery_dateキーがなければ空の配送日時設定を返す(): void
+    {
+        $mock = HttpMock::json(200, '{}');
+
+        $deliveryDate = (new Delivery('my-token', $mock->client()))->dateSetting();
+
+        $this->assertInstanceOf(DeliveryDate::class, $deliveryDate);
+        foreach (['getAccountId', 'getDays', 'getTimes'] as $getter) {
+            try {
+                $deliveryDate->{$getter}();
+                $this->fail($getter . ' が MissingFieldException を投げなかった');
+            } catch (MissingFieldException $exception) {
+                $this->assertSame(MissingFieldException::class, $exception::class);
+            }
+        }
+        $this->assertNull($deliveryDate->getMakeDate());
+        $this->assertNull($deliveryDate->getUpdateDate());
+    }
+
     public function test_配送日時設定を正しいエンドポイントへAuthorization付きでGETする(): void
     {
         $mock = HttpMock::json(200, self::fixture('delivery_date.json'));
