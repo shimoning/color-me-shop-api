@@ -102,4 +102,9 @@ class GiftTest extends TestCase
         $this->assertFalse(\method_exists(GiftWrapping::class, 'getTextEnabled'));
         $this->assertFalse(\method_exists(GiftWrapping::class, 'getTextCharge'));
     }
+
+    public function test_GiftCardは仕様にないテキスト料金を持たない(): void
+    {
+        $this->assertFalse(\method_exists(GiftCard::class, 'getTextCharge'));
+    }
 }
