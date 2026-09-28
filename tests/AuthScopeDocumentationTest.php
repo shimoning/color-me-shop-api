@@ -18,6 +18,7 @@ use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Services\Service;
 use Shimoning\ColorMeShopApi\Services\Shop;
+use Shimoning\ColorMeShopApi\Services\Stock;
 
 class AuthScopeDocumentationTest extends TestCase
 {
@@ -69,6 +70,7 @@ class AuthScopeDocumentationTest extends TestCase
             'Sales::cancel' => [Sales::class, 'cancel', 'cancelSale', [AuthScope::WRITE_SALES]],
             'Sales::sendMail' => [Sales::class, 'sendMail', 'sendSalesMail', [AuthScope::WRITE_SALES]],
             'Shop::get' => [Shop::class, 'get', 'getShop', []],
+            'Stock::page' => [Stock::class, 'page', 'getStocks', []],
         ];
     }
 

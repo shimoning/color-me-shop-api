@@ -22,6 +22,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [商品カテゴリー](#商品カテゴリー)
   * [決済](#決済)
   * [配送](#配送)
+  * [在庫](#在庫)
   * [ページネーション](#ページネーション)
 * [0.14.0 の変更](#0140-の変更)
 * [未実装](#未実装)
@@ -91,6 +92,7 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters as StockSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
@@ -911,6 +913,44 @@ if ($settingOrErrors instanceof Errors) {
 
 `Client::getDeliveryDateSetting()` は、内部で `Services\Delivery::dateSetting(?string $accessToken = null)` を呼び出す。
 
+### 在庫
+#### 在庫情報を検索
+```php
+$stocksOrErrors = $client->getStocks(new StockSearchParameters([
+    'stocks' => 5,                 // 在庫数が 5 以下
+    'recent_zero_stocks' => true,  // 過去 1 週間以内にオプションが更新された商品
+    'display_state' => 'showing',
+    'limit' => 50,
+]));
+
+// 検索条件を省略する場合
+$stocksOrErrors = $client->getStocks();
+
+if ($stocksOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    foreach ($stocksOrErrors as $stock) {
+        $stock->getProductId();
+        $stock->getName();
+        $stock->getOption1Value();  // オプションの値。公式仕様上はオプションごとの在庫が別行になるが、実測は未確認
+        $stock->getStocks();        // 在庫数。未設定なら null
+        $stock->getFewNum();        // 残りわずかとなる在庫数
+        $stock->getCategory();      // Product\CategoryIds
+        $stock->getDisplayState();  // ProductDisplayState
+    }
+
+    $stocksOrErrors->getTotal();
+    $stocksOrErrors->getLimit();
+    $stocksOrErrors->getOffset();
+}
+```
+
+在庫 API は商品検索専用のパラメータや不正な `display_state` を渡しても**エラーにせず黙って無視する**ため、`Product\SearchParameters` は流用せず、在庫 API が受け付ける 11 パラメータ（`ids` / `category_id_big` / `category_id_small` / `model_number` / `name` / `display_state` / `stocks` / `recent_zero_stocks` / `fields` / `limit` / `offset`）だけを持つ `Stock\SearchParameters` を使う。`limit` の上限は 50 で、超える値を指定すると API 側で 50 に丸められる。`fields` で応答のキーを絞った場合、除外した非 null フィールドの getter は商品 API と同じく `MissingFieldException` を投げる。
+
+`category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
+
+`Client::getStocks()` は、内部で `Services\Stock::page(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。
+
 ### ページネーション
 受注一覧と顧客一覧は `Entities\Page` を返す。`Page` は `Entities\Collection` を継承しているため、`foreach`、`count()`、`all()`、配列アクセスが利用できる。
 
@@ -992,7 +1032,6 @@ $pagination->getOffset();
 
 ## 未実装
 
-* [在庫](https://developer.shop-pro.jp/docs/colorme-api#tag/stock)
 * [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
 

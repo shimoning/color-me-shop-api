@@ -63,6 +63,9 @@ use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 
+use Shimoning\ColorMeShopApi\Services\Stock;
+use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters as StockSearchParameters;
+
 /**
  * カラーミーショップ API の各機能を提供するクライアント。
  */
@@ -83,6 +86,21 @@ class Client
     public function getProducts(?ProductSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
         return $this->productService($accessToken)->products($parameters ?? new ProductSearchParameters([]), $accessToken);
+    }
+
+    /**
+     * 在庫情報一覧を取得する。
+     *
+     * @return Page<\Shimoning\ColorMeShopApi\Entities\Stock\Stock>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getStocks(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    {
+        return $this->stockService($accessToken)->page(
+            $parameters ?? new StockSearchParameters([]),
+            $accessToken,
+        );
     }
 
     /**
@@ -467,6 +485,17 @@ class Client
             $this->accessToken = $accessToken;
         }
         return new Product($this->accessToken ?? '', $this->httpClient);
+    }
+
+    /**
+     * 在庫情報 API のサービスを、引数のアクセストークンを優先して生成する。
+     */
+    private function stockService(?string $accessToken): Stock
+    {
+        if ($accessToken !== null) {
+            $this->accessToken = $accessToken;
+        }
+        return new Stock($this->accessToken ?? '', $this->httpClient);
     }
 
     /**
