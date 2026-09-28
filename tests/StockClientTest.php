@@ -7,6 +7,7 @@ namespace Shimoning\ColorMeShopApi\Tests;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class StockClientTest extends TestCase
@@ -45,5 +46,12 @@ class StockClientTest extends TestCase
         (new Client('constructor-token', $mock->client()))->getStocks(null, 'argument-token');
 
         $this->assertSame('Bearer argument-token', $mock->header('Authorization'));
+    }
+
+    public function test_コンストラクタに空文字を渡してもトークン未指定として扱う(): void
+    {
+        $this->expectException(ParameterException::class);
+
+        (new Client(''))->getStocks();
     }
 }
