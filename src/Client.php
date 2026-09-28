@@ -19,6 +19,9 @@ use Shimoning\ColorMeShopApi\Values\Scopes;
 use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
 
+use Shimoning\ColorMeShopApi\Services\Gift;
+use Shimoning\ColorMeShopApi\Entities\Gift\Gift as GiftEntity;
+
 use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
@@ -557,6 +560,23 @@ class Client
             $this->accessToken = $accessToken;
         }
         return (new Shop($this->accessToken ?? '', $this->httpClient))->get();
+    }
+
+    /**
+     * ギフト設定を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/gift/operation/getGift
+     * @param string|null $accessToken
+     * @return GiftEntity|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getGift(?string $accessToken = null): GiftEntity|Errors
+    {
+        if ($accessToken !== null) {
+            $this->accessToken = $accessToken;
+        }
+        return (new Gift($this->accessToken ?? '', $this->httpClient))->get();
     }
 
     /**

@@ -23,6 +23,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [決済](#決済)
   * [配送](#配送)
   * [在庫](#在庫)
+  * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
 * [0.14.0 の変更](#0140-の変更)
 * [未実装](#未実装)
@@ -950,6 +951,35 @@ if ($stocksOrErrors instanceof Errors) {
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
 `Client::getStocks()` は、内部で `Services\Stock::page(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。
+### ギフト
+#### ギフト設定を取得
+```php
+$giftOrErrors = $client->getGift();
+
+if ($giftOrErrors instanceof Errors) {
+    // エラー処理
+} else {
+    $giftOrErrors->getEnabled();          // ギフト機能が有効か。公式 OpenAPI では nullable
+
+    $noshi = $giftOrErrors->getNoshi();   // Gift\GiftNoshi
+    $noshi->getEnabled();
+    $noshi->getTextEnabled();            // 名入れの可否
+    $noshi->getTextCharge();             // 名入れの料金
+    foreach ($noshi->getTypes() as $type) {   // list<Gift\GiftType>
+        $type->getName();
+        $type->getCharge();
+    }
+    $noshi->getComment();
+
+    $giftOrErrors->getCard();             // Gift\GiftCard: enabled / textEnabled / types / comment
+    $giftOrErrors->getWrapping();         // Gift\GiftWrapping: enabled / types / comment
+    $giftOrErrors->getUpdateDate();       // ?DateTimeImmutable
+}
+```
+
+熨斗・メッセージカード・ラッピングは公式 OpenAPI 上で持つフィールドが異なる（カードに `text_charge` はなく、ラッピングに `text_enabled` / `text_charge` はない）ため、`GiftNoshi` / `GiftCard` / `GiftWrapping` の別々の Entity で表す。`enabled` / `text_enabled` / `text_charge` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。実測の詳細は [docs/api-gift-structure.md](docs/api-gift-structure.md) にある。
+
+`Client::getGift()` は、内部で `Services\Gift::get(?string $accessToken = null)` を呼び出す。
 
 ### ページネーション
 受注一覧と顧客一覧は `Entities\Page` を返す。`Page` は `Entities\Collection` を継承しているため、`foreach`、`count()`、`all()`、配列アクセスが利用できる。
@@ -1032,7 +1062,6 @@ $pagination->getOffset();
 
 ## 未実装
 
-* [ギフト](https://developer.shop-pro.jp/docs/colorme-api#tag/gift)
 * [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
 
 -----

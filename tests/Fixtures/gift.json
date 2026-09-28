@@ -1,0 +1,31 @@
+{
+    "gift": {
+        "account_id": "my-shop",
+        "enabled": true,
+        "noshi": {
+            "enabled": true,
+            "text_enabled": true,
+            "text_charge": 100,
+            "types": [
+                {
+                    "name": "お祝い用のし",
+                    "charge": 200
+                }
+            ],
+            "comment": "用途に合わせてお選びください"
+        },
+        "card": {
+            "enabled": true,
+            "text_enabled": null,
+            "types": [],
+            "comment": null
+        },
+        "wrapping": {
+            "enabled": true,
+            "types": [],
+            "comment": null
+        },
+        "make_date": 1725148800,
+        "update_date": 1725235200
+    }
+}
