@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Stock\Stock as StockEntity;
+use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Stock;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -54,6 +55,40 @@ class StockTest extends TestCase
         $result = (new Stock('token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertInstanceOf(Errors::class, $result);
+    }
+
+    public function test_在庫一覧の200応答でmetaが欠損しても要素を保持する(): void
+    {
+        $response = self::fixtureArray('stocks_page.json');
+        unset($response['meta']);
+        $mock = HttpMock::json(200, \json_encode($response, \JSON_THROW_ON_ERROR));
+
+        $page = (new Stock('token', $mock->client()))->page(new SearchParameters([]));
+        $getters = [
+            'getTotal' => static fn(Page $page): int => $page->getTotal(),
+            'getLimit' => static fn(Page $page): int => $page->getLimit(),
+            'getOffset' => static fn(Page $page): int => $page->getOffset(),
+        ];
+
+        $this->assertInstanceOf(Page::class, $page);
+        $this->assertCount(2, $page);
+        $this->assertContainsOnlyInstancesOf(StockEntity::class, $page->all());
+
+        foreach ($getters as $method => $getter) {
+            $actualException = null;
+            try {
+                $getter($page);
+            } catch (MissingPaginationException $exception) {
+                $actualException = $exception;
+            }
+
+            $this->assertInstanceOf(MissingPaginationException::class, $actualException, $method);
+            $this->assertSame(
+                'GET /v1/stocks のレスポンスにページネーション情報「meta」がありません。ページング値を取得できません。',
+                $actualException->getMessage(),
+                $method,
+            );
+        }
     }
 
     public function test_page引数のアクセストークンが空なら送信前に例外になる(): void
