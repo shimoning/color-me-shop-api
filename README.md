@@ -932,7 +932,7 @@ if ($stocksOrErrors instanceof Errors) {
     foreach ($stocksOrErrors as $stock) {
         $stock->getProductId();
         $stock->getName();
-        $stock->getOption1Value();  // オプションごとに在庫管理している商品では 1 商品が複数行になる
+        $stock->getOption1Value();  // オプションの値。公式仕様上はオプションごとの在庫が別行になるが、実測は未確認
         $stock->getStocks();        // 在庫数。未設定なら null
         $stock->getFewNum();        // 残りわずかとなる在庫数
         $stock->getCategory();      // Product\CategoryIds
