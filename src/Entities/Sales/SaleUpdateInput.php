@@ -27,6 +27,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
     protected int $id;
     protected bool $paid;
     protected PointState $pointState;
+    /** @var list<SaleDeliveryUpdateInput> */
     protected array $saleDeliveries;
 
     /**
@@ -83,7 +84,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
 
     /**
      * お届け先
-     * @return SaleDeliveryUpdateInput[]
+     * @return list<SaleDeliveryUpdateInput>
      */
     public function getSaleDeliveries(): array
     {
@@ -93,7 +94,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
 
     /**
      * お届け先を設定
-     * @param SaleDeliveryUpdateInput[] $saleDeliveries
+     * @param list<SaleDeliveryUpdateInput> $saleDeliveries
      * @return void
      */
     public function setSaleDeliveries($saleDeliveries)

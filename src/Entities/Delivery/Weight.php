@@ -19,6 +19,7 @@ class Weight extends Entity
     ];
 
     protected int $weight;
+    /** @var list<Area> */
     protected array $areas;
 
     /**
@@ -34,7 +35,7 @@ class Weight extends Entity
 
     /**
      * 都道府県ごとの配送料
-     * @return array<Area>
+     * @return list<Area>
      */
     public function getAreas(): array
     {

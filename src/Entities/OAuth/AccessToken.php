@@ -14,6 +14,7 @@ class AccessToken extends Entity
     protected string $tokenType;
     protected ?string $scope;
     protected int $createdAt;
+    /** @var list<AuthScope> */
     protected array $scopes = [];
 
     /**
@@ -68,7 +69,7 @@ class AccessToken extends Entity
 
     /**
      * アプリが利用したい機能
-     * @return array<AuthScope>
+     * @return list<AuthScope>
      */
     public function getScopes(): array
     {

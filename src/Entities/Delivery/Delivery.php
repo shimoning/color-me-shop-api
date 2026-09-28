@@ -60,6 +60,7 @@ class Delivery extends Entity
     protected bool $preferredDateUse;
     protected bool $preferredPeriodUse;
 
+    /** @var list<int> */
     protected array $unavailablePaymentIds;
 
     protected int $makeDate;
@@ -241,7 +242,7 @@ class Delivery extends Entity
 
     /**
      * 利用不可決済方法の配列
-     * @return array<int>
+     * @return list<int>
      */
     public function getUnavailablePaymentIds(): array
     {

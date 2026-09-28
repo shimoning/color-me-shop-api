@@ -114,7 +114,9 @@ class Sale extends Entity
     protected string $externalOrderId;
 
     protected $customer;
+    /** @var list<SaleDetail> */
     protected array $details;
+    /** @var list<SaleDelivery> */
     protected array $saleDeliveries;
     protected ?SaleSegment $segment;
     protected ?SaleTotals $totals;
@@ -528,7 +530,7 @@ class Sale extends Entity
 
     /**
      * 受注明細
-     * @return array<SaleDetail>
+     * @return list<SaleDetail>
      */
     public function getDetails(): array
     {
@@ -538,7 +540,7 @@ class Sale extends Entity
 
     /**
      * お届け先
-     * @return array<SaleDelivery>
+     * @return list<SaleDelivery>
      */
     public function getSaleDeliveries(): array
     {

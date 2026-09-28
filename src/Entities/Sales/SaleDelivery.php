@@ -27,6 +27,7 @@ class SaleDelivery extends Entity
     protected int $saleId;
     protected string $accountId;
     protected int $deliveryId;
+    /** @var list<int> */
     protected array $detailIds;
 
     protected string $name;
@@ -102,7 +103,7 @@ class SaleDelivery extends Entity
 
     /**
      * この配送に含まれる受注明細IDの配列
-     * @return array<string>
+     * @return list<int>
      */
     public function getDetailIds(): array
     {

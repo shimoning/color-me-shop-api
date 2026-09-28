@@ -102,11 +102,36 @@ class CodTest extends TestCase
             '非整数' => [[[300, '100']], 'fees[0]'],
             '非配列' => [[[300, 100], 'invalid'], 'fees[1]'],
             '内側が連想配列' => [[['upper_limit' => 300, 'fee' => 100]], 'fees[0]'],
-            '外側が連想配列' => [['first' => [300, 100]], 'fees'],
-            '外側が疎な配列' => [[1 => [300, 100]], 'fees'],
             '外側が文字列' => ['invalid', 'fees'],
             '外側がfalse' => [false, 'fees'],
         ];
+    }
+
+    #[DataProvider('nonListFeesProvider')]
+    public function test_手数料区分が連想配列や飛び番でもリストとして保持する(array $fees): void
+    {
+        $cod = new Cod(['changeable' => true, 'fees' => $fees]);
+
+        $this->assertTrue(\array_is_list($cod->getFees()));
+        $this->assertSame(300, $cod->getFees()[0]->getUpperLimit());
+        $this->assertSame(100, $cod->getFees()[0]->getFee());
+    }
+
+    /** @return array<string, array{array<int|string, array{int, int}>}> */
+    public static function nonListFeesProvider(): array
+    {
+        return [
+            '連想配列' => [['first' => [300, 100]]],
+            '飛び番' => [[1 => [300, 100]]],
+        ];
+    }
+
+    public function test_文字列キーの不正な手数料区分はキー付きで報告する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('fees[first]');
+
+        new Cod(['changeable' => true, 'fees' => ['first' => [300]]]);
     }
 
     #[DataProvider('invalidNullableFieldProvider')]

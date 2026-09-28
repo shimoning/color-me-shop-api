@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class BigCategory extends Category
 {
-    /** @var SmallCategory[] */
+    /** @var list<SmallCategory> */
     protected array $children;
 
     /**
@@ -17,14 +17,14 @@ class BigCategory extends Category
      */
     public function __construct(array $data)
     {
+        if (\array_key_exists('children', $data) && ! \is_array($data['children'])) {
+            throw InvalidFieldException::for(static::class, 'children', 'array', $data['children']);
+        }
+
         parent::__construct($data);
 
         if (! \array_key_exists('children', $data)) {
             return;
-        }
-
-        if (! \is_array($data['children']) || ! \array_is_list($data['children'])) {
-            throw InvalidFieldException::for(static::class, 'children', 'list', $data['children']);
         }
 
         $this->children = [];
@@ -49,9 +49,9 @@ class BigCategory extends Category
     /**
      * 子カテゴリー。実測した大カテゴリーは常に children キーを持つため、欠損時は
      * 非 nullable な既存契約に従い MissingFieldException を送出する。
-     * children は 0 から始まる連番キーのリスト形状のみ受理する。
+     * children は入力のキーにかかわらず、0 から始まる連番キーのリストとして返す。
      *
-     * @return SmallCategory[]
+     * @return list<SmallCategory>
      */
     public function getChildren(): array
     {

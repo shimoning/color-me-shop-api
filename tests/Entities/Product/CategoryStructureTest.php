@@ -112,19 +112,21 @@ class CategoryStructureTest extends TestCase
         ];
     }
 
-    #[DataProvider('invalidChildrenShapeProvider')]
-    public function test_親のchildrenがリスト形状以外なら固有例外になる(array $children): void
+    #[DataProvider('nonListChildrenProvider')]
+    public function test_親のchildrenが連想配列や飛び番でもリストとして保持する(array $children): void
     {
         $data = self::fixtureArray('category_structure.json');
         $data['children'] = $children;
 
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('children');
-        Category::fromArray($data);
+        $category = Category::fromArray($data);
+
+        $this->assertInstanceOf(BigCategory::class, $category);
+        $this->assertTrue(\array_is_list($category->getChildren()));
+        $this->assertSame(1, $category->getChildren()[0]->getIdSmall());
     }
 
     /** @return array<string, array{array<int|string, array<string, int>>}> */
-    public static function invalidChildrenShapeProvider(): array
+    public static function nonListChildrenProvider(): array
     {
         return [
             '連想配列' => [['first' => ['id_small' => 1]]],
