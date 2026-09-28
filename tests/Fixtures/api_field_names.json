@@ -700,6 +700,37 @@
         "enabled",
         "periods"
     ],
+    "Gift\\Gift": [
+        "account_id",
+        "card",
+        "enabled",
+        "make_date",
+        "noshi",
+        "update_date",
+        "wrapping"
+    ],
+    "Gift\\GiftCard": [
+        "comment",
+        "enabled",
+        "text_enabled",
+        "types"
+    ],
+    "Gift\\GiftNoshi": [
+        "comment",
+        "enabled",
+        "text_charge",
+        "text_enabled",
+        "types"
+    ],
+    "Gift\\GiftType": [
+        "charge",
+        "name"
+    ],
+    "Gift\\GiftWrapping": [
+        "comment",
+        "enabled",
+        "types"
+    ],
     "Delivery\\Area": [
         "charge",
         "pref_id",

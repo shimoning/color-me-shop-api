@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Services\Delivery;
+use Shimoning\ColorMeShopApi\Services\Gift;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Services\Product;
@@ -34,6 +35,7 @@ class AuthScopeDocumentationTest extends TestCase
             'Customer::changePoints' => [Customer::class, 'changePoints', 'changeCustomerPoints', [AuthScope::WRITE_SALES]],
             'Delivery::all' => [Delivery::class, 'all', 'getDeliveries', []],
             'Delivery::dateSetting' => [Delivery::class, 'dateSetting', 'getDeliveryDateSetting', []],
+            'Gift::get' => [Gift::class, 'get', 'getGift', []],
             'Payment::all' => [Payment::class, 'all', 'getPayments', []],
             'Product::products' => [Product::class, 'products', 'getProducts', [AuthScope::READ_PRODUCTS]],
             'Product::product' => [Product::class, 'product', 'getProduct', [AuthScope::READ_PRODUCTS]],

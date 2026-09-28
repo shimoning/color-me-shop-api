@@ -68,6 +68,9 @@ class ClientTest extends TestCase
             'getDeliveryDateSetting' => [static function (Client $client, ?string $accessToken): void {
                 $client->getDeliveryDateSetting($accessToken);
             }],
+            'getGift' => [static function (Client $client, ?string $accessToken): void {
+                $client->getGift($accessToken);
+            }],
             'getCustomers' => [static function (Client $client, ?string $accessToken): void {
                 $client->getCustomers(null, $accessToken);
             }],
@@ -384,6 +387,26 @@ class ClientTest extends TestCase
 
         (new Client('my-token', $mock->client()))
             ->getDeliveryDateSetting('override-token');
+
+        $this->assertSame('Bearer override-token', $mock->header('Authorization'));
+    }
+
+    public function test_getGiftはギフト設定を取得する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('gift.json'));
+
+        $gift = (new Client('my-token', $mock->client()))->getGift();
+
+        $this->assertSame('my-shop', $gift->getAccountId());
+        $this->assertSame('お祝い用のし', $gift->getNoshi()->getTypes()[0]->getName());
+        $this->assertSame('https://api.shop-pro.jp/v1/gift', $mock->uri());
+    }
+
+    public function test_getGiftは引数のアクセストークンを優先する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('gift.json'));
+
+        (new Client('my-token', $mock->client()))->getGift('override-token');
 
         $this->assertSame('Bearer override-token', $mock->header('Authorization'));
     }
