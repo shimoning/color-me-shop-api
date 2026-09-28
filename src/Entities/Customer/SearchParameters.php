@@ -43,6 +43,7 @@ class SearchParameters extends Entity implements RequestEntity
         ],
     ];
 
+    /** @var list<int>|null */
     protected ?array $ids;
 
     protected ?string $name;

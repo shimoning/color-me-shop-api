@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class BigCategory extends Category
 {
-    /** @var SmallCategory[] */
+    /** @var list<SmallCategory> */
     protected array $children;
 
     /**
@@ -51,7 +51,7 @@ class BigCategory extends Category
      * 非 nullable な既存契約に従い MissingFieldException を送出する。
      * children は 0 から始まる連番キーのリスト形状のみ受理する。
      *
-     * @return SmallCategory[]
+     * @return list<SmallCategory>
      */
     public function getChildren(): array
     {

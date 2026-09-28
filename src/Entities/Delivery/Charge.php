@@ -27,11 +27,15 @@ class Charge extends Entity
     protected string $accountId;
 
     protected ?int $chargeFixed;
+    /** @var list<array{int, int}> */
     protected array $chargeRangesByPrice;
     protected ?int $chargeMaxPrice;
 
+    /** @var list<Area> */
     protected array $chargeRangesByArea;
+    /** @var list<Weight> */
     protected array $chargeRangesByWeight;
+    /** @var list<Area> */
     protected array $chargeRangesMaxWeight;
 
     /**
@@ -106,7 +110,7 @@ class Charge extends Entity
     /**
      * 配送料が変わる決済金額の区分
      * [3000, 100]であれば、3000円以下の場合、手数料は100円であることを表す
-     * @return array<int, int>
+     * @return list<array{int, int}>
      */
     public function getChargeRangesByPrice(): array
     {
@@ -125,7 +129,7 @@ class Charge extends Entity
 
     /**
      * 都道府県ごとの配送料
-     * @return array<Area>
+     * @return list<Area>
      */
     public function getChargeRangesByArea(): array
     {
@@ -135,7 +139,7 @@ class Charge extends Entity
 
     /**
      * 配送料が変わる重量の区分
-     * @return array<Weight>
+     * @return list<Weight>
      */
     public function getChargeRangesByWeight(): array
     {
@@ -145,7 +149,7 @@ class Charge extends Entity
 
     /**
      * charge_ranges_by_weightに設定されている区分以上の重量の場合の手数料
-     * @return array<Area>
+     * @return list<Area>
      */
     public function getChargeRangesMaxWeight(): array
     {

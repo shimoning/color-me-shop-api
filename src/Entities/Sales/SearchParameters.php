@@ -49,11 +49,13 @@ class SearchParameters extends Entity implements RequestEntity
         ],
     ];
 
+    /** @var list<int>|null */
     protected ?array $ids;
     protected ?DateTime $makeDateMin;   // after
     protected ?DateTime $makeDateMax;   // before
     protected ?DateTime $updateDateMin;
     protected ?DateTime $updateDateMax;
+    /** @var list<int>|null */
     protected ?array $customerIds;
     protected ?string $customerName;
     protected ?string $customerMail;
@@ -65,7 +67,9 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?bool $paid;
     protected ?bool $delivered;
     protected ?bool $canceled;
+    /** @var list<int>|null */
     protected ?array $paymentIds;
+    /** @var list<string>|null */
     protected ?array $fields;   // TODO: SaleFields
     protected ?Limit $limit;
     protected ?int $offset;

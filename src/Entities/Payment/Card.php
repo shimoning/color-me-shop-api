@@ -18,11 +18,12 @@ class Card extends Entity
         ],
     ];
 
+    /** @var list<Brand> */
     protected array $brands;
 
     /**
      * 手数料が決済金額によって変わるか否か
-     * @return array<Brand>
+     * @return list<Brand>
      */
     public function getBrands(): array
     {
