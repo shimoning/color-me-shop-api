@@ -100,6 +100,10 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters::class,
                 'model_number',
             ],
+            'Stock\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters::class,
+                'name',
+            ],
             'Sales\\SaleDeliveryUpdateInput' => [
                 \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput::class,
                 'memo',

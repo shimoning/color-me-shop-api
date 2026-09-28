@@ -529,6 +529,13 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \TypeError::class,
             ],
+            'InvalidFieldException::forArrayElement/在庫検索の商品ID' => [
+                self::site('src/Entities/Stock/SearchParameters.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters(['ids' => ['bad']]);
+                },
+                \TypeError::class,
+            ],
             'InvalidFieldException::forArrayElement/広告検索の商品ID' => [
                 self::site('src/Entities/Product/AdvertisingSearchParameters.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
