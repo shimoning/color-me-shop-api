@@ -50,14 +50,18 @@ class Cod extends Entity
      */
     public function __construct(array $data)
     {
+        if (
+            \array_key_exists('fees', $data)
+            && $data['fees'] !== null
+            && ! \is_array($data['fees'])
+        ) {
+            throw InvalidFieldException::for(static::class, 'fees', 'array', $data['fees']);
+        }
+
         parent::__construct($data);
 
         if (! \array_key_exists('fees', $data) || $data['fees'] === null) {
             return;
-        }
-
-        if (! \is_array($data['fees']) || ! \array_is_list($data['fees'])) {
-            throw InvalidFieldException::for(static::class, 'fees', 'list', $data['fees']);
         }
 
         $this->fees = [];
@@ -80,7 +84,7 @@ class Cod extends Entity
             } catch (\Throwable $error) {
                 throw InvalidFieldException::forArrayElement(
                     static::class,
-                    \sprintf('fees[%d]', $index),
+                    \sprintf('fees[%s]', $index),
                     CodFee::class,
                     $error,
                 );

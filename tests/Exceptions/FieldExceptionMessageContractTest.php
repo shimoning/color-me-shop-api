@@ -315,10 +315,10 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
-            'InvalidFieldException::for/Codのリスト形状不一致' => [
+            'InvalidFieldException::for/Codの配列型不一致' => [
                 self::site('src/Entities/Payment/Cod.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
-                    new Cod(['changeable' => true, 'fees' => ['first' => [300, 100]]]);
+                    new Cod(['changeable' => true, 'fees' => 'invalid']);
                 },
                 null,
             ],
@@ -336,12 +336,12 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \Error::class,
             ],
-            'InvalidFieldException::for/子カテゴリーのリスト形状不一致' => [
+            'InvalidFieldException::for/子カテゴリーの配列型不一致' => [
                 self::site('src/Entities/Product/BigCategory.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
                     Category::fromArray([
                         'id_small' => 0,
-                        'children' => ['first' => ['id_small' => 1]],
+                        'children' => 'invalid',
                     ]);
                 },
                 null,
