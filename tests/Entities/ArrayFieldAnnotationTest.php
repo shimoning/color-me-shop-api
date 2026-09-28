@@ -35,11 +35,10 @@ class ArrayFieldAnnotationTest extends TestCase
             }
 
             $checked++;
-            $document = $getter->getDocComment();
-            if (! \is_string($document)
-                || \preg_match('/@return\s+list<.+>(?:\|null)?(?:\s|\*|$)/', $document) !== 1
-            ) {
-                $violations[] = $class->getName() . '::' . $getter->getName() . '()';
+            $annotation = self::annotation($getter->getDocComment(), 'return');
+            if ($annotation === null || ! self::isListAnnotation($annotation)) {
+                $violations[] = $class->getName() . '::' . $getter->getName() . '(): @return '
+                    . ($annotation ?? '(なし)');
             }
         }
 
@@ -56,14 +55,92 @@ class ArrayFieldAnnotationTest extends TestCase
         $properties = self::arrayProperties();
 
         foreach ($properties as [$class, $property]) {
-            $document = $property->getDocComment();
-            if (! \is_string($document) || \preg_match('/@var\s+\S+/', $document) !== 1) {
-                $violations[] = $class->getName() . '::$' . $property->getName();
+            $annotation = self::annotation($property->getDocComment(), 'var');
+            if ($annotation === null || ! self::isListAnnotation($annotation)) {
+                $violations[] = $class->getName() . '::$' . $property->getName() . ': @var '
+                    . ($annotation ?? '(なし)');
             }
         }
 
         $this->assertGreaterThan(20, \count($properties), '配列フィールドを検出できませんでした。');
         $this->assertSame([], $violations, "配列フィールドに @var で要素型を宣言してください:\n" . \implode("\n", $violations));
+    }
+
+    public function test_list形式のアノテーションを厳密に判定する(): void
+    {
+        $this->assertTrue(self::isListAnnotation('list<int>'));
+        $this->assertTrue(self::isListAnnotation('list<int>|null'));
+        $this->assertTrue(self::isListAnnotation('list<array{int, int}>'));
+        $this->assertTrue(self::isListAnnotation('list<list<int>>'));
+        $this->assertFalse(self::isListAnnotation('array<int>'));
+        $this->assertFalse(self::isListAnnotation('int[]'));
+        $this->assertFalse(self::isListAnnotation('array'));
+        $this->assertFalse(self::isListAnnotation('list<int>|array<string>'));
+    }
+
+    private static function annotation(string|false $document, string $tag): ?string
+    {
+        if (! \is_string($document)
+            || \preg_match('/@' . \preg_quote($tag, '/') . '\s+([^\r\n]*)/', $document, $matches) !== 1
+        ) {
+            return null;
+        }
+
+        $annotation = \preg_replace('/\s*\*\/\s*$/', '', $matches[1]);
+        return \is_string($annotation) ? \trim($annotation) : null;
+    }
+
+    private static function isListAnnotation(string $annotation): bool
+    {
+        if (! \str_starts_with($annotation, 'list<')) {
+            return false;
+        }
+
+        $depth = 0;
+        $outerClosingPosition = null;
+        $length = \strlen($annotation);
+
+        // 入れ子のジェネリクスも扱えるよう、山括弧の深さを数えて外側の終端を探す。
+        for ($position = 4; $position < $length; $position++) {
+            if ($annotation[$position] === '<') {
+                $depth++;
+                continue;
+            }
+
+            if ($annotation[$position] !== '>') {
+                continue;
+            }
+
+            $depth--;
+            if ($depth === 0) {
+                $outerClosingPosition = $position;
+                break;
+            }
+
+            if ($depth < 0) {
+                return false;
+            }
+        }
+
+        if ($outerClosingPosition === null || $outerClosingPosition === 5) {
+            return false;
+        }
+
+        $remainder = \substr($annotation, $outerClosingPosition + 1);
+        if (\str_starts_with($remainder, '|null')) {
+            $remainder = \substr($remainder, 5);
+        }
+
+        if ($remainder === '') {
+            return true;
+        }
+
+        // 型の後ろの説明文は許容するが、空白を挟んだ union は拒否する。
+        if (! \ctype_space($remainder[0])) {
+            return false;
+        }
+
+        return ! \str_starts_with(\ltrim($remainder), '|');
     }
 
     /**
@@ -129,11 +206,20 @@ class ArrayFieldAnnotationTest extends TestCase
         }
 
         if ($type instanceof ReflectionUnionType) {
+            $containsArray = false;
             foreach ($type->getTypes() as $member) {
                 if ($member->getName() === 'array') {
-                    return true;
+                    $containsArray = true;
+                    continue;
+                }
+
+                // 配列と null 以外の型を取るフィールドはリスト型フィールドではない。
+                if ($member->getName() !== 'null') {
+                    return false;
                 }
             }
+
+            return $containsArray;
         }
 
         return false;
