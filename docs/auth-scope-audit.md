@@ -2,8 +2,8 @@
 
 ## 結論
 
-ライブラリが実装している 42 操作を公式 OpenAPI の `security` と突き合わせた。35 操作には具体的な
-スコープが宣言されており、各 Service と `Client` の PHPDoc に記載した。残る 7 操作は OAuth2 認証を
+ライブラリが実装している 43 操作を公式 OpenAPI の `security` と突き合わせた。35 操作には具体的な
+スコープが宣言されており、各 Service と `Client` の PHPDoc に記載した。残る 8 操作は OAuth2 認証を
 要求しながらスコープの宣言が空で、必要なスコープを公式定義から判断できない。これらには PHPDoc へ
 スコープを記載していない。
 
@@ -44,7 +44,7 @@
 
 ## スコープの宣言が空の操作
 
-次の 7 操作は `security` に `[{OAuth2: []}]` を持つ。OAuth2 認証は要求するが、必要なスコープの
+次の 8 操作は `security` に `[{OAuth2: []}]` を持つ。OAuth2 認証は要求するが、必要なスコープの
 宣言がない。アクセストークン自体は必要である。
 
 | 操作 | Service | 推測されるスコープ | 根拠と留保 |
@@ -53,6 +53,7 @@
 | `GET /v1/payments` | `Payment::all()` | 該当なしの可能性 | 同上。受注処理に使う参照情報だが対応する scope がない |
 | `GET /v1/deliveries` | `Delivery::all()` | 該当なしの可能性 | 同上 |
 | `GET /v1/deliveries/date` | `Delivery::dateSetting()` | 該当なしの可能性 | 同上。配送方法一覧と同じ配送リソースで、書き込み操作は公式 API に存在しない |
+| `GET /v1/gift` | `Gift::get()` | 該当なしの可能性 | 公式の 9 scope にギフト設定に対応するものがない。書き込み操作も公式 API に存在しない |
 | `GET /v1/groups` | `Product::groups()` | `read_products` | 同じリソースの `POST /v1/groups` が `write_products` を要求する |
 | `GET /v1/groups/{id}` | `Product::group()` | `read_products` | 同上。`PUT /v1/groups/{id}` が `write_products` を要求する |
 | `GET /v1/categories` | `Product::categories()` | `read_products` | 同じリソースの `POST /v1/categories` が `write_products` を要求する |
