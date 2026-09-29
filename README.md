@@ -252,6 +252,8 @@ $oAuthUri = (new Client())->getOAuthUrl($oAuthOptions, $oAuthScopes);
 CSRF 対策の `state` を渡せる (0.18.0 以降)。値の生成と保存はライブラリの責務ではないため、利用者がセッション等に保存し、コールバックで照合する。
 
 ```php
+session_start(); // フレームワークが開始済みなら不要
+
 $state = bin2hex(random_bytes(16));
 $_SESSION['oauth_state'] = $state;
 
@@ -266,6 +268,8 @@ $oAuthUri = (new Client())->getOAuthUrl($oAuthOptions, $oAuthScopes, $state);
 `state` を渡した場合は、`code` を扱う前に照合する。認可を拒否した場合のエラー応答 (`error=access_denied`) にも `state` は付くため、成功・失敗のどちらも照合してから内容を扱う。
 
 ```php
+session_start(); // 認可 URL を組み立てたときと同じセッションを復元する
+
 $expectedState = (string) ($_SESSION['oauth_state'] ?? '');
 unset($_SESSION['oauth_state']);
 $givenState = (string) filter_input(INPUT_GET, 'state');
