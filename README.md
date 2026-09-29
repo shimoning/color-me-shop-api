@@ -29,6 +29,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
 * [未実装](#未実装)
 * [開発者向け](#開発者向け)
 * [CLI](#cli)
+* [サンプル](#サンプル)
 * [ライセンスについて](#ライセンスについて)
 * [サポート](#サポート)
 
@@ -1087,6 +1088,9 @@ composer test:coverage
 
 # 対話形式の API クライアントを起動
 composer client
+
+# OAuth のコールバックを受け取るサンプルサーバーを起動
+composer oauth:callback
 ```
 
 ## CLI
@@ -1101,6 +1105,31 @@ composer client
 
 ### 終了方法
 終了する際は `exit` もしくは `Control + C` を入力する。
+
+## サンプル
+
+`examples/` に、手元で API の挙動を確認するためのサンプルを置いている。
+
+### OAuth のコールバックを受け取る
+
+`examples/oauth-callback/` は、認可コードを `localhost` で受け取ってトークン応答の構造を表示するサンプルである。認可コードは 1 度しか交換できず、ブラウザでの承認を挟むため、通常のスクリプトではトークン応答を観測しにくい。その確認を手元で行える。
+
+```bash
+composer oauth:callback
+```
+
+1. カラーミーのアプリ設定に `http://localhost:8765/callback` を登録する (完全一致)
+2. プロジェクト直下の `.env` に `CLIENT_ID` と `CLIENT_SECRET` を設定する
+3. 上記のコマンドを実行し、ブラウザで `http://localhost:8765/` を開いて承認する
+
+ポートと要求スコープは環境変数で変更できる。
+
+| 環境変数 | 既定値 |
+| --- | --- |
+| `OAUTH_CALLBACK_PORT` | `8765` |
+| `OAUTH_CALLBACK_SCOPES` | `read_products,read_sales` |
+
+`CLIENT_SECRET` は画面に出さず、`access_token` も先頭 4 文字と長さだけを表示する。発行したアクセストークンはカラーミー側で有効なまま残るため、不要であれば [許可済みアプリ一覧](https://admin.shop-pro.jp/?mode=app_use_lst) から失効させること。
 
 ### .env
 プロジェクト直下に `.env` を作成すると、CLI 上で一部の変数が自動生成される。`.env.example` を参考に設定すること。これらの環境変数は CLI のみに利用される。
