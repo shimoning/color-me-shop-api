@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\OAuth;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
 
@@ -78,12 +79,12 @@ class AccessToken extends Entity
 
     /**
      * 作成日
-     * @return int
+     * @return DateTimeImmutable
      */
-    public function getCreatedAt(): int
+    public function getCreatedAt(): DateTimeImmutable
     {
         $this->assertFieldInitialized('createdAt');
 
-        return $this->createdAt;
+        return (new DateTimeImmutable)->setTimestamp($this->createdAt);
     }
 }

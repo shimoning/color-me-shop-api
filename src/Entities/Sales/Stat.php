@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
+use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
@@ -39,13 +40,14 @@ class Stat extends Entity
     }
 
     /**
-     * 集計対象とする売上の作成日
-     * @return int
+     * 集計の基準日
+     * Services\Sales::stat() に渡した日付の 00:00（JST）を返す。
+     * @return DateTimeImmutable
      */
-    public function getDate(): int
+    public function getDate(): DateTimeImmutable
     {
         $this->assertFieldInitialized('date');
-        return $this->date;
+        return (new DateTimeImmutable)->setTimestamp($this->date);
     }
 
     /**
