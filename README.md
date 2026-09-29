@@ -1122,12 +1122,11 @@ composer oauth:callback
 2. プロジェクト直下の `.env` に `CLIENT_ID` と `CLIENT_SECRET` を設定する
 3. 上記のコマンドを実行し、ブラウザで `http://localhost:8765/` を開いて承認する
 
-ポートと要求スコープは環境変数で変更できる。
+要求スコープは環境変数 `OAUTH_CALLBACK_SCOPES` で変更できる (既定は `read_products,read_sales`)。値は `Constants\AuthScope` で検証し、未定義のスコープは起動時に知らせる。
 
-| 環境変数 | 既定値 |
-| --- | --- |
-| `OAUTH_CALLBACK_PORT` | `8765` |
-| `OAUTH_CALLBACK_SCOPES` | `read_products,read_sales` |
+待ち受けポートは `composer.json` の `oauth:callback` で 8765 に固定している。変更する場合は、そのスクリプトとカラーミーに登録するリダイレクト URI の両方を直すこと。
+
+CSRF 対策として `state` を検証する。`Services\OAuth::getUrl()` は `state` を組み立てないため、このサンプルが認可 URL へ自前で付与し、コールバックで照合してから認可コードを交換する。
 
 `CLIENT_SECRET` は画面に出さず、`access_token` も先頭 4 文字と長さだけを表示する。発行したアクセストークンはカラーミー側で有効なまま残るため、不要であれば [許可済みアプリ一覧](https://admin.shop-pro.jp/?mode=app_use_lst) から失効させること。
 

@@ -16,11 +16,16 @@
  *
  * 環境変数:
  *
- *   OAUTH_CALLBACK_PORT   待ち受けポート（既定 8765）
  *   OAUTH_CALLBACK_SCOPES 要求スコープをカンマ区切りで（既定 read_products,read_sales）
+ *
+ * 待ち受けポートは composer スクリプトで 8765 に固定している。変更する場合は
+ * composer.json の oauth:callback と、カラーミーに登録するリダイレクト URI の両方を直すこと。
  *
  * このサンプルは client secret とアクセストークンの値を画面に出さない。
  * access_token は先頭 4 文字と長さだけを表示する。
+ *
+ * CSRF 対策として state を検証する。Services\OAuth::getUrl() は state を組み立てないため、
+ * このサンプルが認可 URL へ自前で付与し、コールバックで照合している。
  */
 
 declare(strict_types=1);
@@ -41,8 +46,11 @@ if (\file_exists($root . '/.env')) {
     \Dotenv\Dotenv::createImmutable($root)->load();
 }
 
-$port = (int) ($_ENV['OAUTH_CALLBACK_PORT'] ?? \getenv('OAUTH_CALLBACK_PORT') ?: 8765);
-$redirectUri = 'http://localhost:' . $port . '/callback';
+// composer スクリプトの `php -S 127.0.0.1:8765` と揃える。
+const PORT = 8765;
+$redirectUri = 'http://localhost:' . PORT . '/callback';
+
+\session_start();
 
 $clientId = (string) ($_ENV['CLIENT_ID'] ?? '');
 $clientSecret = (string) ($_ENV['CLIENT_SECRET'] ?? '');
@@ -72,9 +80,13 @@ if ($path === '/') {
         $scopes[] = $case;
     }
 
-    $url = (new OAuth($options))->getUrl(new Scopes($scopes));
+    // Services\OAuth::getUrl() は state を組み立てないため、ここで付与する。
+    $state = \bin2hex(\random_bytes(16));
+    $_SESSION['oauth_state'] = $state;
+    $url = (new OAuth($options))->getUrl(new Scopes($scopes)) . '&state=' . \rawurlencode($state);
+
     echo '<h1>OAuth コールバックのサンプル</h1>';
-    echo '<p>リダイレクト URI: <code>' . $escape($redirectUri) . '</code></p>';
+    echo '<p>リダイレクト URI: <code>' . $escape($redirectUri) . '</code> (ポートは固定)</p>';
     echo '<p>要求スコープ: <code>' . $escape(\implode(' ', $names)) . '</code></p>';
     echo '<p><a href="' . $escape($url) . '">認可画面を開く</a></p>';
     echo '<p>承認するとこのサーバーに戻り、トークン応答の構造を表示します。認可コードは 1 度しか交換できないため、結果の画面を再読み込みすると失敗します。</p>';
@@ -91,6 +103,18 @@ if (isset($_GET['error'])) {
     echo '<h1>認可エラー</h1>';
     echo '<p>error: <code>' . $escape((string) $_GET['error']) . '</code></p>';
     echo '<p>' . $escape((string) ($_GET['error_description'] ?? '')) . '</p>';
+    return true;
+}
+
+$expectedState = (string) ($_SESSION['oauth_state'] ?? '');
+$givenState = (string) ($_GET['state'] ?? '');
+unset($_SESSION['oauth_state']);
+
+if ($expectedState === '' || ! \hash_equals($expectedState, $givenState)) {
+    \http_response_code(400);
+    echo '<h1>state が一致しません</h1>';
+    echo '<p>この画面を直接開いたか、別の認可フローの応答が混入した可能性があります。'
+        . ' コードは交換していません。<a href="/">最初からやり直す</a></p>';
     return true;
 }
 
