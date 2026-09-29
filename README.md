@@ -360,7 +360,15 @@ if ($statOrErrors instanceof Errors) {
 
 `getDate()` は `statSales()` に渡した基準日の 00:00 (JST) を `DateTimeImmutable` で返す。API は unixtime で返すため、元の整数が必要なら `getRaw()` から取得できる。
 
-集計は基準日を起点とした 3 つの固定期間 (当日 / 7 日前から基準日の終わりまで / 基準日が属する月) に限られ、任意の日数範囲には対応していない。
+集計は基準日を起点とした 3 つの固定期間に限られ、任意の日数範囲には対応していない。
+
+| メソッド | 期間 |
+| --- | --- |
+| `getAmountToday()` / `getCountToday()` | 基準日の当日 |
+| `getAmountLast7days()` / `getCountLast7days()` | 基準日の 7 日前から基準日の終わりまで (基準日を含む 8 日間) |
+| `getAmountThisMonth()` / `getCountThisMonth()` | 基準日が属する月 |
+
+`last7days` は名前に反して基準日とその前 7 日間の合計 8 日間である。2026-09-29 の実測で、基準日が受注日の 7 日後までは集計に含まれ 8 日後で外れることを確認した (公式 OpenAPI の説明と一致)。
 
 #### 受注データの取得
 ```php

@@ -74,7 +74,11 @@ class Stat extends Entity
     }
 
     /**
-     * dateを含む過去7日間の合計売上金額
+     * 基準日の 7 日前から基準日の終わりまでの合計売上金額
+     *
+     * 名前は 7days だが、2026-09-29 の実測では基準日とその前 7 日間の合計 8 日間だった。
+     * 公式 OpenAPI の description と一致する。
+     * 出典: docs/api-unixtime-observation.md
      * @return int
      */
     public function getAmountLast7days(): int
@@ -84,7 +88,11 @@ class Stat extends Entity
     }
 
     /**
-     * dateを含む過去7日間の合計件数
+     * 基準日の 7 日前から基準日の終わりまでの合計件数
+     *
+     * 名前は 7days だが、2026-09-29 の実測では基準日とその前 7 日間の合計 8 日間だった。
+     * 公式 OpenAPI の description と一致する。
+     * 出典: docs/api-unixtime-observation.md
      * @return int
      */
     public function getCountLast7days(): int
