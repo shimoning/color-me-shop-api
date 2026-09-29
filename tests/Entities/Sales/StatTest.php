@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -24,7 +25,7 @@ class StatTest extends TestCase
     {
         $stat = new Stat([
             'account_id' => 'my-shop',
-            'date' => 20260912,
+            'date' => 1789138800,
             'amount_today' => 12000,
             'count_today' => 3,
             // 公式 API では数字の前にもアンダースコアが入る。
@@ -35,7 +36,8 @@ class StatTest extends TestCase
         ]);
 
         $this->assertSame('my-shop', $stat->getAccountId());
-        $this->assertSame(20260912, $stat->getDate());
+        $this->assertInstanceOf(DateTimeImmutable::class, $stat->getDate());
+        $this->assertSame(1789138800, $stat->getDate()->getTimestamp());
         $this->assertSame(12000, $stat->getAmountToday());
         $this->assertSame(3, $stat->getCountToday());
         $this->assertSame(84000, $stat->getAmountLast7days());

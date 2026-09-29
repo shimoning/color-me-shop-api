@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
@@ -72,9 +73,10 @@ class OAuthTest extends TestCase
 
         $this->assertInstanceOf(AccessToken::class, $token);
         $this->assertSame('dummy-access-token', $token->getAccessToken());
-        $this->assertSame('bearer', $token->getTokenType());
+        $this->assertSame('Bearer', $token->getTokenType());
         $this->assertSame([AuthScope::READ_PRODUCTS, AuthScope::READ_SALES], $token->getScopes());
-        $this->assertSame(1700000000, $token->getCreatedAt());
+        $this->assertInstanceOf(DateTimeImmutable::class, $token->getCreatedAt());
+        $this->assertSame(1700000000, $token->getCreatedAt()->getTimestamp());
     }
 
     public function test_部分的な成功応答は交換処理で構築でき欠損はgetter時に固有例外になる(): void

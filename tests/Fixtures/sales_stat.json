@@ -1,7 +1,7 @@
 {
     "sales_stat": {
         "account_id": "my-shop",
-        "date": 20240101,
+        "date": 1704034800,
         "amount_today": 12000,
         "count_today": 3,
         "amount_last_7days": 84000,
