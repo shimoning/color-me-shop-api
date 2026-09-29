@@ -47,6 +47,9 @@
         "client": [
             "@php client"
         ],
+        "oauth:callback": [
+            "@php -S 127.0.0.1:8765 -t examples/oauth-callback examples/oauth-callback/router.php"
+        ],
         "test": [
             "@php vendor/bin/phpunit"
         ],
