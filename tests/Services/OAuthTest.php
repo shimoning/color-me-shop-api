@@ -11,6 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -52,6 +53,46 @@ class OAuthTest extends TestCase
         $url = (new OAuth($this->options()))->getUrl(new Scopes([AuthScope::READ_SALES]));
 
         $this->assertStringNotContainsString('my-client-secret', $url);
+    }
+
+    public function test_stateを認可URLのクエリ末尾に含める(): void
+    {
+        $url = (new OAuth($this->options()))->getUrl(new Scopes([AuthScope::READ_SALES]), 'csrf-token');
+
+        $this->assertStringEndsWith('&state=csrf-token', $url);
+        \parse_str(\parse_url($url, \PHP_URL_QUERY), $query);
+        $this->assertSame('csrf-token', $query['state']);
+    }
+
+    public function test_stateを省略すると認可URLのクエリに含めない(): void
+    {
+        $url = (new OAuth($this->options()))->getUrl(new Scopes([AuthScope::READ_SALES]));
+
+        \parse_str(\parse_url($url, \PHP_URL_QUERY), $query);
+        $this->assertArrayNotHasKey('state', $query);
+    }
+
+    public function test_記号と非ASCIIを含むstateはRFC3986でエンコードする(): void
+    {
+        $state = 'probe:a+b/c=d&e f~日本';
+
+        $url = (new OAuth($this->options()))->getUrl(new Scopes([AuthScope::READ_SALES]), $state);
+
+        $this->assertStringContainsString(
+            'state=probe%3Aa%2Bb%2Fc%3Dd%26e%20f~%E6%97%A5%E6%9C%AC',
+            $url,
+        );
+        $this->assertStringNotContainsString('+', $url);
+        \parse_str(\parse_url($url, \PHP_URL_QUERY), $query);
+        $this->assertSame($state, $query['state']);
+    }
+
+    public function test_stateが空文字ならParameterExceptionを投げる(): void
+    {
+        $this->expectException(ParameterException::class);
+        $this->expectExceptionMessage('state に空文字は指定できません。');
+
+        (new OAuth($this->options()))->getUrl(new Scopes([AuthScope::READ_SALES]), '');
     }
 
     public function test_エンドポイントを差し替えられる(): void
