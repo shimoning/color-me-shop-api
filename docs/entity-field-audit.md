@@ -170,7 +170,10 @@ OpenAPI との差分として削除・追加の対象にはしない。
 - `Error::$code` は OpenAPI では integer、公開 getter は string である。既存 communicator が
   互換性のため string へ正規化している。
 - OAuth token / error は OpenAPI に formal schema がなく、`AccessToken::$createdAt` などは
-  OpenAPI だけでは妥当性を確定できない。
+  OpenAPI だけでは妥当性を確定できない。2026-09-29 に認可フローを実行して実測し、トークン応答が
+  `access_token` / `token_type` / `scope` / `created_at` の 4 キーを返すこと、`created_at` が
+  unixtime であることを確認した。公式ドキュメントの応答例には `created_at` の記載がない。
+  出典: [日時フィールドの実測記録](api-unixtime-observation.md)。
 
 ## 公式 OpenAPI 内部の不一致
 

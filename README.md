@@ -350,10 +350,17 @@ $statOrErrors = $client->statSales(new \DateTimeImmutable('2024-01-01'));
 if ($statOrErrors instanceof Errors) {
     // エラー処理
 } else {
+    $statOrErrors->getDate();          // DateTimeImmutable。基準日の 00:00 (JST)
     $statOrErrors->getAmountToday();
     $statOrErrors->getCountToday();
+    $statOrErrors->getAmountLast7days();
+    $statOrErrors->getCountThisMonth();
 }
 ```
+
+`getDate()` は `statSales()` に渡した基準日の 00:00 (JST) を `DateTimeImmutable` で返す。API は unixtime で返すため、元の整数が必要なら `getRaw()` から取得できる。
+
+集計は基準日を起点とした 3 つの固定期間 (当日 / 7 日前から基準日の終わりまで / 基準日が属する月) に限られ、任意の日数範囲には対応していない。
 
 #### 受注データの取得
 ```php
