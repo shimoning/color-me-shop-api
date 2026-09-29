@@ -99,13 +99,9 @@ if ($path !== '/callback') {
     return true;
 }
 
-if (isset($_GET['error'])) {
-    echo '<h1>認可エラー</h1>';
-    echo '<p>error: <code>' . $escape((string) $_GET['error']) . '</code></p>';
-    echo '<p>' . $escape((string) ($_GET['error_description'] ?? '')) . '</p>';
-    return true;
-}
-
+// 認可応答はエラーのときも state を含む（RFC 6749 §4.1.2.1）。成功・失敗のどちらも
+// 検証してから内容を扱う。エラーを先に表示すると、未検証の応答を画面に出したうえ
+// セッションの state も消費されずに残る。
 $expectedState = (string) ($_SESSION['oauth_state'] ?? '');
 $givenState = (string) ($_GET['state'] ?? '');
 unset($_SESSION['oauth_state']);
@@ -115,6 +111,13 @@ if ($expectedState === '' || ! \hash_equals($expectedState, $givenState)) {
     echo '<h1>state が一致しません</h1>';
     echo '<p>この画面を直接開いたか、別の認可フローの応答が混入した可能性があります。'
         . ' コードは交換していません。<a href="/">最初からやり直す</a></p>';
+    return true;
+}
+
+if (isset($_GET['error'])) {
+    echo '<h1>認可エラー</h1>';
+    echo '<p>error: <code>' . $escape((string) $_GET['error']) . '</code></p>';
+    echo '<p>' . $escape((string) ($_GET['error_description'] ?? '')) . '</p>';
     return true;
 }
 
