@@ -41,7 +41,10 @@ class Stat extends Entity
 
     /**
      * 集計の基準日
-     * Services\Sales::stat() に渡した日付の 00:00（JST）を返す。
+     *
+     * 公式 OpenAPI は integer とだけ定め、値の意味は示していない。2026-09-29 の実測で、
+     * Services\Sales::stat() に渡した日付の 00:00（JST）を unixtime で返すことを確認した。
+     * 出典: docs/api-unixtime-observation.md
      * @return DateTimeImmutable
      */
     public function getDate(): DateTimeImmutable
