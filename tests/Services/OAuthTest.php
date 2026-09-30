@@ -298,8 +298,18 @@ class OAuthTest extends TestCase
         return [
             'error_description' => ['error_description', []],
             'error_uri' => ['error_uri', false],
-            'state' => ['state', 123],
         ];
+    }
+
+    public function test_stateが文字列以外でもErrorResponseを返して生データに保持する(): void
+    {
+        $mock = HttpMock::json(400, '{"error":"invalid_request","state":123}');
+
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+
+        $this->assertInstanceOf(ErrorResponse::class, $error);
+        $this->assertNull($error->getState());
+        $this->assertSame(123, $error->getRaw()['state']);
     }
 
     public function test_errorキーのない不完全な応答はErrorsとして元レスポンスを保持する(): void

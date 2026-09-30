@@ -53,8 +53,42 @@ class ErrorResponseTest extends TestCase
             'error' => 'invalid_client',
             'error_description' => 'クライアント認証に失敗しました。クライアントIDが正しいかご確認ください。',
             'error_uri' => null,
-            'state' => null,
         ], $error->toArray());
+    }
+
+    public function test_toArrayはstateを含めずトークンエラーの3フィールドだけを返す(): void
+    {
+        $error = $this->makeErrorResponse([
+            'error' => 'invalid_request',
+            'error_description' => 'リクエストが不正です。',
+            'error_uri' => 'https://example.test/oauth/errors/invalid_request',
+            'state' => 'opaque-state',
+        ]);
+
+        $expected = [
+            'error' => 'invalid_request',
+            'error_description' => 'リクエストが不正です。',
+            'error_uri' => 'https://example.test/oauth/errors/invalid_request',
+        ];
+        $this->assertSame($expected, $error->toArray());
+        $this->assertSame($expected, $error->toArrayRecursive());
+    }
+
+    public function test_応答に文字列のstateがあれば非推奨getterで取得できる(): void
+    {
+        $error = $this->makeErrorResponse([
+            'error' => 'invalid_request',
+            'state' => 'opaque-state',
+        ]);
+
+        $this->assertSame('opaque-state', $error->getState());
+    }
+
+    public function test_応答にstateがなければ非推奨getterはnullを返す(): void
+    {
+        $error = $this->makeErrorResponse(['error' => 'invalid_request']);
+
+        $this->assertNull($error->getState());
     }
 
     /**
