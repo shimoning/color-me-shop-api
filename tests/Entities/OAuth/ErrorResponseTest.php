@@ -118,7 +118,7 @@ class ErrorResponseTest extends TestCase
                 null,
                 null,
             ],
-            'RFC の全フィールドと追加プロパティ' => [
+            'RFC 6749 §5.2 の全フィールドと未知キー（state と extra）' => [
                 [
                     'error' => 'access_denied',
                     'error_description' => '認可されませんでした。',
