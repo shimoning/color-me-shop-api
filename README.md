@@ -249,8 +249,39 @@ $oAuthScopes = new Scopes([
 $oAuthUri = (new Client())->getOAuthUrl($oAuthOptions, $oAuthScopes);
 ```
 
+CSRF 対策の `state` を渡せる (0.18.0 以降)。値の生成と保存はライブラリの責務ではないため、利用者がセッション等に保存し、コールバックで照合する。
+
+```php
+session_start(); // フレームワークが開始済みなら不要
+
+$state = bin2hex(random_bytes(16));
+$_SESSION['oauth_state'] = $state;
+
+$oAuthUri = (new Client())->getOAuthUrl($oAuthOptions, $oAuthScopes, $state);
+```
+
+省略すると `state` をクエリに含めない。空文字を渡した場合は `Exceptions\ParameterException` を投げる。
+
 #### 認可コードをアクセストークンに交換
 上記で取得した URL を開くと、ショップへのログインと認可を行う画面に移動する。認可後は `リダイレクトURI` へ遷移し、クエリ文字列の `code` に認可コードが設定される。
+
+`state` を渡した場合は、`code` を扱う前に照合する。認可を拒否した場合のエラー応答 (`error=access_denied`) にも `state` は付くため、成功・失敗のどちらも照合してから内容を扱う。
+
+```php
+session_start(); // 認可 URL を組み立てたときと同じセッションを復元する
+
+$expectedState = (string) ($_SESSION['oauth_state'] ?? '');
+unset($_SESSION['oauth_state']);
+$givenState = (string) filter_input(INPUT_GET, 'state');
+
+if ($expectedState === '' || ! hash_equals($expectedState, $givenState)) {
+    throw new \RuntimeException('state が一致しません。');
+}
+```
+
+カラーミーは `state` の値を一度デコードして再エンコードして返すため、クエリ文字列のバイト列は送信時と一致しない。照合はデコード後の値 (`filter_input()` や `$_GET`) で行うこと。実測の詳細は [認可応答の `state` の実測記録](docs/api-oauth-state-observation.md) にある。
+
+動く例は [examples/oauth-callback/](examples/oauth-callback/) にある。`composer oauth:callback` で起動する。
 
 ```php
 $code = filter_input(INPUT_GET, 'code');
@@ -1141,7 +1172,7 @@ composer oauth:callback
 
 待ち受けポートは `composer.json` の `oauth:callback` で 8765 に固定している。変更する場合は、そのスクリプトとカラーミーに登録するリダイレクト URI の両方を直すこと。
 
-CSRF 対策として `state` を検証する。`Services\OAuth::getUrl()` は `state` を組み立てないため、このサンプルが認可 URL へ自前で付与し、コールバックで照合してから認可コードを交換する。
+CSRF 対策として `state` を検証する。サンプルは `state` を生成してセッションに保存したうえで `Services\OAuth::getUrl()` に渡し、コールバックで照合してから認可コードを交換する。
 
 `CLIENT_SECRET` は画面に出さず、`access_token` も先頭 4 文字と長さだけを表示する。発行したアクセストークンはカラーミー側で有効なまま残るため、不要であれば [許可済みアプリ一覧](https://admin.shop-pro.jp/?mode=app_use_lst) から失効させること。
 

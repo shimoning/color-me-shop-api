@@ -517,14 +517,18 @@ class Client
     /**
      * OAuthアプリケーションの登録のための URL を取得する
      *
+     * state の取り扱いの詳細は {@see OAuth::getUrl()} を参照。
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86#oauth%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E7%99%BB%E9%8C%B2
      * @param OAuthOptions $options
      * @param Scopes $scopes
+     * @param string|null $state CSRF 対策に使用する state (省略時はクエリに含めない)
      * @return string
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException state に空文字を指定した場合
      */
-    public function getOAuthUrl(OAuthOptions $options, Scopes $scopes): string
+    public function getOAuthUrl(OAuthOptions $options, Scopes $scopes, ?string $state = null): string
     {
-        return (new OAuth($options, $this->httpClient))->getUrl($scopes);
+        return (new OAuth($options, $this->httpClient))->getUrl($scopes, $state);
     }
 
     /**

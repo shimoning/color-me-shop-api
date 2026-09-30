@@ -24,8 +24,8 @@
  * このサンプルは client secret とアクセストークンの値を画面に出さない。
  * access_token は先頭 4 文字と長さだけを表示する。
  *
- * CSRF 対策として state を検証する。Services\OAuth::getUrl() は state を組み立てないため、
- * このサンプルが認可 URL へ自前で付与し、コールバックで照合している。
+ * CSRF 対策として state を生成してセッションに保存し、Services\OAuth::getUrl() へ渡す。
+ * コールバックでは、返された state をセッションに保存した値と照合している。
  */
 
 declare(strict_types=1);
@@ -80,10 +80,9 @@ if ($path === '/') {
         $scopes[] = $case;
     }
 
-    // Services\OAuth::getUrl() は state を組み立てないため、ここで付与する。
     $state = \bin2hex(\random_bytes(16));
     $_SESSION['oauth_state'] = $state;
-    $url = (new OAuth($options))->getUrl(new Scopes($scopes)) . '&state=' . \rawurlencode($state);
+    $url = (new OAuth($options))->getUrl(new Scopes($scopes), $state);
 
     echo '<h1>OAuth コールバックのサンプル</h1>';
     echo '<p>リダイレクト URI: <code>' . $escape($redirectUri) . '</code> (ポートは固定)</p>';

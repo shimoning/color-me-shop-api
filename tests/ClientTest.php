@@ -475,6 +475,26 @@ class ClientTest extends TestCase
         $this->assertStringContainsString('scope=read_sales', $url);
     }
 
+    public function test_getOAuthUrlはstateを認可URLのクエリに含める(): void
+    {
+        $options = new OAuthOptions('my-client-id', 'my-secret', 'https://example.test/callback');
+
+        $url = (new Client())->getOAuthUrl($options, new Scopes([AuthScope::READ_SALES]), 'csrf-token');
+
+        \parse_str(\parse_url($url, \PHP_URL_QUERY), $query);
+        $this->assertSame('csrf-token', $query['state']);
+    }
+
+    public function test_getOAuthUrlはstateを省略すると認可URLのクエリに含めない(): void
+    {
+        $options = new OAuthOptions('my-client-id', 'my-secret', 'https://example.test/callback');
+
+        $url = (new Client())->getOAuthUrl($options, new Scopes([AuthScope::READ_SALES]));
+
+        \parse_str(\parse_url($url, \PHP_URL_QUERY), $query);
+        $this->assertArrayNotHasKey('state', $query);
+    }
+
     public function test_exchangeCode2Tokenはトークンに交換する(): void
     {
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));
