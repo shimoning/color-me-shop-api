@@ -88,6 +88,12 @@ ADR 0007 は採用済みのため書き換えず、「ADR 0021 により更新�
   `exchangeCode2Token()` は `Errors` へフォールバックしていた。今後は `ErrorResponse` を返し、
   `getState()` は `null` になる。実 API は `state` を返さないため、実際に影響する場面はないと考えている
 - `getState()` の呼び出しは引き続き動作する。`@deprecated` を解釈する IDE や静的解析のルールでは警告の対象になる
+- 0.18.0 以前に `serialize()` した `ErrorResponse` を `unserialize()` すると、旧データの `state` が
+  宣言のない動的プロパティとして復元され、PHP 8.2 以降では `Creation of dynamic property ... is
+  deprecated` の非推奨警告が出る（PHP 8.1 では出ない）。`getState()`・`toArray()`・`getRaw()` の値は
+  正しく、動作は止まらない。エラー応答を直列化して保存する使い方はまれと考え、`__unserialize()` で
+  旧 `state` を捨てる対応はしない。Entity 基底の private プロパティの復元を自前で再現する必要があり、
+  変更の複雑さに見合わないためである。利用者と協議のうえ許容する
 
 トークンエラー応答の実測は 1 アプリで、各ケース 1 回ずつである。カラーミーが将来 `state` を返す
 ようになっても、`getRaw()` と非推奨の `getState()` から取得できる。
