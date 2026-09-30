@@ -1172,7 +1172,7 @@ composer oauth:callback
 
 待ち受けポートは `composer.json` の `oauth:callback` で 8765 に固定している。変更する場合は、そのスクリプトとカラーミーに登録するリダイレクト URI の両方を直すこと。
 
-CSRF 対策として `state` を検証する。`Services\OAuth::getUrl()` は `state` を組み立てないため、このサンプルが認可 URL へ自前で付与し、コールバックで照合してから認可コードを交換する。
+CSRF 対策として `state` を検証する。サンプルは `state` を生成してセッションに保存したうえで `Services\OAuth::getUrl()` に渡し、コールバックで照合してから認可コードを交換する。
 
 `CLIENT_SECRET` は画面に出さず、`access_token` も先頭 4 文字と長さだけを表示する。発行したアクセストークンはカラーミー側で有効なまま残るため、不要であれば [許可済みアプリ一覧](https://admin.shop-pro.jp/?mode=app_use_lst) から失効させること。
 
