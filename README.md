@@ -431,9 +431,17 @@ if (! $saleOrErrors instanceof Errors) {
     $updater->setPaid(true);
     $updater->setPointState(PointState::FIXED);
 
-    $updatedSaleOrErrors = $client->updateSale($updater);
+    $updatedSaleOrErrors = $client->updateSale($saleId, $updater);
 }
 ```
+
+受注 ID は、他の更新 API と同じく第 1 引数で渡す。`SaleUpdateInput` は受注 ID を持たず、body にも
+含めない (0.20.0 以降)。公式 OpenAPI の要求 body に `id` は定義されておらず、実 API も body の `id` を
+見ずに path の受注を更新する ([受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
+
+0.19.0 までは `$client->updateSale($updater)` のように入力だけを渡し、`SaleUpdateInput` が持つ `id` を
+path と body の両方に使っていた。`SaleUpdateInput::getId()` は削除したため、受注 ID は取得した受注の
+`getId()` などから渡す ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。
 
 #### 受注のキャンセル
 第2引数の `$restock` を `true` にすると、キャンセルした商品の在庫を戻す。
