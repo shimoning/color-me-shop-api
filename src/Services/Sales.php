@@ -187,6 +187,11 @@ class Sales extends Service
                 \implode(', ', $missing),
             ));
         }
+        if ($fields['details'] === []) {
+            throw new ParameterException(
+                '受注データの作成には details を1件以上指定してください (指定件数: 0)。',
+            );
+        }
 
         foreach ($fields['details'] as $index => $detail) {
             $missing = \array_diff(SaleDetailCreateInput::REQUIRED_FIELDS, \array_keys($detail));

@@ -355,6 +355,24 @@ class SalesTest extends TestCase
         }
     }
 
+    public function test_受注作成の明細が空配列なら送信前に拒否する(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('sale.json'));
+
+        try {
+            (new Sales('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
+                'details' => [],
+            ])));
+            $this->fail('details の空配列が拒否されませんでした。');
+        } catch (ParameterException $exception) {
+            $this->assertSame(
+                '受注データの作成には details を1件以上指定してください (指定件数: 0)。',
+                $exception->getMessage(),
+            );
+            $this->assertSame(0, $mock->countRequests());
+        }
+    }
+
     public function test_受注明細の各要素の必須項目を送信前に検証する(): void
     {
         foreach (['product_id', 'product_num'] as $missing) {
