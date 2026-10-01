@@ -22,6 +22,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -49,6 +50,12 @@ class ClientTest extends TestCase
             }],
             'getSale' => [static function (Client $client, ?string $accessToken): void {
                 $client->getSale(1001, $accessToken);
+            }],
+            'createSale' => [static function (Client $client, ?string $accessToken): void {
+                $client->createSale(new SaleCreateInput([
+                    'details' => [['product_id' => 101, 'product_num' => 1]],
+                    'payment_id' => 3,
+                ]), null, $accessToken);
             }],
             'updateSale' => [static function (Client $client, ?string $accessToken): void {
                 $client->updateSale(1001, new SaleUpdateInput([]), $accessToken);
@@ -305,6 +312,25 @@ class ClientTest extends TestCase
 
         $this->assertSame(1001, $sale->getId());
         $this->assertSame('https://api.shop-pro.jp/v1/sales/1001', $mock->uri());
+    }
+
+    public function test_createSaleは在庫引当指定とアクセストークンをSalesへ委譲する(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('sale.json'));
+
+        $sale = (new Client('my-token', $mock->client()))->createSale(
+            new SaleCreateInput([
+                'details' => [['product_id' => 101, 'product_num' => 1]],
+                'payment_id' => 3,
+            ]),
+            false,
+            'override-token',
+        );
+
+        $this->assertSame(1001, $sale->getId());
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertSame(['reserve_stocks' => '0'], $mock->query());
+        $this->assertSame('Bearer override-token', $mock->header('Authorization'));
     }
 
     public function test_statSalesは売上集計を取得する(): void

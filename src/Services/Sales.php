@@ -5,6 +5,9 @@ namespace Shimoning\ColorMeShopApi\Services;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetailCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Page;
@@ -97,6 +100,47 @@ class Sales extends Service
     }
 
     /**
+     * 受注データの作成
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
+     *
+     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す
+     * (2026-10-01 実測、docs/api-sale-create-observation.md)。成功時のレスポンス形状は
+     * 公式 OpenAPI に基づき、実 API では未観測。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+     * @param SaleCreateInput $input
+     * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
+     * @param string|null $accessToken
+     * @return Sale|Errors
+     * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function create(
+        SaleCreateInput $input,
+        ?bool $reserveStocks = null,
+        ?string $accessToken = null,
+    ): Sale|Errors {
+        $request = $this->_request(['json' => true], $accessToken);
+        $fields = self::requireCreateFields($input);
+        if (isset($fields['customer']) && \is_array($fields['customer'])) {
+            $fields['customer'] = self::_jsonObject($fields['customer']);
+        }
+
+        $endpoint = $this->_endpoint('/sales');
+        if ($reserveStocks !== null) {
+            $endpoint .= '?' . \http_build_query(['reserve_stocks' => $reserveStocks]);
+        }
+
+        $response = $request->post(
+            $endpoint,
+            ['sale' => self::_jsonObject($fields)],
+        );
+
+        return $this->_handle($response, static fn(?array $data): Sale => new Sale($data['sale'] ?? []));
+    }
+
+    /**
      * 受注データの更新
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
@@ -124,6 +168,51 @@ class Sales extends Service
         );
 
         return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
+    }
+
+    /**
+     * 受注作成入力と各子要素の必須フィールドを確認する。
+     *
+     * @return array<string, mixed>
+     * @throws ParameterException 必須フィールドが未指定の場合
+     */
+    private static function requireCreateFields(SaleCreateInput $input): array
+    {
+        $fields = $input->toArrayRecursive();
+        $missing = \array_diff(SaleCreateInput::REQUIRED_FIELDS, \array_keys($fields));
+        if ($missing !== []) {
+            throw new ParameterException(\sprintf(
+                '受注データの作成には %s を指定してください (未指定: %s)。',
+                \implode(', ', SaleCreateInput::REQUIRED_FIELDS),
+                \implode(', ', $missing),
+            ));
+        }
+
+        foreach ($fields['details'] as $index => $detail) {
+            $missing = \array_diff(SaleDetailCreateInput::REQUIRED_FIELDS, \array_keys($detail));
+            if ($missing !== []) {
+                throw new ParameterException(\sprintf(
+                    '受注明細 details[%d] には %s を指定してください (未指定: %s)。',
+                    $index,
+                    \implode(', ', SaleDetailCreateInput::REQUIRED_FIELDS),
+                    \implode(', ', $missing),
+                ));
+            }
+        }
+
+        foreach ($fields['sale_deliveries'] ?? [] as $index => $delivery) {
+            $missing = \array_diff(SaleDeliveryCreateInput::REQUIRED_FIELDS, \array_keys($delivery));
+            if ($missing !== []) {
+                throw new ParameterException(\sprintf(
+                    'お届け先 sale_deliveries[%d] には %s を指定してください (未指定: %s)。',
+                    $index,
+                    \implode(', ', SaleDeliveryCreateInput::REQUIRED_FIELDS),
+                    \implode(', ', $missing),
+                ));
+            }
+        }
+
+        return $fields;
     }
 
     /**

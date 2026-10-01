@@ -802,6 +802,47 @@
         "point_state",
         "sale_deliveries"
     ],
+    "Sales\\SaleCreateInput": [
+        "customer",
+        "details",
+        "payment_id",
+        "sale_deliveries"
+    ],
+    "Sales\\SaleCustomerCreateInput": [
+        "address1",
+        "address2",
+        "birthday",
+        "fax",
+        "furigana",
+        "id",
+        "mail",
+        "name",
+        "postal",
+        "pref_id",
+        "sex",
+        "tel",
+        "tel_mobile"
+    ],
+    "Sales\\SaleDeliveryCreateInput": [
+        "address1",
+        "address2",
+        "delivery_id",
+        "furigana",
+        "memo",
+        "name",
+        "postal",
+        "pref_id",
+        "preferred_date",
+        "preferred_period",
+        "tel"
+    ],
+    "Sales\\SaleDetailCreateInput": [
+        "option1_value",
+        "option2_value",
+        "price",
+        "product_id",
+        "product_num"
+    ],
     "Sales\\SaleDeliveryUpdateInput": [
         "account_id",
         "address1",

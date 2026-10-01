@@ -8,17 +8,28 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
+use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class SalesTest extends TestCase
 {
+    /** @return array<string, mixed> */
+    private static function createFields(array $overrides = []): array
+    {
+        return \array_merge([
+            'details' => [['product_id' => 101, 'product_num' => 2]],
+            'payment_id' => 3,
+        ], $overrides);
+    }
+
     // --- page -------------------------------------------------------------
 
     public function test_受注一覧をPageとして取得する(): void
@@ -236,6 +247,179 @@ class SalesTest extends TestCase
         $this->expectException(MissingFieldException::class);
 
         $stat->getAmountToday();
+    }
+
+    // --- create -----------------------------------------------------------
+
+    public function test_受注を作成する(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('sale.json'));
+
+        $sale = (new Sales('my-token', $mock->client()))->create(
+            new SaleCreateInput(self::createFields()),
+        );
+
+        $this->assertInstanceOf(Sale::class, $sale);
+        $this->assertSame(1001, $sale->getId());
+        $this->assertSame('POST', $mock->request()->getMethod());
+        $this->assertSame('https://api.shop-pro.jp/v1/sales', $mock->uri());
+        $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
+        $this->assertSame(['sale' => self::createFields()], $mock->jsonBody());
+    }
+
+    public function test_在庫引当指定は未指定ならクエリなしで真偽値は1と0で送信する(): void
+    {
+        $mock = new HttpMock([
+            new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
+            new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
+            new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
+        ]);
+        $sales = new Sales('my-token', $mock->client());
+        $input = new SaleCreateInput(self::createFields());
+
+        $sales->create($input);
+        $sales->create($input, true);
+        $sales->create($input, false);
+
+        $this->assertSame([], $mock->query(0));
+        $this->assertSame(['reserve_stocks' => '1'], $mock->query(1));
+        $this->assertSame(['reserve_stocks' => '0'], $mock->query(2));
+    }
+
+    public function test_既存顧客とゲスト顧客をJSONオブジェクトとして送信する(): void
+    {
+        $mock = new HttpMock([
+            new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
+            new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
+            new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
+        ]);
+        $sales = new Sales('my-token', $mock->client());
+
+        $sales->create(new SaleCreateInput(self::createFields(['customer' => ['id' => 501]])));
+        $sales->create(new SaleCreateInput(self::createFields(['customer' => [
+            'name' => 'ゲスト',
+            'mail' => 'guest@example.com',
+        ]])));
+        $sales->create(new SaleCreateInput(self::createFields(['customer' => []])));
+
+        $this->assertSame(['id' => 501], $mock->jsonBody(0)['sale']['customer']);
+        $this->assertSame(
+            ['name' => 'ゲスト', 'mail' => 'guest@example.com'],
+            $mock->jsonBody(1)['sale']['customer'],
+        );
+        $this->assertSame('{"sale":{"customer":{},"details":[{"product_id":101,"product_num":2}],"payment_id":3}}', $mock->body(2));
+    }
+
+    public function test_プラン制限の401はErrorsを返す(): void
+    {
+        $mock = HttpMock::json(401, '{"errors":[{"code":"401200","message":"現在契約中のプランではご利用いただけません。","status":401}]}');
+
+        $errors = (new Sales('my-token', $mock->client()))->create(
+            new SaleCreateInput(self::createFields()),
+        );
+
+        $this->assertInstanceOf(Errors::class, $errors);
+        $this->assertSame('401200', $errors[0]->getCode());
+    }
+
+    public function test_受注作成のトップレベル必須項目を送信前に検証する(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('sale.json'));
+
+        try {
+            (new Sales('my-token', $mock->client()))->create(new SaleCreateInput([]));
+            $this->fail(ParameterException::class . ' が投げられませんでした。');
+        } catch (ParameterException $exception) {
+            $this->assertSame(
+                '受注データの作成には payment_id, details を指定してください (未指定: payment_id, details)。',
+                $exception->getMessage(),
+            );
+            $this->assertSame(0, $mock->countRequests());
+        }
+    }
+
+    public function test_受注作成のトップレベル必須項目が一方でも欠ければ拒否する(): void
+    {
+        foreach (['payment_id', 'details'] as $missing) {
+            $mock = HttpMock::json(201, self::fixture('sale.json'));
+            $fields = self::createFields();
+            unset($fields[$missing]);
+
+            try {
+                (new Sales('my-token', $mock->client()))->create(new SaleCreateInput($fields));
+                $this->fail($missing . ' の欠落が拒否されませんでした。');
+            } catch (ParameterException $exception) {
+                $this->assertStringContainsString('未指定: ' . $missing, $exception->getMessage());
+                $this->assertSame(0, $mock->countRequests());
+            }
+        }
+    }
+
+    public function test_受注明細の各要素の必須項目を送信前に検証する(): void
+    {
+        foreach (['product_id', 'product_num'] as $missing) {
+            $mock = HttpMock::json(201, self::fixture('sale.json'));
+            $detail = ['product_id' => 101, 'product_num' => 1];
+            unset($detail[$missing]);
+
+            try {
+                (new Sales('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
+                    'details' => [$detail],
+                ])));
+                $this->fail($missing . ' の欠落が拒否されませんでした。');
+            } catch (ParameterException $exception) {
+                $this->assertSame(
+                    '受注明細 details[0] には product_id, product_num を指定してください (未指定: '
+                    . $missing . ')。',
+                    $exception->getMessage(),
+                );
+                $this->assertSame(0, $mock->countRequests());
+            }
+        }
+    }
+
+    public function test_お届け先の各要素の必須項目を送信前に検証する(): void
+    {
+        $required = [
+            'delivery_id' => 1,
+            'name' => '配送先',
+            'furigana' => 'ハイソウサキ',
+            'postal' => '1508512',
+            'pref_id' => 13,
+            'address1' => '渋谷区桜丘町26-1',
+            'tel' => '03-5456-2622',
+        ];
+
+        foreach (\array_keys($required) as $missing) {
+            $mock = HttpMock::json(201, self::fixture('sale.json'));
+            $delivery = $required;
+            unset($delivery[$missing]);
+
+            try {
+                (new Sales('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
+                    'sale_deliveries' => [$delivery],
+                ])));
+                $this->fail($missing . ' の欠落が拒否されませんでした。');
+            } catch (ParameterException $exception) {
+                $this->assertSame(
+                    'お届け先 sale_deliveries[0] には delivery_id, name, furigana, postal, pref_id, address1, tel'
+                    . ' を指定してください (未指定: ' . $missing . ')。',
+                    $exception->getMessage(),
+                );
+                $this->assertSame(0, $mock->countRequests());
+            }
+        }
+    }
+
+    public function test_お届け先は省略できる(): void
+    {
+        $mock = HttpMock::json(201, self::fixture('sale.json'));
+
+        (new Sales('my-token', $mock->client()))->create(
+            new SaleCreateInput(self::createFields()),
+        );
+
+        $this->assertArrayNotHasKey('sale_deliveries', $mock->jsonBody()['sale']);
     }
 
     // --- update -----------------------------------------------------------

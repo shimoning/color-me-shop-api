@@ -68,6 +68,7 @@ class AuthScopeDocumentationTest extends TestCase
             'Sales::page' => [Sales::class, 'page', 'getSales', [AuthScope::READ_SALES]],
             'Sales::one' => [Sales::class, 'one', 'getSale', [AuthScope::READ_SALES]],
             'Sales::stat' => [Sales::class, 'stat', 'statSales', [AuthScope::READ_SALES]],
+            'Sales::create' => [Sales::class, 'create', 'createSale', [AuthScope::WRITE_SALES]],
             'Sales::update' => [Sales::class, 'update', 'updateSale', [AuthScope::WRITE_SALES]],
             'Sales::cancel' => [Sales::class, 'cancel', 'cancelSale', [AuthScope::WRITE_SALES]],
             'Sales::sendMail' => [Sales::class, 'sendMail', 'sendSalesMail', [AuthScope::WRITE_SALES]],
