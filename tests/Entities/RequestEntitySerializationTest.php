@@ -79,8 +79,18 @@ class RequestEntitySerializationTest extends TestCase
         $restored = null;
 
         // ADR 0022 で受容した、旧形式の id 復元時に発生するバージョン別の挙動を検証する。
-        \set_error_handler(static function (int $severity, string $message) use (&$deprecations): bool {
+        $previousHandler = null;
+        $previousHandler = \set_error_handler(static function (
+            int $severity,
+            string $message,
+            string $file = '',
+            int $line = 0
+        ) use (&$deprecations, &$previousHandler): bool {
             if ($severity !== E_DEPRECATED) {
+                if (\is_callable($previousHandler)) {
+                    return $previousHandler($severity, $message, $file, $line);
+                }
+
                 return false;
             }
 
