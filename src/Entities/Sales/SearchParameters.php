@@ -47,6 +47,10 @@ class SearchParameters extends Entity implements RequestEntity
         'limit' => [
             'value' => Limit::class,
         ],
+        'ids' => ['array' => true, 'scalar' => 'int'],
+        'customerIds' => ['array' => true, 'scalar' => 'int'],
+        'paymentIds' => ['array' => true, 'scalar' => 'int'],
+        'fields' => ['array' => true, 'scalar' => 'string'],
     ];
 
     /** @var list<int>|null */

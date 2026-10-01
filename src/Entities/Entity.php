@@ -28,7 +28,8 @@ class Entity
      * フィールドの型と変換方法の定義。
      *
      * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、またはそれらの配列への
-     * 変換を宣言する。null の扱いは nullable または allowNull で指定する。
+     * 変換を宣言する。scalar 配列は ['array' => true, 'scalar' => 'int'|'string'] とする。
+     * null の扱いは nullable または allowNull で指定する。
      * API のフィールド名との対応は FIELD_NAMES に定義する。
      */
     const FIELD_TYPES = [];
@@ -177,11 +178,12 @@ class Entity
 
     private static function arrayElementType(mixed $objectField): ?string
     {
+        self::assertScalarDeclaration($objectField);
         if (! \is_array($objectField) || empty($objectField['array'])) {
             return null;
         }
 
-        foreach (['entity', 'value', 'enum'] as $key) {
+        foreach (['entity', 'value', 'enum', 'scalar'] as $key) {
             if (isset($objectField[$key]) && \is_string($objectField[$key])) {
                 return $objectField[$key];
             }
@@ -411,6 +413,7 @@ class Entity
      */
     protected function build(mixed $objectField, mixed $value): mixed
     {
+        self::assertScalarDeclaration($objectField);
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
             // nullable は falsy 値も変換するため、null だけを許すフィールドは allowNull を使う。
@@ -463,10 +466,37 @@ class Entity
                 }
                 return $this->buildEnum($enum, $value);
             }
+            if (isset($objectField['scalar'])) {
+                if (! \is_array($value)) {
+                    return $value;
+                }
+
+                $accepted = $objectField['scalar'] === 'int' ? 'is_int' : 'is_string';
+                foreach ($value as $element) {
+                    if (! $accepted($element)) {
+                        throw new \TypeError('配列要素の型が不正です。');
+                    }
+                }
+
+                return $value;
+            }
         }
 
         // 単体
         return $this->buildObject($objectField, $value);
+    }
+
+    private static function assertScalarDeclaration(mixed $objectField): void
+    {
+        if (! \is_array($objectField) || ! \array_key_exists('scalar', $objectField)) {
+            return;
+        }
+        if (! \in_array($objectField['scalar'], ['int', 'string'], true)) {
+            throw new \LogicException('scalar は int または string を指定してください。');
+        }
+        if (empty($objectField['array'])) {
+            throw new \LogicException('scalar は array と組み合わせて指定してください。');
+        }
     }
 
     /**

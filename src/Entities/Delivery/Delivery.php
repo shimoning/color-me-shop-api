@@ -32,6 +32,7 @@ class Delivery extends Entity
         'charge' => [
             'entity' => Charge::class,
         ],
+        'unavailablePaymentIds' => ['array' => true, 'scalar' => 'int'],
     ];
 
     protected int $id;

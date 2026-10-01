@@ -21,6 +21,7 @@ class SaleDelivery extends Entity
         'prefId' => [
             'enum' => Prefecture::class,
         ],
+        'detailIds' => ['array' => true, 'scalar' => 'int'],
     ];
 
     protected int $id;

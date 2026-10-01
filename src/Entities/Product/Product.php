@@ -6,7 +6,6 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 
 /**
@@ -22,6 +21,9 @@ class Product extends Entity
         'variants' => ['array' => true, 'entity' => Variant::class],
         'pickups' => ['array' => true, 'entity' => Pickup::class],
         'displayState' => ['enum' => ProductDisplayState::class],
+        'groupIds' => ['array' => true, 'scalar' => 'int'],
+        'unavailablePaymentIds' => ['array' => true, 'scalar' => 'int'],
+        'unavailableDeliveryIds' => ['array' => true, 'scalar' => 'int'],
     ];
 
     protected string $accountId;
@@ -80,33 +82,6 @@ class Product extends Entity
     protected bool $withoutShipping;
     protected bool $digitalContent;
     protected bool $unlisted;
-
-    /** @param array<string, mixed> $data */
-    public function __construct(array $data)
-    {
-        if (isset($data['group_ids']) && is_array($data['group_ids'])) {
-            foreach ($data['group_ids'] as $value) {
-                if (! is_int($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, 'group_ids', 'int', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        if (isset($data['unavailable_payment_ids']) && is_array($data['unavailable_payment_ids'])) {
-            foreach ($data['unavailable_payment_ids'] as $value) {
-                if (! is_int($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, 'unavailable_payment_ids', 'int', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        if (isset($data['unavailable_delivery_ids']) && is_array($data['unavailable_delivery_ids'])) {
-            foreach ($data['unavailable_delivery_ids'] as $value) {
-                if (! is_int($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, 'unavailable_delivery_ids', 'int', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        parent::__construct($data);
-    }
 
     /**
      * ショップアカウントID

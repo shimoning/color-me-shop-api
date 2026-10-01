@@ -7,7 +7,6 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 商品広告一覧 GET の検索条件。product_ids は整数配列をカンマ区切りで送る。
@@ -17,6 +16,7 @@ class AdvertisingSearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
+        'productIds' => ['array' => true, 'scalar' => 'int'],
     ];
 
     /** @var list<int>|null */
@@ -24,21 +24,6 @@ class AdvertisingSearchParameters extends Entity implements RequestEntity
     protected ?ProductDisplayState $displayState;
     protected ?int $limit;
     protected ?int $offset;
-
-    /** @param array<string, mixed> $data */
-    public function __construct(array $data)
-    {
-        if (isset($data['product_ids']) && is_array($data['product_ids'])) {
-            foreach ($data['product_ids'] as $value) {
-                if (! is_int($value)) {
-                    throw InvalidFieldException::forArrayElement(
-                        self::class, 'product_ids', 'int', new \TypeError('配列要素の型が不正です。'),
-                    );
-                }
-            }
-        }
-        parent::__construct($data);
-    }
 
     public function getDisplayState(): ?ProductDisplayState
     {
