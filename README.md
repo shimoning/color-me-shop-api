@@ -436,8 +436,9 @@ if (! $saleOrErrors instanceof Errors) {
 ```
 
 受注 ID は、他の更新 API と同じく第 1 引数で渡す。`SaleUpdateInput` は受注 ID を持たず、body にも
-含めない (0.20.0 以降)。公式 OpenAPI の要求 body に `id` は定義されておらず、実 API も body の `id` を
-見ずに path の受注を更新する ([受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
+含めない (0.20.0 以降)。公式 OpenAPI の要求 body に `id` は定義されていない。実測では、body の `id` の
+有無や値 (存在しない ID を含む) で応答と結果に差はなく、path の受注として処理された。ただし観測は値を
+変えない更新に限られる ([受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
 
 0.19.0 までは `$client->updateSale($updater)` のように入力だけを渡し、`SaleUpdateInput` が持つ `id` を
 path と body の両方に使っていた。`SaleUpdateInput::getId()` は削除したため、受注 ID は取得した受注の
