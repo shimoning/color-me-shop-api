@@ -119,7 +119,7 @@ class Sales extends Service
         ], $accessToken)->put(
             $this->_endpoint('/sales/' . $id),
             [
-                'sale' => $input->toArrayRecursive(),
+                'sale' => self::_jsonObject($input->toArrayRecursive()),
             ],
         );
 

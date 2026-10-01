@@ -329,6 +329,15 @@ class ClientTest extends TestCase
         $this->assertSame(['sale' => ['paid' => true, 'point_state' => 'fixed']], $mock->jsonBody());
     }
 
+    public function test_updateSaleは空の入力をJSONオブジェクトとして送信する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+
+        (new Client('my-token', $mock->client()))->updateSale(1001, new SaleUpdateInput([]));
+
+        $this->assertSame('{"sale":{}}', $mock->body());
+    }
+
     public function test_cancelSaleは受注をキャンセルする(): void
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));

@@ -266,6 +266,15 @@ class SalesTest extends TestCase
         $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
     }
 
+    public function test_受注更新は空の入力をJSONオブジェクトとして送信する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+
+        (new Sales('my-token', $mock->client()))->update(1001, new SaleUpdateInput([]));
+
+        $this->assertSame('{"sale":{}}', $mock->body());
+    }
+
     public function test_受注更新は指定した項目だけを送信できる(): void
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
