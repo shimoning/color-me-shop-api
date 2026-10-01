@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetailCreateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 use Shimoning\ColorMeShopApi\Values\Furigana;
@@ -116,6 +117,31 @@ class SaleCreateInputTest extends TestCase
                 'option1_value' => '赤',
                 'product_num' => 2,
                 'price' => 1200,
+            ]],
+            'payment_id' => 3,
+        ], $input->toArrayRecursive());
+    }
+
+    public function test_構築済みの顧客と明細をそのまま利用できる(): void
+    {
+        $customer = SaleCustomerCreateInput::existing(9);
+        $detail = new SaleDetailCreateInput([
+            'product_id' => 101,
+            'product_num' => 2,
+            'price' => null,
+        ]);
+        $input = new SaleCreateInput([
+            'customer' => $customer,
+            'details' => [$detail],
+            'payment_id' => 3,
+        ]);
+
+        $this->assertSame([
+            'customer' => ['id' => 9],
+            'details' => [[
+                'product_id' => 101,
+                'product_num' => 2,
+                'price' => null,
             ]],
             'payment_id' => 3,
         ], $input->toArrayRecursive());

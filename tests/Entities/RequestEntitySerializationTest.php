@@ -137,6 +137,21 @@ class RequestEntitySerializationTest extends TestCase
         ], $entity->toArrayRecursive());
     }
 
+    public function test_渡した入力Entityの明示フィールドをそのまま再帰出力する(): void
+    {
+        $child = new RequestSerializationChild(['name' => null]);
+        $listChild = new RequestSerializationChild(['note' => 'list']);
+        $entity = new RequestSerializationRoot([
+            'child' => $child,
+            'children' => [$listChild],
+        ]);
+
+        $this->assertSame([
+            'child' => ['name' => null],
+            'children' => [['note' => 'list']],
+        ], $entity->toArrayRecursive());
+    }
+
     public function test_応答Entityの既定のnull省略契約は変わらない(): void
     {
         $entity = new ResponseSerializationEntity(['name' => null]);
