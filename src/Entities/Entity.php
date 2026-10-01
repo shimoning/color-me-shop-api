@@ -31,6 +31,7 @@ class Entity
      * 変換を宣言する。scalar 配列は ['array' => true, 'scalar' => 'int'|'string'] とする。
      * null の扱いは nullable または allowNull で指定する。
      * 子 Entity のインスタンスを渡した場合は clone せずそのまま保持する。
+     * ただし要求文脈の非 RequestEntity は、厳格な検証を引き継ぐため生データから再構築する。
      * API のフィールド名との対応は FIELD_NAMES に定義する。
      */
     const FIELD_TYPES = [];
@@ -500,13 +501,24 @@ class Entity
     }
 
     /**
-     * 子 Entity の既存インスタンスは参照を保持し、配列だけを構築する。
+     * 子 Entity の既存インスタンスは参照を保持する。
+     * 要求文脈の非 RequestEntity だけは、生データから再構築する。
      *
      * @param class-string<Entity> $class
      */
     private function buildEntity(string $class, mixed $value): Entity
     {
-        return $value instanceof $class ? $value : $this->buildObject($class, $value);
+        if (! $value instanceof $class) {
+            return $this->buildObject($class, $value);
+        }
+        if (
+            ($this instanceof RequestEntity || self::$_requestContext)
+            && ! ($value instanceof RequestEntity)
+        ) {
+            return $this->buildObject($class, $value->getRaw());
+        }
+
+        return $value;
     }
 
     private static function assertScalarDeclaration(mixed $objectField): void
