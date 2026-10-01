@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class AdvertisingSearchParameters extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
     ];
 

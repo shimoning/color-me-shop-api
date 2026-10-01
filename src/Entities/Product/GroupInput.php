@@ -43,7 +43,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class GroupInput extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => GroupDisplayState::class],
         'metaTag' => ['allowNull' => true, 'entity' => MetaTagInput::class],
     ];

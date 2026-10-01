@@ -283,7 +283,7 @@ class EntityTest extends TestCase
         $this->assertSame([], (new PlainEntity([]))->getRaw());
     }
 
-    // --- OBJECT_FIELDS: entity -------------------------------------------
+    // --- FIELD_TYPES: entity -------------------------------------------
 
     public function test_entity指定のフィールドはエンティティに変換される(): void
     {
@@ -336,7 +336,7 @@ class EntityTest extends TestCase
         $this->assertSame('b', $entity->getBare()->getLabel());
     }
 
-    // --- OBJECT_FIELDS: nullable -----------------------------------------
+    // --- FIELD_TYPES: nullable -----------------------------------------
 
     public function test_nullable指定でnullならnullになる(): void
     {
@@ -373,7 +373,7 @@ class EntityTest extends TestCase
         ];
     }
 
-    // --- OBJECT_FIELDS: allowNull ----------------------------------------
+    // --- FIELD_TYPES: allowNull ----------------------------------------
 
     public function test_allowNull指定でnullならnullになる(): void
     {
@@ -430,7 +430,7 @@ class EntityTest extends TestCase
         $this->assertSame('child', $entity->getNullableAllowNullChild()->getLabel());
     }
 
-    // --- OBJECT_FIELDS: value --------------------------------------------
+    // --- FIELD_TYPES: value --------------------------------------------
 
     public function test_value指定のフィールドは値オブジェクトに変換される(): void
     {
@@ -448,7 +448,7 @@ class EntityTest extends TestCase
         $this->assertSame([1, 100], \array_map(fn($l) => $l->get(), $entity->getLimits()));
     }
 
-    // --- OBJECT_FIELDS: enum ---------------------------------------------
+    // --- FIELD_TYPES: enum ---------------------------------------------
 
     public function test_enum指定のフィールドはenumに変換される(): void
     {

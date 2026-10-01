@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
  */
 class Group extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'displayState' => [
             'enum' => GroupDisplayState::class,
         ],

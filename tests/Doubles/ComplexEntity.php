@@ -7,11 +7,11 @@ use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 
 /**
- * OBJECT_FIELDS の各分岐を網羅するためのテストダブル
+ * FIELD_TYPES の各分岐を網羅するためのテストダブル
  */
 class ComplexEntity extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'child' => ['entity' => NestedEntity::class],
         'children' => ['array' => true, 'entity' => NestedEntity::class],
         'nullableChild' => ['nullable' => true, 'entity' => NestedEntity::class],

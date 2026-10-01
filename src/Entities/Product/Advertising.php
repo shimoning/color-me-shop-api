@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
  */
 class Advertising extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'condition' => ['enum' => AdvertisingCondition::class],
         'gender' => ['enum' => AdvertisingGender::class],
     ];

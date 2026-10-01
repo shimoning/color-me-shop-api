@@ -17,7 +17,7 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
  */
 class SearchParameters extends Entity implements RequestEntity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'furigana' => [
             'value' => Furigana::class,
         ],

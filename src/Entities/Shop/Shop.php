@@ -28,7 +28,7 @@ class Shop extends Entity
         'shopMail2' => 'shop_mail_2',
     ];
 
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'state' => [
             'enum' => ShopState::class,
         ],

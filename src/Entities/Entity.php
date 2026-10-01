@@ -25,10 +25,13 @@ use Shimoning\ColorMeShopApi\Values\Value;
 class Entity
 {
     /**
-     * オブジェクトに変換するフィールドの定義。
-     * 変換が必要なサブクラスで上書きする。
+     * フィールドの型と変換方法の定義。
+     *
+     * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、またはそれらの配列への
+     * 変換を宣言する。null の扱いは nullable または allowNull で指定する。
+     * API のフィールド名との対応は FIELD_NAMES に定義する。
      */
-    const OBJECT_FIELDS = [];
+    const FIELD_TYPES = [];
 
     /**
      * 自動変換では表現できない API のフィールド名の対応表。
@@ -86,7 +89,7 @@ class Entity
             $this->_requestFields = [];
         }
 
-        $objectFields = static::OBJECT_FIELDS;
+        $fieldTypes = static::FIELD_TYPES;
 
         $propertyNames = \array_flip(static::FIELD_NAMES);
 
@@ -94,7 +97,7 @@ class Entity
             $_key = $propertyNames[$key]
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (self::findProperty(static::class, $_key) !== null) {
-                $this->hydrateField($_key, $key, $value, $objectFields[$_key] ?? null);
+                $this->hydrateField($_key, $key, $value, $fieldTypes[$_key] ?? null);
                 if ($this instanceof RequestEntity) {
                     $this->markRequestField($_key);
                 }
@@ -467,7 +470,7 @@ class Entity
     }
 
     /**
-     * OBJECT_FIELDS の子オブジェクトを親と同じ要求文脈で構築する。
+     * FIELD_TYPES の子オブジェクトを親と同じ要求文脈で構築する。
      *
      * @param class-string<object> $class
      */

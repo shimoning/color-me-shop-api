@@ -10,7 +10,7 @@ use Shimoning\ColorMeShopApi\Values\DateTime;
 /** 値の単体・配列と、未マークの子への文脈伝播を検証するテストダブル。 */
 class FallbackValueEntity extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'value' => ['value' => Furigana::class],
         'mixed' => ['value' => MixedFallbackValue::class],
         'bare' => Furigana::class,

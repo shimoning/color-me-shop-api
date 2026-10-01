@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Constants\DisplayState;
  */
 class Delivery extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'methodType' => [
             'enum' => DeliveryMethodType::class,
         ],

@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  */
 class SaleDelivery extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'furigana' => [
             'nullable' => true,
             'value' => Furigana::class,

@@ -5,7 +5,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * OBJECT_FIELDS を持たない素の Entity のテストダブル。
+ * FIELD_TYPES を持たない素の Entity のテストダブル。
  * 実装と揃えるため、プロパティにはデフォルト値を与えていない。
  */
 class PlainEntity extends Entity

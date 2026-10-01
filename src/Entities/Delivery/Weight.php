@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Weight extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'areas' => [
             'array' => true,
             'entity' => Area::class,

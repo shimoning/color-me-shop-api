@@ -17,7 +17,7 @@ use Shimoning\ColorMeShopApi\Constants\MailState;
  */
 class SearchParameters extends Entity implements RequestEntity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'makeDateMin' => [
             'value' => DateTime::class,
         ],

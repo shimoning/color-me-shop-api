@@ -14,7 +14,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class DeliveryDate extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'days' => ['entity' => DeliveryDateDays::class],
         'times' => ['entity' => DeliveryDateTimes::class],
     ];

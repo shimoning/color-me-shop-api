@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Card extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'brands' => [
             'array' => true,
             'entity' => Brand::class,

@@ -17,7 +17,7 @@ use Shimoning\ColorMeShopApi\Values\DateTime;
  */
 class SearchParameters extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'makeDateMin' => ['value' => DateTime::class],
         'makeDateMax' => ['value' => DateTime::class],

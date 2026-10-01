@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
  */
 class SaleUpdateInput extends Entity implements RequestEntity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'pointState' => [
             'enum' => PointState::class,
         ],

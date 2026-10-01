@@ -38,7 +38,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class CategoryInput extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => CategoryDisplayState::class],
         'metaTag' => ['allowNull' => true, 'entity' => MetaTagInput::class],
     ];

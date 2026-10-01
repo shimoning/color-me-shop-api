@@ -16,7 +16,7 @@ namespace Shimoning\ColorMeShopApi\Contracts;
  * 復元後に setter を使うと、その時点の初期化済み非 null フィールドを追跡の種にする。
  *
  * FallbackEnum の未知値や番兵値を API リクエストに流さない。
- * OBJECT_FIELDS で構築する未マークの子 Entity にも厳格な検証が伝わる。
+ * FIELD_TYPES で構築する未マークの子 Entity にも厳格な検証が伝わる。
  */
 interface RequestEntity
 {

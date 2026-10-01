@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class ExternalAccount extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'provider' => [
             'enum' => ExternalAccountProvider::class,
         ],

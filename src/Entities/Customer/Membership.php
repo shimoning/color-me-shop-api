@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Membership extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'progress' => [
             'nullable' => true,
             'entity' => MembershipProgress::class,

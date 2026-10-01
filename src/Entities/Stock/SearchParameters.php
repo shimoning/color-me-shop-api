@@ -17,7 +17,7 @@ use Shimoning\ColorMeShopApi\Values\Limit;
  */
 class SearchParameters extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'limit' => ['value' => Limit::class],
     ];

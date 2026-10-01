@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
  */
 class Product extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'category' => ['entity' => CategoryIds::class],
         'images' => ['array' => true, 'entity' => Image::class],
         'options' => ['array' => true, 'entity' => Option::class],
