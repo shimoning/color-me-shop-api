@@ -421,7 +421,7 @@ if ($saleOrErrors instanceof Errors) {
 ```
 
 #### 受注データの作成
-カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは、body の内容にかかわらず `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る (2026-10-01 の観測)。成功時の応答の形は公式 OpenAPI に基づいており、実 API では未観測である ([受注作成 API の実測記録](docs/api-sale-create-observation.md))。
+カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る。2026-10-01 に必須項目を欠いた 2 種類の body で観測し、いずれも body の検証より先にこの `401` が返った。成功時の応答の形は公式 OpenAPI に基づいており、実 API では未観測である ([受注作成 API の実測記録](docs/api-sale-create-observation.md))。
 
 ```php
 $input = new SaleCreateInput([
@@ -444,9 +444,10 @@ $input = new SaleCreateInput([
     'customer' => SaleCustomerCreateInput::existing($customerId),
 ]);
 
-$saleOrErrors = $client->createSale($input);           // 在庫を引き当てる (API の既定)
-$saleOrErrors = $client->createSale($input, false);    // 在庫を引き当てない
+$saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API の既定)
 ```
+
+第 2 引数に `false` を渡すと、在庫を引き当てずに受注を作成する (`$client->createSale($input, false)`)。省略または `null` の場合は `reserve_stocks` を送らず、API の既定に従う。
 
 `payment_id` と `details`、`details[]` の `product_id` / `product_num`、`sale_deliveries[]` の `delivery_id` / `name` / `furigana` / `postal` / `pref_id` / `address1` / `tel` は必須で、欠けていると送信前に `Exceptions\ParameterException` を投げる。`sale_deliveries` 自体は、配送不要の商品だけの受注では省略できるため必須にしていない。
 
