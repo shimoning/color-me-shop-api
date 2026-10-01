@@ -10,6 +10,8 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 /**
  * 受注更新データ
  *
+ * 受注 ID は Services\Sales::update() / Client::updateSale() の引数として渡す。
+ *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
 class SaleUpdateInput extends Entity implements RequestEntity
@@ -24,21 +26,10 @@ class SaleUpdateInput extends Entity implements RequestEntity
         ],
     ];
 
-    protected int $id;
     protected bool $paid;
     protected PointState $pointState;
     /** @var list<SaleDeliveryUpdateInput> */
     protected array $saleDeliveries;
-
-    /**
-     * 売上ID
-     * @return int
-     */
-    public function getId(): int
-    {
-        $this->assertFieldInitialized('id');
-        return $this->id;
-    }
 
     /**
      * 入金済みであるか否か
@@ -112,7 +103,6 @@ class SaleUpdateInput extends Entity implements RequestEntity
     static public function convert(Sale $sale): self
     {
         return new self([
-            'id' => $sale->getId(),
             'paid' => $sale->isPaid(),
             'point_state' => $sale->getPointState()->value,
             'sale_deliveries' => array_map(function ($sd) {

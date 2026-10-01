@@ -74,13 +74,48 @@ class RequestEntitySerializationTest extends TestCase
         $this->assertNotFalse($serialized);
 
         $legacy = 'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater';
-        $restored = \unserialize($serialized, [
-            'allowed_classes' => [$legacy],
-        ]);
+        /** @var list<string> $deprecations */
+        $deprecations = [];
+        $restored = null;
+
+        // ADR 0022 で受容した、旧形式の id 復元時に発生するバージョン別の挙動を検証する。
+        $previousHandler = null;
+        $previousHandler = \set_error_handler(static function (
+            int $severity,
+            string $message,
+            string $file = '',
+            int $line = 0
+        ) use (&$deprecations, &$previousHandler): bool {
+            if ($severity !== E_DEPRECATED) {
+                if (\is_callable($previousHandler)) {
+                    return $previousHandler($severity, $message, $file, $line);
+                }
+
+                return false;
+            }
+
+            $deprecations[] = $message;
+            return true;
+        });
+        try {
+            $restored = \unserialize($serialized, [
+                'allowed_classes' => [$legacy],
+            ]);
+        } finally {
+            \restore_error_handler();
+        }
+
+        if (\PHP_VERSION_ID >= 80200) {
+            $this->assertCount(1, $deprecations);
+            $this->assertStringContainsString('dynamic property', $deprecations[0]);
+            $this->assertStringContainsString('$id', $deprecations[0]);
+        } else {
+            $this->assertCount(0, $deprecations);
+        }
 
         $this->assertInstanceOf(SaleUpdateInput::class, $restored);
         $restored->setPaid(true);
-        $this->assertSame(['id' => 1001, 'paid' => true], $restored->toArrayRecursive());
+        $this->assertSame(['paid' => true], $restored->toArrayRecursive());
     }
 
     public function test_ネストした入力Entityとその配列にも明示フィールド契約を再帰適用する(): void

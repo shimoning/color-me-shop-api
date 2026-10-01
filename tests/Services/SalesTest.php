@@ -244,40 +244,59 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $updater = new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']);
-        $sale = (new Sales('my-token', $mock->client()))->update($updater);
+        $updater = new SaleUpdateInput(['paid' => true, 'point_state' => 'fixed']);
+        $sale = (new Sales('my-token', $mock->client()))->update('external-1001', $updater);
 
         $this->assertInstanceOf(Sale::class, $sale);
         $this->assertSame('PUT', $mock->request()->getMethod());
-        $this->assertSame('https://api.shop-pro.jp/v1/sales/1001', $mock->uri());
+        $this->assertSame('https://api.shop-pro.jp/v1/sales/external-1001', $mock->uri());
     }
 
     public function test_受注更新はsaleキーでJSONボディを送信する(): void
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $updater = new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => 'fixed']);
-        (new Sales('my-token', $mock->client()))->update($updater);
+        $updater = new SaleUpdateInput(['paid' => true, 'point_state' => 'fixed']);
+        (new Sales('my-token', $mock->client()))->update(1001, $updater);
 
         $this->assertSame(
-            ['sale' => ['id' => 1001, 'paid' => true, 'point_state' => 'fixed']],
+            ['sale' => ['paid' => true, 'point_state' => 'fixed']],
             $mock->jsonBody(),
         );
         $this->assertStringContainsString('application/json', $mock->header('Content-Type'));
+    }
+
+    public function test_受注更新は空の入力をJSONオブジェクトとして送信する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+
+        (new Sales('my-token', $mock->client()))->update(1001, new SaleUpdateInput([]));
+
+        $this->assertSame('{"sale":{}}', $mock->body());
     }
 
     public function test_受注更新は指定した項目だけを送信できる(): void
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $updater = new SaleUpdateInput(['id' => 1001]);
+        $updater = new SaleUpdateInput([]);
         $updater->setPaid(true);
-        (new Sales('my-token', $mock->client()))->update($updater);
+        (new Sales('my-token', $mock->client()))->update(1001, $updater);
 
         $this->assertSame(
-            ['sale' => ['id' => 1001, 'paid' => true]],
+            ['sale' => ['paid' => true]],
             $mock->jsonBody(),
         );
+    }
+
+    public function test_受注更新は入力の未宣言IDをJSONボディに含めない(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sale.json'));
+        $input = new SaleUpdateInput(['id' => 1001, 'paid' => true]);
+
+        (new Sales('my-token', $mock->client()))->update(1001, $input);
+
+        $this->assertSame(['sale' => ['paid' => true]], $mock->jsonBody());
     }
 
     public function test_受注更新のエラーレスポンス(): void
@@ -285,7 +304,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
 
         $errors = (new Sales('my-token', $mock->client()))
-            ->update(new SaleUpdateInput(['id' => 1001, 'paid' => true, 'point_state' => PointState::FIXED->value]));
+            ->update(1001, new SaleUpdateInput(['paid' => true, 'point_state' => PointState::FIXED->value]));
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame(2, $errors->count());

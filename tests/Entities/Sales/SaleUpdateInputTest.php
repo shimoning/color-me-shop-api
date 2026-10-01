@@ -3,30 +3,27 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
+use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleUpdateInputTest extends TestCase
 {
-    public function test_IDが欠損していればgetter呼び出し時に固有例外になる(): void
-    {
-        $updater = new SaleUpdateInput([]);
-
-        $this->expectException(MissingFieldException::class);
-        $this->expectExceptionMessage(
-            SaleUpdateInput::class . ' の API フィールド『id』が欠損しています。',
-        );
-
-        $updater->getId();
-    }
-
     public function test_更新したい項目だけを設定した部分更新データを配列化できる(): void
     {
-        $updater = new SaleUpdateInput(['id' => 1001]);
+        $updater = new SaleUpdateInput([]);
         $updater->setPaid(true);
 
-        $this->assertSame(['id' => 1001, 'paid' => true], $updater->toArrayRecursive());
+        $this->assertSame(['paid' => true], $updater->toArrayRecursive());
+    }
+
+    public function test_未宣言のIDは生データに保持するが更新データには含めない(): void
+    {
+        $updater = new SaleUpdateInput(['id' => 1001, 'paid' => true]);
+
+        $this->assertSame(['paid' => true], $updater->toArrayRecursive());
+        $this->assertSame(['id' => 1001, 'paid' => true], $updater->getRaw());
     }
 
     public function test_お届け先も更新したい項目だけを設定して配列化できる(): void
@@ -34,11 +31,11 @@ class SaleUpdateInputTest extends TestCase
         $delivery = new SaleDeliveryUpdateInput([]);
         $delivery->setName('山田太郎');
 
-        $updater = new SaleUpdateInput(['id' => 1001]);
+        $updater = new SaleUpdateInput([]);
         $updater->setSaleDeliveries([$delivery]);
 
         $this->assertSame(
-            ['id' => 1001, 'sale_deliveries' => [['name' => '山田太郎']]],
+            ['sale_deliveries' => [['name' => '山田太郎']]],
             $updater->toArrayRecursive(),
         );
     }
@@ -47,13 +44,27 @@ class SaleUpdateInputTest extends TestCase
     {
         $delivery = new SaleDeliveryUpdateInput(['memo' => null]);
         $updater = new SaleUpdateInput([
-            'id' => 1001,
             'sale_deliveries' => [$delivery->toArrayRecursive()],
         ]);
 
         $this->assertSame(
-            ['id' => 1001, 'sale_deliveries' => [['memo' => null]]],
+            ['sale_deliveries' => [['memo' => null]]],
             $updater->toArrayRecursive(),
+        );
+    }
+
+    public function test_受注から変換した更新データにIDを含めない(): void
+    {
+        $sale = new Sale([
+            'id' => 1001,
+            'paid' => true,
+            'point_state' => 'fixed',
+            'sale_deliveries' => [],
+        ]);
+
+        $this->assertSame(
+            ['paid' => true, 'point_state' => 'fixed', 'sale_deliveries' => []],
+            SaleUpdateInput::convert($sale)->toArrayRecursive(),
         );
     }
 

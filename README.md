@@ -431,9 +431,18 @@ if (! $saleOrErrors instanceof Errors) {
     $updater->setPaid(true);
     $updater->setPointState(PointState::FIXED);
 
-    $updatedSaleOrErrors = $client->updateSale($updater);
+    $updatedSaleOrErrors = $client->updateSale($saleId, $updater);
 }
 ```
+
+受注 ID は、他の更新 API と同じく第 1 引数で渡す。`SaleUpdateInput` は受注 ID を持たず、body にも
+含めない (0.20.0 以降)。公式 OpenAPI の要求 body に `id` は定義されていない。実測では、body の `id` の
+有無や値 (存在しない ID を含む) で応答と結果に差はなく、path の受注として処理された。ただし観測は値を
+変えない更新に限られる ([受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
+
+0.19.0 までは `$client->updateSale($updater)` のように入力だけを渡し、`SaleUpdateInput` が持つ `id` を
+path と body の両方に使っていた。`SaleUpdateInput::getId()` は削除したため、受注 ID は取得した受注の
+`getId()` などから渡す ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。
 
 #### 受注のキャンセル
 第2引数の `$restock` を `true` にすると、キャンセルした商品の在庫を戻す。
@@ -1097,6 +1106,8 @@ $pagination->getOffset();
 作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、子要素の `MetaTagInput` は据え置いた。検索条件の `SearchParameters` 系も今回の対象外である。
 
 旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` はいずれも従来どおり動作する (`unserialize()` の `allowed_classes` には旧名を渡すこと)。
+
+ただし 0.20.0 で `SaleUpdateInput` から `id` を削除したため、`id` を含む旧データの `SaleUpdater` (および 0.19.0 以前の `SaleUpdateInput`) を `unserialize()` すると、PHP 8.2 以降では動的プロパティの非推奨警告が出る。復元自体はでき、`id` は配列化にも送信にも使われない ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。
 
 ### フリガナの検証
 
