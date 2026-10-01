@@ -102,22 +102,24 @@ class Sales extends Service
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
-     * @param SaleUpdateInput $updater
+     * @param int|string $id
+     * @param SaleUpdateInput $input
      * @param string|null $accessToken
      * @return Sale|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function update(
-        SaleUpdateInput $updater,
+        int|string $id,
+        SaleUpdateInput $input,
         ?string $accessToken = null,
     ): Sale|Errors {
         $response = $this->_request([
             'json' => true,
         ], $accessToken)->put(
-            $this->_endpoint('/sales/' . $updater->getId()),
+            $this->_endpoint('/sales/' . $id),
             [
-                'sale' => $updater->toArrayRecursive(),
+                'sale' => $input->toArrayRecursive(),
             ],
         );
 

@@ -48,11 +48,7 @@ class ApiFieldNameTest extends TestCase
     ];
 
     /** @var array<string, array<string, string>> 公式フィールド外の内部フィールドと理由 */
-    private const INTERNAL_FIELDS = [
-        'Sales\\SaleUpdateInput' => [
-            'id' => 'PUT /v1/sales/{sale_id} の path parameter 由来。現行実装では body にも含めて送信される (Issue #53)',
-        ],
-    ];
+    private const INTERNAL_FIELDS = [];
 
     public function test_空のフィールド一覧は登録として認めない(): void
     {
@@ -165,6 +161,7 @@ class ApiFieldNameTest extends TestCase
     public function test_内部フィールドは公式一覧の外にあり配列化のキーに存在する(): void
     {
         $registrations = self::fixtureArray('api_field_names.json');
+        $this->assertIsArray(self::INTERNAL_FIELDS);
 
         foreach (self::INTERNAL_FIELDS as $relative => $fields) {
             $this->assertArrayHasKey($relative, $registrations, $relative . ' が公式フィールド一覧にありません');

@@ -644,15 +644,16 @@ class Client
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
-     * @param SaleUpdateInput $updater
+     * @param int|string $id
+     * @param SaleUpdateInput $input
      * @param string|null $accessToken
      * @return Sale|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function updateSale(SaleUpdateInput $updater, ?string $accessToken = null): Sale|Errors
+    public function updateSale(int|string $id, SaleUpdateInput $input, ?string $accessToken = null): Sale|Errors
     {
-        return $this->salesService($accessToken)->update($updater, $accessToken);
+        return $this->salesService($accessToken)->update($id, $input, $accessToken);
     }
 
     /**
