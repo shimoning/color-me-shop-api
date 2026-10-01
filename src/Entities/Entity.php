@@ -471,10 +471,18 @@ class Entity
                     return $value;
                 }
 
-                $accepted = $objectField['scalar'] === 'int' ? 'is_int' : 'is_string';
-                foreach ($value as $element) {
-                    if (! $accepted($element)) {
-                        throw new \TypeError('配列要素の型が不正です。');
+                if ($objectField['scalar'] === 'int') {
+                    foreach ($value as $element) {
+                        if (! \is_int($element)) {
+                            throw new \TypeError('配列要素が int ではありません。');
+                        }
+                    }
+                }
+                if ($objectField['scalar'] === 'string') {
+                    foreach ($value as $element) {
+                        if (! \is_string($element)) {
+                            throw new \TypeError('配列要素が string ではありません。');
+                        }
                     }
                 }
 

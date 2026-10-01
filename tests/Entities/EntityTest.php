@@ -549,12 +549,38 @@ class EntityTest extends TestCase
         $this->assertSame([2 => 10, 5 => 20], $entity->toArray()['ints']);
     }
 
-    public function test_scalar配列の要素型を厳密に検証する(): void
+    #[DataProvider('invalidScalarArrayElementProvider')]
+    public function test_scalar配列の不正要素は型別の原因を持つ(
+        string $field,
+        mixed $invalid,
+        string $scalar,
+    ): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('配列要素を int に変換できませんでした。原因: 配列要素の型が不正です。');
+        try {
+            new ScalarArrayEntity([$field => [$invalid]]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ScalarArrayEntity::class . " の API フィールド『{$field}』が不正です。"
+                . "配列要素を {$scalar} に変換できませんでした。原因: 配列要素の型が不正です。",
+                $exception->getMessage(),
+            );
+            $previous = $exception->getPrevious();
+            $this->assertInstanceOf(\TypeError::class, $previous);
+            $this->assertSame("配列要素が {$scalar} ではありません。", $previous->getMessage());
 
-        new ScalarArrayEntity(['ints' => ['1']]);
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
+    /** @return array<string, array{string, mixed, string}> */
+    public static function invalidScalarArrayElementProvider(): array
+    {
+        return [
+            'int' => ['ints', '1', 'int'],
+            'string' => ['nullable_strings', 1, 'string'],
+        ];
     }
 
     public function test_scalar配列に非配列が来たら外側の型不一致を示す(): void

@@ -135,7 +135,9 @@ class ScalarArrayFieldTypeTest extends TestCase
                 . "配列要素を {$scalar} に変換できませんでした。原因: 配列要素の型が不正です。",
                 $exception->getMessage(),
             );
-            $this->assertInstanceOf(\TypeError::class, $exception->getPrevious());
+            $previous = $exception->getPrevious();
+            $this->assertInstanceOf(\TypeError::class, $previous);
+            $this->assertSame("配列要素が {$scalar} ではありません。", $previous->getMessage());
             return;
         }
 
