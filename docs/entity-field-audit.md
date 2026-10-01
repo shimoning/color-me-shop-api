@@ -117,7 +117,7 @@ ADR 0008 の方針を満たす説明用の候補名であり、実装コミッ�
 | 共通 | `Page` | items と `Pagination` を合成する wrapper。API field は各 Entity に委譲するため不足なし |
 | 共通 | `Error` | 非 2xx の `errors[]` に現れる `code` / `message` / `status` / 任意の `field` を保持済み |
 | OAuth | `OAuth\AccessToken` | OpenAPI 本文の成功例 `access_token` / `token_type` / `scope` は保持済み。formal response schema はない |
-| OAuth | `OAuth\ErrorResponse` | OpenAPI に token error schema はない。ADR 0007 / RFC 6749 の `error`、`error_description`、`error_uri`、`state` は保持済み |
+| OAuth | `OAuth\ErrorResponse` | OpenAPI に token error schema はない。RFC 6749 §5.2 の `error`、`error_description`、`error_uri` は保持済み。`state` は §5.2 になく実 API も返さないため、ADR 0021 で型付きフィールドから外した（2026-09-30 の観測。`docs/api-oauth-token-error-observation.md`） |
 | OAuth request | `OAuth\Options` | 後述の責務分担では不足なし。クラスは `Entity` 非継承だが監査対象に含めた |
 | 基底 | `Entity` | domain schema に対応しない hydration 基盤。比較対象外だが、全サブクラスの変換規則を確認した |
 

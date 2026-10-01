@@ -294,14 +294,13 @@ if ($result instanceof OAuthErrorResponse) {
     $result->getError();            // OAuth エラーコード (必須)
     $result->getErrorDescription(); // 人間が読める補足説明
     $result->getErrorUri();         // エラーの説明ページ
-    $result->getState();            // 認可リクエストと応答を対応付ける値
 
     $response = $result->getResponse();
     $response->getStatus();  // HTTP ステータス
     $response->getRawBody(); // OAuth の生レスポンス
 
     $result->getRaw();  // 追加プロパティを含む受信データ
-    $result->toArray(); // RFC 6749 の4フィールド
+    $result->toArray(); // RFC 6749 §5.2 の3フィールド (error / error_description / error_uri)
 } elseif ($result instanceof Errors) {
     // OAuth エンドポイントが ColorMe API 本体の errors 配列形式を返した場合、
     // OAuth フィールドの型が不正な場合、未知の非 2xx 応答だった場合、
@@ -315,10 +314,14 @@ if ($result instanceof OAuthErrorResponse) {
 OAuth 2.0 のエラーは `{"error":"invalid_client","error_description":"..."}` 形式であり、
 ColorMe API 本体の `{"errors":[{"code":...,"message":...,"status":...}]}` 形式とは異なる。
 前者は `Entities\OAuth\ErrorResponse`、後者は従来どおり `Communicator\Errors` で判定する。
-`error_description`、`error_uri`、`state` は省略されることがあり、その場合は各 getter が `null` を返す。
+`error_description` と `error_uri` は省略されることがあり、その場合は各 getter が `null` を返す。
 OAuth の必須・任意フィールドが不正な型の場合や、既知の形式に一致しない非 2xx 応答の場合も
 `Errors` にフォールバックする。この場合の `Errors` は空コレクションになるため、
 `getResponse()->getStatus()` で HTTP ステータス、`getResponse()->getRawBody()` で生ボディを参照して調査する。
+
+トークンエンドポイントのエラー応答 (RFC 6749 §5.2) は `state` を定義しておらず、実 API も返さない (2026-09-30 の観測。[トークンエラー応答の実測記録](docs/api-oauth-token-error-observation.md))。認可リクエストと応答を対応付ける `state` は、上記のとおりコールバックのクエリで受け取って照合するものであり、`ErrorResponse` から取得する値ではない。
+
+0.19.0 で `ErrorResponse` から `state` プロパティを削除し、`toArray()` と `toArrayRecursive()` の出力から `state` キーを外した ([ADR 0021](docs/adr/0021-drop-state-from-token-error-response.md))。`getState()` は非推奨として残しており、応答に文字列の `state` があればそれを返し、なければ `null` を返す。次のメジャーな変更で削除する。応答に含まれた `state` は `getRaw()` から取得できる。
 
 0.9.0 では `Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` の戻り値が
 `AccessToken|Errors` から `AccessToken|ErrorResponse|Errors` へ変わるため、OAuth エラーを

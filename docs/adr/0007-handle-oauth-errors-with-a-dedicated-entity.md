@@ -61,3 +61,4 @@ HTTP ステータスと生ボディも調査できる。ColorMe API 本体の `E
 
 - [RFC 6749 Section 5.2: Error Response](https://www.rfc-editor.org/rfc/rfc6749#section-5.2)
 - PR #23
+- `state` を保持する判断は [ADR 0021](0021-drop-state-from-token-error-response.md) により更新された。

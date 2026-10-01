@@ -841,7 +841,6 @@
     "OAuth\\ErrorResponse": [
         "error",
         "error_description",
-        "error_uri",
-        "state"
+        "error_uri"
     ]
 }
