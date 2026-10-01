@@ -62,7 +62,7 @@ query parameter の `?T` は値として `null` を送れるという意味で�
 「nullable: false」は `nullable` が省略されている場合を含む。提案型のクラス名は公開 API になるため、
 ADR 0008 の方針を満たす説明用の候補名であり、実装コミットで最終確認する。
 
-| Entity | 不足フィールド | 仕様上の型 / nullable | 提案プロパティ型 | 提案名 | `OBJECT_FIELDS` / `FIELD_NAMES` | enum 候補 | 判断と根拠 |
+| Entity | 不足フィールド | 仕様上の型 / nullable | 提案プロパティ型 | 提案名 | `OBJECT_FIELDS`（現 `FIELD_TYPES`） / `FIELD_NAMES` | enum 候補 | 判断と根拠 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `Sales\Sale` | `segment` | object / true | `?SaleSegment` | `$segment` | OBJECT: `nullable` + Entity が必要。FIELD: 不要 | なし | **追加**。分割受注の ID、名称、金額群を型付きで保持する |
 | `Sales\Sale` | `totals` | object / true | `?SaleTotals` | `$totals` | OBJECT: `nullable` + Entity が必要。FIELD: 不要 | なし | **追加**。税率別税額・割引・税込合計を失っている |
@@ -195,7 +195,7 @@ OpenAPI との差分として削除・追加の対象にはしない。
 
 ## コミット分割案と見積り
 
-見積りには Entity / getter / `OBJECT_FIELDS`、fixture、単体・横断契約テスト、静的解析を含む。
+見積りには Entity / getter / `OBJECT_FIELDS`（ADR 0023 で `FIELD_TYPES` に改名）、fixture、単体・横断契約テスト、静的解析を含む。
 今回はコミットしない。
 
 | 順序 / リソース | 想定コミット | 主な作業 | 見積り |
