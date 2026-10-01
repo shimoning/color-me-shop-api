@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class MembershipProgress extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'aggregationPeriod' => [
             'entity' => MembershipAggregationPeriod::class,
         ],

@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class SaleDetail extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'customizations' => [
             'array' => true,
             'entity' => SaleCustomization::class,

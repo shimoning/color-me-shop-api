@@ -7,7 +7,6 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Values\DateTime;
 
 /**
@@ -17,12 +16,14 @@ use Shimoning\ColorMeShopApi\Values\DateTime;
  */
 class SearchParameters extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'makeDateMin' => ['value' => DateTime::class],
         'makeDateMax' => ['value' => DateTime::class],
         'updateDateMin' => ['value' => DateTime::class],
         'updateDateMax' => ['value' => DateTime::class],
+        'ids' => ['array' => true, 'scalar' => 'int'],
+        'groupIds' => ['array' => true, 'scalar' => 'int'],
     ];
 
     /** @var list<int>|null */
@@ -57,22 +58,6 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?string $fields;
     protected ?int $limit;
     protected ?int $offset;
-
-    /** @param array<string, mixed> $data */
-    public function __construct(array $data)
-    {
-        foreach (['ids', 'group_ids'] as $field) {
-            if (! isset($data[$field]) || ! is_array($data[$field])) {
-                continue;
-            }
-            foreach ($data[$field] as $value) {
-                if (! is_int($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, $field, 'int', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        parent::__construct($data);
-    }
 
     public function getDisplayState(): ?ProductDisplayState
     {

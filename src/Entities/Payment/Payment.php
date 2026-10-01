@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\PaymentType;
  */
 class Payment extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'type' => [
             'enum' => PaymentType::class,
         ],

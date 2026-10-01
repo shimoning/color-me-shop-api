@@ -46,7 +46,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class ProductInput extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
     ];
 

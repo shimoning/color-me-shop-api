@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  */
 class SaleDelivery extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'furigana' => [
             'nullable' => true,
             'value' => Furigana::class,
@@ -21,6 +21,7 @@ class SaleDelivery extends Entity
         'prefId' => [
             'enum' => Prefecture::class,
         ],
+        'detailIds' => ['array' => true, 'scalar' => 'int'],
     ];
 
     protected int $id;

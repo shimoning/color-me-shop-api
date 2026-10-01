@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class HydratedTypeMismatchEntity extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'child' => ['entity' => NestedEntity::class],
     ];
 

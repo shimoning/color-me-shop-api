@@ -14,7 +14,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 abstract class Category extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'displayState' => [
             'enum' => CategoryDisplayState::class,
         ],

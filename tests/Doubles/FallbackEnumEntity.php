@@ -10,7 +10,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class FallbackEnumEntity extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'provider' => ['enum' => ExternalAccountProvider::class],
         'providers' => ['array' => true, 'enum' => ExternalAccountProvider::class],
     ];

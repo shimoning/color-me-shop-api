@@ -254,7 +254,7 @@ class FallbackEnumHydrationTest extends TestCase
 /** 要求文脈が未マークの子と孫へ伝わることを固定するテスト用 Entity。 */
 final class NestedRequestRoot extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'child' => ['entity' => NestedChild::class],
         'children' => ['array' => true, 'entity' => NestedChild::class],
     ];
@@ -266,14 +266,14 @@ final class NestedRequestRoot extends Entity implements RequestEntity
 
 final class NestedResponseRoot extends Entity
 {
-    public const OBJECT_FIELDS = ['child' => ['entity' => NestedChild::class]];
+    public const FIELD_TYPES = ['child' => ['entity' => NestedChild::class]];
 
     protected NestedChild $child;
 }
 
 final class NestedChild extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'sex' => ['enum' => Sex::class],
         'grandchild' => ['entity' => NestedGrandchild::class],
     ];
@@ -284,14 +284,14 @@ final class NestedChild extends Entity
 
 final class NestedGrandchild extends Entity
 {
-    public const OBJECT_FIELDS = ['sex' => ['enum' => Sex::class]];
+    public const FIELD_TYPES = ['sex' => ['enum' => Sex::class]];
 
     protected Sex $sex;
 }
 
 class ObjectFieldResponseRoot extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'bare' => NestedChild::class,
         'child' => ['entity' => NestedChild::class],
         'children' => ['array' => true, 'entity' => NestedChild::class],
@@ -316,7 +316,7 @@ final class ObjectFieldRequestRoot extends ObjectFieldResponseRoot implements Re
 
 final class BareNestedChild extends Entity
 {
-    public const OBJECT_FIELDS = ['grandchild' => NestedGrandchild::class];
+    public const FIELD_TYPES = ['grandchild' => NestedGrandchild::class];
 
     protected NestedGrandchild $grandchild;
 }

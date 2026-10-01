@@ -5,11 +5,11 @@ namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * OBJECT_FIELDS の allowNull を検証するテストダブル
+ * FIELD_TYPES の allowNull を検証するテストダブル
  */
 class AllowNullObjectFieldEntity extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'allowNullChild' => ['allowNull' => true, 'entity' => NestedEntity::class],
         'nullableAllowNullChild' => ['nullable' => true, 'allowNull' => true, 'entity' => NestedEntity::class],
     ];

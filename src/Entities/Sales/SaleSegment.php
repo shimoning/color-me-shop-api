@@ -11,6 +11,10 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class SaleSegment extends Entity
 {
+    public const FIELD_TYPES = [
+        'siblingsSaleIds' => ['array' => true, 'scalar' => 'int'],
+    ];
+
     protected int $id;
     protected string $name;
     protected int $parentSaleId;

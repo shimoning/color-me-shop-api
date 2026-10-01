@@ -25,7 +25,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class OptionCreateInput extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'values' => ['array' => true, 'entity' => OptionValueCreateInput::class],
     ];
 

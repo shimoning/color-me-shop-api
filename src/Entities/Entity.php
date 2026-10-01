@@ -25,10 +25,14 @@ use Shimoning\ColorMeShopApi\Values\Value;
 class Entity
 {
     /**
-     * オブジェクトに変換するフィールドの定義。
-     * 変換が必要なサブクラスで上書きする。
+     * フィールドの型と変換方法の定義。
+     *
+     * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、またはそれらの配列への
+     * 変換を宣言する。scalar 配列は ['array' => true, 'scalar' => 'int'|'string'] とする。
+     * null の扱いは nullable または allowNull で指定する。
+     * API のフィールド名との対応は FIELD_NAMES に定義する。
      */
-    const OBJECT_FIELDS = [];
+    const FIELD_TYPES = [];
 
     /**
      * 自動変換では表現できない API のフィールド名の対応表。
@@ -86,7 +90,7 @@ class Entity
             $this->_requestFields = [];
         }
 
-        $objectFields = static::OBJECT_FIELDS;
+        $fieldTypes = static::FIELD_TYPES;
 
         $propertyNames = \array_flip(static::FIELD_NAMES);
 
@@ -94,7 +98,7 @@ class Entity
             $_key = $propertyNames[$key]
                 ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
             if (self::findProperty(static::class, $_key) !== null) {
-                $this->hydrateField($_key, $key, $value, $objectFields[$_key] ?? null);
+                $this->hydrateField($_key, $key, $value, $fieldTypes[$_key] ?? null);
                 if ($this instanceof RequestEntity) {
                     $this->markRequestField($_key);
                 }
@@ -174,11 +178,12 @@ class Entity
 
     private static function arrayElementType(mixed $objectField): ?string
     {
+        self::assertScalarDeclaration($objectField);
         if (! \is_array($objectField) || empty($objectField['array'])) {
             return null;
         }
 
-        foreach (['entity', 'value', 'enum'] as $key) {
+        foreach (['entity', 'value', 'enum', 'scalar'] as $key) {
             if (isset($objectField[$key]) && \is_string($objectField[$key])) {
                 return $objectField[$key];
             }
@@ -408,6 +413,7 @@ class Entity
      */
     protected function build(mixed $objectField, mixed $value): mixed
     {
+        self::assertScalarDeclaration($objectField);
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
             // nullable は falsy 値も変換するため、null だけを許すフィールドは allowNull を使う。
@@ -460,14 +466,49 @@ class Entity
                 }
                 return $this->buildEnum($enum, $value);
             }
+            if (isset($objectField['scalar'])) {
+                if (! \is_array($value)) {
+                    return $value;
+                }
+
+                if ($objectField['scalar'] === 'int') {
+                    foreach ($value as $element) {
+                        if (! \is_int($element)) {
+                            throw new \TypeError('配列要素が int ではありません。');
+                        }
+                    }
+                }
+                if ($objectField['scalar'] === 'string') {
+                    foreach ($value as $element) {
+                        if (! \is_string($element)) {
+                            throw new \TypeError('配列要素が string ではありません。');
+                        }
+                    }
+                }
+
+                return $value;
+            }
         }
 
         // 単体
         return $this->buildObject($objectField, $value);
     }
 
+    private static function assertScalarDeclaration(mixed $objectField): void
+    {
+        if (! \is_array($objectField) || ! \array_key_exists('scalar', $objectField)) {
+            return;
+        }
+        if (! \in_array($objectField['scalar'], ['int', 'string'], true)) {
+            throw new \LogicException('scalar は int または string を指定してください。');
+        }
+        if (empty($objectField['array'])) {
+            throw new \LogicException('scalar は array と組み合わせて指定してください。');
+        }
+    }
+
     /**
-     * OBJECT_FIELDS の子オブジェクトを親と同じ要求文脈で構築する。
+     * FIELD_TYPES の子オブジェクトを親と同じ要求文脈で構築する。
      *
      * @param class-string<object> $class
      */

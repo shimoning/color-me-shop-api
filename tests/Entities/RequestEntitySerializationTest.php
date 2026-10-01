@@ -148,7 +148,7 @@ class RequestEntitySerializationTest extends TestCase
 
 final class RequestSerializationRoot extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'child' => ['entity' => RequestSerializationChild::class],
         'children' => ['array' => true, 'entity' => RequestSerializationChild::class],
     ];

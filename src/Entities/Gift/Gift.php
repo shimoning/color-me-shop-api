@@ -14,7 +14,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Gift extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'noshi' => ['entity' => GiftNoshi::class],
         'card' => ['entity' => GiftCard::class],
         'wrapping' => ['entity' => GiftWrapping::class],

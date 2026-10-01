@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
  */
 class Sale extends Entity
 {
-    const OBJECT_FIELDS = [
+    const FIELD_TYPES = [
         'customer' => Customer::class,
         'details' => [
             'array' => true,

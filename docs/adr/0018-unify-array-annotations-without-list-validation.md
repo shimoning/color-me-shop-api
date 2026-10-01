@@ -180,3 +180,4 @@ list になり、`{}` と `[]` も list になる。今回の観測ではオブ�
 - アノテーション統一と横断テストの出典コミット: `c89ca68`
 - 応答側の外側ガード撤去の出典コミット: `e691aaf`
 - 既存ガードの導入コミット: `db7f7ed`（`BigCategory`）、`5edb544`（`Cod`）
+- スカラー配列の要素の型を実行時に検証しない点は [ADR 0023](0023-validate-scalar-array-elements-via-field-types.md) により更新された。

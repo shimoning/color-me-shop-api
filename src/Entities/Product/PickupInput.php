@@ -20,7 +20,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class PickupInput extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'pickupType' => ['enum' => PickupType::class],
     ];
 

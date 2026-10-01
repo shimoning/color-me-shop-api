@@ -6,7 +6,6 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 商品 API 読み取り応答: Option。
@@ -14,6 +13,10 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class Option extends Entity
 {
+    public const FIELD_TYPES = [
+        'values' => ['array' => true, 'scalar' => 'string'],
+    ];
+
     protected int $id;
     protected int $productId;
     protected string $accountId;
@@ -27,19 +30,6 @@ class Option extends Entity
      */
     protected ?int $makeDate;
     protected int $updateDate;
-
-    /** @param array<string, mixed> $data */
-    public function __construct(array $data)
-    {
-        if (isset($data['values']) && is_array($data['values'])) {
-            foreach ($data['values'] as $value) {
-                if (! is_string($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, 'values', 'string', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        parent::__construct($data);
-    }
 
     /**
      * オプションID

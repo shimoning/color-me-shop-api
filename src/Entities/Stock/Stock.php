@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Image;
  */
 class Stock extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'category' => ['entity' => CategoryIds::class, 'allowNull' => true],
         'images' => ['array' => true, 'entity' => Image::class],
         'displayState' => ['enum' => ProductDisplayState::class],

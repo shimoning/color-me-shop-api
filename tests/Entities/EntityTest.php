@@ -32,6 +32,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ProtectedShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\StaticShadowingPrivateFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\ScalarArrayEntity;
 
 class EntityTest extends TestCase
 {
@@ -283,7 +284,7 @@ class EntityTest extends TestCase
         $this->assertSame([], (new PlainEntity([]))->getRaw());
     }
 
-    // --- OBJECT_FIELDS: entity -------------------------------------------
+    // --- FIELD_TYPES: entity -------------------------------------------
 
     public function test_entity指定のフィールドはエンティティに変換される(): void
     {
@@ -336,7 +337,7 @@ class EntityTest extends TestCase
         $this->assertSame('b', $entity->getBare()->getLabel());
     }
 
-    // --- OBJECT_FIELDS: nullable -----------------------------------------
+    // --- FIELD_TYPES: nullable -----------------------------------------
 
     public function test_nullable指定でnullならnullになる(): void
     {
@@ -373,7 +374,7 @@ class EntityTest extends TestCase
         ];
     }
 
-    // --- OBJECT_FIELDS: allowNull ----------------------------------------
+    // --- FIELD_TYPES: allowNull ----------------------------------------
 
     public function test_allowNull指定でnullならnullになる(): void
     {
@@ -430,7 +431,7 @@ class EntityTest extends TestCase
         $this->assertSame('child', $entity->getNullableAllowNullChild()->getLabel());
     }
 
-    // --- OBJECT_FIELDS: value --------------------------------------------
+    // --- FIELD_TYPES: value --------------------------------------------
 
     public function test_value指定のフィールドは値オブジェクトに変換される(): void
     {
@@ -448,7 +449,7 @@ class EntityTest extends TestCase
         $this->assertSame([1, 100], \array_map(fn($l) => $l->get(), $entity->getLimits()));
     }
 
-    // --- OBJECT_FIELDS: enum ---------------------------------------------
+    // --- FIELD_TYPES: enum ---------------------------------------------
 
     public function test_enum指定のフィールドはenumに変換される(): void
     {
@@ -537,6 +538,104 @@ class EntityTest extends TestCase
         }
 
         $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
+    // --- FIELD_TYPES: scalar -------------------------------------------
+
+    public function test_scalar配列は値とキーをそのまま保持する(): void
+    {
+        $entity = new ScalarArrayEntity(['ints' => [2 => 10, 5 => 20]]);
+
+        $this->assertSame([2 => 10, 5 => 20], $entity->toArray()['ints']);
+    }
+
+    #[DataProvider('invalidScalarArrayElementProvider')]
+    public function test_scalar配列の不正要素は型別の原因を持つ(
+        string $field,
+        mixed $invalid,
+        string $scalar,
+    ): void
+    {
+        try {
+            new ScalarArrayEntity([$field => [$invalid]]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ScalarArrayEntity::class . " の API フィールド『{$field}』が不正です。"
+                . "配列要素を {$scalar} に変換できませんでした。原因: 配列要素の型が不正です。",
+                $exception->getMessage(),
+            );
+            $previous = $exception->getPrevious();
+            $this->assertInstanceOf(\TypeError::class, $previous);
+            $this->assertSame("配列要素が {$scalar} ではありません。", $previous->getMessage());
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
+    /** @return array<string, array{string, mixed, string}> */
+    public static function invalidScalarArrayElementProvider(): array
+    {
+        return [
+            'int' => ['ints', '1', 'int'],
+            'string' => ['nullable_strings', 1, 'string'],
+        ];
+    }
+
+    public function test_scalar配列に非配列が来たら外側の型不一致を示す(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('array を期待しましたが string でした。');
+
+        new ScalarArrayEntity(['ints' => 'invalid']);
+    }
+
+    #[DataProvider('nullableScalarArrayFalsyValueProvider')]
+    public function test_nullableなscalar配列は従来のfalsy値処理を保つ(mixed $value, mixed $expected): void
+    {
+        $entity = new ScalarArrayEntity(['nullable_strings' => $value]);
+
+        $this->assertSame($expected, $entity->toArray()['nullable_strings']);
+    }
+
+    /** @return array<string, array{mixed, mixed}> */
+    public static function nullableScalarArrayFalsyValueProvider(): array
+    {
+        return [
+            'null' => [null, null],
+            '空配列' => [[], []],
+            '空文字' => ['', []],
+            '整数0' => [0, []],
+            'false' => [false, []],
+        ];
+    }
+
+    public function test_allowNullなscalar配列はnullを許容する(): void
+    {
+        $entity = new ScalarArrayEntity(['allow_null_ints' => null]);
+
+        $this->assertNull($entity->toArray()['allow_null_ints']);
+    }
+
+    public function test_scalarに未対応型を指定した宣言はLogicExceptionになる(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        new class(['values' => [1.0]]) extends Entity {
+            public const FIELD_TYPES = ['values' => ['array' => true, 'scalar' => 'float']];
+            protected array $values;
+        };
+    }
+
+    public function test_scalarをarrayなしで指定した宣言はLogicExceptionになる(): void
+    {
+        $this->expectException(\LogicException::class);
+
+        new class(['value' => 1]) extends Entity {
+            public const FIELD_TYPES = ['value' => ['scalar' => 'int']];
+            protected int $value;
+        };
     }
 
     public function test_array指定のenumフィールドに未知の値があると要素型と原因を示す(): void

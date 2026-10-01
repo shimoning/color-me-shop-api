@@ -7,7 +7,6 @@ namespace Shimoning\ColorMeShopApi\Entities\Stock;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Values\Limit;
 
 /**
@@ -17,9 +16,10 @@ use Shimoning\ColorMeShopApi\Values\Limit;
  */
 class SearchParameters extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'limit' => ['value' => Limit::class],
+        'ids' => ['array' => true, 'scalar' => 'int'],
     ];
 
     /** @var list<int>|null */
@@ -34,24 +34,6 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?string $fields;
     protected ?Limit $limit;
     protected ?int $offset;
-
-    /** @param array<string, mixed> $data */
-    public function __construct(array $data)
-    {
-        if (isset($data['ids']) && is_array($data['ids'])) {
-            foreach ($data['ids'] as $value) {
-                if (! is_int($value)) {
-                    throw InvalidFieldException::forArrayElement(
-                        self::class,
-                        'ids',
-                        'int',
-                        new \TypeError('配列要素の型が不正です。'),
-                    );
-                }
-            }
-        }
-        parent::__construct($data);
-    }
 
     public function getDisplayState(): ?ProductDisplayState
     {

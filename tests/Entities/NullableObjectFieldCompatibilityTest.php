@@ -14,7 +14,7 @@ class NullableObjectFieldCompatibilityTest extends TestCase
      * @param class-string<Customer|SaleDelivery|SaleDeliveryUpdateInput> $class
      */
     #[DataProvider('nullableFuriganaProvider')]
-    public function test_nullableなOBJECT_FIELDSは従来どおりfalsy値をnullとして扱う(
+    public function test_nullableなFIELD_TYPESは従来どおりfalsy値をnullとして扱う(
         string $class,
         mixed $value,
     ): void {

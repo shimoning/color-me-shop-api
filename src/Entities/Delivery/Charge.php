@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  */
 class Charge extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'chargeRangesByArea' => [
             'array' => true,
             'entity' => Area::class,

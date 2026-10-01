@@ -99,8 +99,41 @@ PHP の `json_decode(..., true)` で非 list になるのは、JSON オブジェ
 list になり、`{}` と `[]` も list になる。今回の観測でオブジェクト形状は 0 箇所であり、いずれの
 形も実 API からは観測していない。
 
+## 2026-10-01 の追加観測：スカラー配列の要素の型
+
+応答側のスカラー配列のうち、要素の型を実行時に検証していなかった 3 フィールドに検証を加える判断
+（Issue #88）のため、要素の型を追加で観測した。
+
+収集日は **2026-10-01（Asia/Tokyo）**。対象と方式は上と同じテスト用ショップ、`Communicator\Request`
+による認証済みの GET である。今回は JSON をデコードし、各要素の PHP の型（`get_debug_type()`）を
+数えた。値そのものは記録しない。
+
+| HTTP | エンドポイント | パラメータ |
+| ---: | --- | --- |
+| 200 | `GET /v1/deliveries` | |
+| 200 | `GET /v1/products` | `limit=50` |
+| 200 | `GET /v1/sales` | `make_date_min=2000-01-01&limit=50` |
+| 200 | `GET /v1/sales/{sale_id}` | 上記一覧の 4 件を単体取得 |
+
+| フィールド | 観測した配列 | 要素 |
+| --- | ---: | --- |
+| `Delivery.unavailable_payment_ids` | 1 | いずれも空配列 |
+| `SaleDelivery.detail_ids` | 8 | 8 要素すべて `int` |
+| `SaleSegment.siblings_sale_ids` | 0 | 受注 4 件（一覧と単体の計 8 箇所）とも `segment` が `null` で観測できず |
+| （比較用）`Product.unavailable_payment_ids` | 7 | 1 要素が `int`、ほか 6 件は空配列 |
+| （比較用）`Product.group_ids` | 7 | 2 要素が `int`、ほか 5 件は空配列 |
+| （比較用）`Product.unavailable_delivery_ids` | 7 | いずれも空配列 |
+
+観測できた要素はすべて `int` で、公式 OpenAPI の `array` of `integer` と一致した。いずれの配列も
+`array_is_list()` が真だった。`int` 以外の要素は 1 つも観測していない。
+
+`Delivery.unavailable_payment_ids` は空配列しか観測できておらず、要素の型は実データで確かめていない。
+`siblings_sale_ids` は前回に続き未観測である。受注は既定の検索範囲に該当がないため、前回と同じく
+`make_date_min` に古い日付を指定して取得した。
+
 ## 関連
 
 - [ADR 0018: 配列フィールドのアノテーションを list に統一し、リスト形状は検証しない](adr/0018-unify-array-annotations-without-list-validation.md)
+- Issue #88
 - [ADR 0000: アーキテクチャ上の意思決定を記録する](adr/0000-record-architecture-decisions.md)
 - [公式 OpenAPI](https://api.shop-pro.jp/v1/spec/open_api.json)（2026-09-28 取得）

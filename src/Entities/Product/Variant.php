@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class Variant extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'option1' => ["allowNull" => true, 'entity' => VariantOption::class],
         'option2' => ["allowNull" => true, 'entity' => VariantOption::class],
     ];

@@ -39,7 +39,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  */
 class CustomerUpdateInput extends Entity implements RequestEntity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'furigana' => ['allowNull' => true, 'value' => Furigana::class],
         'prefId' => ['enum' => Prefecture::class],
         'sex' => ['enum' => Sex::class],

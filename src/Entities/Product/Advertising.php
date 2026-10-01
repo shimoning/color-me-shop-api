@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Constants\AdvertisingCondition;
 use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
 
@@ -15,9 +14,11 @@ use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
  */
 class Advertising extends Entity
 {
-    public const OBJECT_FIELDS = [
+    public const FIELD_TYPES = [
         'condition' => ['enum' => AdvertisingCondition::class],
         'gender' => ['enum' => AdvertisingGender::class],
+        'colors' => ['array' => true, 'scalar' => 'string'],
+        'sizes' => ['array' => true, 'scalar' => 'string'],
     ];
 
     protected string $accountId;
@@ -33,26 +34,6 @@ class Advertising extends Entity
     protected ?string $mpn;
     /** @var list<string> */
     protected array $sizes;
-
-    /** @param array<string, mixed> $data */
-    public function __construct(array $data)
-    {
-        if (isset($data['colors']) && is_array($data['colors'])) {
-            foreach ($data['colors'] as $value) {
-                if (! is_string($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, 'colors', 'string', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        if (isset($data['sizes']) && is_array($data['sizes'])) {
-            foreach ($data['sizes'] as $value) {
-                if (! is_string($value)) {
-                    throw InvalidFieldException::forArrayElement(self::class, 'sizes', 'string', new \TypeError('配列要素の型が不正です。'));
-                }
-            }
-        }
-        parent::__construct($data);
-    }
 
     /**
      * ショップアカウントID
