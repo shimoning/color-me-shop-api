@@ -1106,6 +1106,8 @@ $pagination->getOffset();
 
 旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` はいずれも従来どおり動作する (`unserialize()` の `allowed_classes` には旧名を渡すこと)。
 
+ただし 0.20.0 で `SaleUpdateInput` から `id` を削除したため、`id` を含む旧データの `SaleUpdater` (および 0.19.0 以前の `SaleUpdateInput`) を `unserialize()` すると、PHP 8.2 以降では動的プロパティの非推奨警告が出る。復元自体はでき、`id` は配列化にも送信にも使われない ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。
+
 ### フリガナの検証
 
 `Values\Furigana` の許容文字を `^[ァ-ヶー 　]*$` とし、空文字を受け付けるようにした。従来は空文字を拒否していた。公式 OpenAPI が許容する `ヷヸヹヺ` は実 API が 422 で拒否するため含めない (2026-09-25 の観測)。

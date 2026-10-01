@@ -36,8 +36,10 @@ body から `id` を外してよいかを確かめるため、2026-10-01 に実�
 [受注更新の body に含めた `id` の実測記録](../api-sale-update-id-observation.md)にある。出典: `c56b3cd`。
 
 - body の `id` の有無で、実 API の挙動は変わらなかった
-- body に存在しない ID を入れても 200 で、path の受注として処理された。**実 API は body の `id` を
-  見ておらず、更新対象は path だけで決まる**
+- body に存在しない ID を入れても 200 で、path の受注として処理された。**body の `id` は、HTTP
+  ステータス・応答・結果のいずれにも影響しなかった**
+- ただし 3 ケースとも値を変えない更新である。body の `id` が別の受注を指したまま値を変更した場合に、
+  変更がどちらに入るかは観測していない
 
 ## 判断
 
@@ -45,7 +47,8 @@ body から `id` を外してよいかを確かめるため、2026-10-01 に実�
   `update(int|string $id, SaleUpdateInput $input, ?string $accessToken = null)` とし、他の Service の
   `update()` と同じ形にする。path は引数の ID から組み立てる。出典: `de62e14`。
 - **`SaleUpdateInput` から `id` プロパティと `getId()` を削除する。** 入力クラスは要求 body に対応する
-  フィールドだけを持つ。body に `id` は含まれなくなる。実 API が body の `id` を見ないことを確かめた。
+  フィールドだけを持つ。body に `id` は含まれなくなる。body の `id` を外しても実 API の挙動が変わらない
+  ことを確かめた。
   出典: `c56b3cd`、`de62e14`。
 - `SaleUpdateInput::convert(Sale $sale)` は `id` を設定しない。受注 ID は取得した受注の `getId()` などから
   メソッド引数で渡す。出典: `de62e14`。
