@@ -32,6 +32,25 @@ class RequestArraySetterTest extends TestCase
         $entity->{$setter}([3 => $element]);
     }
 
+    #[DataProvider('requestArraySetterProvider')]
+    public function test_FIELD_TYPESの配列フィールドを更新するsetterは文字列キーの配列を拒否する(
+        string $class,
+        string $setter,
+        string $apiField,
+        string $elementType,
+    ): void {
+        $entity = new $class([]);
+        $element = new $elementType([]);
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            $class . " の API フィールド『{$apiField}』が不正です。"
+            . "list<{$elementType}> を期待しましたが array でした。",
+        );
+
+        $entity->{$setter}(['value' => $element]);
+    }
+
     /** @return array<string, array{class-string<Entity>, string, string, class-string<Entity>}> */
     public static function requestArraySetterProvider(): array
     {

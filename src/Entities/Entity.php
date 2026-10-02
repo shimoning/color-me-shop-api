@@ -145,7 +145,7 @@ class Entity
     ): void {
         $reflection = self::property(static::class, $property);
         $expected = self::expectedType($reflection->getType(), $reflection);
-        $this->assertRequestArrayIsList($objectField, $apiField, $value);
+        $this->assertRequestArrayIsList($objectField, $apiField, $value, true);
 
         try {
             $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
@@ -192,6 +192,7 @@ class Entity
         mixed $objectField,
         string $apiField,
         mixed $value,
+        bool $allowStringKeyedSingleEntity,
     ): void {
         if (
             ! ($this instanceof RequestEntity || self::$_requestContext)
@@ -202,7 +203,11 @@ class Entity
         ) {
             return;
         }
-        if (isset($objectField['entity']) && self::hasOnlyStringKeys($value)) {
+        if (
+            $allowStringKeyedSingleEntity
+            && isset($objectField['entity'])
+            && self::hasOnlyStringKeys($value)
+        ) {
             return;
         }
 
@@ -228,6 +233,7 @@ class Entity
             static::FIELD_TYPES[$property] ?? null,
             static::apiFieldName($property),
             $value,
+            false,
         );
     }
 
