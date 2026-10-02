@@ -399,6 +399,22 @@ class EntityTest extends TestCase
         $this->assertSame('solo', $entity->getChildren()[0]->getLabel());
     }
 
+    public function test_要求側のarray指定entityフィールドは整数と文字列の混在キーを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            RequestComplexEntity::class . ' の API フィールド『children』が不正です。'
+            . 'list<' . NestedEntity::class . '> を期待しましたが array でした。',
+        );
+
+        new RequestComplexEntity([
+            'children' => [
+                0 => ['label' => 'first'],
+                'x' => ['label' => 'second'],
+            ],
+        ]);
+    }
+
     public function test_要求側のarray指定フィールドは空リストを受け付ける(): void
     {
         $this->assertSame([], (new RequestComplexEntity(['children' => []]))->getChildren());

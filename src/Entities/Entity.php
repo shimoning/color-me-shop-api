@@ -202,7 +202,7 @@ class Entity
         ) {
             return;
         }
-        if (isset($objectField['entity']) && static::isHash($value)) {
+        if (isset($objectField['entity']) && self::hasOnlyStringKeys($value)) {
             return;
         }
 
@@ -215,6 +215,29 @@ class Entity
                 $value,
             );
         }
+    }
+
+    /**
+     * setter から更新する要求配列フィールドがリスト形状であることを検証する。
+     *
+     * @throws InvalidFieldException 配列フィールドがリスト形状でない場合
+     */
+    protected function assertRequestArrayFieldIsList(string $property, mixed $value): void
+    {
+        $this->assertRequestArrayIsList(
+            static::FIELD_TYPES[$property] ?? null,
+            static::apiFieldName($property),
+            $value,
+        );
+    }
+
+    /** @param array<array-key, mixed> $value */
+    private static function hasOnlyStringKeys(array $value): bool
+    {
+        return \array_filter(
+            \array_keys($value),
+            static fn (int|string $key): bool => ! \is_string($key),
+        ) === [];
     }
 
     private static function arrayElementType(mixed $objectField): ?string
