@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetailCreateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -145,6 +146,28 @@ class SaleCreateInputTest extends TestCase
             ]],
             'payment_id' => 3,
         ], $input->toArrayRecursive());
+    }
+
+    public function test_明細の非リストを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            SaleCreateInput::class . ' の API フィールド『details』が不正です。'
+            . 'list<' . SaleDetailCreateInput::class . '> を期待しましたが array でした。',
+        );
+
+        new SaleCreateInput(['details' => [1 => ['product_id' => 2, 'product_num' => 1]]]);
+    }
+
+    public function test_お届け先の非リストを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            SaleCreateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
+            . 'list<' . SaleDeliveryCreateInput::class . '> を期待しましたが array でした。',
+        );
+
+        new SaleCreateInput(['sale_deliveries' => [3 => ['name' => 'x']]]);
     }
 
     public function test_未指定フィールドを送信しない(): void

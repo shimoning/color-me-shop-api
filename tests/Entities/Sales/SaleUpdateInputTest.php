@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleUpdateInputTest extends TestCase
@@ -40,6 +41,59 @@ class SaleUpdateInputTest extends TestCase
         );
     }
 
+    public function test_setterはお届け先の非リストを拒否する(): void
+    {
+        $updater = new SaleUpdateInput([]);
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
+            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+        );
+
+        $updater->setSaleDeliveries([
+            3 => new SaleDeliveryUpdateInput(['name' => 'x']),
+        ]);
+    }
+
+    public function test_setterはお届け先の文字列キー配列を拒否する(): void
+    {
+        $updater = new SaleUpdateInput([]);
+
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
+            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+        );
+
+        $updater->setSaleDeliveries(['name' => 'x']);
+    }
+
+    public function test_setterにリストを渡すとJSON配列になる(): void
+    {
+        $updater = new SaleUpdateInput([]);
+        $updater->setSaleDeliveries([
+            new SaleDeliveryUpdateInput(['name' => 'x']),
+        ]);
+
+        $this->assertSame(
+            '{"sale_deliveries":[{"name":"x"}]}',
+            \json_encode($updater->toArrayRecursive(), \JSON_THROW_ON_ERROR),
+        );
+    }
+
+    public function test_コンストラクタはお届け先の文字列キー配列を1要素として取り込む(): void
+    {
+        $updater = new SaleUpdateInput([
+            'sale_deliveries' => ['name' => 'x'],
+        ]);
+
+        $this->assertSame(
+            ['sale_deliveries' => [['name' => 'x']]],
+            $updater->toArrayRecursive(),
+        );
+    }
+
     public function test_お届け先に明示したnullは更新データに含める(): void
     {
         $delivery = new SaleDeliveryUpdateInput(['memo' => null]);
@@ -66,6 +120,17 @@ class SaleUpdateInputTest extends TestCase
             ['paid' => true, 'point_state' => 'fixed', 'sale_deliveries' => []],
             SaleUpdateInput::convert($sale)->toArrayRecursive(),
         );
+    }
+
+    public function test_お届け先の非リストを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
+            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+        );
+
+        new SaleUpdateInput(['sale_deliveries' => [3 => ['name' => 'x']]]);
     }
 
     public function test_お届け先updaterは親の欠損guardを継承する(): void

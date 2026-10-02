@@ -90,6 +90,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
      */
     public function setSaleDeliveries($saleDeliveries)
     {
+        $this->assertRequestArrayFieldIsList('saleDeliveries', $saleDeliveries);
         $this->saleDeliveries = $saleDeliveries;
         $this->markRequestField('saleDeliveries');
     }

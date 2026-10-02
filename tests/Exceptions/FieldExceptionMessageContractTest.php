@@ -26,6 +26,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\HydratedTypeMismatchEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\RequestScalarArrayEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 use Shimoning\ColorMeShopApi\Tests\Support\ExceptionCallSiteScanner;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -312,6 +313,13 @@ class FieldExceptionMessageContractTest extends TestCase
                 self::site('src/Entities/Entity.php', InvalidFieldException::class . '::for', 2),
                 static function (): void {
                     new RequiredEntity(['count' => '1']);
+                },
+                null,
+            ],
+            'InvalidFieldException::for/要求配列のリスト形状不一致' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::for', 4),
+                static function (): void {
+                    new RequestScalarArrayEntity(['ints' => [1 => 10]]);
                 },
                 null,
             ],
