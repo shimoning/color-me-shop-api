@@ -29,6 +29,9 @@ class Entity
      *
      * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、またはそれらの配列への
      * 変換を宣言する。scalar 配列は ['array' => true, 'scalar' => 'int'|'string'] とする。
+     * 単体の子 Entity または scalar の共用は
+     * ['entity' => Entity::class, 'orScalar' => 'int'|'string'] とする。
+     * entity 配列で連想配列を単一要素として包む互換形式を禁止する場合は strictList を true とする。
      * null の扱いは nullable または allowNull で指定する。
      * 子 Entity のインスタンスを渡した場合は clone せずそのまま保持する。
      * ただし要求文脈の非 RequestEntity は、厳格な検証を引き継ぐため生データから再構築する。
@@ -206,6 +209,7 @@ class Entity
         if (
             $allowStringKeyedSingleEntity
             && isset($objectField['entity'])
+            && empty($objectField['strictList'])
             && self::hasOnlyStringKeys($value)
         ) {
             return;
@@ -484,6 +488,7 @@ class Entity
     protected function build(mixed $objectField, mixed $value): mixed
     {
         self::assertScalarDeclaration($objectField);
+        self::assertOrScalarDeclaration($objectField);
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
             // nullable は falsy 値も変換するため、null だけを許すフィールドは allowNull を使う。
@@ -496,6 +501,9 @@ class Entity
 
             if (isset($objectField['entity'])) {
                 $class = $objectField['entity'];
+                if (isset($objectField['orScalar']) && self::isScalarType($value, $objectField['orScalar'])) {
+                    return $value;
+                }
                 if ($isArray) {
                     // 配列指定
                     if (static::isHash($value)) {
@@ -600,6 +608,31 @@ class Entity
         if (empty($objectField['array'])) {
             throw new \LogicException('scalar は array と組み合わせて指定してください。');
         }
+    }
+
+    private static function assertOrScalarDeclaration(mixed $objectField): void
+    {
+        if (! \is_array($objectField) || ! \array_key_exists('orScalar', $objectField)) {
+            return;
+        }
+        if (! \in_array($objectField['orScalar'], ['int', 'string'], true)) {
+            throw new \LogicException('orScalar は int または string を指定してください。');
+        }
+        if (! isset($objectField['entity'])) {
+            throw new \LogicException('orScalar は entity と組み合わせて指定してください。');
+        }
+        if (! empty($objectField['array'])) {
+            throw new \LogicException('orScalar は array と組み合わせて指定できません。');
+        }
+    }
+
+    private static function isScalarType(mixed $value, string $scalar): bool
+    {
+        return match ($scalar) {
+            'int' => \is_int($value),
+            'string' => \is_string($value),
+            default => false,
+        };
     }
 
     /**

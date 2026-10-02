@@ -44,12 +44,27 @@ class EntityContractTest extends TestCase
     {
         $cases = [];
         foreach (self::entityProvider() as $name => $case) {
-            if (\is_subclass_of($case[0], RequestEntity::class)) {
+            if (
+                \is_subclass_of($case[0], RequestEntity::class)
+                && ! isset(self::REQUIRED_CONSTRUCTOR_DATA[$case[0]])
+            ) {
                 $cases[$name] = $case;
             }
         }
 
         return $cases;
+    }
+
+    /** @var array<class-string<Entity>, array<string, mixed>> */
+    private const REQUIRED_CONSTRUCTOR_DATA = [
+        \Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput::class => ['increment' => 0],
+        \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class => ['stocks' => 0],
+    ];
+
+    /** @param class-string<Entity> $class */
+    private static function newEntity(string $class): Entity
+    {
+        return new $class(self::REQUIRED_CONSTRUCTOR_DATA[$class] ?? []);
     }
 
     /** @return array<string, array{class-string<Entity>, string}> */
@@ -215,7 +230,7 @@ class EntityContractTest extends TestCase
     #[DataProvider('requestEntityProvider')]
     public function test_全てのRequestEntityは未設定フィールドをnull含め直列化しない(string $class): void
     {
-        $entity = new $class([]);
+        $entity = self::newEntity($class);
 
         $this->assertSame([], $entity->toArrayRecursive(false), $class);
     }
@@ -283,7 +298,7 @@ class EntityContractTest extends TestCase
     public function test_存在しないプロパティを参照しているゲッターがない(string $class): void
     {
         $reflection = new ReflectionClass($class);
-        $entity = new $class([]);
+        $entity = self::newEntity($class);
 
         $undefined = [];
         // 「未宣言プロパティの参照」だけを捕捉する。それ以外は false を返して
@@ -319,7 +334,7 @@ class EntityContractTest extends TestCase
     public function test_非nullableのプロパティは空のレスポンスで固有例外を投げる(string $class): void
     {
         $reflection = new ReflectionClass($class);
-        $entity = new $class([]);
+        $entity = self::newEntity($class);
 
         $checked = 0;
         foreach (self::properties($reflection) as $property) {
@@ -384,7 +399,7 @@ class EntityContractTest extends TestCase
     public function test_null許容のプロパティは空のレスポンスでもnullを返す(string $class): void
     {
         $reflection = new ReflectionClass($class);
-        $entity = new $class([]);
+        $entity = self::newEntity($class);
 
         $checked = 0;
         foreach (self::properties($reflection) as $property) {

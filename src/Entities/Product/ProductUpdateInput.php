@@ -7,7 +7,6 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 商品の更新 (PUT /v1/products/{id}) の `product` 入力。
@@ -27,8 +26,9 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * `unlisted` は実測で書き込みできなかったため入力フィールドに持たない。
  *
  * 値は API の生の形で指定する。enum はバッキング値の文字列または同じ enum のインスタンス
- * (バッキング値へ正規化して送信する)、`stocks` は整数または `['increment' => int]`、`variants` は
- * `option1_value` / `option2_value` / `stocks` を持つ連想配列のリストで、いずれもそのまま送信される。
+ * (バッキング値へ正規化して送信する)、`stocks` は整数または ProductStocksIncrementInput、`variants` は
+ * ProductVariantInput のリストへ変換され、再帰的に API の object 形状で送信される。いずれも
+ * 従来どおり連想配列でも指定でき、構築済みの各 Entity も指定できる。
  *
  * 要求側は厳格に検証する (ADR 0013 / 0014)。`group_ids` の要素は int、`stocks` の object は
  * `increment` キーだけを持つ int、`variants` は上記3キーのいずれかを持ち他のキーを持たない object の
@@ -44,6 +44,18 @@ class ProductUpdateInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
+        'stocks' => [
+            'entity' => ProductStocksIncrementInput::class,
+            'orScalar' => 'int',
+            'allowNull' => true,
+        ],
+        'groupIds' => ['array' => true, 'scalar' => 'int'],
+        'variants' => [
+            'array' => true,
+            'entity' => ProductVariantInput::class,
+            'strictList' => true,
+            'allowNull' => true,
+        ],
     ];
 
     protected ?string $name;
@@ -59,103 +71,11 @@ class ProductUpdateInput extends Entity implements RequestEntity
     protected ?string $smartphoneExpl;
     protected ?ProductDisplayState $displayState;
     protected ?bool $stockManaged;
-    /** @var int|array{increment: int}|null 更新専用。整数の絶対値か increment object */
-    protected int|array|null $stocks;
+    /** 更新専用。整数の絶対値か increment object */
+    protected ProductStocksIncrementInput|int|null $stocks;
     /** @var list<int>|null 更新専用 */
     protected ?array $groupIds;
-    /** @var list<array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}}>|null 更新専用 */
+    /** @var list<ProductVariantInput>|null 更新専用 */
     protected ?array $variants;
     protected ?bool $taxReduced;
-
-    private const STOCKS_SHAPE = 'int|array{increment: int}';
-    private const VARIANT_SHAPE = 'array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}}';
-
-    /**
-     * @param array<string, mixed> $data
-     * @throws InvalidFieldException ネストした配列・object の要素型や形状が公式 OpenAPI の定義に合わない場合
-     */
-    public function __construct(array $data)
-    {
-        if (isset($data['group_ids']) && \is_array($data['group_ids'])) {
-            self::assertIntList('group_ids', $data['group_ids']);
-        }
-        if (isset($data['stocks']) && \is_array($data['stocks'])) {
-            self::assertIncrement('stocks', $data['stocks']);
-        }
-        if (isset($data['variants']) && \is_array($data['variants'])) {
-            self::assertVariants($data['variants']);
-        }
-        parent::__construct($data);
-    }
-
-    /** @param array<mixed> $value */
-    private static function assertIntList(string $apiField, array $value): void
-    {
-        if (! \array_is_list($value)) {
-            throw InvalidFieldException::for(self::class, $apiField, 'list<int>', $value);
-        }
-        foreach ($value as $element) {
-            if (! \is_int($element)) {
-                throw InvalidFieldException::forArrayElement(
-                    self::class,
-                    $apiField,
-                    'int',
-                    new \TypeError('配列要素の型が不正です。'),
-                );
-            }
-        }
-    }
-
-    /**
-     * `stocks` の object 形状は `{"increment": int}` だけで、他のキーや型は受け付けない。
-     * @param array<mixed> $value
-     */
-    private static function assertIncrement(string $apiField, array $value): void
-    {
-        if (\array_keys($value) !== ['increment'] || ! \is_int($value['increment'])) {
-            throw InvalidFieldException::for(self::class, $apiField, self::STOCKS_SHAPE, $value);
-        }
-    }
-
-    /** @param array<mixed> $value */
-    private static function assertVariants(array $value): void
-    {
-        if (! \array_is_list($value)) {
-            throw InvalidFieldException::for(self::class, 'variants', 'list<' . self::VARIANT_SHAPE . '>', $value);
-        }
-        foreach ($value as $variant) {
-            if (! \is_array($variant) || ! self::isVariantShape($variant)) {
-                throw InvalidFieldException::forArrayElement(
-                    self::class,
-                    'variants',
-                    self::VARIANT_SHAPE,
-                    new \TypeError('配列要素の型が不正です。'),
-                );
-            }
-        }
-    }
-
-    /**
-     * 空の配列は JSON で object ではなく `[]` になり OpenAPI の object 定義に合わないため、要素として認めない。
-     * @param array<mixed> $variant
-     */
-    private static function isVariantShape(array $variant): bool
-    {
-        if ($variant === []) {
-            return false;
-        }
-        foreach ($variant as $key => $element) {
-            $valid = match ($key) {
-                'option1_value', 'option2_value' => \is_string($element),
-                'stocks' => \is_int($element)
-                    || (\is_array($element) && \array_keys($element) === ['increment'] && \is_int($element['increment'])),
-                default => false,
-            };
-            if (! $valid) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }

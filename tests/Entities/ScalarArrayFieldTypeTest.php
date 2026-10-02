@@ -20,9 +20,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 class ScalarArrayFieldTypeTest extends TestCase
 {
     /** @var array<string, string> 宣言へ移せないプロパティと理由 */
-    private const EXCLUDED_PROPERTIES = [
-        'Product\\ProductUpdateInput::$groupIds' => '要素型に加えて array_is_list() でリスト形状を検証するため',
-    ];
+    private const EXCLUDED_PROPERTIES = [];
 
     #[DataProvider('newScalarArrayProvider')]
     public function test_未検証だったscalar配列の不正要素を拒否する(

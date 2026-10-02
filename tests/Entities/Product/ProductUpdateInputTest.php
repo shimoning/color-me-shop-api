@@ -6,7 +6,9 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -67,6 +69,35 @@ class ProductUpdateInputTest extends TestCase
         $input = new ProductUpdateInput(['stocks' => ['increment' => -1]]);
 
         $this->assertSame(['stocks' => ['increment' => -1]], $input->toArrayRecursive());
+    }
+
+    public function test_stocksとvariantsは構築済みEntityも受け付ける(): void
+    {
+        $stocks = new ProductStocksIncrementInput(['increment' => 5]);
+        $variant = new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3]);
+        $input = new ProductUpdateInput(['stocks' => $stocks, 'variants' => [$variant]]);
+
+        $this->assertSame([
+            'stocks' => ['increment' => 5],
+            'variants' => [['option1_value' => 'S', 'stocks' => 3]],
+        ], $input->toArrayRecursive());
+    }
+
+    public function test_group_idsの不正要素は共通scalar配列メッセージを返す(): void
+    {
+        try {
+            new ProductUpdateInput(['group_ids' => [301, '302']]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ProductUpdateInput::class . " の API フィールド『group_ids』が不正です。"
+                . '配列要素を int に変換できませんでした。原因: 配列要素の型が不正です。',
+                $exception->getMessage(),
+            );
+            $this->assertSame('配列要素が int ではありません。', $exception->getPrevious()?->getMessage());
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
     #[DataProvider('invalidFieldProvider')]

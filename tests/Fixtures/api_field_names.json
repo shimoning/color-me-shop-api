@@ -521,6 +521,14 @@
         "tax_reduced",
         "variants"
     ],
+    "Product\\ProductStocksIncrementInput": [
+        "increment"
+    ],
+    "Product\\ProductVariantInput": [
+        "option1_value",
+        "option2_value",
+        "stocks"
+    ],
     "Product\\VariantUpdateInput": [
         "few_num",
         "model_number",

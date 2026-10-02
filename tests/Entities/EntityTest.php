@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
+use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Constants\MailState;
@@ -399,6 +400,24 @@ class EntityTest extends TestCase
         $this->assertSame('solo', $entity->getChildren()[0]->getLabel());
     }
 
+    public function test_strictList指定のentity配列は文字列キーの連想配列を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('list<' . NestedEntity::class . '> を期待しましたが array でした。');
+
+        new class(['children' => ['label' => 'solo']]) extends Entity implements RequestEntity {
+            public const FIELD_TYPES = [
+                'children' => [
+                    'array' => true,
+                    'entity' => NestedEntity::class,
+                    'strictList' => true,
+                ],
+            ];
+            /** @var list<NestedEntity> */
+            protected array $children;
+        };
+    }
+
     public function test_要求側のarray指定entityフィールドは整数と文字列の混在キーを拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -783,6 +802,77 @@ class EntityTest extends TestCase
             public const FIELD_TYPES = ['value' => ['scalar' => 'int']];
             protected int $value;
         };
+    }
+
+    // --- FIELD_TYPES: entity or scalar --------------------------------
+
+    public function test_entity_orScalarはscalarをそのまま保持する(): void
+    {
+        $entity = new class(['child' => 1]) extends Entity {
+            public const FIELD_TYPES = [
+                'child' => ['entity' => NestedEntity::class, 'orScalar' => 'int'],
+            ];
+            protected NestedEntity|int $child;
+        };
+
+        $this->assertSame(1, $entity->toArrayRecursive()['child']);
+    }
+
+    public function test_entity_orScalarは配列をEntityへ変換し既存instanceを受け付ける(): void
+    {
+        $instance = new NestedEntity(['label' => 'instance']);
+        $fromArray = new class(['child' => ['label' => 'array']]) extends Entity {
+            public const FIELD_TYPES = [
+                'child' => ['entity' => NestedEntity::class, 'orScalar' => 'int'],
+            ];
+            protected NestedEntity|int $child;
+        };
+        $fromInstance = new class(['child' => $instance]) extends Entity {
+            public const FIELD_TYPES = [
+                'child' => ['entity' => NestedEntity::class, 'orScalar' => 'int'],
+            ];
+            protected NestedEntity|int $child;
+        };
+
+        $this->assertSame(['label' => 'array'], $fromArray->toArrayRecursive()['child']);
+        $this->assertSame(['label' => 'instance'], $fromInstance->toArrayRecursive()['child']);
+    }
+
+    public function test_entity_orScalarは応答側でもどちらにも変換できない値を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new class(['child' => 'invalid']) extends Entity {
+            public const FIELD_TYPES = [
+                'child' => ['entity' => NestedEntity::class, 'orScalar' => 'int'],
+            ];
+            protected NestedEntity|int $child;
+        };
+    }
+
+    #[DataProvider('invalidEntityOrScalarDeclarationProvider')]
+    public function test_entity_orScalarの不正な宣言はLogicExceptionになる(array $declaration): void
+    {
+        $this->expectException(\LogicException::class);
+
+        new class(['child' => 1], $declaration) extends Entity {
+            /** @param array<string, mixed> $declaration */
+            public function __construct(array $data, array $declaration)
+            {
+                // 匿名クラスの定数は動的に差し替えられないため、build() の宣言検証を直接通す。
+                $this->build($declaration, $data['child']);
+            }
+        };
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function invalidEntityOrScalarDeclarationProvider(): array
+    {
+        return [
+            'unsupported scalar' => [['entity' => NestedEntity::class, 'orScalar' => 'float']],
+            'without entity' => [['orScalar' => 'int']],
+            'with array' => [['array' => true, 'entity' => NestedEntity::class, 'orScalar' => 'int']],
+        ];
     }
 
     public function test_array指定のenumフィールドに未知の値があると要素型と原因を示す(): void
