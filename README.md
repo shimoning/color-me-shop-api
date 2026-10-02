@@ -462,7 +462,7 @@ $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API �
 要求側 Entity は明示したフィールドだけを送信する。JSON ボディの入力 Entity はコンストラクタ配列で
 明示した `null` も送信し、指定しなかったフィールドは送信しない。各種検索条件 Entity も未指定フィールドを
 除外するが、GET クエリでは `http_build_query()` の仕様により明示した `null` も送信されない。
-要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと (0.22.0 以降、[ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。
+要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時や setter での設定時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと (0.22.0 以降、[ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。ただし入れ子の入力の配列 (`details` / `sale_deliveries` など) に、すべてのキーが文字列の連想配列を 1 つ渡した場合は、後方互換のため要素 1 件として扱う。
 
 ```php
 $saleOrErrors = $client->getSale($saleId);
