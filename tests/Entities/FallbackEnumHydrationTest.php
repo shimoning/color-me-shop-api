@@ -154,6 +154,28 @@ class FallbackEnumHydrationTest extends TestCase
         $this->assertSame(['child' => ['sex' => 'male']], $request->toArrayRecursive());
     }
 
+    public function test_要求Entityは応答文脈で構築した子の非リスト配列も再構築時に拒否する(): void
+    {
+        $child = new NestedChild(['states' => [1 => 'male']]);
+
+        try {
+            new NestedRequestRoot(['child' => $child]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertStringContainsString('API フィールド『child』', $exception->getMessage());
+            $previous = $exception->getPrevious();
+            $this->assertInstanceOf(InvalidFieldException::class, $previous);
+            $this->assertSame(
+                NestedChild::class . ' の API フィールド『states』が不正です。'
+                . 'list<' . Sex::class . '> を期待しましたが array でした。',
+                $previous->getMessage(),
+            );
+
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
     public function test_要求Entityの配列内の未マークの子でも未知のenum値を拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -293,10 +315,13 @@ final class NestedChild extends Entity
 {
     public const FIELD_TYPES = [
         'sex' => ['enum' => Sex::class],
+        'states' => ['array' => true, 'enum' => Sex::class],
         'grandchild' => ['entity' => NestedGrandchild::class],
     ];
 
     protected Sex $sex;
+    /** @var list<Sex> */
+    protected array $states;
     protected NestedGrandchild $grandchild;
 }
 

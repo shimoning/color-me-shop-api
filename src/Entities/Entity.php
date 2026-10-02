@@ -32,6 +32,7 @@ class Entity
      * null の扱いは nullable または allowNull で指定する。
      * 子 Entity のインスタンスを渡した場合は clone せずそのまま保持する。
      * ただし要求文脈の非 RequestEntity は、厳格な検証を引き継ぐため生データから再構築する。
+     * 要求文脈では array フィールドに連続した整数キーのリストを要求する。
      * API のフィールド名との対応は FIELD_NAMES に定義する。
      */
     const FIELD_TYPES = [];
@@ -144,6 +145,7 @@ class Entity
     ): void {
         $reflection = self::property(static::class, $property);
         $expected = self::expectedType($reflection->getType(), $reflection);
+        $this->assertRequestArrayIsList($objectField, $apiField, $value);
 
         try {
             $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
@@ -174,6 +176,43 @@ class Entity
                 $expected,
                 $hydrated,
                 $error,
+            );
+        }
+    }
+
+    /**
+     * 要求側で JSON object になる非リスト配列を、要素変換より先に拒否する。
+     *
+     * entity 配列の文字列キーは、単一 Entity の入力を配列へ包む既存形式として扱う。
+     * value・enum・scalar 配列にはその互換形式がないため、文字列キーも拒否する。
+     *
+     * @throws InvalidFieldException 配列フィールドがリスト形状でない場合
+     */
+    private function assertRequestArrayIsList(
+        mixed $objectField,
+        string $apiField,
+        mixed $value,
+    ): void {
+        if (
+            ! ($this instanceof RequestEntity || self::$_requestContext)
+            || ! \is_array($value)
+            || ! \is_array($objectField)
+            || empty($objectField['array'])
+            || \array_is_list($value)
+        ) {
+            return;
+        }
+        if (isset($objectField['entity']) && static::isHash($value)) {
+            return;
+        }
+
+        $elementType = self::arrayElementType($objectField);
+        if ($elementType !== null) {
+            throw InvalidFieldException::for(
+                static::class,
+                $apiField,
+                'list<' . $elementType . '>',
+                $value,
             );
         }
     }

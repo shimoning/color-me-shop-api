@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleUpdateInputTest extends TestCase
@@ -66,6 +67,17 @@ class SaleUpdateInputTest extends TestCase
             ['paid' => true, 'point_state' => 'fixed', 'sale_deliveries' => []],
             SaleUpdateInput::convert($sale)->toArrayRecursive(),
         );
+    }
+
+    public function test_お届け先の非リストを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
+            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+        );
+
+        new SaleUpdateInput(['sale_deliveries' => [3 => ['name' => 'x']]]);
     }
 
     public function test_お届け先updaterは親の欠損guardを継承する(): void

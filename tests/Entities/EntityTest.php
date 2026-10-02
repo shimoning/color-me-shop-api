@@ -31,6 +31,8 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\InheritedStaticFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PromotedReadonlyFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ProtectedShadowingPrivateFieldEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\RequestComplexEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\RequestScalarArrayEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\StaticShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ScalarArrayEntity;
 
@@ -346,6 +348,63 @@ class EntityTest extends TestCase
         );
     }
 
+    public function test_応答側のarray指定entityフィールドは非連続キーを保持する(): void
+    {
+        $entity = new ComplexEntity([
+            'children' => [1 => ['label' => 'x'], 3 => ['label' => 'y']],
+        ]);
+
+        $this->assertSame([1, 3], \array_keys($entity->getChildren()));
+        $this->assertSame(
+            [1 => ['label' => 'x'], 3 => ['label' => 'y']],
+            $entity->toArrayRecursive()['children'],
+        );
+    }
+
+    #[DataProvider('nonListRequestObjectArrayProvider')]
+    public function test_要求側のarray指定objectフィールドは整数キーの非リストを拒否する(
+        string $field,
+        array $value,
+        string $elementType,
+    ): void {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            RequestComplexEntity::class . " の API フィールド『{$field}』が不正です。"
+            . "list<{$elementType}> を期待しましたが array でした。",
+        );
+
+        new RequestComplexEntity([$field => $value]);
+    }
+
+    /** @return array<string, array{string, array<int, mixed>, class-string}> */
+    public static function nonListRequestObjectArrayProvider(): array
+    {
+        return [
+            'entityの開始キーが1' => ['children', [1 => ['label' => 'x']], NestedEntity::class],
+            'entityのキー順が非連続' => [
+                'children',
+                [2 => ['label' => 'x'], 0 => ['label' => 'y']],
+                NestedEntity::class,
+            ],
+            'value' => ['limits', [1 => 10], Limit::class],
+            'enum' => ['states', [1 => 'sent'], MailState::class],
+        ];
+    }
+
+    public function test_要求側のarray指定entityフィールドは文字列キーの連想配列を単一要素に包む(): void
+    {
+        $entity = new RequestComplexEntity(['children' => ['label' => 'solo']]);
+
+        $this->assertCount(1, $entity->getChildren());
+        $this->assertSame('solo', $entity->getChildren()[0]->getLabel());
+    }
+
+    public function test_要求側のarray指定フィールドは空リストを受け付ける(): void
+    {
+        $this->assertSame([], (new RequestComplexEntity(['children' => []]))->getChildren());
+        $this->assertSame([], (new RequestScalarArrayEntity(['ints' => []]))->toArray()['ints']);
+    }
+
     public function test_entity指定のフィールドは異なるクラスのインスタンスを拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -598,6 +657,27 @@ class EntityTest extends TestCase
         $entity = new ScalarArrayEntity(['ints' => [2 => 10, 5 => 20]]);
 
         $this->assertSame([2 => 10, 5 => 20], $entity->toArray()['ints']);
+    }
+
+    #[DataProvider('nonListRequestScalarArrayProvider')]
+    public function test_要求側のscalar配列は非リストを拒否する(array $value): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(
+            RequestScalarArrayEntity::class . ' の API フィールド『ints』が不正です。'
+            . 'list<int> を期待しましたが array でした。',
+        );
+
+        new RequestScalarArrayEntity(['ints' => $value]);
+    }
+
+    /** @return array<string, array{array<int|string, int>}> */
+    public static function nonListRequestScalarArrayProvider(): array
+    {
+        return [
+            '整数キーの飛び番' => [[1 => 10]],
+            '文字列キー' => [['first' => 10]],
+        ];
     }
 
     #[DataProvider('invalidScalarArrayElementProvider')]
