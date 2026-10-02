@@ -81,7 +81,7 @@ class ProductCreateInputTest extends TestCase
 
     /** @param class-string<ProductCreateInput|ProductUpdateInput> $class */
     #[DataProvider('productInputProvider')]
-    public function test_明示したnullはクリア要求として送信する(string $class): void
+    public function test_明示したnullも送信する(string $class): void
     {
         $input = new $class(['sales_price' => null, 'name' => '商品']);
 

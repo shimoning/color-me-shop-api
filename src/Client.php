@@ -199,8 +199,9 @@ class Client
 
     /**
      * 商品を作成する。実測では `name` だけで作成できる。
-     * 更新専用の `category_id_small` / `stocks` / `group_ids` / `variants` は作成時に指定できない。
-     * 実 API はこれらを送っても黙って無視する (2026-10-02、docs/api-product-structure.md)。
+     * 更新専用の `category_id_small` / `stocks` / `group_ids` / `variants` は `ProductCreateInput` の
+     * 項目にない。コンストラクタに渡しても宣言のないキーとして無視され、送信されない。実 API も、
+     * これらを作成時に送ると反映せず、エラーにもしない (2026-10-02、docs/api-product-structure.md)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
