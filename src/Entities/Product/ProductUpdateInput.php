@@ -10,11 +10,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
- * 商品の作成 (POST /v1/products) と更新 (PUT /v1/products/{id}) の `product` 入力。
- *
- * 公式 OpenAPI の両 `product` object の和集合を表し、作成と更新で共用する (ADR 0014)。
- * 更新側にだけある `category_id_small` / `stocks` / `group_ids` / `variants` を含む。
- * どの操作でどのフィールドが有効かは公式 API 契約に従って利用者が選ぶ。
+ * 商品の更新 (PUT /v1/products/{id}) の `product` 入力。
  *
  * 直列化の契約:
  * - コンストラクタ配列で明示したフィールドだけを送信する。
@@ -44,7 +40,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */
-class ProductInput extends Entity implements RequestEntity
+class ProductUpdateInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],

@@ -23,7 +23,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
@@ -71,12 +72,12 @@ class ProductClientWriteTest extends TestCase
 
         return [
             'createProduct' => [
-                'createProduct', [new ProductInput(['name' => '商品'])],
+                'createProduct', [new ProductCreateInput(['name' => '商品'])],
                 200, '{"product":{"id":101,"name":"商品"}}', 'POST', '/v1/products', ProductEntity::class,
                 '{"product":{"name":"商品"}}',
             ],
             'updateProduct' => [
-                'updateProduct', [101, new ProductInput(['sales_price' => null])],
+                'updateProduct', [101, new ProductUpdateInput(['sales_price' => null])],
                 200, '{"product":{"id":101}}', 'PUT', '/v1/products/101', ProductEntity::class,
                 '{"product":{"sales_price":null}}',
             ],
@@ -179,7 +180,7 @@ class ProductClientWriteTest extends TestCase
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
         $client = new Client('token', $mock->client());
 
-        $errors = $client->updateProduct(101, new ProductInput(['display_state' => 'hidden']));
+        $errors = $client->updateProduct(101, new ProductUpdateInput(['display_state' => 'hidden']));
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame(422, $errors->getResponse()->getStatus());

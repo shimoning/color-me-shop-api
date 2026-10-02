@@ -52,7 +52,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory as SmallCategoryEnti
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput as ProductCategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput as ProductCategoryChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput as ProductVariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Option as ProductOptionEntity;
@@ -198,13 +199,15 @@ class Client
 
     /**
      * 商品を作成する。実測では `name` だけで作成できる。
+     * 更新専用の `category_id_small` / `stocks` / `group_ids` / `variants` は作成時に指定できない。
+     * 実 API はこれらを送っても黙って無視する (2026-10-02、docs/api-product-structure.md)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function createProduct(ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    public function createProduct(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
         return $this->productService($accessToken)->create($input, $accessToken);
     }
@@ -217,7 +220,7 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function updateProduct(int|string $id, ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    public function updateProduct(int|string $id, ProductUpdateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
         return $this->productService($accessToken)->update($id, $input, $accessToken);
     }

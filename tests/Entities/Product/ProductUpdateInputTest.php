@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
-class ProductInputTest extends TestCase
+class ProductUpdateInputTest extends TestCase
 {
-    public function test_作成と更新の全フィールドをproductボディ形式へ変換する(): void
+    public function test_更新の全フィールドをproductボディ形式へ変換する(): void
     {
-        $input = new ProductInput([
+        $input = new ProductUpdateInput([
             'name' => 'Tシャツ',
             'price' => 1600,
             'category_id_big' => 1139,
@@ -63,68 +62,25 @@ class ProductInputTest extends TestCase
         ], $input->toArrayRecursive());
     }
 
-    public function test_未指定のフィールドは送信しない(): void
-    {
-        $this->assertSame([], (new ProductInput([]))->toArrayRecursive());
-        $this->assertSame(['name' => '名前だけ'], (new ProductInput(['name' => '名前だけ']))->toArrayRecursive());
-    }
-
-    public function test_明示したnullはクリア要求として送信する(): void
-    {
-        $input = new ProductInput(['sales_price' => null, 'name' => '商品']);
-
-        $this->assertSame(['name' => '商品', 'sales_price' => null], $input->toArrayRecursive());
-        $this->assertSame(['name' => '商品', 'sales_price' => null], $input->toArrayRecursive(false));
-    }
-
     public function test_stocksはincrementオブジェクトも受け付ける(): void
     {
-        $input = new ProductInput(['stocks' => ['increment' => -1]]);
+        $input = new ProductUpdateInput(['stocks' => ['increment' => -1]]);
 
         $this->assertSame(['stocks' => ['increment' => -1]], $input->toArrayRecursive());
     }
 
-    public function test_display_stateは実測で受理された4値だけを受け付ける(): void
-    {
-        foreach (['showing', 'hidden', 'showing_for_members', 'sale_for_members'] as $state) {
-            $this->assertSame(['display_state' => $state], (new ProductInput(['display_state' => $state]))->toArrayRecursive());
-        }
-
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('display_state');
-        new ProductInput(['display_state' => 'members_only']);
-    }
-
-    public function test_display_stateはenumインスタンスでも指定できバッキング値で送信する(): void
-    {
-        $input = new ProductInput(['display_state' => ProductDisplayState::HIDDEN]);
-
-        $this->assertSame(ProductDisplayState::HIDDEN, $input->toArray()['display_state']);
-        $this->assertSame(['display_state' => 'hidden'], $input->toArrayRecursive());
-    }
-
-    public function test_書き込みできないunlistedは入力フィールドに持たない(): void
-    {
-        $input = new ProductInput(['unlisted' => true]);
-
-        $this->assertArrayNotHasKey('unlisted', $input->toArray());
-        $this->assertSame([], $input->toArrayRecursive());
-    }
-
     #[DataProvider('invalidFieldProvider')]
-    public function test_不正な型を拒否する(string $field, mixed $value): void
+    public function test_更新専用フィールドの不正な型を拒否する(string $field, mixed $value): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage($field);
-        new ProductInput([$field => $value]);
+        new ProductUpdateInput([$field => $value]);
     }
 
     /** @return array<string, array{string, mixed}> */
     public static function invalidFieldProvider(): array
     {
         return [
-            'price string' => ['price', '1600'],
-            'stock_managed int' => ['stock_managed', 1],
             'stocks string' => ['stocks', '10'],
             'group_ids scalar' => ['group_ids', 301],
             'variants scalar' => ['variants', 'S'],
@@ -134,7 +90,7 @@ class ProductInputTest extends TestCase
     #[DataProvider('validNestedShapeProvider')]
     public function test_ネストした入力値の正しい形状を受け付ける(string $field, mixed $value): void
     {
-        $this->assertSame([$field => $value], (new ProductInput([$field => $value]))->toArrayRecursive());
+        $this->assertSame([$field => $value], (new ProductUpdateInput([$field => $value]))->toArrayRecursive());
     }
 
     /** @return array<string, array{string, mixed}> */
@@ -157,7 +113,7 @@ class ProductInputTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage($field);
-        new ProductInput([$field => $value]);
+        new ProductUpdateInput([$field => $value]);
     }
 
     /** @return array<string, array{string, mixed}> */

@@ -398,37 +398,37 @@ class FieldExceptionMessageContractTest extends TestCase
                 \UnexpectedValueException::class,
             ],
             'InvalidFieldException::for/商品入力のgroup_idsのリスト形状不一致' => [
-                self::site('src/Entities/Product/ProductInput.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Product/ProductUpdateInput.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductInput(['group_ids' => ['a' => 301]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput(['group_ids' => ['a' => 301]]);
                 },
                 null,
             ],
             'InvalidFieldException::forArrayElement/商品入力のgroup_ids要素' => [
-                self::site('src/Entities/Product/ProductInput.php', InvalidFieldException::class . '::forArrayElement', 1),
+                self::site('src/Entities/Product/ProductUpdateInput.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductInput(['group_ids' => ['301']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput(['group_ids' => ['301']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::for/商品入力のstocksのobject形状不一致' => [
-                self::site('src/Entities/Product/ProductInput.php', InvalidFieldException::class . '::for', 2),
+                self::site('src/Entities/Product/ProductUpdateInput.php', InvalidFieldException::class . '::for', 2),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductInput(['stocks' => ['incr' => 1]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput(['stocks' => ['incr' => 1]]);
                 },
                 null,
             ],
             'InvalidFieldException::for/商品入力のvariantsのリスト形状不一致' => [
-                self::site('src/Entities/Product/ProductInput.php', InvalidFieldException::class . '::for', 3),
+                self::site('src/Entities/Product/ProductUpdateInput.php', InvalidFieldException::class . '::for', 3),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductInput(['variants' => ['option1_value' => 'S']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput(['variants' => ['option1_value' => 'S']]);
                 },
                 null,
             ],
             'InvalidFieldException::forArrayElement/商品入力のvariants要素' => [
-                self::site('src/Entities/Product/ProductInput.php', InvalidFieldException::class . '::forArrayElement', 2),
+                self::site('src/Entities/Product/ProductUpdateInput.php', InvalidFieldException::class . '::forArrayElement', 2),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductInput(['variants' => [['weight' => 1]]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput(['variants' => [['weight' => 1]]]);
                 },
                 \TypeError::class,
             ],

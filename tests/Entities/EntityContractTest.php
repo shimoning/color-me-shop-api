@@ -84,8 +84,12 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Product\MetaTagInput::class,
                 'title',
             ],
-            'Product\\ProductInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\ProductInput::class,
+            'Product\\ProductCreateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput::class,
+                'sales_price',
+            ],
+            'Product\\ProductUpdateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput::class,
                 'sales_price',
             ],
             'Product\\SearchParameters' => [

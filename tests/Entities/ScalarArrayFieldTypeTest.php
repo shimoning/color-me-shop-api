@@ -21,7 +21,7 @@ class ScalarArrayFieldTypeTest extends TestCase
 {
     /** @var array<string, string> 宣言へ移せないプロパティと理由 */
     private const EXCLUDED_PROPERTIES = [
-        'Product\\ProductInput::$groupIds' => '要素型に加えて array_is_list() でリスト形状を検証するため',
+        'Product\\ProductUpdateInput::$groupIds' => '要素型に加えて array_is_list() でリスト形状を検証するため',
     ];
 
     #[DataProvider('newScalarArrayProvider')]

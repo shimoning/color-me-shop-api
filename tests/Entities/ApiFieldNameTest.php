@@ -61,6 +61,14 @@ class ApiFieldNameTest extends TestCase
         ]);
     }
 
+    public function test_商品作成更新入力をそれぞれの公式フィールド数で登録している(): void
+    {
+        $registrations = self::fixtureArray('api_field_names.json');
+
+        $this->assertCount(13, $registrations['Product\\ProductCreateInput']);
+        $this->assertCount(17, $registrations['Product\\ProductUpdateInput']);
+    }
+
     /** @param array<string, list<string>> $registrations */
     private static function assertRegisteredFieldsNotEmpty(array $registrations): void
     {

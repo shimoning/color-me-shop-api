@@ -26,7 +26,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
@@ -54,7 +55,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::productJson());
 
-        $product = (new Product('token', $mock->client()))->create(new ProductInput([
+        $product = (new Product('token', $mock->client()))->create(new ProductCreateInput([
             'name' => 'テスト商品', 'display_state' => 'hidden', 'stock_managed' => false,
         ]));
 
@@ -74,7 +75,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::productJson());
 
-        $product = (new Product('token', $mock->client()))->update(101, new ProductInput([
+        $product = (new Product('token', $mock->client()))->update(101, new ProductUpdateInput([
             'sales_price' => null, 'display_state' => 'showing',
         ]));
 
@@ -89,7 +90,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::productJson());
 
-        (new Product('token', $mock->client()))->update('101', new ProductInput([
+        (new Product('token', $mock->client()))->update('101', new ProductUpdateInput([
             'stocks' => ['increment' => 5],
             'variants' => [['option1_value' => 'S', 'stocks' => 3]],
         ]));
@@ -104,7 +105,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::productJson());
 
-        (new Product('token', $mock->client()))->update(101, new ProductInput([]));
+        (new Product('token', $mock->client()))->update(101, new ProductUpdateInput([]));
 
         $this->assertSame('{"product":{}}', $mock->body());
     }
@@ -113,7 +114,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::productJson());
 
-        (new Product('token', $mock->client()))->create(new ProductInput([]));
+        (new Product('token', $mock->client()))->create(new ProductCreateInput([]));
 
         $this->assertSame('{"product":{}}', $mock->body());
     }
@@ -123,8 +124,8 @@ class ProductWriteTest extends TestCase
         $notFound = HttpMock::json(404, '{"errors":[{"code":404100,"message":"not found","status":404}]}');
         $invalid = HttpMock::json(422, '{"errors":[{"code":422001,"field":"product.disp_flg","message":"invalid","status":422}]}');
 
-        $errors404 = (new Product('token', $notFound->client()))->update(999, new ProductInput(['name' => 'x']));
-        $errors422 = (new Product('token', $invalid->client()))->update(101, new ProductInput(['name' => 'x']));
+        $errors404 = (new Product('token', $notFound->client()))->update(999, new ProductUpdateInput(['name' => 'x']));
+        $errors422 = (new Product('token', $invalid->client()))->update(101, new ProductUpdateInput(['name' => 'x']));
 
         $this->assertInstanceOf(Errors::class, $errors404);
         $this->assertSame(404, $errors404->getResponse()->getStatus());
@@ -137,7 +138,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
 
-        $errors = (new Product('token', $mock->client()))->create(new ProductInput(['name' => 'x']));
+        $errors = (new Product('token', $mock->client()))->create(new ProductCreateInput(['name' => 'x']));
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame(2, $errors->count());
@@ -147,7 +148,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::productJson());
 
-        (new Product('token', $mock->client()))->create(new ProductInput(['name' => 'x']), 'other-token');
+        (new Product('token', $mock->client()))->create(new ProductCreateInput(['name' => 'x']), 'other-token');
 
         $this->assertSame('Bearer other-token', $mock->header('Authorization'));
     }

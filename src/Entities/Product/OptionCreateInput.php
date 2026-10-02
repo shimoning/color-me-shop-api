@@ -17,7 +17,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * required のため `null` は受け付けない。指定しなかったフィールドは送信しない (ADR 0014)。
  *
  * `values` は公式 OpenAPI で array のため、連想配列 (JSON で object になる形) は構築時に
- * `InvalidFieldException` で拒否する (ProductInput の `group_ids` / `variants` と同じ扱い)。
+ * `InvalidFieldException` で拒否する (ProductUpdateInput の `group_ids` / `variants` と同じ扱い)。
  * 各要素は required の `name` を持つ object でなければならず、空配列や `name` のない配列は
  * (`OptionValueCreateInput` が空になり JSON で `[]` として送られてしまうため) 構築時に拒否する。
  *
