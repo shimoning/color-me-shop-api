@@ -112,6 +112,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
@@ -417,6 +419,43 @@ if ($saleOrErrors instanceof Errors) {
     $saleOrErrors->getSaleDeliveries();
 }
 ```
+
+#### 受注データの作成
+カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る。2026-10-01 に必須項目を欠いた 2 種類の body で観測し、いずれも body の検証より先にこの `401` が返った。成功時の応答の形は公式 OpenAPI に基づいており、実 API では未観測である ([受注作成 API の実測記録](docs/api-sale-create-observation.md))。
+
+```php
+$input = new SaleCreateInput([
+    'payment_id' => $paymentId,
+    'details' => [
+        ['product_id' => $productId, 'product_num' => 2],
+    ],
+    'sale_deliveries' => [
+        [
+            'delivery_id' => $deliveryId,
+            'name' => '山田太郎',
+            'furigana' => 'ヤマダタロウ',
+            'postal' => '1508512',
+            'pref_id' => 13,
+            'address1' => '渋谷区桜丘町26-1',
+            'tel' => '03-1234-1234',
+        ],
+    ],
+    // 既存の顧客の受注にする場合。ゲスト購入なら氏名や住所などを配列で渡す
+    'customer' => SaleCustomerCreateInput::existing($customerId),
+]);
+
+$saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API の既定)
+```
+
+第 2 引数に `false` を渡すと、在庫を引き当てずに受注を作成する (`$client->createSale($input, false)`)。省略または `null` の場合は `reserve_stocks` を送らず、API の既定に従う。
+
+`payment_id` と `details`、`details[]` の `product_id` / `product_num`、`sale_deliveries[]` の `delivery_id` / `name` / `furigana` / `postal` / `pref_id` / `address1` / `tel` は必須で、欠けていると送信前に `Exceptions\ParameterException` を投げる。`sale_deliveries` 自体は、配送不要の商品だけの受注では省略できるため必須にしていない。
+
+入れ子 (`customer` / `sale_deliveries[]` / `details[]`) には、配列のほかに組み立て済みの入力インスタンスも渡せる。インスタンスは複製されず、そのまま保持される。
+
+`customer` に既存の顧客 ID を指定し、その顧客が会員登録済みであれば、`id` 以外の顧客情報は API に無視される。顧客の `sex` は公式 OpenAPI の定義どおり `male` / `female` だけを受け付ける。
+
+公式 OpenAPI はこの操作に認証の宣言 (`security`) を持たないが、実 API は認証を要求する。説明文に従い、必要なスコープは `write_sales` としている (スコープの要否は未検証)。
 
 #### 受注データの更新
 既存の受注から更新用エンティティを生成すると、API が必要とする現在値を引き継げる。

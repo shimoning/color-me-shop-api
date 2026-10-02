@@ -294,6 +294,24 @@ class EntityTest extends TestCase
         $this->assertSame('c', $entity->getChild()->getLabel());
     }
 
+    public function test_entity指定のフィールドは宣言クラスのインスタンスをそのまま保持する(): void
+    {
+        $child = new NestedEntity(['label' => 'c']);
+        $entity = new ComplexEntity(['child' => $child]);
+
+        $this->assertSame($child, $entity->getChild());
+        $this->assertSame(['child' => ['label' => 'c']], $entity->toArrayRecursive());
+    }
+
+    public function test_entity指定のフィールドは宣言クラスのサブクラスもそのまま保持する(): void
+    {
+        $child = new class (['label' => 'subclass']) extends NestedEntity {
+        };
+        $entity = new ComplexEntity(['child' => $child]);
+
+        $this->assertSame($child, $entity->getChild());
+    }
+
     public function test_array指定のentityフィールドはエンティティの配列に変換される(): void
     {
         $entity = new ComplexEntity(['children' => [['label' => 'x'], ['label' => 'y']]]);
@@ -301,6 +319,39 @@ class EntityTest extends TestCase
         $this->assertCount(2, $entity->getChildren());
         $this->assertContainsOnlyInstancesOf(NestedEntity::class, $entity->getChildren());
         $this->assertSame(['x', 'y'], \array_map(fn($c) => $c->getLabel(), $entity->getChildren()));
+    }
+
+    public function test_array指定のentityフィールドはインスタンスの配列をそのまま保持する(): void
+    {
+        $first = new NestedEntity(['label' => 'x']);
+        $second = new NestedEntity(['label' => 'y']);
+        $entity = new ComplexEntity(['children' => [$first, $second]]);
+
+        $this->assertSame([$first, $second], $entity->getChildren());
+    }
+
+    public function test_array指定のentityフィールドはインスタンスと配列を混在できる(): void
+    {
+        $first = new NestedEntity(['label' => 'instance']);
+        $entity = new ComplexEntity([
+            'children' => [$first, ['label' => 'array']],
+        ]);
+
+        $children = $entity->getChildren();
+        $this->assertSame($first, $children[0]);
+        $this->assertInstanceOf(NestedEntity::class, $children[1]);
+        $this->assertSame(
+            ['children' => [['label' => 'instance'], ['label' => 'array']]],
+            $entity->toArrayRecursive(),
+        );
+    }
+
+    public function test_entity指定のフィールドは異なるクラスのインスタンスを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('『child』');
+
+        new ComplexEntity(['child' => new PlainEntity(['name' => 'invalid'])]);
     }
 
     public function test_array指定でも連想配列が来たら単一要素の配列に包む(): void

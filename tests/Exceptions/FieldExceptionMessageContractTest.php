@@ -452,6 +452,19 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
+            'InvalidFieldException::for/受注作成顧客のsexが公式enum外' => [
+                self::site(
+                    'src/Entities/Sales/SaleCustomerCreateInput.php',
+                    InvalidFieldException::class . '::for',
+                    1,
+                ),
+                static function (): void {
+                    new \Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomerCreateInput([
+                        'sex' => 'not_applicable',
+                    ]);
+                },
+                null,
+            ],
             'InvalidFieldException::for/カテゴリー書き込み応答のcategoryが配列以外' => [
                 self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {

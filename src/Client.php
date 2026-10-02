@@ -26,6 +26,7 @@ use Shimoning\ColorMeShopApi\Services\Sales;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
@@ -636,6 +637,31 @@ class Client
     public function getSale(int|string $id, ?string $accessToken = null): Sale|Errors
     {
         return $this->salesService($accessToken)->one($id, $accessToken);
+    }
+
+    /**
+     * 受注データを作成する。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
+     *
+     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す
+     * (2026-10-01 実測、docs/api-sale-create-observation.md)。成功時のレスポンス形状は
+     * 公式 OpenAPI に基づき、実 API では未観測。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+     * @param SaleCreateInput $input
+     * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
+     * @param string|null $accessToken
+     * @return Sale|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createSale(
+        SaleCreateInput $input,
+        ?bool $reserveStocks = null,
+        ?string $accessToken = null,
+    ): Sale|Errors {
+        return $this->salesService($accessToken)->create($input, $reserveStocks, $accessToken);
     }
 
     /**

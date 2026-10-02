@@ -100,6 +100,15 @@ class FallbackValueHydrationTest extends TestCase
         }
     }
 
+    public function test_要求Entityは応答文脈でフォールバックした値を持つ子を再構築して拒否する(): void
+    {
+        $child = new FallbackValueEntity(['value' => self::RAW]);
+
+        $this->expectException(InvalidFieldException::class);
+
+        new FallbackValueRequestEntity(['child' => $child]);
+    }
+
     public static function requestClasses(): array
     {
         return [[SearchParameters::class], [CustomerCreateInput::class], [CustomerUpdateInput::class]];

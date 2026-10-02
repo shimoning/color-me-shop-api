@@ -136,6 +136,24 @@ class FallbackEnumHydrationTest extends TestCase
         new NestedRequestRoot(['child' => ['sex' => 'new_value']]);
     }
 
+    public function test_要求Entityは応答文脈でフォールバックした子インスタンスを再構築して拒否する(): void
+    {
+        $child = new NestedChild(['sex' => 'new_value']);
+
+        $this->expectException(InvalidFieldException::class);
+
+        new NestedRequestRoot(['child' => $child]);
+    }
+
+    public function test_要求Entityは応答文脈で構築した正常な子を再構築して直列化する(): void
+    {
+        $child = new NestedChild(['sex' => 'male']);
+        $request = new NestedRequestRoot(['child' => $child]);
+
+        $this->assertNotSame($child, $request->toArray()['child']);
+        $this->assertSame(['child' => ['sex' => 'male']], $request->toArrayRecursive());
+    }
+
     public function test_要求Entityの配列内の未マークの子でも未知のenum値を拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);

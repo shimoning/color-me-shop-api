@@ -30,6 +30,8 @@ class Entity
      * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、またはそれらの配列への
      * 変換を宣言する。scalar 配列は ['array' => true, 'scalar' => 'int'|'string'] とする。
      * null の扱いは nullable または allowNull で指定する。
+     * 子 Entity のインスタンスを渡した場合は clone せずそのまま保持する。
+     * ただし要求文脈の非 RequestEntity は、厳格な検証を引き継ぐため生データから再構築する。
      * API のフィールド名との対応は FIELD_NAMES に定義する。
      */
     const FIELD_TYPES = [];
@@ -430,14 +432,14 @@ class Entity
                     // 配列指定
                     if (static::isHash($value)) {
                         // しかし中身は連想配列
-                        return [$this->buildObject($class, $value)];
+                        return [$this->buildEntity($class, $value)];
                     } else {
                         return array_map(function ($v) use ($class) {
-                            return $this->buildObject($class, $v);
+                            return $this->buildEntity($class, $v);
                         }, $value);
                     }
                 }
-                return $this->buildObject($class, $value);
+                return $this->buildEntity($class, $value);
             }
             if (isset($objectField['value'])) {
                 $class = $objectField['value'];
@@ -490,8 +492,33 @@ class Entity
             }
         }
 
-        // 単体
+        // 単体の子 Entity をクラス名だけで宣言する従来形式。
+        if (\is_string($objectField) && \is_a($objectField, self::class, true)) {
+            return $this->buildEntity($objectField, $value);
+        }
+
         return $this->buildObject($objectField, $value);
+    }
+
+    /**
+     * 子 Entity の既存インスタンスは参照を保持する。
+     * 要求文脈の非 RequestEntity だけは、生データから再構築する。
+     *
+     * @param class-string<Entity> $class
+     */
+    private function buildEntity(string $class, mixed $value): Entity
+    {
+        if (! $value instanceof $class) {
+            return $this->buildObject($class, $value);
+        }
+        if (
+            ($this instanceof RequestEntity || self::$_requestContext)
+            && ! ($value instanceof RequestEntity)
+        ) {
+            return $this->buildObject($class, $value->getRaw());
+        }
+
+        return $value;
     }
 
     private static function assertScalarDeclaration(mixed $objectField): void
