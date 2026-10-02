@@ -818,6 +818,60 @@ class EntityTest extends TestCase
         $this->assertSame(1, $entity->toArrayRecursive()['child']);
     }
 
+    #[DataProvider('nullableEntityOrScalarProvider')]
+    public function test_entity_orScalarはnullableより優先してscalarを保持する(
+        array $declaration,
+        mixed $value,
+        mixed $expected,
+    ): void {
+        $entity = new class([]) extends Entity {
+            /** @param array<string, mixed> $declaration */
+            public function buildForTest(array $declaration, mixed $value): mixed
+            {
+                return $this->build($declaration, $value);
+            }
+        };
+
+        $this->assertSame($expected, $entity->buildForTest($declaration, $value));
+    }
+
+    /** @return array<string, array{array<string, mixed>, mixed, mixed}> */
+    public static function nullableEntityOrScalarProvider(): array
+    {
+        return [
+            'nullable int zero' => [
+                ['entity' => NestedEntity::class, 'orScalar' => 'int', 'nullable' => true],
+                0,
+                0,
+            ],
+            'allowNull int zero' => [
+                ['entity' => NestedEntity::class, 'orScalar' => 'int', 'allowNull' => true],
+                0,
+                0,
+            ],
+            'nullable string empty' => [
+                ['entity' => NestedEntity::class, 'orScalar' => 'string', 'nullable' => true],
+                '',
+                '',
+            ],
+            'allowNull string empty' => [
+                ['entity' => NestedEntity::class, 'orScalar' => 'string', 'allowNull' => true],
+                '',
+                '',
+            ],
+            'nullable null' => [
+                ['entity' => NestedEntity::class, 'orScalar' => 'int', 'nullable' => true],
+                null,
+                null,
+            ],
+            'allowNull null' => [
+                ['entity' => NestedEntity::class, 'orScalar' => 'string', 'allowNull' => true],
+                null,
+                null,
+            ],
+        ];
+    }
+
     public function test_entity_orScalarは配列をEntityへ変換し既存instanceを受け付ける(): void
     {
         $instance = new NestedEntity(['label' => 'instance']);
@@ -872,6 +926,32 @@ class EntityTest extends TestCase
             'unsupported scalar' => [['entity' => NestedEntity::class, 'orScalar' => 'float']],
             'without entity' => [['orScalar' => 'int']],
             'with array' => [['array' => true, 'entity' => NestedEntity::class, 'orScalar' => 'int']],
+        ];
+    }
+
+    #[DataProvider('invalidStrictListDeclarationProvider')]
+    public function test_entity_strictListの不正な宣言はLogicExceptionになる(array $declaration): void
+    {
+        $this->expectException(\LogicException::class);
+
+        new class([], $declaration) extends Entity {
+            /** @param array<string, mixed> $declaration */
+            public function __construct(array $data, array $declaration)
+            {
+                $this->build($declaration, $data);
+            }
+        };
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function invalidStrictListDeclarationProvider(): array
+    {
+        return [
+            'false' => [['array' => true, 'entity' => NestedEntity::class, 'strictList' => false]],
+            'integer true' => [['array' => true, 'entity' => NestedEntity::class, 'strictList' => 1]],
+            'without array' => [['entity' => NestedEntity::class, 'strictList' => true]],
+            'non boolean array' => [['array' => 1, 'entity' => NestedEntity::class, 'strictList' => true]],
+            'without entity' => [['array' => true, 'strictList' => true]],
         ];
     }
 

@@ -100,6 +100,39 @@ class ProductUpdateInputTest extends TestCase
         $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
+    public function test_stocksの不正型は新しいEntity名を含む完全なメッセージを返す(): void
+    {
+        try {
+            new ProductUpdateInput(['stocks' => '10']);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ProductUpdateInput::class . " の API フィールド『stocks』が不正です。"
+                . ProductStocksIncrementInput::class . '|int を期待しましたが string でした。',
+                $exception->getMessage(),
+            );
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
+    public function test_variantsの不正要素は新しいEntity名を含む完全なメッセージを返す(): void
+    {
+        try {
+            new ProductUpdateInput(['variants' => [null]]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ProductUpdateInput::class . " の API フィールド『variants』が不正です。"
+                . '配列要素を ' . ProductVariantInput::class
+                . ' に変換できませんでした。原因: 配列要素の型が不正です。',
+                $exception->getMessage(),
+            );
+            return;
+        }
+
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
+    }
+
     #[DataProvider('invalidFieldProvider')]
     public function test_更新専用フィールドの不正な型を拒否する(string $field, mixed $value): void
     {
@@ -113,6 +146,8 @@ class ProductUpdateInputTest extends TestCase
     {
         return [
             'stocks string' => ['stocks', '10'],
+            'stocks bool' => ['stocks', true],
+            'stocks float' => ['stocks', 1.5],
             'group_ids scalar' => ['group_ids', 301],
             'variants scalar' => ['variants', 'S'],
         ];
@@ -161,6 +196,11 @@ class ProductUpdateInputTest extends TestCase
             'stocks extra key' => ['stocks', ['increment' => 2, 'x' => 1]],
             'stocks list' => ['stocks', [2]],
             'variants hash instead of list' => ['variants', ['option1_value' => 'S']],
+            'variants non sequential list' => ['variants', [1 => ['option1_value' => 'S']]],
+            'variants mixed keys' => [
+                'variants',
+                [0 => ['option1_value' => 'S'], 'second' => ['option1_value' => 'M']],
+            ],
             'variants scalar element' => ['variants', ['S']],
             'variants null element' => ['variants', [null]],
             'variants empty element' => ['variants', [[]]],

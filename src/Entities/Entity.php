@@ -489,8 +489,12 @@ class Entity
     {
         self::assertScalarDeclaration($objectField);
         self::assertOrScalarDeclaration($objectField);
+        self::assertStrictListDeclaration($objectField);
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
+            if (isset($objectField['orScalar']) && self::isScalarType($value, $objectField['orScalar'])) {
+                return $value;
+            }
             // nullable は falsy 値も変換するため、null だけを許すフィールドは allowNull を使う。
             if (!empty($objectField['allowNull']) && $value === null) {
                 return null;
@@ -501,9 +505,6 @@ class Entity
 
             if (isset($objectField['entity'])) {
                 $class = $objectField['entity'];
-                if (isset($objectField['orScalar']) && self::isScalarType($value, $objectField['orScalar'])) {
-                    return $value;
-                }
                 if ($isArray) {
                     // 配列指定
                     if (static::isHash($value)) {
@@ -623,6 +624,22 @@ class Entity
         }
         if (! empty($objectField['array'])) {
             throw new \LogicException('orScalar は array と組み合わせて指定できません。');
+        }
+    }
+
+    private static function assertStrictListDeclaration(mixed $objectField): void
+    {
+        if (! \is_array($objectField) || ! \array_key_exists('strictList', $objectField)) {
+            return;
+        }
+        if ($objectField['strictList'] !== true) {
+            throw new \LogicException('strictList は true を指定してください。');
+        }
+        if (($objectField['array'] ?? null) !== true) {
+            throw new \LogicException('strictList は array => true と組み合わせて指定してください。');
+        }
+        if (! isset($objectField['entity'])) {
+            throw new \LogicException('strictList は entity と組み合わせて指定してください。');
         }
     }
 
