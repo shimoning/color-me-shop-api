@@ -13,7 +13,8 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * 直列化の契約:
  * - コンストラクタ配列で明示したフィールドだけを送信する。
- * - 明示した `null` も送信する。実測では `sales_price` と `price` を `null` でクリアできた。
+ * - 明示した `null` も送信する。`null` によるクリアは、商品の更新で `sales_price` と `price` について
+ *   実測している。作成時の `null` の扱いは実測していない。
  * - 指定しなかったフィールドは送信しない。
  *
  * 公式 OpenAPI の `product` request は全フィールドとも nullable 指定がないが、本 Entity は
