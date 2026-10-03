@@ -160,6 +160,20 @@ class RequestEntitySerializationTest extends TestCase
         $this->assertSame($child, $entity->toArray()['child']);
     }
 
+    public function test_orScalar宣言の構築済み応答Entityは要求文脈で生データから再構築する(): void
+    {
+        $child = new ResponseSerializationEntity(['name' => 'response']);
+        $entity = new RequestSerializationRoot(['response_child' => $child]);
+
+        $rebuilt = $entity->toArray()['response_child'];
+        $this->assertInstanceOf(ResponseSerializationEntity::class, $rebuilt);
+        $this->assertNotSame($child, $rebuilt);
+        $this->assertSame(
+            ['response_child' => ['name' => 'response']],
+            $entity->toArrayRecursive(),
+        );
+    }
+
     public function test_応答Entityの既定のnull省略契約は変わらない(): void
     {
         $entity = new ResponseSerializationEntity(['name' => null]);
@@ -174,6 +188,7 @@ final class RequestSerializationRoot extends Entity implements RequestEntity
     public const FIELD_TYPES = [
         'child' => ['entity' => RequestSerializationChild::class],
         'children' => ['array' => true, 'entity' => RequestSerializationChild::class],
+        'responseChild' => ['entity' => ResponseSerializationEntity::class, 'orScalar' => 'int'],
     ];
 
     protected ?string $name;
@@ -181,6 +196,7 @@ final class RequestSerializationRoot extends Entity implements RequestEntity
     protected ?RequestSerializationChild $child;
     /** @var list<RequestSerializationChild>|null */
     protected ?array $children;
+    protected ResponseSerializationEntity|int|null $responseChild;
 }
 
 final class RequestSerializationChild extends Entity implements RequestEntity

@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
-class ProductInputTest extends TestCase
+class ProductUpdateInputTest extends TestCase
 {
-    public function test_作成と更新の全フィールドをproductボディ形式へ変換する(): void
+    public function test_更新の全フィールドをproductボディ形式へ変換する(): void
     {
-        $input = new ProductInput([
+        $input = new ProductUpdateInput([
             'name' => 'Tシャツ',
             'price' => 1600,
             'category_id_big' => 1139,
@@ -63,69 +64,90 @@ class ProductInputTest extends TestCase
         ], $input->toArrayRecursive());
     }
 
-    public function test_未指定のフィールドは送信しない(): void
-    {
-        $this->assertSame([], (new ProductInput([]))->toArrayRecursive());
-        $this->assertSame(['name' => '名前だけ'], (new ProductInput(['name' => '名前だけ']))->toArrayRecursive());
-    }
-
-    public function test_明示したnullはクリア要求として送信する(): void
-    {
-        $input = new ProductInput(['sales_price' => null, 'name' => '商品']);
-
-        $this->assertSame(['name' => '商品', 'sales_price' => null], $input->toArrayRecursive());
-        $this->assertSame(['name' => '商品', 'sales_price' => null], $input->toArrayRecursive(false));
-    }
-
     public function test_stocksはincrementオブジェクトも受け付ける(): void
     {
-        $input = new ProductInput(['stocks' => ['increment' => -1]]);
+        $input = new ProductUpdateInput(['stocks' => ['increment' => -1]]);
 
         $this->assertSame(['stocks' => ['increment' => -1]], $input->toArrayRecursive());
     }
 
-    public function test_display_stateは実測で受理された4値だけを受け付ける(): void
+    public function test_stocksとvariantsは構築済みEntityも受け付ける(): void
     {
-        foreach (['showing', 'hidden', 'showing_for_members', 'sale_for_members'] as $state) {
-            $this->assertSame(['display_state' => $state], (new ProductInput(['display_state' => $state]))->toArrayRecursive());
+        $stocks = new ProductStocksIncrementInput(['increment' => 5]);
+        $variant = new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3]);
+        $input = new ProductUpdateInput(['stocks' => $stocks, 'variants' => [$variant]]);
+
+        $this->assertSame([
+            'stocks' => ['increment' => 5],
+            'variants' => [['option1_value' => 'S', 'stocks' => 3]],
+        ], $input->toArrayRecursive());
+    }
+
+    public function test_group_idsの不正要素は共通scalar配列メッセージを返す(): void
+    {
+        try {
+            new ProductUpdateInput(['group_ids' => [301, '302']]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ProductUpdateInput::class . " の API フィールド『group_ids』が不正です。"
+                . '配列要素を int に変換できませんでした。原因: 配列要素の型が不正です。',
+                $exception->getMessage(),
+            );
+            $this->assertSame('配列要素が int ではありません。', $exception->getPrevious()?->getMessage());
+            return;
         }
 
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('display_state');
-        new ProductInput(['display_state' => 'members_only']);
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
-    public function test_display_stateはenumインスタンスでも指定できバッキング値で送信する(): void
+    public function test_stocksの不正型は新しいEntity名を含む完全なメッセージを返す(): void
     {
-        $input = new ProductInput(['display_state' => ProductDisplayState::HIDDEN]);
+        try {
+            new ProductUpdateInput(['stocks' => '10']);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ProductUpdateInput::class . " の API フィールド『stocks』が不正です。"
+                . ProductStocksIncrementInput::class . '|int を期待しましたが string でした。',
+                $exception->getMessage(),
+            );
+            return;
+        }
 
-        $this->assertSame(ProductDisplayState::HIDDEN, $input->toArray()['display_state']);
-        $this->assertSame(['display_state' => 'hidden'], $input->toArrayRecursive());
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
-    public function test_書き込みできないunlistedは入力フィールドに持たない(): void
+    public function test_variantsの不正要素は新しいEntity名を含む完全なメッセージを返す(): void
     {
-        $input = new ProductInput(['unlisted' => true]);
+        try {
+            new ProductUpdateInput(['variants' => [null]]);
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                ProductUpdateInput::class . " の API フィールド『variants』が不正です。"
+                . '配列要素を ' . ProductVariantInput::class
+                . ' に変換できませんでした。原因: 配列要素の型が不正です。',
+                $exception->getMessage(),
+            );
+            return;
+        }
 
-        $this->assertArrayNotHasKey('unlisted', $input->toArray());
-        $this->assertSame([], $input->toArrayRecursive());
+        $this->fail(InvalidFieldException::class . ' が投げられませんでした。');
     }
 
     #[DataProvider('invalidFieldProvider')]
-    public function test_不正な型を拒否する(string $field, mixed $value): void
+    public function test_更新専用フィールドの不正な型を拒否する(string $field, mixed $value): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage($field);
-        new ProductInput([$field => $value]);
+        new ProductUpdateInput([$field => $value]);
     }
 
     /** @return array<string, array{string, mixed}> */
     public static function invalidFieldProvider(): array
     {
         return [
-            'price string' => ['price', '1600'],
-            'stock_managed int' => ['stock_managed', 1],
             'stocks string' => ['stocks', '10'],
+            'stocks bool' => ['stocks', true],
+            'stocks float' => ['stocks', 1.5],
             'group_ids scalar' => ['group_ids', 301],
             'variants scalar' => ['variants', 'S'],
         ];
@@ -134,7 +156,7 @@ class ProductInputTest extends TestCase
     #[DataProvider('validNestedShapeProvider')]
     public function test_ネストした入力値の正しい形状を受け付ける(string $field, mixed $value): void
     {
-        $this->assertSame([$field => $value], (new ProductInput([$field => $value]))->toArrayRecursive());
+        $this->assertSame([$field => $value], (new ProductUpdateInput([$field => $value]))->toArrayRecursive());
     }
 
     /** @return array<string, array{string, mixed}> */
@@ -157,7 +179,7 @@ class ProductInputTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage($field);
-        new ProductInput([$field => $value]);
+        new ProductUpdateInput([$field => $value]);
     }
 
     /** @return array<string, array{string, mixed}> */
@@ -174,6 +196,11 @@ class ProductInputTest extends TestCase
             'stocks extra key' => ['stocks', ['increment' => 2, 'x' => 1]],
             'stocks list' => ['stocks', [2]],
             'variants hash instead of list' => ['variants', ['option1_value' => 'S']],
+            'variants non sequential list' => ['variants', [1 => ['option1_value' => 'S']]],
+            'variants mixed keys' => [
+                'variants',
+                [0 => ['option1_value' => 'S'], 'second' => ['option1_value' => 'M']],
+            ],
             'variants scalar element' => ['variants', ['S']],
             'variants null element' => ['variants', [null]],
             'variants empty element' => ['variants', [[]]],

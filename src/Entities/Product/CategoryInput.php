@@ -20,7 +20,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 直列化の契約:
  * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する。
  * - 指定しなかったフィールドは送信しない。
- * - 公式 OpenAPI で nullable なのは `expl` と `meta_tag` の各値だけだが、ProductInput と同じく
+ * - 公式 OpenAPI で nullable なのは `expl` と `meta_tag` の各値だけだが、商品作成・更新入力と同じく
  *   全フィールドを nullable にし、`null` の受理は API 側に委ねる。
  *
  * `display_state` は request 定義と応答の双方で `showing` / `hidden` / `members_only`

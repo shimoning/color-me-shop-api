@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  * 作成専用の `add_member` は持たない。
  * `tel_mobile` は公式 OpenAPI の更新 request にあるが、2026-09-25 の実測で
  * null → 値 → 別の値 → null の全パターンが200でも PUT 応答と直後の GET は常に null だった。
- * 書き込めないため、ProductInput の `unlisted` と同じ判断で持たせない (ADR 0014)。
+ * 書き込めないため、ProductCreateInput / ProductUpdateInput の `unlisted` と同じ判断で持たせない (ADR 0014)。
  * 公式 OpenAPI には required 指定がないが、2026-09-25 の実測で `name` / `address1` が
  * 必須だったため、REQUIRED_FIELDS として公開し、Services\Customer::update() が送信前に検証する。
  * 同日の実測で、省略したフィールドは保持される部分更新として機能することも確認した。
@@ -27,7 +27,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  *
  * null 許容は公式 OpenAPI の `nullable` 指定にそのまま従う。`name` / `mail` / `pref_id` / `postal` /
  * `address1` / `tel` は nullable 指定がなく、作成では required でもあるため、明示した `null` を
- * 型として拒否する。これらをクリアする意味がないためで、ProductInput が全フィールドを nullable に
+ * 型として拒否する。これらをクリアする意味がないためで、商品作成・更新入力が全フィールドを nullable に
  * した判断 (ADR 0014) はこの Entity には適用しない。
  *
  * `sex` は応答と同じ `Sex` を使うが、要求側では未知値のフォールバックが働かないため、番兵の

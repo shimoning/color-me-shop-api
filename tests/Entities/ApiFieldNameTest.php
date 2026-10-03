@@ -61,6 +61,14 @@ class ApiFieldNameTest extends TestCase
         ]);
     }
 
+    public function test_商品作成更新入力をそれぞれの公式フィールド数で登録している(): void
+    {
+        $registrations = self::fixtureArray('api_field_names.json');
+
+        $this->assertCount(13, $registrations['Product\\ProductCreateInput']);
+        $this->assertCount(17, $registrations['Product\\ProductUpdateInput']);
+    }
+
     /** @param array<string, list<string>> $registrations */
     private static function assertRegisteredFieldsNotEmpty(array $registrations): void
     {
@@ -291,6 +299,13 @@ class ApiFieldNameTest extends TestCase
                     new RequestMeta('POST', 'https://api.shop-pro.jp/oauth/token', []),
                 ),
             );
+        }
+
+        if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput::class) {
+            $data = ['increment' => 0];
+        }
+        if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class) {
+            $data = ['stocks' => 0];
         }
 
         return new $class($data);

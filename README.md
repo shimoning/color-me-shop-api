@@ -108,7 +108,10 @@ use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
@@ -723,12 +726,12 @@ if (! $groupOrErrors instanceof Errors) {
 ```
 
 #### 商品を作成・更新
-作成と更新は同じ `ProductInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作する。
+作成は `ProductCreateInput`、更新は `ProductUpdateInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作する。
 `display_state` は `showing` / `hidden` / `showing_for_members` / `sale_for_members` (`ProductDisplayState` の値、または同 enum のインスタンス) だけを受け付け、
 `members_only` は生成時に `InvalidFieldException` になる。読み取り専用の `unlisted` は入力に含められない。
 
 ```php
-$createdOrErrors = $client->createProduct(new ProductInput([
+$createdOrErrors = $client->createProduct(new ProductCreateInput([
     'name' => 'Tシャツ',
     'sales_price' => 1500,
     'display_state' => 'hidden',
@@ -739,7 +742,7 @@ if (! $createdOrErrors instanceof Errors) {
 }
 
 // 明示した null は「未設定へ戻す」要求として送信される (例: 販売価格のクリア)
-$updatedOrErrors = $client->updateProduct($productId, new ProductInput([
+$updatedOrErrors = $client->updateProduct($productId, new ProductUpdateInput([
     'sales_price' => null,
     'stocks' => ['increment' => 5], // 整数の絶対値、または increment object
     'variants' => [
@@ -751,7 +754,11 @@ if ($updatedOrErrors instanceof Errors) {
 }
 ```
 
-`stocks` / `group_ids` / `variants` / `category_id_small` は更新専用のフィールドで、どの操作でどのフィールドが有効かは公式 API の契約に従う。
+`category_id_small` / `stocks` / `group_ids` / `variants` は更新専用のフィールドで、`ProductUpdateInput` だけが持つ。公式 OpenAPI の作成 request にはこの 4 項目がなく、実 API は作成時に送っても反映せず、エラーにもしない (2026-10-02 の観測、[ColorMe Shop API 商品応答構造の実測記録](docs/api-product-structure.md))。作成した商品の在庫数やグループは、作成後に `updateProduct()` で設定する。
+
+`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `ProductStocksIncrementInput`、`variants` の要素は `ProductVariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new ProductStocksIncrementInput(['increment' => 5])`、`'variants' => [new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
+
+0.22.0 で、作成と更新で共用していた `ProductInput` を `ProductCreateInput` と `ProductUpdateInput` に分け、`ProductInput` は削除した ([ADR 0026](docs/adr/0026-split-product-input-into-create-and-update.md))。更新の呼び出しは `new ProductInput(` を `new ProductUpdateInput(` に、作成の呼び出しは `new ProductCreateInput(` に書き換える。作成で更新専用の 4 項目を指定していた場合、その指定はもともと反映されていなかった。
 商品自体を削除する API は公式に存在しない。
 
 #### バリエーションを更新
@@ -1143,7 +1150,7 @@ $pagination->getOffset();
 | `Entities\Sales\SaleUpdater` | `Entities\Sales\SaleUpdateInput` |
 | `Entities\Sales\SaleDeliveryUpdater` | `Entities\Sales\SaleDeliveryUpdateInput` |
 
-作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、子要素の `MetaTagInput` は据え置いた。検索条件の `SearchParameters` 系も今回の対象外である。
+作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、子要素の `MetaTagInput` は据え置いた (`ProductInput` は 0.22.0 で作成用と更新用に分けた)。検索条件の `SearchParameters` 系も今回の対象外である。
 
 旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` はいずれも従来どおり動作する (`unserialize()` の `allowed_classes` には旧名を渡すこと)。
 

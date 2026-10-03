@@ -20,7 +20,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する。
  * - 指定しなかったフィールドは送信しない。
  * - 公式 OpenAPI で nullable なのは `expl` と `parent_group_id` と `meta_tag` の各値だけだが、
- *   ProductInput と同じく全フィールドを nullable にし、`null` の受理は API 側に委ねる。
+ *   商品作成・更新入力と同じく全フィールドを nullable にし、`null` の受理は API 側に委ねる。
  *
  * `display_state` は `GroupDisplayState` のうち `WRITABLE_DISPLAY_STATES` の 3 値 (`showing` / `hidden` /
  * `members_only`) に限定し、公式 OpenAPI のグループ作成・更新 request の enum と一致する。実 API の観測

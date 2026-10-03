@@ -24,7 +24,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant;
@@ -407,13 +408,16 @@ class Product extends Service
      * 商品を作成する。
      *
      * 実測では `name` だけの POST が 200 で、応答の `product` は GET と同じキー集合だった。
+     * 更新専用の `category_id_small` / `stocks` / `group_ids` / `variants` は `ProductCreateInput` の
+     * 項目にない。コンストラクタに渡しても宣言のないキーとして無視され、送信されない。実 API も、
+     * これらを作成時に送ると反映せず、エラーにもしない (2026-10-02、docs/api-product-structure.md)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function create(ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    public function create(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products'),
@@ -426,7 +430,7 @@ class Product extends Service
      * 商品を更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
      * 実測では `name` だけの PUT で他フィールドが保持され、`sales_price: null` で値をクリアできた。
-     * 空の `ProductInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
+     * 空の `ProductUpdateInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
      * で拒否して `Errors` が返る。ライブラリ側では事前に拒否しない。
      * 実測の出典: docs/api-product-structure.md「書き込み系の観測」。
      *
@@ -435,7 +439,7 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function update(int|string $id, ProductInput $input, ?string $accessToken = null): ProductEntity|Errors
+    public function update(int|string $id, ProductUpdateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/products/' . $id),

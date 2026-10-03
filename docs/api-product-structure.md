@@ -351,6 +351,33 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 
 一覧要素のキー集合は以前の単体観測と同じだった。`meta_tag` は3子キーが空文字列の object と `null` の両方を観測したため、グループでは object と `null` が起こり得る。これは OpenAPI の `nullable: true` と `Product\Group::getMetaTag()` の nullable 契約に整合する。`parent_group_id` も `null` と integer の両方を観測した。
 
+### 2026-10-02 の追加観測（作成時に更新専用の項目を送った場合）
+
+公式 OpenAPI の商品作成（`POST /v1/products`）の `product` は 13 項目で、商品更新（`PUT
+/v1/products/{product_id}`）の `product` は、それに `category_id_small` / `stocks` / `group_ids` /
+`variants` を加えた 17 項目である。共通の 13 項目は、型・enum・制約・説明文まで一致する。作成時に
+更新専用の 4 項目を送った場合の扱いを確かめるため、2026-10-02（Asia/Tokyo）にテスト用ショップで
+商品を 1 件作成した。`Communicator\Request` で JSON の body を送った。
+
+| 項目 | 送った値 | 作成後の商品（POST の応答と直後の単体 GET で同じ） |
+| --- | --- | --- |
+| `display_state`（共通） | `hidden` | `hidden` |
+| `stock_managed`（共通） | `true` | `true` |
+| `category_id_big`（共通） | 既存の大カテゴリー ID | `category.id_big` に反映 |
+| `category_id_small`（更新専用） | その大カテゴリーに存在する小カテゴリー ID | `category.id_small` が `0` |
+| `stocks`（更新専用） | `7` | `null` |
+| `group_ids`（更新専用） | 既存のグループ ID 1 件 | `[]` |
+| `variants`（更新専用） | `[{"option1_value": "赤", "stocks": 3}]` | `[]`（オプションは未設定） |
+
+**作成時に送った更新専用の 4 項目は、いずれも反映されず、エラーにもならなかった。** 応答は HTTP 200
+で、警告もない。共通の項目は反映された。
+
+`stocks` は `stock_managed: true` と同時に送っても反映されなかった。`variants` は、作成時点では商品に
+オプションがないため、仮に作成で受け付ける仕様だったとしても対象のバリエーションが存在しない。
+
+作成した商品は、削除 API がないためテスト用ショップに非掲載のまま残っている。4 項目を同時に送ったため、
+個々の項目を単独で送った場合の扱いは確かめていない。観測は各 1 回である。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。カテゴリーを全く持たない商品の表現。

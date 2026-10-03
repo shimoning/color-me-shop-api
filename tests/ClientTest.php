@@ -19,7 +19,8 @@ use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
@@ -112,10 +113,10 @@ class ClientTest extends TestCase
                 $client->getProductGroup(401, $accessToken);
             }],
             'createProduct' => [static function (Client $client, ?string $accessToken): void {
-                $client->createProduct(new ProductInput(['name' => '商品']), $accessToken);
+                $client->createProduct(new ProductCreateInput(['name' => '商品']), $accessToken);
             }],
             'updateProduct' => [static function (Client $client, ?string $accessToken): void {
-                $client->updateProduct(101, new ProductInput(['name' => '商品']), $accessToken);
+                $client->updateProduct(101, new ProductUpdateInput(['name' => '商品']), $accessToken);
             }],
             'updateProductVariant' => [static function (Client $client, ?string $accessToken): void {
                 $client->updateProductVariant(101, 301, new VariantUpdateInput(['stocks' => 1]), $accessToken);
