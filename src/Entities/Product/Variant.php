@@ -99,8 +99,10 @@ class Variant extends Entity
     }
 
     /**
-     * 1軸の商品では null (docs/api-product-structure.md, fa4bfbb)。
+     * オプション2。1軸の商品では null。
+     *
      * @return ?VariantOption
+     * @see docs/api-product-structure.md
      */
     public function getOption2(): ?VariantOption
     {

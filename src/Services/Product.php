@@ -75,14 +75,16 @@ class Product extends Service
     }
 
     /**
-     * バリエーション一覧。実測の既定 limit は 10。
-     * 検索条件では model_number / fields / limit / offset を指定できる。
+     * バリエーション一覧。検索条件では model_number / fields / limit / offset を指定できる。
+     *
+     * 公式 OpenAPI との差分: 未記載の既定 limit は 10 (2026-09-18)。
      *
      * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
      *
      * @return Page<Variant>|Errors
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function variants(
         int|string $productId,
@@ -241,14 +243,13 @@ class Product extends Service
     /**
      * 商品グループを作成する。成功は 201 で、応答の `group` を返す。
      *
-     * `display_state` は `GroupInput::WRITABLE_DISPLAY_STATES` の 3 値 (`showing` / `hidden` / `members_only`) で、
-     * 実 API の観測 (2026-09-21) と公式 OpenAPI の request 定義に一致する。`GroupDisplayState` の応答専用の
-     * 2 値 (`showing_for_members` / `sale_for_members`) は `GroupInput` の構築時に拒否される。
+     * `display_state` は `showing` / `hidden` / `members_only` に限り、応答専用の2値は構築時に拒否する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function createGroup(GroupInput $input, ?string $accessToken = null): Group|Errors
     {
@@ -281,8 +282,7 @@ class Product extends Service
     /**
      * 大カテゴリーを作成する。成功は 201 で、応答の `category` を `BigCategory` として返す。
      *
-     * 公式 OpenAPI では `name` が required だが、更新と入力 Entity を共用するため送信前には検証せず、
-     * `name` のない要求は API の検証 (422 の `Errors`) に委ねる。
+     * 公式 OpenAPI との差分: `name` は required だがライブラリでは送信前に検証せず、API の検証に委ねる。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
@@ -377,15 +377,11 @@ class Product extends Service
     /**
      * 書き込み応答の `category` を `Category::fromArray()` で変換し、操作が期待する親子の型であることを確認する。
      *
-     * ADR 0010 の厳格方針に従い、`id_small` の欠損・型不正はもちろん、大カテゴリーの操作で
-     * `id_small !== 0` の応答が返る (またはその逆) 場合も誤分類を隠さず例外にする。
-     * `category` が配列以外 (文字列などのスカラー) の場合も、`categories()` の `categories[n]` と同じく
-     * `TypeError` ではなく `InvalidFieldException` に正規化する。
-     *
      * @template T of BigCategory|SmallCategory
      * @param class-string<T> $expected
      * @return T
      * @throws InvalidFieldException `category` が配列以外、`Category::fromArray()` で変換できない、または期待した型でない場合
+     * @see docs/adr/0010-split-category-into-big-and-small.md
      */
     private static function categoryFromResponse(?array $data, string $expected): BigCategory|SmallCategory
     {
@@ -405,17 +401,15 @@ class Product extends Service
     // --- 書き込み系 (ADR 0014) ---------------------------------------------
 
     /**
-     * 商品を作成する。
+     * 商品を作成する。更新専用フィールドは送信されない。
      *
-     * 実測では `name` だけの POST が 200 で、応答の `product` は GET と同じキー集合だった。
-     * 更新専用の `category_id_small` / `stocks` / `group_ids` / `variants` は `ProductCreateInput` の
-     * 項目にない。コンストラクタに渡しても宣言のないキーとして無視され、送信されない。実 API も、
-     * これらを作成時に送ると反映せず、エラーにもしない (2026-10-02、docs/api-product-structure.md)。
+     * 公式 OpenAPI との差分: `name` だけで作成でき、更新専用フィールドを送っても反映されない (2026-10-02)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function create(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
@@ -429,15 +423,14 @@ class Product extends Service
     /**
      * 商品を更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
-     * 実測では `name` だけの PUT で他フィールドが保持され、`sales_price: null` で値をクリアできた。
      * 空の `ProductUpdateInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
      * で拒否して `Errors` が返る。ライブラリ側では事前に拒否しない。
-     * 実測の出典: docs/api-product-structure.md「書き込み系の観測」。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function update(int|string $id, ProductUpdateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
@@ -547,8 +540,7 @@ class Product extends Service
     /**
      * おすすめ商品情報を作成する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
      *
-     * 公式 OpenAPI は要求ボディを required とし、API は `pickup_type` で対象を特定するため、
-     * 両フィールドが未指定の入力は送信前に拒否する (明示した `null` は送信する)。
+     * `pickup_type` / `order_num` の未指定は送信前に拒否し、明示した `null` は送信する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
@@ -586,8 +578,8 @@ class Product extends Service
     /**
      * ピックアップ入力の `pickup_type` と `order_num` が明示されていることを送信前に確認する。
      *
-     * 公式 OpenAPI の pickups スキーマに両フィールドの required 指定はないが、要求ボディ自体は
-     * required で、空や片方だけのボディは意味を持たない。明示した `null` は API へ委ねる。
+     * 公式 OpenAPI との差分: 両フィールドに required 指定はないが、ライブラリでは未指定を拒否する。
+     * 明示した `null` は API の検証に委ねる。
      *
      * @return array<string, mixed>
      * @throws ParameterException いずれかが未指定の場合
@@ -609,13 +601,14 @@ class Product extends Service
     /**
      * おすすめ商品情報を削除する。
      *
-     * 他の DELETE と異なり、実測では 200 で削除済みの `pickup` object を返すため、NoContent ではなく Pickup を返す。
+     * 公式 OpenAPI との差分: 実 API は 200 で削除済みの `pickup` object を返す (2026-09-20)。
      * int / string の種別は `PickupType` の値 (0 / 1 / 3 / 4) として検証し、それ以外はパスへ載せずに拒否する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function deletePickup(
         int|string $productId,
@@ -661,9 +654,6 @@ class Product extends Service
     /**
      * 商品画像を作成する。`multipart/form-data` で `image` と `position` (0〜49) を送信する。
      *
-     * 実 API 未検証 (プラン制限)。成功の 201 と応答 `product_image` (`position` / `url`) は
-     * 公式 OpenAPI 定義に基づく。実測では契約プランの制限により 401 だった。
-     *
      * 必要な scope: `read_products` と `write_products` の両方
      * ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
@@ -692,8 +682,6 @@ class Product extends Service
 
     /**
      * 商品画像を削除する。成功は 204 でボディがないため NoContent を返す。
-     *
-     * 実 API 未検証 (プラン制限)。公式 OpenAPI 定義に基づく。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *

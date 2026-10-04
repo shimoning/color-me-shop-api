@@ -36,20 +36,17 @@ class OAuth
     /**
      * 認可のための URL を取得する
      *
-     * state は公式ドキュメントに記載されていないが、2026-09-29 に実 API で認可フローを
-     * 4 回実行した結果、受理されてコールバックにそのまま返されることを確認している。
-     * 認可を拒否した場合のエラー応答 (error=access_denied) にも state が付与される。
-     * カラーミー側は値を一度デコードして再エンコードするため、クエリ文字列のバイト列は
-     * 送信時と一致しない。実測では %20 が + に、~ が %7E になった。照合はデコード後の値
-     * (PHP では $_GET['state']) で行う必要があり、その値は送信した文字列と完全に一致する。
-     * 値の生成と保存はライブラリの責務ではないため、利用者がセッション等に保存して
-     * コールバックで照合すること。詳細は docs/api-oauth-state-observation.md を参照。
+     * `state` は利用者が生成・保存し、コールバックではデコード後の値を照合する。
+     *
+     * 公式 OpenAPI との差分: 記載のない `state` を受理し、成功・拒否のコールバックに返す (2026-09-29)。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86
      * @param Scopes $scopes
      * @param string|null $state CSRF 対策に使用する state (省略時はクエリに含めない)
      * @return string
      * @throws ParameterException state に空文字を指定した場合
+     * @see docs/api-oauth-state-observation.md
+     * @see docs/adr/0020-accept-state-in-authorization-url.md
      */
     public function getUrl(Scopes $scopes, ?string $state = null): string
     {

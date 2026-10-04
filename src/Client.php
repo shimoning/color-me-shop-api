@@ -122,14 +122,16 @@ class Client
     }
 
     /**
-     * 商品バリエーション一覧を取得する。実測の既定 limit は 10。
-     * 検索条件では model_number / fields / limit / offset を指定できる。
+     * 商品バリエーション一覧を取得する。検索条件では model_number / fields / limit / offset を指定できる。
+     *
+     * 公式 OpenAPI との差分: 未記載の既定 limit は 10 (2026-09-18)。
      *
      * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
      *
      * @return Page<ProductVariantEntity>|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function getProductVariants(
         int|string $productId,
@@ -198,15 +200,15 @@ class Client
     }
 
     /**
-     * 商品を作成する。実測では `name` だけで作成できる。
-     * 更新専用の `category_id_small` / `stocks` / `group_ids` / `variants` は `ProductCreateInput` の
-     * 項目にない。コンストラクタに渡しても宣言のないキーとして無視され、送信されない。実 API も、
-     * これらを作成時に送ると反映せず、エラーにもしない (2026-10-02、docs/api-product-structure.md)。
+     * 商品を作成する。更新専用フィールドは送信されない。
+     *
+     * 公式 OpenAPI との差分: `name` だけで作成でき、更新専用フィールドを送っても反映されない (2026-10-02)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function createProduct(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
@@ -339,12 +341,15 @@ class Client
     }
 
     /**
-     * おすすめ商品情報を削除する。実測では 200 で削除済みの pickup を返す。
+     * おすすめ商品情報を削除する。
+     *
+     * 公式 OpenAPI との差分: 実 API は 200 で削除済みの pickup を返す (2026-09-20)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function deleteProductPickup(
         int|string $productId,
@@ -355,7 +360,7 @@ class Client
     }
 
     /**
-     * 商品画像を作成する。実 API 未検証 (プラン制限) で、公式 OpenAPI 定義に基づく。
+     * 商品画像を作成する。
      *
      * 必要な scope: `read_products` と `write_products` の両方
      * ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
@@ -376,7 +381,7 @@ class Client
     }
 
     /**
-     * 商品画像を削除する。実 API 未検証 (プラン制限)。成功は 204 で NoContent を返す。
+     * 商品画像を削除する。成功は 204 で NoContent を返す。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
@@ -391,14 +396,13 @@ class Client
     /**
      * 商品グループを作成する。
      *
-     * `display_state` は `GroupInput::WRITABLE_DISPLAY_STATES` の 3 値 (`showing` / `hidden` / `members_only`) で、
-     * 実 API の観測 (2026-09-21) と公式 OpenAPI の request 定義に一致する。`GroupDisplayState` の応答専用の
-     * 2 値 (`showing_for_members` / `sale_for_members`) は `GroupInput` の構築時に拒否される。
+     * `display_state` は `showing` / `hidden` / `members_only` に限り、応答専用の2値は構築時に拒否する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-product-structure.md
      */
     public function createProductGroup(ProductGroupInput $input, ?string $accessToken = null): GroupEntity|Errors
     {
@@ -648,9 +652,7 @@ class Client
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
-     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す
-     * (2026-10-01 実測、docs/api-sale-create-observation.md)。成功時のレスポンス形状は
-     * 公式 OpenAPI に基づき、実 API では未観測。
+     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す (2026-10-01)。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
      * @param SaleCreateInput $input
@@ -659,6 +661,7 @@ class Client
      * @return Sale|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-sale-create-observation.md
      */
     public function createSale(
         SaleCreateInput $input,

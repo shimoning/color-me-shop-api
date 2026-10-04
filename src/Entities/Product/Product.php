@@ -152,10 +152,11 @@ class Product extends Entity
 
     /**
      * category は object。両 ID が 0 の場合は未設定を表す。
-     * OpenAPI は nullable とするが、実測では null がなく非 nullable とした。
-     * 両 ID が 0 の組み合わせ自体は実測標本に含まれない。
-     * 出典: docs/api-product-structure.md (fa4bfbb)。
+     *
+     * 公式 OpenAPI との差分: nullable だが実 API では object を返すため非 nullable とする (2026-09-12)。
+     *
      * @return CategoryIds
+     * @see docs/api-product-structure.md
      */
     public function getCategory(): CategoryIds
     {
@@ -467,8 +468,12 @@ class Product extends Entity
     }
 
     /**
-     * 商品本体の追加画像。画像専用 GET の ProductImage と構造・件数が異なる (docs/api-product-structure.md, fa4bfbb)。
+     * 商品本体の追加画像。
+     *
+     * 画像専用 GET の画像とは構造・件数が異なる (2026-09-18)。
+     *
      * @return list<Image>
+     * @see docs/api-product-structure.md
      */
     public function getImages(): array
     {
@@ -537,8 +542,12 @@ class Product extends Entity
     }
 
     /**
-     * OpenAPI の digital_conent は誤記。実応答は digital_content: boolean (docs/api-product-structure.md, fa4bfbb)。
+     * デジタルコンテンツ商品なら `true`。
+     *
+     * 公式 OpenAPI との差分: `digital_conent` は誤記で、実 API は `digital_content` を返す (2026-09-18)。
+     *
      * @return bool
+     * @see docs/api-product-structure.md
      */
     public function getDigitalContent(): bool
     {
@@ -547,8 +556,12 @@ class Product extends Entity
     }
 
     /**
-     * OpenAPI 未記載。実応答の unlisted: boolean (docs/api-product-structure.md, fa4bfbb)。
+     * 非公開商品なら `true`。
+     *
+     * 公式 OpenAPI との差分: 未記載の `unlisted` を実 API は boolean で返す (2026-09-18)。
+     *
      * @return bool
+     * @see docs/api-product-structure.md
      */
     public function getUnlisted(): bool
     {

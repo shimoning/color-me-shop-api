@@ -99,17 +99,11 @@ class Group extends Entity
     /**
      * 表示状態
      *
-     * 0.13.0 で戻り型を `ProductDisplayState` (4値) から `GroupDisplayState` へ変更した。実 API が
-     * `members_only` のグループを返すため、旧型では会員限定のグループが1件でもあると一覧・単体取得が
-     * `InvalidFieldException` で失敗していた。`GroupDisplayState` は実測の 3 値 (`showing` / `hidden` /
-     * `members_only`) に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` /
-     * `sale_for_members` も応答の受理のみを目的として持つ (PUT では 422、読み取りでは未観測)。
-     * 応答で `members_only` を管理画面設定のグループでも観測 (2026-09-22): 生 PUT で書き込んだ値だけでなく、
-     * オーナーが管理画面で会員限定に設定した既存グループも一覧・単体とも `members_only` を返した。
-     * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」
-     * と「2026-09-22 の追加観測（管理画面で設定された既存グループの読み取り）」。
+     * 公式 OpenAPI との差分: 応答定義にない `members_only` も実 API が返す (2026-09-22)。
+     * 応答定義にだけある2値も受理できる `GroupDisplayState` を返す。
      *
      * @return GroupDisplayState
+     * @see docs/api-product-structure.md
      */
     public function getDisplayState(): GroupDisplayState
     {
@@ -135,11 +129,10 @@ class Group extends Entity
      *
      * meta_tag が欠損または null の場合は null、空オブジェクトの場合は MetaTag を返す。
      *
-     * 実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定 (null から値へ) だけが永続化され、
-     * 以後の PUT は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。
-     * 更新直後の応答の値と、後から取得した値が一致しない場合がある。出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
+     * 更新直後の応答と後続の GET で値が異なる場合がある (2026-09-21)。
      *
      * @return MetaTag|null
+     * @see docs/api-product-structure.md
      */
     public function getMetaTag(): ?MetaTag
     {

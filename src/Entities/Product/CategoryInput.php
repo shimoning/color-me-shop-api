@@ -12,29 +12,16 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 /**
  * 大カテゴリーの作成 (POST /v1/categories) と更新 (PUT /v1/categories/{id}) の `category` 入力。
  *
- * 公式 OpenAPI の両 `category` object は同じプロパティ集合で、作成と更新で共用する (ADR 0014)。
- * 作成側では `name` が required だが、更新側に required 指定はない。共用のため型では区別せず、
- * `name` のない作成要求は API の検証 (422) に委ねる。
- * 小カテゴリーの入力は同じ形の `CategoryChildInput` で、互いに代入できない。
+ * 明示したフィールドだけを送信し、明示した `null` も送信する。`display_state` は
+ * `CategoryDisplayState` の3値に限り、`meta_tag` は `MetaTagInput` へ変換する。不正な形状は
+ * 構築時に `InvalidFieldException` で拒否する。作成時の `name` の必須性は API の検証に委ねる。
  *
- * 直列化の契約:
- * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する。
- * - 指定しなかったフィールドは送信しない。
- * - 公式 OpenAPI で nullable なのは `expl` と `meta_tag` の各値だけだが、商品作成・更新入力と同じく
- *   全フィールドを nullable にし、`null` の受理は API 側に委ねる。
- *
- * `display_state` は request 定義と応答の双方で `showing` / `hidden` / `members_only`
- * (`CategoryDisplayState`) で、商品・グループの `showing_for_members` などは拒否する。
- * 実 API の観測 (2026-09-21) では、`expl` は明示した `null` を送っても旧値のまま残り (クリアされない)、
- * 空文字 `""` は保存された。`meta_tag` の部分更新はマージではなく置換で、送らなかったキーは `null` になる。
- * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
- *
- * `meta_tag` は `MetaTagInput` へ変換する。`title` / `keywords` / `description` のいずれも持たない配列は
- * JSON で `[]` になり OpenAPI の object 定義に合わないため、またそれ以外のキーを持つ配列は
- * `additionalProperties: false` に反し利用者の誤りを隠すため、構築時に `InvalidFieldException` で拒否する。
- * 値の範囲 (`sort` の `minimum` など) は API 側の検証に委ね、ライブラリでは検証しない。
+ * 公式 OpenAPI との差分: nullable 指定のないフィールドも `null` を指定できる。`expl` は `null` で
+ * クリアされず、`meta_tag` の部分更新は省略したキーを `null` に置換する (2026-09-21)。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-product-structure.md
+ * @see docs/adr/0014-model-product-write-api.md
  */
 class CategoryInput extends Entity implements RequestEntity
 {

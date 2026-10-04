@@ -82,7 +82,7 @@ class Customer extends Service
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
      * 顧客専用の scope は存在しない。
-     * 公式 OpenAPI が required とする6フィールドは、送信前に明示を確認する (ADR 0015)。
+     * 公式 OpenAPI が required とする6フィールドは、送信前に明示を確認する。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
      * @param CustomerCreateInput $input
@@ -90,6 +90,7 @@ class Customer extends Service
      * @return CustomerEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/adr/0015-model-customer-write-api.md
      */
     public function create(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
     {
@@ -108,9 +109,8 @@ class Customer extends Service
      * 顧客データの更新
      *
      * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
-     * 公式 OpenAPI には required 指定がないが、2026-09-25 の実測で `name` / `address1` が
-     * 必須だったため、ライブラリ側で送信前に検証する。省略したフィールドが保持されることも
-     * 同日の実測で確認した。
+     *
+     * 公式 OpenAPI との差分: required 指定はないが、`name` / `address1` を送信前に検証する (2026-09-25)。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
@@ -121,6 +121,7 @@ class Customer extends Service
      * @return CustomerEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-customer-structure.md
      */
     public function update(
         int|string $id,
@@ -143,10 +144,7 @@ class Customer extends Service
      *
      * 正の値が加算、負の値が減算を表す。応答は `customer` などで包まれず、`customer_id` と
      * 増減後の `points` をトップレベルに持つ。
-     *
-     * 公式 OpenAPI は要求ボディと `points` を required とし、`points` がなければ操作を特定できないため、
-     * 未指定の要求は送信前に拒否する (ADR 0014 のピックアップ入力と同じ扱い)。
-     * 保有ポイントを超える減算など値の範囲は公式 OpenAPI に定義がなく、API 側の判断に委ねる。
+     * `points` の未指定は送信前に拒否し、値の範囲は API の検証に委ねる。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
@@ -157,6 +155,7 @@ class Customer extends Service
      * @return Points|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または `points` が未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/adr/0015-model-customer-write-api.md
      */
     public function changePoints(
         int|string $id,
@@ -215,12 +214,11 @@ class Customer extends Service
     /**
      * 顧客作成の入力に、公式 OpenAPI が required とする6フィールドが明示されていることを確認する。
      *
-     * 作成の request では `customer` とその6つの子プロパティに required 指定があるため、
-     * 必須フィールドが未指定の要求は送信前に拒否する (ADR 0015)。必須6項目は非 null の
-     * プロパティであり、明示した `null` は CustomerCreateInput の構築時に InvalidFieldException で拒否される。
+     * 明示した `null` は CustomerCreateInput の構築時に InvalidFieldException で拒否される。
      *
      * @return array<string, mixed>
      * @throws ParameterException 未指定の必須フィールドがある場合
+     * @see docs/adr/0015-model-customer-write-api.md
      */
     private static function requireCreateFields(CustomerCreateInput $input): array
     {
