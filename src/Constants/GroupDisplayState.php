@@ -5,8 +5,10 @@ namespace Shimoning\ColorMeShopApi\Constants;
 /**
  * 商品グループの表示状態。
  *
- * 公式 OpenAPI との差分: 応答定義にだけある `showing_for_members` / `sale_for_members` は、実 API が
- * 書き込みを 422 で拒否する (2026-09-21)。応答の受理のためだけに含める。
+ * `showing_for_members` / `sale_for_members` は公式 OpenAPI の応答の定義にだけあり、送信はできない
+ * (実 API は 422)。応答の受理のためだけに含める。
+ *
+ * 公式 OpenAPI との差分: 応答の定義にない `members_only` を、実 API は返す (2026-09-22)。
  *
  * @see docs/api-product-structure.md
  * @see docs/enum-openapi-audit.md

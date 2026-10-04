@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  *
  * 明示したフィールドだけを送信する部分更新で、明示した `null` も送信する。`name` / `address1` の
  * 未指定は送信前に拒否する。nullable でないフィールドの `null` と不正な `sex` は構築時に拒否する。
- * 作成専用の `add_member` は持たない。
+ * 作成専用の `add_member` は持たない。`furigana` は文字列で指定し、`Furigana` のインスタンスは受け付けない。
  *
  * 公式 OpenAPI との差分: required 指定はないが `name` / `address1` は実 API で必須である。
  * `tel_mobile` は request にあるが書き込めないため入力に含めない (2026-09-25)。

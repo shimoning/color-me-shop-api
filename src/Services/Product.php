@@ -403,7 +403,10 @@ class Product extends Service
     /**
      * 商品を作成する。更新専用フィールドは送信されない。
      *
-     * 公式 OpenAPI との差分: `name` だけで作成でき、更新専用フィールドを送っても反映されない (2026-10-02)。
+     * `name` だけで作成できる (2026-09-20)。
+     *
+     * 公式 OpenAPI との差分: 作成の request にない更新専用の 4 項目を送っても、実 API はエラーにせず無視する
+     * (2026-10-02)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
@@ -422,6 +425,7 @@ class Product extends Service
 
     /**
      * 商品を更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     * `sales_price` と `price` は `null` でクリアできることを確認している (2026-09-20、2026-09-21)。
      *
      * 空の `ProductUpdateInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
      * で拒否して `Errors` が返る。ライブラリ側では事前に拒否しない。
@@ -601,7 +605,7 @@ class Product extends Service
     /**
      * おすすめ商品情報を削除する。
      *
-     * 公式 OpenAPI との差分: 実 API は 200 で削除済みの `pickup` object を返す (2026-09-20)。
+     * 成功すると 200 で削除済みの `pickup` object を返す (2026-09-20)。
      * int / string の種別は `PickupType` の値 (0 / 1 / 3 / 4) として検証し、それ以外はパスへ載せずに拒否する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})

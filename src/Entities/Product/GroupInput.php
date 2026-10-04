@@ -34,7 +34,8 @@ class GroupInput extends Entity implements RequestEntity
     /**
      * 送信できる `display_state`。
      *
-     * 公式 OpenAPI との差分: 応答定義にだけある残り2値を実 API は 422 で拒否する (2026-09-21)。
+     * 公式 OpenAPI の作成・更新の request の定義と同じ 3 値。応答の定義にだけある残り 2 値は、
+     * 実 API も 422 で拒否する (2026-09-21)。
      *
      * @see docs/api-product-structure.md
      */

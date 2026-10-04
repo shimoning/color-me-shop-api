@@ -18,7 +18,7 @@ enum ErrorCode: string implements FallbackEnum
      */
     case VALIDATE_ERROR_CHOICE = '422001';
     /**
-     * フリガナの形式が不正な場合のエラー (2026-09-25)。
+     * 観測では、顧客のフリガナに数値文字参照を含めて更新したときに返った (2026-09-25)。
      *
      * @see docs/api-customer-structure.md
      */
@@ -26,7 +26,7 @@ enum ErrorCode: string implements FallbackEnum
     /** 公式 OpenAPI との差分: コード固有の意味は記載されていない。 */
     case VALIDATE_ERROR_422007 = '422007';
     /**
-     * 数値の範囲外を指定した場合のエラー (2026-09-21)。
+     * 観測では、カテゴリーの `sort` に負の値を指定したときに返った (2026-09-21)。
      *
      * 公式 OpenAPI との差分: コード固有の説明はない。
      *
@@ -43,7 +43,7 @@ enum ErrorCode: string implements FallbackEnum
     case VALIDATE_ERROR_FORMAT = '422100';
     case VALIDATE_ERROR_FIELD = '422210'; // 必須パラメータの不足
     /**
-     * 顧客のフリガナに利用できない文字を含む場合のエラー (2026-09-25)。
+     * 観測では、顧客のフリガナに `ヷヸヹヺ` を含めたときに返った (2026-09-25)。
      * message() の X は拒否した文字を表す。
      *
      * @see docs/api-customer-structure.md

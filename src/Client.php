@@ -202,7 +202,10 @@ class Client
     /**
      * 商品を作成する。更新専用フィールドは送信されない。
      *
-     * 公式 OpenAPI との差分: `name` だけで作成でき、更新専用フィールドを送っても反映されない (2026-10-02)。
+     * `name` だけで作成できる (2026-09-20)。
+     *
+     * 公式 OpenAPI との差分: 作成の request にない更新専用の 4 項目を送っても、実 API はエラーにせず無視する
+     * (2026-10-02)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
@@ -343,7 +346,7 @@ class Client
     /**
      * おすすめ商品情報を削除する。
      *
-     * 公式 OpenAPI との差分: 実 API は 200 で削除済みの pickup を返す (2026-09-20)。
+     * 成功すると 200 で削除済みの pickup を返す (2026-09-20)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *

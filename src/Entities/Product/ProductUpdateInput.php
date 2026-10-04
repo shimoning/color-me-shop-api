@@ -11,7 +11,8 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 /**
  * 商品の更新 (PUT /v1/products/{id}) の `product` 入力。
  *
- * 明示したフィールドだけを送信する部分更新で、明示した `null` も送信する。`display_state` は
+ * 明示したフィールドだけを送信する部分更新で、明示した `null` も送信する。`sales_price` と `price` は
+ * 明示した `null` でクリアできることを確認している (2026-09-20、2026-09-21)。`display_state` は
  * `ProductDisplayState` の4値を受け付け、`members_only` は拒否する。`unlisted` は送信できない。
  * `group_ids` / `stocks` / `variants` の不正な形状は構築時に `InvalidFieldException` で拒否する。
  *

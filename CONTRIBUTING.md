@@ -102,7 +102,9 @@ CI (`.github/workflows/test.yml`) は `master` への push と PR で動き、PH
 ## PHPDoc
 
 PHPDoc は、利用者がそのクラスやメソッドを使うために必要な情報に絞る。経緯や判断の理由、観測の
-詳細は `docs/`（ADR と観測記録）に書き、PHPDoc からは `@see` で参照する。
+詳細は `docs/` に書き、PHPDoc からは `@see` で参照する。設計判断は ADR（`docs/adr/`）、実 API の
+観測は観測記録（`docs/api-*.md` など）、ADR にするほどではない実装上の注意とその理由は
+`docs/implementation-notes.md` に書く。
 
 書くもの:
 
@@ -118,12 +120,11 @@ PHPDoc は、利用者がそのクラスやメソッドを使うために必要�
 
 ```php
 /**
- * 商品グループの表示状態。
+ * トークン種別を取得する。
  *
- * 公式 OpenAPI との差分: SHOWING_FOR_MEMBERS / SALE_FOR_MEMBERS は応答の定義にだけあり、
- * 実 API は送信を 422 で拒否する (2026-09-21)。応答での受理のためだけに含める。
+ * 公式 OpenAPI との差分: 応答例は `bearer` だが、実 API は `Bearer` を返す (2026-09-29)。
  *
- * @see docs/api-product-structure.md
+ * @see docs/api-unixtime-observation.md
  */
 ```
 
