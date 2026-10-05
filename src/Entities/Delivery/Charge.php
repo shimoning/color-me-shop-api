@@ -27,7 +27,7 @@ class Charge extends Entity
     protected string $accountId;
 
     protected ?int $chargeFixed;
-    /** @var list<array{int, int}> */
+    /** @var list<PriceCharge> */
     protected array $chargeRangesByPrice;
     protected ?int $chargeMaxPrice;
 
@@ -47,6 +47,33 @@ class Charge extends Entity
     public function __construct(array $data)
     {
         parent::__construct($data);
+
+        if (\array_key_exists('charge_ranges_by_price', $data)) {
+            $this->chargeRangesByPrice = [];
+            foreach ($data['charge_ranges_by_price'] as $index => $priceCharge) {
+                try {
+                    if (
+                        ! \is_array($priceCharge)
+                        || ! \array_key_exists(0, $priceCharge)
+                        || ! \array_key_exists(1, $priceCharge)
+                    ) {
+                        throw new \UnexpectedValueException('価格別配送料の行形式が不正です。');
+                    }
+
+                    $this->chargeRangesByPrice[] = new PriceCharge([
+                        'upper_limit' => $priceCharge[0],
+                        'charge' => $priceCharge[1],
+                    ]);
+                } catch (\Throwable $error) {
+                    throw InvalidFieldException::forArrayElement(
+                        static::class,
+                        \sprintf('charge_ranges_by_price[%s]', $index),
+                        PriceCharge::class,
+                        $error,
+                    );
+                }
+            }
+        }
 
         if (! \array_key_exists('charge_ranges_by_weight', $data)) {
             return;
@@ -108,9 +135,9 @@ class Charge extends Entity
     }
 
     /**
-     * 配送料が変わる決済金額の区分
-     * [3000, 100]であれば、3000円以下の場合、手数料は100円であることを表す
-     * @return list<array{int, int}>
+     * 決済金額ごとの配送料区分
+     *
+     * @return list<PriceCharge>
      */
     public function getChargeRangesByPrice(): array
     {
@@ -119,7 +146,8 @@ class Charge extends Entity
     }
 
     /**
-     * charge_ranges_by_priceに設定されている区分以上の金額の場合の手数料
+     * 価格別配送料区分に付随する配送料
+     *
      * @return int|null
      */
     public function getChargeMaxPrice(): ?int

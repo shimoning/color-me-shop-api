@@ -391,9 +391,16 @@ class FieldExceptionMessageContractTest extends TestCase
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/重量別配送料要素型不一致' => [
-                self::site('src/Entities/Delivery/Charge.php', InvalidFieldException::class . '::forArrayElement', 1),
+                self::site('src/Entities/Delivery/Charge.php', InvalidFieldException::class . '::forArrayElement', 2),
                 static function (): void {
                     new Charge(['charge_ranges_by_weight' => [null]]);
+                },
+                \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::forArrayElement/価格別配送料要素型不一致' => [
+                self::site('src/Entities/Delivery/Charge.php', InvalidFieldException::class . '::forArrayElement', 1),
+                static function (): void {
+                    new Charge(['charge_ranges_by_price' => [null]]);
                 },
                 \UnexpectedValueException::class,
             ],

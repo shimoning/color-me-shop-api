@@ -43,6 +43,7 @@ class ApiFieldNameTest extends TestCase
         'Page' => 'Entity を継承せず、toArray() を持たないページ付きコレクション',
         'OAuth\\Options' => 'Entity を継承しないアプリ設定 DTO',
         'Product\\Category' => '抽象基底クラスで、具象クラスを個別に検証する',
+        'Delivery\\PriceCharge' => 'upper_limit / charge は API の価格別送料タプルに付けたライブラリ独自名',
         'Delivery\\Weight' => 'weight / areas は API の重量別送料タプルに付けたライブラリ独自名',
         'Payment\\CodFee' => 'upper_limit / fee は API の代引き手数料タプルに付けたライブラリ独自名',
     ];
