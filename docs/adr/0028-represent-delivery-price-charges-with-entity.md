@@ -21,7 +21,7 @@
 （未満）ことが実測で分かっていた。配送料の境界は確かめられていなかった。
 
 2026-10-05 に、ショップのオーナーが管理画面で配送方法を注文金額別に設定し、画面の表記と API の応答を
-突き合わせた。詳細は[配送料の金額別区分の実測記録](../api-delivery-charge-observation.md)にある。
+突き合わせた。詳細は[配送料の設定の実測記録](../api-delivery-charge-observation.md)にある。
 出典: `cec94c3`。
 
 - 管理画面の「〜500円未満：1200円」は `[500, 1200]` として返った。**組の第 1 要素は、その区分に含まれない
@@ -79,7 +79,7 @@
 
 - [ADR 0000: アーキテクチャ上の意思決定を記録する](0000-record-architecture-decisions.md)
 - [ADR 0011: 代引き手数料区分を専用 Entity で表現する](0011-represent-cod-fees-with-entity.md)
-- [配送料の金額別区分の実測記録](../api-delivery-charge-observation.md)（出典コミット: `cec94c3`）
+- [配送料の設定の実測記録](../api-delivery-charge-observation.md)（出典コミット: `cec94c3`）
 - 実装とテストの出典コミット: `81d708e`
 - クラス名の変更の出典コミット: `cc07151`
 - PHPDoc への境界の記載の出典コミット: `9cb4664`
