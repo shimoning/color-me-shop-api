@@ -95,13 +95,6 @@ class Charge extends Entity
         }
     }
 
-    private static function isPairTuple(mixed $value): bool
-    {
-        return \is_array($value)
-            && \array_is_list($value)
-            && \count($value) === 2;
-    }
-
     /**
      * 配送方法ID
      * @return int

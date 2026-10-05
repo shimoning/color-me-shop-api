@@ -19,6 +19,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\AllowNullObjectFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\PairTupleEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RelativeTypeParentEntity;
@@ -39,6 +40,27 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\ScalarArrayEntity;
 
 class EntityTest extends TestCase
 {
+    #[DataProvider('pairTupleProvider')]
+    public function test_2要素のタプル形状を判定する(mixed $value, bool $expected): void
+    {
+        $this->assertSame($expected, PairTupleEntity::isPairTuple($value));
+    }
+
+    public static function pairTupleProvider(): array
+    {
+        return [
+            '2要素のリスト' => [[1, 2], true],
+            '1要素' => [[1], false],
+            '3要素' => [[1, 2, 3], false],
+            '飛び番のキー' => [[0 => 1, 2 => 2], false],
+            '連想配列' => [['first' => 1, 'second' => 2], false],
+            '文字列' => ['invalid', false],
+            'null' => [null, false],
+            '整数' => [1, false],
+            '空配列' => [[], false],
+        ];
+    }
+
     // --- キーの変換 -------------------------------------------------------
 
     public function test_snake_caseのキーをcamelCaseのプロパティに割り当てる(): void
