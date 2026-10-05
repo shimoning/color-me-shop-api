@@ -13,26 +13,16 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 /**
  * 顧客データの追加 (POST /v1/customers) の `customer` 入力。
  *
- * `sex` は公式 OpenAPI の作成 request にないが、2026-09-25 の実測で反映されたため持たせている。
- * `tel_mobile` / `memo` / `points` / `member` / `sales_count` は作成時に無視されるため持たせない。
- * 作成と更新で必須フィールドが異なるため、更新の CustomerUpdateInput とは別の型にしている。
+ * 明示したフィールドだけを送信し、明示した `null` も送信する。必須6項目の未指定は送信前に、
+ * `null` は構築時に拒否する。`add_member` は明示した場合だけ送信する。`furigana` は文字列で指定し、
+ * `Furigana` のインスタンスは受け付けない。
  *
- * 直列化の契約:
- * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する (ADR 0014)。
- * - 指定しなかったフィールドは送信しない。
- *
- * 公式 OpenAPI が required とする `name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は
- * REQUIRED_FIELDS として公開し、Services\Customer::create() が送信前に明示を確認する
- * (ADR 0014 のピックアップ入力と同じく、検証は Service 側で行う)。これらは nullable 指定がないため
- * 非 null のプロパティとして宣言しており、明示した `null` は型として `InvalidFieldException` になる。
- *
- * `furigana` などの Value フィールドは生の値で指定する。Value のインスタンスは受け付けない
- * (Entity::buildObject() が常に Value のコンストラクタへ渡すためで、既存の Value フィールドと同じ契約)。
- *
- * `add_member` は作成専用で、公式 OpenAPI の既定は `false`。ライブラリ側では既定値を補わず、
- * 明示したときだけ送信する。値の範囲 (`maxLength` や `pattern` など) は API 側の検証に委ねる。
+ * 公式 OpenAPI との差分: `sex` は作成 request にないが実 API で反映される。`tel_mobile` / `memo` /
+ * `points` / `member` / `sales_count` は作成時に無視されるため入力に含めない (2026-09-25)。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-customer-structure.md
+ * @see docs/adr/0015-model-customer-write-api.md
  */
 class CustomerCreateInput extends Entity implements RequestEntity
 {

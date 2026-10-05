@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  * status、headers などの応答情報は NoContent と同じく getResponse() 経由で参照する。
  *
  * @extends Collection<Error>
+ * @see docs/implementation-notes.md
  */
 class Errors extends Collection
 {
@@ -51,15 +52,11 @@ class Errors extends Collection
      * API レスポンスからエラーコレクションを生成する。
      *
      * ワイヤ上で object 形状の要素は、既知フィールドが空または不正でも Error として保持する。
-     * 不正な既知フィールドは要素全体を捨てず欠損として扱うため、その getter は Entity 共通契約どおり
-     * MissingFieldException を投げる。空 Error を保持することも、ワイヤ上の件数を失わないための意図した挙動である。
-     *
-     * フィールド単位の検証により Error の構築例外へ通常は到達しないが、将来のフィールド追加や
-     * Entity の変換経路変更で例外が発生しても Errors 自体を返せるよう、要素単位で Throwable を捕捉する。
-     * これは想定外の例外に対する最後の防御であり、構築に失敗した要素だけをスキップする。
+     * 不正な既知フィールドは欠損として扱い、構築に失敗した要素だけをスキップする。
      *
      * @param Response $response API レスポンス
      * @return self
+     * @see docs/api-error-responses.md
      */
     static public function build(Response $response): self
     {
@@ -82,12 +79,6 @@ class Errors extends Collection
 
     /**
      * object / list の形状を失わないよう、生 JSON からエラー要素を取得する。
-     *
-     * json_decode の連想配列化では {} と [] がどちらも [] になり、数値風の object キーも int キーへ
-     * 変換される。stdClass を使う再パースにより、キーではなくワイヤ上のコンテナ形状で判定する。
-     * Response が保持する連想配列ツリーに加えて再パース結果も構築するため、build 中のメモリと処理時間は
-     * レスポンスサイズに比例して増える。実 API のエラー件数は小さい前提で形状の正確さを優先しており、
-     * 異常に巨大なエラー応答では一時的なメモリ増加と遅延が上限リスクになる。
      *
      * @return array<array-key, mixed>
      */
@@ -172,10 +163,7 @@ class Errors extends Collection
     /**
      * 既知フィールドを個別に検証し、有効なフィールドだけを Error へ渡す。
      *
-     * code は既存の string 応答を維持しつつ、API 契約上の integer を公開 getter の string 契約へ
-     * 正規化する。PHP_INT_MAX を超える JSON integer は float になり欠損扱いとなる既知の制約がある。
-     * Response 全体へ JSON_BIGINT_AS_STRING を適用すると他 Entity の int フィールドまで文字列化するため、
-     * 実 API の code が6桁である現状では局所的な欠損扱いを選ぶ。
+     * integer の code は公開 getter の契約に合わせて string へ正規化する。
      *
      * @param array<array-key, mixed> $item
      * @return array<array-key, mixed>

@@ -13,29 +13,16 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 /**
  * 顧客データの更新 (PUT /v1/customers/{customer_id}) の `customer` 入力。
  *
- * 作成専用の `add_member` は持たない。
- * `tel_mobile` は公式 OpenAPI の更新 request にあるが、2026-09-25 の実測で
- * null → 値 → 別の値 → null の全パターンが200でも PUT 応答と直後の GET は常に null だった。
- * 書き込めないため、ProductCreateInput / ProductUpdateInput の `unlisted` と同じ判断で持たせない (ADR 0014)。
- * 公式 OpenAPI には required 指定がないが、2026-09-25 の実測で `name` / `address1` が
- * 必須だったため、REQUIRED_FIELDS として公開し、Services\Customer::update() が送信前に検証する。
- * 同日の実測で、省略したフィールドは保持される部分更新として機能することも確認した。
+ * 明示したフィールドだけを送信する部分更新で、明示した `null` も送信する。`name` / `address1` の
+ * 未指定は送信前に拒否する。nullable でないフィールドの `null` と不正な `sex` は構築時に拒否する。
+ * 作成専用の `add_member` は持たない。`furigana` は文字列で指定し、`Furigana` のインスタンスは受け付けない。
  *
- * 直列化の契約:
- * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する (ADR 0014)。
- * - 指定しなかったフィールドは送信しない (部分更新)。
- *
- * null 許容は公式 OpenAPI の `nullable` 指定にそのまま従う。`name` / `mail` / `pref_id` / `postal` /
- * `address1` / `tel` は nullable 指定がなく、作成では required でもあるため、明示した `null` を
- * 型として拒否する。これらをクリアする意味がないためで、商品作成・更新入力が全フィールドを nullable に
- * した判断 (ADR 0014) はこの Entity には適用しない。
- *
- * `sex` は応答と同じ `Sex` を使うが、要求側では未知値のフォールバックが働かないため、番兵の
- * `UNKNOWN` と未定義の文字列は構築時に拒否する (ADR 0013)。
- * `furigana` などの Value フィールドは生の値で指定する。Value のインスタンスは受け付けない。
- * 値の範囲 (`maxLength` や `pattern` など) は API 側の検証に委ねる。
+ * 公式 OpenAPI との差分: required 指定はないが `name` / `address1` は実 API で必須である。
+ * `tel_mobile` は request にあるが書き込めないため入力に含めない (2026-09-25)。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-customer-structure.md
+ * @see docs/adr/0015-model-customer-write-api.md
  */
 class CustomerUpdateInput extends Entity implements RequestEntity
 {

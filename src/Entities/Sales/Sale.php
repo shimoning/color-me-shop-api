@@ -498,15 +498,10 @@ class Sale extends Entity
 
     /**
      * 外部システムで発行された決済識別番号
-     * 該当受注の決済が以下のいずれかである場合、その決済の決済識別番号を返します。
-     *  - 楽天ペイ（オンライン決済）
-     *  - LINE Pay
-     *  - PayPal
-     *  - Commerce Platform
-     *  - Amazon Pay
-     *  - Amazon Pay V2
-     *  - Square対面決済
-     * それ以外の決済に関しては空文字列を返します。
+     *
+     * 楽天ペイ、LINE Pay、PayPal、Commerce Platform、Amazon Pay、Amazon Pay V2、Square対面決済で
+     * 発行された番号を返す。それ以外の決済では空文字列を返す。
+     *
      * @return string
      */
     public function getExternalOrderId(): string

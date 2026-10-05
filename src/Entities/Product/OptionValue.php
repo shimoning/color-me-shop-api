@@ -9,9 +9,11 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * 独立した productOptionValue スキーマの応答。
- * 商品内 options[].values は文字列配列で、この object ではない。
- * 出典: docs/api-product-structure.md (fa4bfbb)。
+ *
+ * 商品の中の `options[].values` は文字列の配列で、この object ではない。
+ *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-product-structure.md
  */
 class OptionValue extends Entity
 {

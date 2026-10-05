@@ -12,34 +12,17 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 /**
  * 商品グループの作成 (POST /v1/groups) と更新 (PUT /v1/groups/{id}) の `group` 入力。
  *
- * 公式 OpenAPI の両 `group` object の和集合を表し、作成と更新で共用する (ADR 0014)。
- * `parent_group_id` は作成側にだけある。どの操作でどのフィールドが有効かは公式 API 契約に従って
- * 利用者が選ぶ。`group` 自体は required だが、子プロパティに required 指定はない。
+ * 明示したフィールドだけを送信し、明示した `null` も送信する。`display_state` は
+ * `showing` / `hidden` / `members_only` に限り、`meta_tag` は `MetaTagInput` へ変換する。
+ * 不正な `display_state` または `meta_tag` の形状は構築時に `InvalidFieldException` で拒否する。
+ * `parent_group_id` は作成時にだけ有効で、公式 OpenAPI の更新 request にはない。
  *
- * 直列化の契約:
- * - コンストラクタ配列で明示したフィールドだけを送信し、明示した `null` も送信する。
- * - 指定しなかったフィールドは送信しない。
- * - 公式 OpenAPI で nullable なのは `expl` と `parent_group_id` と `meta_tag` の各値だけだが、
- *   商品作成・更新入力と同じく全フィールドを nullable にし、`null` の受理は API 側に委ねる。
- *
- * `display_state` は `GroupDisplayState` のうち `WRITABLE_DISPLAY_STATES` の 3 値 (`showing` / `hidden` /
- * `members_only`) に限定し、公式 OpenAPI のグループ作成・更新 request の enum と一致する。実 API の観測
- * (2026-09-21) でも同じ 3 値が受理され、`showing_for_members` / `sale_for_members` は 422 で拒否された。
- * 応答の `Group` は同じ enum で、公式 `productGroup` response 定義にある後者 2 値も受理するが、本入力では
- * 文字列・enum インスタンスのどちらで指定しても構築時に `InvalidFieldException` で拒否する
- * (docs/enum-openapi-audit.md、ADR 0014)。
- *
- * 実 API の観測 (2026-09-21) では、`expl` は明示した `null` でクリアできた。一方 `meta_tag` は初回設定
- * (null から値へ) だけが永続化され、以後の PUT (一部キーのみ、全キー新値、全キー `null`、`meta_tag: null`) は
- * 応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。
- * 出典: docs/api-product-structure.md の「2026-09-21 の追加観測（グループ・カテゴリーの書き込み smoke test）」。
- *
- * `meta_tag` は `MetaTagInput` へ変換する。`title` / `keywords` / `description` のいずれも持たない配列は
- * JSON で `[]` になり OpenAPI の object 定義に合わないため、またそれ以外のキーを持つ配列は
- * `additionalProperties: false` に反し利用者の誤りを隠すため、構築時に `InvalidFieldException` で拒否する。
- * 値の範囲 (`maxLength` など) は API 側の検証に委ね、ライブラリでは検証しない。
+ * 公式 OpenAPI との差分: nullable 指定のないフィールドも `null` を指定でき、受理可否は API に委ねる。
+ * `meta_tag` の更新が GET に永続化されない場合がある (2026-09-21)。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-product-structure.md
+ * @see docs/adr/0014-model-product-write-api.md
  */
 class GroupInput extends Entity implements RequestEntity
 {
@@ -49,8 +32,12 @@ class GroupInput extends Entity implements RequestEntity
     ];
 
     /**
-     * 送信できる `display_state`。公式 OpenAPI のグループ作成・更新 request の enum と、実 API の観測
-     * (2026-09-21) で受理された値。`GroupDisplayState` の残り 2 値は応答専用で、PUT では 422 になる。
+     * 送信できる `display_state`。
+     *
+     * 公式 OpenAPI の作成・更新の request の定義と同じ 3 値。応答の定義にだけある残り 2 値は、
+     * 実 API も 422 で拒否する (2026-09-21)。
+     *
+     * @see docs/api-product-structure.md
      */
     public const WRITABLE_DISPLAY_STATES = [
         GroupDisplayState::SHOWING,

@@ -9,10 +9,12 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * 商品内 pickups[] と、ピックアップ書き込み API (POST / PUT / DELETE) の `pickup` 応答。
- * OpenAPI の productPickup スキーマにある product_id / account_id は、商品内の実応答にはなく、
- * 書き込み応答の6キーには含まれるため nullable として宣言する。
- * 出典: docs/api-product-structure.md (fa4bfbb、書き込み観測 b1ceab5)。
+ *
+ * 公式 OpenAPI との差分: productPickup の `product_id` / `account_id` は商品内の応答にはなく、
+ * 書き込み応答にだけ含まれるため nullable とする (2026-09-18、2026-09-20)。
+ *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-product-structure.md
  */
 class Pickup extends Entity
 {
@@ -24,8 +26,12 @@ class Pickup extends Entity
     protected int $updateDate;
 
     /**
-     * 商品内 pickups[] は OpenAPI の productPickup と異なり product_id/account_id を含まない (docs/api-product-structure.md, fa4bfbb)。
+     * ピックアップ種別
+     *
+     * 公式 OpenAPI との差分: 商品内 `pickups[]` は `product_id` / `account_id` を含まない (2026-09-18)。
+     *
      * @return int
+     * @see docs/api-product-structure.md
      */
     public function getPickupType(): int
     {

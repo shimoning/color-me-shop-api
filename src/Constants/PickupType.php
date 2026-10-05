@@ -6,7 +6,10 @@ namespace Shimoning\ColorMeShopApi\Constants;
  * おすすめ商品情報 (pickup) の種別。
  *
  * 公式 OpenAPI の商品ピックアップ作成・更新 request が列挙する `0`、`1`、`3`、`4` に対応する。
- * 要求側で使う enum のため未知値のフォールバックは設けない (ADR 0013、ADR 0014)。
+ * 未知値は受け付けない。
+ *
+ * @see docs/adr/0013-expand-opt-in-enum-fallback.md
+ * @see docs/adr/0014-model-product-write-api.md
  */
 enum PickupType: int
 {

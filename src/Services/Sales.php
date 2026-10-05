@@ -104,9 +104,7 @@ class Sales extends Service
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
-     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す
-     * (2026-10-01 実測、docs/api-sale-create-observation.md)。成功時のレスポンス形状は
-     * 公式 OpenAPI に基づき、実 API では未観測。
+     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す (2026-10-01)。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
      * @param SaleCreateInput $input
@@ -115,6 +113,7 @@ class Sales extends Service
      * @return Sale|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-sale-create-observation.md
      */
     public function create(
         SaleCreateInput $input,

@@ -27,16 +27,11 @@ class Entity
     /**
      * フィールドの型と変換方法の定義。
      *
-     * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、またはそれらの配列への
-     * 変換を宣言する。scalar 配列は ['array' => true, 'scalar' => 'int'|'string'] とする。
-     * 単体の子 Entity または scalar の共用は
-     * ['entity' => Entity::class, 'orScalar' => 'int'|'string'] とする。
-     * entity 配列で連想配列を単一要素として包む互換形式を禁止する場合は strictList を true とする。
-     * null の扱いは nullable または allowNull で指定する。
-     * 子 Entity のインスタンスを渡した場合は clone せずそのまま保持する。
-     * ただし要求文脈の非 RequestEntity は、厳格な検証を引き継ぐため生データから再構築する。
-     * 要求文脈では array フィールドに連続した整数キーのリストを要求する。
-     * API のフィールド名との対応は FIELD_NAMES に定義する。
+     * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、scalar、配列への変換と null の扱いを
+     * 宣言する。要求では array フィールドにリストを要求する。API のフィールド名は FIELD_NAMES に定義する。
+     *
+     * @see docs/adr/0023-validate-scalar-array-elements-via-field-types.md
+     * @see docs/adr/0025-reject-non-list-arrays-in-requests.md
      */
     const FIELD_TYPES = [];
 
@@ -44,10 +39,8 @@ class Entity
      * 自動変換では表現できない API のフィールド名の対応表。
      *
      * プロパティ名をキー、API のフィールド名を値として、必要なものだけ定義する。
-     * 取り込み時は「アンダースコア区切り → camelCase」、配列化時は「大文字の前に
-     * アンダースコアを挿入」という変換を行うが、この2つは対称ではない。
-     * 例えば shop_mail_1 は shopMail1 として取り込まれるが、配列化すると
-     * shop_mail1 となり元のフィールド名に戻らない。そうした項目をここで補う。
+     *
+     * @see docs/adr/0004-entity-to-array-is-not-round-trippable.md
      */
     const FIELD_NAMES = [];
 
@@ -69,13 +62,7 @@ class Entity
     /**
      * 要求側 Entity ごとに、利用者が明示したプロパティ名を保持する。
      *
-     * 応答側と共有する nullable プロパティは、欠損時にも null で初期化される。
-     * 値では両者を区別できないため、取り込み時のキー集合を別に記録する。
-     * 応答 Entity では未初期化のままにし、既存の serialize 表現へプロパティを増やさない。
-     * RequestEntity だけがコンストラクタで初期化することで、明示フィールドの永続化も保つ。
-     * 追跡追加前に serialize された RequestEntity では未初期化のまま復元されるため、
-     * toArrayRecursive() は従来の null 省略へフォールバックする。復元後に setter を使う場合は、
-     * その時点で初期化済みかつ非 null のフィールドを種にしてから明示フィールドを追加する。
+     * 未設定と明示した `null` を区別するため、取り込み時のキー集合を記録する。
      *
      * @var array<string, true>
      */
@@ -763,10 +750,12 @@ class Entity
      * 再帰的に配列として取得する。
      *
      * 応答の未知の FallbackEnum 値は番兵の backing value になる。
-     * 元の API 値は getRaw() に残るため、両者は一致しない場合がある
-     * (ADR 0009 / 0013)。
+     * 元の API 値は getRaw() に残るため、両者は一致しない場合がある。
+     *
      * @param bool $ignoreNull null の値を除外するか
      * @return array<string, mixed>
+     * @see docs/adr/0009-opt-in-enum-fallback.md
+     * @see docs/adr/0013-expand-opt-in-enum-fallback.md
      */
     public function toArrayRecursive($ignoreNull = true): array
     {
@@ -799,11 +788,6 @@ class Entity
 
     /**
      * setter 経由で明示された要求フィールドを記録する。
-     *
-     * コンストラクタ配列のキーは基底で自動記録するが、既存の
-     * SaleUpdateInput 系が持つ setter も同じ「利用者が明示した値」として扱う。
-     * 旧形式から復元して追跡情報がない場合は、従来の null 省略フォールバックで
-     * 直列化される初期化済みの非 null フィールドを種にし、setter 前の値も保持する。
      */
     protected function markRequestField(string $property): void
     {
@@ -855,9 +839,11 @@ class Entity
      * 変換前の生データをそのまま取得する。
      *
      * 応答の未知の FallbackEnum 値も元値のまま残る。
-     * toArrayRecursive() は番兵の backing value を返す
-     * (ADR 0009 / 0013)。
+     * toArrayRecursive() は番兵の backing value を返す。
+     *
      * @return array
+     * @see docs/adr/0009-opt-in-enum-fallback.md
+     * @see docs/adr/0013-expand-opt-in-enum-fallback.md
      */
     public function getRaw(): array
     {

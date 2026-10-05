@@ -36,8 +36,9 @@ class Payment extends Entity
     /**
      * 決済手数料
      *
-     * 実測では、cod.changeable が false の場合に管理画面で一律手数料が選択され、
-     * true の場合にもこの入力値は応答に残る。実決済時の計算結果は未観測。
+     * 区分手数料の場合も一律手数料の入力値が応答に残る (2026-09-16)。
+     *
+     * @see docs/api-payment-structure.md
      */
     protected ?int $fee;
 
@@ -98,10 +99,10 @@ class Payment extends Entity
     /**
      * 決済手数料
      *
-     * 実測では、cod.changeable が false の場合に管理画面で一律手数料が選択され、
-     * true の場合にもこの入力値は応答に残る。実決済時の計算結果は未観測。
+     * 区分手数料の場合も一律手数料の入力値が応答に残る (2026-09-16)。
      *
      * @return int|null
+     * @see docs/api-payment-structure.md
      */
     public function getFee(): ?int
     {
@@ -238,9 +239,9 @@ class Payment extends Entity
     /**
      * 銀行振込決済（type=1）の設定情報。銀行振込決済の場合のみ存在する。
      * 銀行振込以外の決済で financial キーが欠損した場合は null を返す。
-     * 出典: docs/api-payment-structure.md。
      *
      * @return Financial|null
+     * @see docs/api-payment-structure.md
      */
     public function getFinancial(): ?Financial
     {

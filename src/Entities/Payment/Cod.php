@@ -110,12 +110,13 @@ class Cod extends Entity
     /**
      * 手数料が変わる決済金額の区分
      *
-     * 各区分の upperLimit は設定上の排他的上限（未満）。公式 OpenAPI の
-     * 「3000円以下」は設定境界の説明として誤っている。実決済時の計算は未観測。
-     * 欠損と明示 null は null、空配列は空リストとして返す。
-     * 出典: docs/api-payment-structure.md。
+     * 各区分の upperLimit は設定上の排他的上限。欠損と明示 null は null、空配列は空リストとして返す。
+     *
+     * 公式 OpenAPI との差分: upperLimit の「以下」という説明は誤りで、値そのものは区分に含まれない
+     * (2026-09-16)。
      *
      * @return list<CodFee>|null
+     * @see docs/api-payment-structure.md
      */
     public function getFees(): ?array
     {
@@ -124,12 +125,11 @@ class Cod extends Entity
 
     /**
      * 最後の区分がある場合、その upperLimit 以上に設定された手数料。
-     * 公式 OpenAPI は nullable と
-     * していないが、実 API では未設定時に null、固定手数料時にキー欠損を確認した。
-     * null の場合の最終区分と実決済時の計算結果は未観測。
-     * 出典: docs/api-payment-structure.md。
+     *
+     * 公式 OpenAPI との差分: nullable ではないが、実 API では null またはキー欠損になる (2026-09-16)。
      *
      * @return int|null
+     * @see docs/api-payment-structure.md
      */
     public function getFeeMax(): ?int
     {
@@ -140,12 +140,11 @@ class Cod extends Entity
      * 手数料計算に用いる金額の種類
      *
      * true の場合は決済総額、false の場合は商品合計額で計算する。
-     * 公式 OpenAPI では非 nullable の boolean だが、実 API では固定手数料
-     * （changeable=false）のときキー欠損を確認した。固定手数料では
-     * 手数料の区分判定がないため値がなく、欠損時は null を返す。
-     * 出典: docs/api-payment-structure.md。
+     *
+     * 公式 OpenAPI との差分: 非 nullable だが、固定手数料ではキー欠損になるため null を返す (2026-09-16)。
      *
      * @return bool|null
+     * @see docs/api-payment-structure.md
      */
     public function getChangeableByTotal(): ?bool
     {

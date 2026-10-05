@@ -42,10 +42,11 @@ class Stat extends Entity
     /**
      * 集計の基準日
      *
-     * 公式 OpenAPI は integer とだけ定め、値の意味は示していない。2026-09-29 の実測で、
-     * Services\Sales::stat() に渡した日付の 00:00（JST）を unixtime で返すことを確認した。
-     * 出典: docs/api-unixtime-observation.md
+     * 公式 OpenAPI との差分: 値の意味は未記載だが、実 API は指定日の 00:00 (JST) を unixtime で返す
+     * (2026-09-29)。
+     *
      * @return DateTimeImmutable
+     * @see docs/api-unixtime-observation.md
      */
     public function getDate(): DateTimeImmutable
     {
@@ -76,10 +77,10 @@ class Stat extends Entity
     /**
      * 基準日の 7 日前から基準日の終わりまでの合計売上金額
      *
-     * 名前は 7days だが、2026-09-29 の実測では基準日とその前 7 日間の合計 8 日間だった。
-     * 公式 OpenAPI の description と一致する。
-     * 出典: docs/api-unixtime-observation.md
+     * フィールド名とは異なり、基準日を含む8日間を集計する (2026-09-29)。
+     *
      * @return int
+     * @see docs/api-unixtime-observation.md
      */
     public function getAmountLast7days(): int
     {
@@ -90,10 +91,10 @@ class Stat extends Entity
     /**
      * 基準日の 7 日前から基準日の終わりまでの合計件数
      *
-     * 名前は 7days だが、2026-09-29 の実測では基準日とその前 7 日間の合計 8 日間だった。
-     * 公式 OpenAPI の description と一致する。
-     * 出典: docs/api-unixtime-observation.md
+     * フィールド名とは異なり、基準日を含む8日間を集計する (2026-09-29)。
+     *
      * @return int
+     * @see docs/api-unixtime-observation.md
      */
     public function getCountLast7days(): int
     {

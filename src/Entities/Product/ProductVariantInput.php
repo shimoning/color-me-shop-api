@@ -13,7 +13,9 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * `option1_value` / `option2_value` / `stocks` はいずれも任意だが、JSON object として送るため
  * 少なくとも1キーを必要とする。`stocks` は int または ProductStocksIncrementInput で、
- * OpenAPI に nullable 指定がないため `null` は拒否する (ADR 0012)。
+ * OpenAPI に nullable 指定がないため `null` は拒否する。
+ *
+ * @see docs/adr/0012-allow-nullability-from-api-observations.md
  */
 class ProductVariantInput extends Entity implements RequestEntity
 {

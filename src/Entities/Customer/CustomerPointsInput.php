@@ -10,16 +10,11 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 /**
  * 顧客ショップポイントの増減 (POST /v1/customers/{customer_id}/points) の入力。
  *
- * 公式 OpenAPI では `points` をトップレベルに持つ object で、`points` は required かつ
- * `nullable: false` の integer である。正の値が加算、負の値が減算を表す。
- *
- * `points` は REQUIRED_FIELDS として公開し、Services\Customer::changePoints() が送信前に
- * 明示を確認する (ADR 0015)。nullable: false のため非 null のプロパティとして宣言しており、
- * 明示した `null` は型として拒否する。
- *
- * 値の範囲 (保有ポイントを超える減算など) は公式 OpenAPI に定義がないため、API 側の判断に委ねる。
+ * 正の値は加算、負の値は減算を表す。未指定は送信前に、`null` は構築時に拒否する。
+ * 値の範囲は API の検証に委ねる。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/adr/0015-model-customer-write-api.md
  */
 class CustomerPointsInput extends Entity implements RequestEntity
 {

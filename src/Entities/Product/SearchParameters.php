@@ -12,7 +12,9 @@ use Shimoning\ColorMeShopApi\Values\DateTime;
 /**
  * 商品一覧 GET の検索条件。
  * ids / group_ids は OpenAPI の説明に従い整数配列をカンマ区切りで送る。
- * 商品一覧 limit の API 上限は 50 (docs/api-product-structure.md, fa4bfbb)。
+ * 商品一覧 limit の API 上限は 50。
+ *
+ * @see docs/api-product-structure.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {

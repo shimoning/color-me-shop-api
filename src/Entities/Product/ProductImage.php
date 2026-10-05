@@ -8,9 +8,9 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * GET /products/{id}/images の画像要素。
- * 商品本体の追加画像 Image と構造が異なる。
- * 出典: docs/api-product-structure.md (fa4bfbb)。
+ *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-product-structure.md
  */
 class ProductImage extends Entity
 {

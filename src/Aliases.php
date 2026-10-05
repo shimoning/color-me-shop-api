@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi;
 
 /**
- * 0.14.0 で改名した要求側入力 Entity の、旧クラス名から新クラス名への対応表。
+ * 非推奨の要求側入力 Entity 名から現行名への対応表。
  *
- * 旧名は非推奨であり、次のメジャーな変更で削除する。新しいコードでは新名を使うこと。
- * 旧名を先に参照した場合は遅延 autoloader で解決し、新名を先に参照した場合は
- * クラス定義直後に別名を登録する。登録時に全対応先クラスを読み込むことはない。
- * 旧名で `unserialize()` された直列化データも、この autoloader を経由して復元できる。
+ * 新しいコードでは現行名を使うこと。旧名で直列化されたデータも復元できる。
  *
- * 改名の根拠は ADR 0016 を参照。
+ * @see docs/adr/0016-unify-request-input-entity-names.md
  */
 final class Aliases
 {

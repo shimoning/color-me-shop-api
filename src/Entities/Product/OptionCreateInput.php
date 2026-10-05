@@ -12,16 +12,11 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 /**
  * オプション作成 (POST /v1/products/{product_id}/options) の `option` 入力。
  *
- * 公式 OpenAPI では `name` と `values` が required で、`values` の各要素は `name` を持つ object。
- * `values` は `[['name' => 'S'], ['name' => 'M']]` の形で指定し、要素は OptionValueCreateInput として検証する。
- * required のため `null` は受け付けない。指定しなかったフィールドは送信しない (ADR 0014)。
- *
- * `values` は公式 OpenAPI で array のため、連想配列 (JSON で object になる形) は構築時に
- * `InvalidFieldException` で拒否する (ProductUpdateInput の `group_ids` / `variants` と同じ扱い)。
- * 各要素は required の `name` を持つ object でなければならず、空配列や `name` のない配列は
- * (`OptionValueCreateInput` が空になり JSON で `[]` として送られてしまうため) 構築時に拒否する。
+ * `name` と `values` は必須で `null` を受け付けない。`values` は `name` を持つ object のリストで指定し、
+ * 連想配列、空の要素、`name` のない要素は構築時に `InvalidFieldException` で拒否する。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/adr/0014-model-product-write-api.md
  */
 class OptionCreateInput extends Entity implements RequestEntity
 {

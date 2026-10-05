@@ -24,9 +24,9 @@ class Option extends Entity
     /** @var list<string> */
     protected array $values;
     /**
-     * 公式 OpenAPI は integer で nullable 指定がないが、実 API のオプション作成 201 応答と
-     * 直後の商品 GET で明示的な null を観測したため nullable にする (ADR 0012)。
-     * 出典: docs/api-product-structure.md「2026-09-21 の追加観測」(dee9609)。
+     * 公式 OpenAPI との差分: nullable ではないが、実 API は `null` を返す (2026-09-21)。
+     *
+     * @see docs/api-product-structure.md
      */
     protected ?int $makeDate;
     protected int $updateDate;
@@ -72,8 +72,10 @@ class Option extends Entity
     }
 
     /**
-     * 実応答は文字列配列。独立した productOptionValue object とは異なる (docs/api-product-structure.md, fa4bfbb)。
+     * オプション値の名前のリスト。独立した `OptionValue` の object ではなく文字列である。
+     *
      * @return list<string>
+     * @see docs/api-product-structure.md
      */
     public function getValues(): array
     {
@@ -84,10 +86,10 @@ class Option extends Entity
     /**
      * オプション作成日時
      *
-     * 公式 OpenAPI は integer だが、実 API はオプション作成の 201 応答と直後の商品 GET の
-     * 双方で `make_date: null` を返す。実測に基づき null を許容する (ADR 0012)。
-     * 出典: docs/api-product-structure.md「2026-09-21 の追加観測」(dee9609)。
+     * 公式 OpenAPI との差分: nullable ではないが、実 API は `null` を返す (2026-09-21)。
+     *
      * @return DateTimeImmutable|null
+     * @see docs/api-product-structure.md
      */
     public function getMakeDate(): ?DateTimeImmutable
     {
