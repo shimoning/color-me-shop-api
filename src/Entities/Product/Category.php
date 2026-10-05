@@ -125,6 +125,7 @@ abstract class Category extends Entity
      * 部分更新はマージではなく、送らなかったキーを null に置換する (2026-09-21)。
      *
      * @return MetaTag|null
+     * @see docs/api-category-structure.md
      * @see docs/api-product-structure.md
      */
     public function getMetaTag(): ?MetaTag

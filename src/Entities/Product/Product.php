@@ -151,9 +151,11 @@ class Product extends Entity
     }
 
     /**
-     * category は object。両 ID が 0 の場合は未設定を表す。
+     * 商品のカテゴリー (大カテゴリーと小カテゴリーの ID)。
+     * `id_small` が 0 のときは小カテゴリーが未設定であることを表す。両 ID が 0 の応答は観測していない。
      *
-     * 公式 OpenAPI との差分: nullable だが実 API では object を返すため非 nullable とする (2026-09-12)。
+     * 公式 OpenAPI との差分: nullable だが、実 API では null を観測しておらず object を返すため、
+     * 非 nullable とする (2026-09-18)。
      *
      * @return CategoryIds
      * @see docs/api-product-structure.md
