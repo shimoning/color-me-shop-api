@@ -5,7 +5,9 @@ namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * 価格による配送料区分
+ * 注文金額による配送料の区分。API の `[上限, 配送料]` の組に意味付きの名前を与える。
+ *
+ * @see docs/api-delivery-charge-observation.md
  */
 class PriceCharge extends Entity
 {
@@ -13,7 +15,9 @@ class PriceCharge extends Entity
     protected int $charge;
 
     /**
-     * 区分の上限金額
+     * 区分の上限金額。この金額はこの区分に含まれない (未満)。
+     *
+     * 公式 OpenAPI との差分: 「以下」と説明しているが、実 API の設定では未満である (2026-10-05)。
      */
     public function getUpperLimit(): int
     {
@@ -23,7 +27,7 @@ class PriceCharge extends Entity
     }
 
     /**
-     * 区分の配送料
+     * この区分の配送料
      */
     public function getCharge(): int
     {

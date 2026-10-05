@@ -135,9 +135,13 @@ class Charge extends Entity
     }
 
     /**
-     * 決済金額ごとの配送料区分
+     * 注文金額ごとの配送料の区分。
+     *
+     * 公式 OpenAPI との差分: 区分の上限を「以下」と説明しているが、実 API の設定では上限はその区分に
+     * 含まれない (未満) (2026-10-05)。
      *
      * @return list<PriceCharge>
+     * @see docs/api-delivery-charge-observation.md
      */
     public function getChargeRangesByPrice(): array
     {
@@ -146,9 +150,10 @@ class Charge extends Entity
     }
 
     /**
-     * 価格別配送料区分に付随する配送料
+     * 最後の区分の上限以上の注文金額に対する配送料。金額別の配送料を設定していない場合は null。
      *
      * @return int|null
+     * @see docs/api-delivery-charge-observation.md
      */
     public function getChargeMaxPrice(): ?int
     {
