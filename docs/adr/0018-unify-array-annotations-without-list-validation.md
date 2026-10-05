@@ -182,3 +182,4 @@ list になり、`{}` と `[]` も list になる。今回の観測ではオブ�
 - 既存ガードの導入コミット: `db7f7ed`（`BigCategory`）、`5edb544`（`Cod`）
 - スカラー配列の要素の型を実行時に検証しない点は [ADR 0023](0023-validate-scalar-array-elements-via-field-types.md) により更新された。
 - 要求側のリスト形状は [ADR 0025](0025-reject-non-list-arrays-in-requests.md) により更新された。
+- `Delivery\Charge` の `charge_ranges_by_price` を `list<array{int, int}>` のまま保持し、実行時に検証しない点は [ADR 0028](0028-represent-delivery-price-charges-with-entity.md) により更新された。

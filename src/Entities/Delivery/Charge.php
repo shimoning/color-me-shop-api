@@ -27,7 +27,7 @@ class Charge extends Entity
     protected string $accountId;
 
     protected ?int $chargeFixed;
-    /** @var list<array{int, int}> */
+    /** @var list<Price> */
     protected array $chargeRangesByPrice;
     protected ?int $chargeMaxPrice;
 
@@ -48,34 +48,58 @@ class Charge extends Entity
     {
         parent::__construct($data);
 
-        if (! \array_key_exists('charge_ranges_by_weight', $data)) {
-            return;
-        }
+        if (\array_key_exists('charge_ranges_by_price', $data)) {
+            $this->chargeRangesByPrice = [];
+            foreach ($data['charge_ranges_by_price'] as $index => $price) {
+                try {
+                    if (! self::isPairTuple($price)) {
+                        throw new \UnexpectedValueException('価格別配送料区分は2要素のタプルである必要があります。');
+                    }
 
-        $this->chargeRangesByWeight = [];
-        foreach ($data['charge_ranges_by_weight'] as $index => $weight) {
-            try {
-                if (
-                    ! \is_array($weight)
-                    || ! \array_key_exists(0, $weight)
-                    || ! \array_key_exists(1, $weight)
-                ) {
-                    throw new \UnexpectedValueException('重量別配送料の行形式が不正です。');
+                    $this->chargeRangesByPrice[] = new Price([
+                        'upper_limit' => $price[0],
+                        'charge' => $price[1],
+                    ]);
+                } catch (\Throwable $error) {
+                    throw InvalidFieldException::forArrayElement(
+                        static::class,
+                        \sprintf('charge_ranges_by_price[%s]', $index),
+                        Price::class,
+                        $error,
+                    );
                 }
-
-                $this->chargeRangesByWeight[] = new Weight([
-                    'weight' => $weight[0],
-                    'areas' => $weight[1],
-                ]);
-            } catch (\Throwable $error) {
-                throw InvalidFieldException::forArrayElement(
-                    static::class,
-                    \sprintf('charge_ranges_by_weight[%s]', $index),
-                    Weight::class,
-                    $error,
-                );
             }
         }
+
+        if (\array_key_exists('charge_ranges_by_weight', $data)) {
+            $this->chargeRangesByWeight = [];
+            foreach ($data['charge_ranges_by_weight'] as $index => $weight) {
+                try {
+                    if (! self::isPairTuple($weight)) {
+                        throw new \UnexpectedValueException('重量別配送料区分は2要素のタプルである必要があります。');
+                    }
+
+                    $this->chargeRangesByWeight[] = new Weight([
+                        'weight' => $weight[0],
+                        'areas' => $weight[1],
+                    ]);
+                } catch (\Throwable $error) {
+                    throw InvalidFieldException::forArrayElement(
+                        static::class,
+                        \sprintf('charge_ranges_by_weight[%s]', $index),
+                        Weight::class,
+                        $error,
+                    );
+                }
+            }
+        }
+    }
+
+    private static function isPairTuple(mixed $value): bool
+    {
+        return \is_array($value)
+            && \array_is_list($value)
+            && \count($value) === 2;
     }
 
     /**
@@ -108,9 +132,13 @@ class Charge extends Entity
     }
 
     /**
-     * 配送料が変わる決済金額の区分
-     * [3000, 100]であれば、3000円以下の場合、手数料は100円であることを表す
-     * @return list<array{int, int}>
+     * 注文金額ごとの配送料の区分。
+     *
+     * 公式 OpenAPI との差分: 区分の上限を「以下」と説明しているが、実 API の設定では上限はその区分に
+     * 含まれない (未満) (2026-10-05)。
+     *
+     * @return list<Price>
+     * @see docs/api-delivery-charge-observation.md
      */
     public function getChargeRangesByPrice(): array
     {
@@ -119,8 +147,10 @@ class Charge extends Entity
     }
 
     /**
-     * charge_ranges_by_priceに設定されている区分以上の金額の場合の手数料
+     * 最後の区分の上限以上の注文金額に対する配送料。金額別の配送料を設定していない場合は null。
+     *
      * @return int|null
+     * @see docs/api-delivery-charge-observation.md
      */
     public function getChargeMaxPrice(): ?int
     {
