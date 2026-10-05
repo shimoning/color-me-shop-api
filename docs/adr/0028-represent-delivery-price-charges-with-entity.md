@@ -30,10 +30,11 @@
 
 ## 判断
 
-- **`charge_ranges_by_price` の各区分を `Delivery\PriceCharge` で表す。** 上限金額を `getUpperLimit()`、
-  その区分の配送料を `getCharge()` で返す。既存の `Delivery\Weight` と対になる名前とし、項目名は代引き
-  手数料の `CodFee` の `upperLimit` に揃える。出典: `81d708e`。
-- `Charge::getChargeRangesByPrice()` は `list<PriceCharge>` を返す。元の組は `getRaw()` から取得できる。
+- **`charge_ranges_by_price` の各区分を `Delivery\Price` で表す。** 上限金額を `getUpperLimit()`、
+  その区分の配送料を `getCharge()` で返す。クラス名は、同じ `Delivery` 名前空間の `Area`（地域ごと）・
+  `Weight`（重量ごと）に揃え、何による配送料の区分かを表す。項目名は代引き手数料の `CodFee` の
+  `upperLimit` に揃える。出典: `81d708e`、`cc07151`。
+- `Charge::getChargeRangesByPrice()` は `list<Price>` を返す。元の組は `getRaw()` から取得できる。
   出典: `81d708e`。
 - 組から Entity への組み立ては、同じ `Charge` の `charge_ranges_by_weight` から `Weight` への組み立てと
   同じ方法と厳しさで行う。出典: `81d708e`。
@@ -49,6 +50,9 @@
 - **基底 `Entity` に「組の i 番目をこの項目に割り当てる」宣言を加え、`Weight` と `CodFee` の組み立ても
   そこへ移す案**は、今後の組にも宣言だけで対応できる。しかし変更範囲が広く、既存の動いている組み立ての
   リファクタリングを含む。利用者と協議のうえ、既存の 2 つと同じくコンストラクタで組み立てる。
+- **クラス名を `PriceCharge` にする案**は、配送料の区分であることが名前から分かる。しかし同じ名前空間の
+  `Area` と `Weight` は区分の軸だけを名前にしており、配送料であることは名前空間と親の `Charge` から
+  分かる。利用者の指定により `Price` とする。
 - **項目名を `getPrice()` / `getCharge()` にする案**は、`Weight::getWeight()` と揃う。しかし `price` だけでは
   区分の上限であることが伝わりにくい。利用者と協議のうえ、`CodFee` と同じ `upperLimit` を採る。
 
@@ -59,7 +63,7 @@
 
 次の点が変わる。破壊的変更のため、次のマイナーバージョンで行う。
 
-- `Charge::getChargeRangesByPrice()` の戻り値が `list<array{int, int}>` から `list<PriceCharge>` に変わる。
+- `Charge::getChargeRangesByPrice()` の戻り値が `list<array{int, int}>` から `list<Price>` に変わる。
   `[0]` / `[1]` で読んでいたコードは `getUpperLimit()` / `getCharge()` に書き換える必要がある
 
 境界は管理画面の設定上のもので、実際の注文で配送料がどの区分で計算されるかは観測していない。代引き
@@ -71,4 +75,5 @@
 - [ADR 0011: 代引き手数料区分を専用 Entity で表現する](0011-represent-cod-fees-with-entity.md)
 - [配送料の金額別区分の実測記録](../api-delivery-charge-observation.md)（出典コミット: `cec94c3`）
 - 実装とテストの出典コミット: `81d708e`
+- クラス名の変更の出典コミット: `cc07151`
 - PHPDoc への境界の記載の出典コミット: `9cb4664`
