@@ -371,7 +371,7 @@ class FieldExceptionMessageContractTest extends TestCase
             'InvalidFieldException::forArrayElement/Codのタプル不一致' => [
                 self::site('src/Entities/Payment/Cod.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
-                    new Cod(['changeable' => true, 'fees' => [[300, 'invalid']]]);
+                    new Cod(['changeable' => true, 'fees' => [[300]]]);
                 },
                 \UnexpectedValueException::class,
             ],

@@ -67,14 +67,8 @@ class Cod extends Entity
         $this->fees = [];
         foreach ($data['fees'] as $index => $tuple) {
             try {
-                if (
-                    ! \is_array($tuple)
-                    || ! \array_is_list($tuple)
-                    || \count($tuple) !== 2
-                    || ! \is_int($tuple[0])
-                    || ! \is_int($tuple[1])
-                ) {
-                    throw new \UnexpectedValueException('代引き手数料区分は2整数のタプルである必要があります。');
+                if (! self::isPairTuple($tuple)) {
+                    throw new \UnexpectedValueException('代引き手数料区分は2要素のタプルである必要があります。');
                 }
 
                 $this->fees[] = new CodFee([

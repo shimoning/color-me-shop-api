@@ -102,6 +102,16 @@ class Entity
     }
 
     /**
+     * 配列で、連番のキーを持ち、要素がちょうど 2 つかを判定する。
+     */
+    protected static function isPairTuple(mixed $value): bool
+    {
+        return \is_array($value)
+            && \array_is_list($value)
+            && \count($value) === 2;
+    }
+
+    /**
      * フィールドが初期化済みであることを保証する。
      *
      * @throws MissingFieldException API レスポンスにフィールドが存在しない場合

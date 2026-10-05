@@ -99,12 +99,34 @@ class CodTest extends TestCase
         return [
             '要素不足' => [[[300, 100], [500]], 'fees[1]'],
             '要素過多' => [[[300, 100, 50]], 'fees[0]'],
-            '非整数' => [[[300, '100']], 'fees[0]'],
+            '文字列' => [[[300, 'invalid']], 'fees[0]'],
+            '数値文字列' => [[[300, '3000']], 'fees[0]'],
+            'float' => [[[300, 100.0]], 'fees[0]'],
             '非配列' => [[[300, 100], 'invalid'], 'fees[1]'],
             '内側が連想配列' => [[['upper_limit' => 300, 'fee' => 100]], 'fees[0]'],
             '外側が文字列' => ['invalid', 'fees'],
             '外側がfalse' => [false, 'fees'],
         ];
+    }
+
+    public function test_タプル形状不一致の内部原因を報告して公開メッセージを維持する(): void
+    {
+        try {
+            new Cod(['changeable' => true, 'fees' => [[300]]]);
+            $this->fail('InvalidFieldException が投げられませんでした。');
+        } catch (InvalidFieldException $exception) {
+            $this->assertSame(
+                Cod::class
+                . ' の API フィールド『fees[0]』が不正です。配列要素を '
+                . CodFee::class
+                . ' に変換できませんでした。原因: 配列要素を変換できませんでした。',
+                $exception->getMessage(),
+            );
+            $this->assertSame(
+                '代引き手数料区分は2要素のタプルである必要があります。',
+                $exception->getPrevious()?->getMessage(),
+            );
+        }
     }
 
     #[DataProvider('nonListFeesProvider')]
