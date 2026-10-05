@@ -50,21 +50,15 @@ class Charge extends Entity
 
         if (\array_key_exists('charge_ranges_by_price', $data)) {
             $this->chargeRangesByPrice = [];
-            foreach ($data['charge_ranges_by_price'] as $index => $priceCharge) {
+            foreach ($data['charge_ranges_by_price'] as $index => $price) {
                 try {
-                    if (
-                        ! \is_array($priceCharge)
-                        || ! \array_is_list($priceCharge)
-                        || \count($priceCharge) !== 2
-                        || ! \is_int($priceCharge[0])
-                        || ! \is_int($priceCharge[1])
-                    ) {
-                        throw new \UnexpectedValueException('価格別配送料区分は2整数のタプルである必要があります。');
+                    if (! self::isPairTuple($price)) {
+                        throw new \UnexpectedValueException('価格別配送料区分は2要素のタプルである必要があります。');
                     }
 
                     $this->chargeRangesByPrice[] = new Price([
-                        'upper_limit' => $priceCharge[0],
-                        'charge' => $priceCharge[1],
+                        'upper_limit' => $price[0],
+                        'charge' => $price[1],
                     ]);
                 } catch (\Throwable $error) {
                     throw InvalidFieldException::forArrayElement(
@@ -77,34 +71,35 @@ class Charge extends Entity
             }
         }
 
-        if (! \array_key_exists('charge_ranges_by_weight', $data)) {
-            return;
-        }
+        if (\array_key_exists('charge_ranges_by_weight', $data)) {
+            $this->chargeRangesByWeight = [];
+            foreach ($data['charge_ranges_by_weight'] as $index => $weight) {
+                try {
+                    if (! self::isPairTuple($weight)) {
+                        throw new \UnexpectedValueException('重量別配送料区分は2要素のタプルである必要があります。');
+                    }
 
-        $this->chargeRangesByWeight = [];
-        foreach ($data['charge_ranges_by_weight'] as $index => $weight) {
-            try {
-                if (
-                    ! \is_array($weight)
-                    || ! \array_key_exists(0, $weight)
-                    || ! \array_key_exists(1, $weight)
-                ) {
-                    throw new \UnexpectedValueException('重量別配送料の行形式が不正です。');
+                    $this->chargeRangesByWeight[] = new Weight([
+                        'weight' => $weight[0],
+                        'areas' => $weight[1],
+                    ]);
+                } catch (\Throwable $error) {
+                    throw InvalidFieldException::forArrayElement(
+                        static::class,
+                        \sprintf('charge_ranges_by_weight[%s]', $index),
+                        Weight::class,
+                        $error,
+                    );
                 }
-
-                $this->chargeRangesByWeight[] = new Weight([
-                    'weight' => $weight[0],
-                    'areas' => $weight[1],
-                ]);
-            } catch (\Throwable $error) {
-                throw InvalidFieldException::forArrayElement(
-                    static::class,
-                    \sprintf('charge_ranges_by_weight[%s]', $index),
-                    Weight::class,
-                    $error,
-                );
             }
         }
+    }
+
+    private static function isPairTuple(mixed $value): bool
+    {
+        return \is_array($value)
+            && \array_is_list($value)
+            && \count($value) === 2;
     }
 
     /**

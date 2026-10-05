@@ -25,7 +25,8 @@ class ChargeTest extends TestCase
         $charge->getChargeRangesByWeight();
     }
 
-    public function test_重量別配送料の不正な行は添字付きの固有例外になる(): void
+    #[DataProvider('invalidWeightProvider')]
+    public function test_重量別配送料の不正な行は添字付きの固有例外になる(mixed $weight): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
@@ -35,13 +36,25 @@ class ChargeTest extends TestCase
         new Charge([
             'charge_ranges_by_weight' => [
                 [1000, [['pref_id' => 1, 'pref_name' => '北海道', 'charge' => 500]]],
-                [2000],
+                $weight,
             ],
         ]);
     }
 
+    public static function invalidWeightProvider(): array
+    {
+        $areas = [['pref_id' => 1, 'pref_name' => '北海道', 'charge' => 500]];
+
+        return [
+            '配列でない' => [null],
+            '配送料設定がない' => [[1000]],
+            '要素が多い' => [[1000, $areas, 999]],
+            '連番のキーでない' => [[1 => $areas, 0 => 500]],
+        ];
+    }
+
     #[DataProvider('invalidPriceProvider')]
-    public function test_価格別配送料の不正な行は添字付きの固有例外になる(mixed $priceCharge): void
+    public function test_価格別配送料の不正な行は添字付きの固有例外になる(mixed $price): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
@@ -51,7 +64,7 @@ class ChargeTest extends TestCase
         new Charge([
             'charge_ranges_by_price' => [
                 [3000, 500],
-                $priceCharge,
+                $price,
             ],
         ]);
     }
@@ -81,9 +94,9 @@ class ChargeTest extends TestCase
     public function test_価格別配送料を配列化できる(): void
     {
         $charge = new Charge(['charge_ranges_by_price' => [[3000, 500]]]);
-        $priceCharges = $charge->getChargeRangesByPrice();
+        $prices = $charge->getChargeRangesByPrice();
 
-        $this->assertSame($priceCharges, $charge->toArray()['charge_ranges_by_price']);
+        $this->assertSame($prices, $charge->toArray()['charge_ranges_by_price']);
         $this->assertSame([
             'charge_ranges_by_price' => [
                 ['upper_limit' => 3000, 'charge' => 500],
@@ -98,10 +111,10 @@ class ChargeTest extends TestCase
         $this->assertSame(10, $charge->getDeliveryId());
         $this->assertSame('my-shop', $charge->getAccountId());
         $this->assertNull($charge->getChargeFixed());
-        $priceCharges = $charge->getChargeRangesByPrice();
-        $this->assertContainsOnlyInstancesOf(Price::class, $priceCharges);
-        $this->assertSame(3000, $priceCharges[0]->getUpperLimit());
-        $this->assertSame(500, $priceCharges[0]->getCharge());
+        $prices = $charge->getChargeRangesByPrice();
+        $this->assertContainsOnlyInstancesOf(Price::class, $prices);
+        $this->assertSame(3000, $prices[0]->getUpperLimit());
+        $this->assertSame(500, $prices[0]->getCharge());
         $this->assertSame([[3000, 500]], $charge->getRaw()['charge_ranges_by_price']);
         $this->assertSame(900, $charge->getChargeMaxPrice());
         $this->assertSame(Prefecture::HOKKAIDO, $charge->getChargeRangesByArea()[0]->getPrefId());
