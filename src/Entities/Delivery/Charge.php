@@ -54,10 +54,12 @@ class Charge extends Entity
                 try {
                     if (
                         ! \is_array($priceCharge)
-                        || ! \array_key_exists(0, $priceCharge)
-                        || ! \array_key_exists(1, $priceCharge)
+                        || ! \array_is_list($priceCharge)
+                        || \count($priceCharge) !== 2
+                        || ! \is_int($priceCharge[0])
+                        || ! \is_int($priceCharge[1])
                     ) {
-                        throw new \UnexpectedValueException('価格別配送料の行形式が不正です。');
+                        throw new \UnexpectedValueException('価格別配送料区分は2整数のタプルである必要があります。');
                     }
 
                     $this->chargeRangesByPrice[] = new Price([

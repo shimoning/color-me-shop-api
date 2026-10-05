@@ -62,8 +62,12 @@ class ChargeTest extends TestCase
             '配列でない' => [null],
             '上限金額がない' => [[0 => 3000]],
             '配送料がない' => [[1 => 500]],
+            '要素が多い' => [[3000, 500, 999]],
+            '連番のキーでない' => [[1 => 500, 0 => 3000]],
             '上限金額がintでない' => [['3000', 500]],
             '配送料がintでない' => [[3000, '500']],
+            '上限金額がfloat' => [[3000.0, 500]],
+            '配送料がfloat' => [[3000, 500.0]],
         ];
     }
 
@@ -72,6 +76,19 @@ class ChargeTest extends TestCase
         $charge = new Charge(['charge_ranges_by_price' => []]);
 
         $this->assertSame([], $charge->getChargeRangesByPrice());
+    }
+
+    public function test_価格別配送料を配列化できる(): void
+    {
+        $charge = new Charge(['charge_ranges_by_price' => [[3000, 500]]]);
+        $priceCharges = $charge->getChargeRangesByPrice();
+
+        $this->assertSame($priceCharges, $charge->toArray()['charge_ranges_by_price']);
+        $this->assertSame([
+            'charge_ranges_by_price' => [
+                ['upper_limit' => 3000, 'charge' => 500],
+            ],
+        ], $charge->toArrayRecursive());
     }
 
     public function test_完全な配送料設定を従来どおり取得できる(): void
