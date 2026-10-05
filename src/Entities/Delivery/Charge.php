@@ -27,7 +27,7 @@ class Charge extends Entity
     protected string $accountId;
 
     protected ?int $chargeFixed;
-    /** @var list<PriceCharge> */
+    /** @var list<Price> */
     protected array $chargeRangesByPrice;
     protected ?int $chargeMaxPrice;
 
@@ -60,7 +60,7 @@ class Charge extends Entity
                         throw new \UnexpectedValueException('価格別配送料の行形式が不正です。');
                     }
 
-                    $this->chargeRangesByPrice[] = new PriceCharge([
+                    $this->chargeRangesByPrice[] = new Price([
                         'upper_limit' => $priceCharge[0],
                         'charge' => $priceCharge[1],
                     ]);
@@ -68,7 +68,7 @@ class Charge extends Entity
                     throw InvalidFieldException::forArrayElement(
                         static::class,
                         \sprintf('charge_ranges_by_price[%s]', $index),
-                        PriceCharge::class,
+                        Price::class,
                         $error,
                     );
                 }
@@ -140,7 +140,7 @@ class Charge extends Entity
      * 公式 OpenAPI との差分: 区分の上限を「以下」と説明しているが、実 API の設定では上限はその区分に
      * 含まれない (未満) (2026-10-05)。
      *
-     * @return list<PriceCharge>
+     * @return list<Price>
      * @see docs/api-delivery-charge-observation.md
      */
     public function getChargeRangesByPrice(): array

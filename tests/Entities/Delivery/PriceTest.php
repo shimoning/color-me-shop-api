@@ -3,13 +3,13 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Delivery;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Delivery\PriceCharge;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Price;
 
-class PriceChargeTest extends TestCase
+class PriceTest extends TestCase
 {
     public function test_意味付きフィールドを取得し配列化する(): void
     {
-        $priceCharge = new PriceCharge(['upper_limit' => 3000, 'charge' => 500]);
+        $priceCharge = new Price(['upper_limit' => 3000, 'charge' => 500]);
 
         $this->assertSame(3000, $priceCharge->getUpperLimit());
         $this->assertSame(500, $priceCharge->getCharge());

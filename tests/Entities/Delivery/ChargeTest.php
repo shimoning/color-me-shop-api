@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Charge;
-use Shimoning\ColorMeShopApi\Entities\Delivery\PriceCharge;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Price;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Weight;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -40,7 +40,7 @@ class ChargeTest extends TestCase
         ]);
     }
 
-    #[DataProvider('invalidPriceChargeProvider')]
+    #[DataProvider('invalidPriceProvider')]
     public function test_価格別配送料の不正な行は添字付きの固有例外になる(mixed $priceCharge): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -56,7 +56,7 @@ class ChargeTest extends TestCase
         ]);
     }
 
-    public static function invalidPriceChargeProvider(): array
+    public static function invalidPriceProvider(): array
     {
         return [
             '配列でない' => [null],
@@ -82,7 +82,7 @@ class ChargeTest extends TestCase
         $this->assertSame('my-shop', $charge->getAccountId());
         $this->assertNull($charge->getChargeFixed());
         $priceCharges = $charge->getChargeRangesByPrice();
-        $this->assertContainsOnlyInstancesOf(PriceCharge::class, $priceCharges);
+        $this->assertContainsOnlyInstancesOf(Price::class, $priceCharges);
         $this->assertSame(3000, $priceCharges[0]->getUpperLimit());
         $this->assertSame(500, $priceCharges[0]->getCharge());
         $this->assertSame([[3000, 500]], $charge->getRaw()['charge_ranges_by_price']);

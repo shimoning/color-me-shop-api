@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @see docs/api-delivery-charge-observation.md
  */
-class PriceCharge extends Entity
+class Price extends Entity
 {
     protected int $upperLimit;
     protected int $charge;
