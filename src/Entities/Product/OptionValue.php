@@ -10,7 +10,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 /**
  * 独立した productOptionValue スキーマの応答。
  *
- * 公式 OpenAPI との差分: 商品内 `options[].values` は object ではなく文字列配列である (2026-09-18)。
+ * 商品の中の `options[].values` は文字列の配列で、この object ではない。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-product-structure.md

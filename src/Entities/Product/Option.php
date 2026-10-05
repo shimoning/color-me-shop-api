@@ -72,9 +72,7 @@ class Option extends Entity
     }
 
     /**
-     * オプション値
-     *
-     * 公式 OpenAPI との差分: 実応答は object ではなく文字列配列である (2026-09-18)。
+     * オプション値の名前のリスト。独立した `OptionValue` の object ではなく文字列である。
      *
      * @return list<string>
      * @see docs/api-product-structure.md
