@@ -25,7 +25,7 @@
 - Service は HTTP クライアントなどの実行時の依存を持ち、直列化して使うことを想定していないため、旧名での
   `unserialize()` は別名のテストの対象から外す。旧名での生成、`instanceof` と型宣言は確かめる。出典: `be4f286`。
 - Service の分け方は変えない。`Services\Stock` が返す在庫の Entity は ADR 0030 で `Entities\Product\Stock` に
-  移ったが、Service の所属は今回扱わない。
+  移ったが、Service の所属は今回扱わない。出典: `be4f286`。
 
 ## 代替案と却下理由
 
