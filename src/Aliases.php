@@ -7,9 +7,12 @@ namespace Shimoning\ColorMeShopApi;
 /**
  * 非推奨のクラス名から現行名への対応表。
  *
- * 新しいコードでは現行名を使うこと。旧名で直列化されたデータも復元できる。
+ * 新しいコードでは現行名を使うこと。旧名で直列化された Entity のデータも復元できる。
+ * Service は直列化を想定しないため、旧名での復元は対象外である。
  *
+ * @see docs/class-aliases.md
  * @see docs/adr/0016-unify-request-input-entity-names.md
+ * @see docs/adr/0031-rename-sales-service-to-sale.md
  */
 final class Aliases
 {
