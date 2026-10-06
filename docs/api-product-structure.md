@@ -175,6 +175,23 @@
 
 商品本体の `product.images[]` は `position`、`src`、`mobile` を持つ追加画像の構造で、画像専用 GET は `position` と `url` を持つ。構造だけでなく内容も一対一には対応しないため、別の画像集合として扱う。
 
+#### 2026-10-05 の追加観測（商品本体の画像との対応）
+
+2026-10-05（Asia/Tokyo）に、テスト用ショップの商品 8 件のうち 5 件について、商品本体と画像専用 GET を
+`Communicator\Request` で取得して突き合わせた。API では読み取りだけを行った。画像を持つ商品は 2 件で、
+どちらも次のとおりだった。
+
+| 画像専用 GET の `product.images[]` | 商品本体 |
+| --- | --- |
+| `position: 0` の `url` | `image_url` と同じ URL。商品本体の `images[]` には含まれない |
+| `position: 1` の `url` | `images[]` の `position: 1` の `src` と同じ URL（`mobile: false`） |
+
+**画像専用 GET は、メイン画像を `position: 0` として含む。** 商品本体の `images[]` はメイン画像を含まない。
+同じ画像の URL を、商品本体の `images[]` は `src`、画像専用 GET は `url` として返した。画像のない 3 件では、
+どちらの `images` も `[]` だった。
+
+観測した商品の画像は 2 枚までで、3 枚以上の画像や、モバイル用の画像（`mobile: true`）は観測していない。
+
 ### `/v1/products/{product_id}/variants` と `.../variants/{variant_id}`
 
 一覧のトップレベルは `variants` と `meta`、単体は `variant` だった。各 variant は上記 `product.variants[]` と同じキー集合で、1軸商品では一覧・単体とも `option2: null` と `option2_value: null` を観測した。
