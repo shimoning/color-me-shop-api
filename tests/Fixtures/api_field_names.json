@@ -134,7 +134,7 @@
         "wrapping_total_charge",
         "yahoo_point_state"
     ],
-    "Sales\\SaleDetail": [
+    "Sales\\Detail": [
         "account_id",
         "customizations",
         "id",
@@ -159,7 +159,7 @@
         "tax_reduced",
         "unit"
     ],
-    "Sales\\SaleDelivery": [
+    "Sales\\Delivery": [
         "account_id",
         "address1",
         "address2",
@@ -521,7 +521,7 @@
         "tax_reduced",
         "variants"
     ],
-    "Product\\ProductStocksIncrementInput": [
+    "Product\\StocksIncrementInput": [
         "increment"
     ],
     "Product\\ProductVariantInput": [
@@ -673,14 +673,14 @@
         "update_date_max",
         "update_date_min"
     ],
-    "Sales\\SaleApplication": [
+    "Sales\\Application": [
         "name"
     ],
-    "Sales\\SaleCustomization": [
+    "Sales\\Customization": [
         "title",
         "value"
     ],
-    "Sales\\SaleSegment": [
+    "Sales\\Segment": [
         "card_total_charge",
         "delivery_total_charge",
         "id",
@@ -693,12 +693,12 @@
         "total_price",
         "wrapping_total_charge"
     ],
-    "Sales\\SaleShopCoupon": [
+    "Sales\\ShopCoupon": [
         "code",
         "id",
         "name"
     ],
-    "Sales\\SaleTotals": [
+    "Sales\\Totals": [
         "discount_amount_for_normal_tax",
         "discount_amount_for_reduced_tax",
         "normal_tax_amount",
@@ -755,21 +755,21 @@
         "offset",
         "total"
     ],
-    "Delivery\\DeliveryDate": [
+    "Delivery\\Date": [
         "account_id",
         "days",
         "make_date",
         "times",
         "update_date"
     ],
-    "Delivery\\DeliveryDateDays": [
+    "Delivery\\DateDays": [
         "comment",
         "default",
         "enabled",
         "max",
         "min"
     ],
-    "Delivery\\DeliveryDateTimes": [
+    "Delivery\\DateTimes": [
         "comment",
         "enabled",
         "periods"
@@ -783,24 +783,24 @@
         "update_date",
         "wrapping"
     ],
-    "Gift\\GiftCard": [
+    "Gift\\Card": [
         "comment",
         "enabled",
         "text_enabled",
         "types"
     ],
-    "Gift\\GiftNoshi": [
+    "Gift\\Noshi": [
         "comment",
         "enabled",
         "text_charge",
         "text_enabled",
         "types"
     ],
-    "Gift\\GiftType": [
+    "Gift\\Type": [
         "charge",
         "name"
     ],
-    "Gift\\GiftWrapping": [
+    "Gift\\Wrapping": [
         "comment",
         "enabled",
         "types"
@@ -831,7 +831,7 @@
         "payment_id",
         "sale_deliveries"
     ],
-    "Sales\\SaleCustomerCreateInput": [
+    "Sales\\CustomerCreateInput": [
         "address1",
         "address2",
         "birthday",
@@ -846,7 +846,7 @@
         "tel",
         "tel_mobile"
     ],
-    "Sales\\SaleDeliveryCreateInput": [
+    "Sales\\DeliveryCreateInput": [
         "address1",
         "address2",
         "delivery_id",
@@ -859,14 +859,14 @@
         "preferred_period",
         "tel"
     ],
-    "Sales\\SaleDetailCreateInput": [
+    "Sales\\DetailCreateInput": [
         "option1_value",
         "option2_value",
         "price",
         "product_id",
         "product_num"
     ],
-    "Sales\\SaleDeliveryUpdateInput": [
+    "Sales\\DeliveryUpdateInput": [
         "account_id",
         "address1",
         "address2",

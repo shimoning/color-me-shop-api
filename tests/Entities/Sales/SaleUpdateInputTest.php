@@ -4,7 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -29,7 +29,7 @@ class SaleUpdateInputTest extends TestCase
 
     public function test_お届け先も更新したい項目だけを設定して配列化できる(): void
     {
-        $delivery = new SaleDeliveryUpdateInput([]);
+        $delivery = new DeliveryUpdateInput([]);
         $delivery->setName('山田太郎');
 
         $updater = new SaleUpdateInput([]);
@@ -48,11 +48,11 @@ class SaleUpdateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
             SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
-            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+            . 'list<' . DeliveryUpdateInput::class . '> を期待しましたが array でした。',
         );
 
         $updater->setSaleDeliveries([
-            3 => new SaleDeliveryUpdateInput(['name' => 'x']),
+            3 => new DeliveryUpdateInput(['name' => 'x']),
         ]);
     }
 
@@ -63,7 +63,7 @@ class SaleUpdateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
             SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
-            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+            . 'list<' . DeliveryUpdateInput::class . '> を期待しましたが array でした。',
         );
 
         $updater->setSaleDeliveries(['name' => 'x']);
@@ -73,7 +73,7 @@ class SaleUpdateInputTest extends TestCase
     {
         $updater = new SaleUpdateInput([]);
         $updater->setSaleDeliveries([
-            new SaleDeliveryUpdateInput(['name' => 'x']),
+            new DeliveryUpdateInput(['name' => 'x']),
         ]);
 
         $this->assertSame(
@@ -96,7 +96,7 @@ class SaleUpdateInputTest extends TestCase
 
     public function test_お届け先に明示したnullは更新データに含める(): void
     {
-        $delivery = new SaleDeliveryUpdateInput(['memo' => null]);
+        $delivery = new DeliveryUpdateInput(['memo' => null]);
         $updater = new SaleUpdateInput([
             'sale_deliveries' => [$delivery->toArrayRecursive()],
         ]);
@@ -127,7 +127,7 @@ class SaleUpdateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
             SaleUpdateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
-            . 'list<' . SaleDeliveryUpdateInput::class . '> を期待しましたが array でした。',
+            . 'list<' . DeliveryUpdateInput::class . '> を期待しましたが array でした。',
         );
 
         new SaleUpdateInput(['sale_deliveries' => [3 => ['name' => 'x']]]);
@@ -135,11 +135,11 @@ class SaleUpdateInputTest extends TestCase
 
     public function test_お届け先updaterは親の欠損guardを継承する(): void
     {
-        $delivery = new SaleDeliveryUpdateInput([]);
+        $delivery = new DeliveryUpdateInput([]);
 
         $this->expectException(MissingFieldException::class);
         $this->expectExceptionMessage(
-            SaleDeliveryUpdateInput::class . ' の API フィールド『delivery_charge』が欠損しています。',
+            DeliveryUpdateInput::class . ' の API フィールド『delivery_charge』が欠損しています。',
         );
 
         $delivery->getDeliveryCharge();

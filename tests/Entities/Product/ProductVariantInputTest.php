@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
+use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -15,7 +15,7 @@ class ProductVariantInputTest extends TestCase
 {
     public function test_配列と既存instanceを受け付け再帰的に直列化する(): void
     {
-        $increment = new ProductStocksIncrementInput(['increment' => 2]);
+        $increment = new StocksIncrementInput(['increment' => 2]);
 
         $fromArray = new ProductVariantInput([
             'option1_value' => 'S',

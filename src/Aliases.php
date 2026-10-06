@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi;
 
 /**
- * 非推奨の要求側入力 Entity 名から現行名への対応表。
+ * 非推奨の Entity 名から現行名への対応表。
  *
  * 新しいコードでは現行名を使うこと。旧名で直列化されたデータも復元できる。
  *
@@ -26,9 +26,47 @@ final class Aliases
         'Shimoning\\ColorMeShopApi\\Entities\\Product\\VariantInput'
             => Entities\Product\VariantUpdateInput::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDeliveryUpdater'
-            => Entities\Sales\SaleDeliveryUpdateInput::class,
+            => Entities\Sales\DeliveryUpdateInput::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater'
             => Entities\Sales\SaleUpdateInput::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleApplication'
+            => Entities\Sales\Application::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleCustomization'
+            => Entities\Sales\Customization::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDelivery'
+            => Entities\Sales\Delivery::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDetail'
+            => Entities\Sales\Detail::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleSegment'
+            => Entities\Sales\Segment::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleShopCoupon'
+            => Entities\Sales\ShopCoupon::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleTotals'
+            => Entities\Sales\Totals::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleCustomerCreateInput'
+            => Entities\Sales\CustomerCreateInput::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDeliveryCreateInput'
+            => Entities\Sales\DeliveryCreateInput::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDeliveryUpdateInput'
+            => Entities\Sales\DeliveryUpdateInput::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDetailCreateInput'
+            => Entities\Sales\DetailCreateInput::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Gift\\GiftCard'
+            => Entities\Gift\Card::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Gift\\GiftNoshi'
+            => Entities\Gift\Noshi::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Gift\\GiftType'
+            => Entities\Gift\Type::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Gift\\GiftWrapping'
+            => Entities\Gift\Wrapping::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Delivery\\DeliveryDate'
+            => Entities\Delivery\Date::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Delivery\\DeliveryDateDays'
+            => Entities\Delivery\DateDays::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Delivery\\DeliveryDateTimes'
+            => Entities\Delivery\DateTimes::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductStocksIncrementInput'
+            => Entities\Product\StocksIncrementInput::class,
     ];
 
     private static bool $registered = false;

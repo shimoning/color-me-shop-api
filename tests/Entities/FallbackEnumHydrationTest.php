@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Payment\Financial;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
@@ -88,7 +88,7 @@ class FallbackEnumHydrationTest extends TestCase
             'CustomerSearchParameters' => [SearchParameters::class, 'sex', 'new_value'],
             'SalesSearchParameters' => [SalesSearchParameters::class, 'accepted_mail_state', 'new_value'],
             'SaleUpdateInput' => [SaleUpdateInput::class, 'point_state', 'new_value'],
-            'SaleDeliveryUpdateInput' => [SaleDeliveryUpdateInput::class, 'pref_id', 999],
+            'DeliveryUpdateInput' => [DeliveryUpdateInput::class, 'pref_id', 999],
         ];
     }
 

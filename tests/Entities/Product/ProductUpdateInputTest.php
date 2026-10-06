@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
+use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -73,7 +73,7 @@ class ProductUpdateInputTest extends TestCase
 
     public function test_stocksとvariantsは構築済みEntityも受け付ける(): void
     {
-        $stocks = new ProductStocksIncrementInput(['increment' => 5]);
+        $stocks = new StocksIncrementInput(['increment' => 5]);
         $variant = new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3]);
         $input = new ProductUpdateInput(['stocks' => $stocks, 'variants' => [$variant]]);
 
@@ -107,7 +107,7 @@ class ProductUpdateInputTest extends TestCase
         } catch (InvalidFieldException $exception) {
             $this->assertSame(
                 ProductUpdateInput::class . " の API フィールド『stocks』が不正です。"
-                . ProductStocksIncrementInput::class . '|int を期待しましたが string でした。',
+                . StocksIncrementInput::class . '|int を期待しましたが string でした。',
                 $exception->getMessage(),
             );
             return;

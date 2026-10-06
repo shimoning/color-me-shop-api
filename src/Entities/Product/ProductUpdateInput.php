@@ -28,7 +28,7 @@ class ProductUpdateInput extends Entity implements RequestEntity
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'stocks' => [
-            'entity' => ProductStocksIncrementInput::class,
+            'entity' => StocksIncrementInput::class,
             'orScalar' => 'int',
             'allowNull' => true,
         ],
@@ -55,7 +55,7 @@ class ProductUpdateInput extends Entity implements RequestEntity
     protected ?ProductDisplayState $displayState;
     protected ?bool $stockManaged;
     /** 更新専用。整数の絶対値か increment object */
-    protected ProductStocksIncrementInput|int|null $stocks;
+    protected StocksIncrementInput|int|null $stocks;
     /** @var list<int>|null 更新専用 */
     protected ?array $groupIds;
     /** @var list<ProductVariantInput>|null 更新専用 */

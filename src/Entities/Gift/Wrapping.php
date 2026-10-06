@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Gift;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * メッセージカード設定。
+ * ラッピング設定。
  */
-class GiftCard extends Entity
+class Wrapping extends Entity
 {
     public const FIELD_TYPES = [
-        'types' => ['array' => true, 'entity' => GiftType::class],
+        'types' => ['array' => true, 'entity' => Type::class],
     ];
 
     protected ?bool $enabled;
-    protected ?bool $textEnabled;
-    /** @var list<GiftType> */
+    /** @var list<Type> */
     protected array $types;
     protected ?string $comment;
 
     /**
-     * メッセージカード設定が有効であるか。
+     * ラッピング設定が有効であるか。
      */
     public function getEnabled(): ?bool
     {
@@ -30,17 +30,9 @@ class GiftCard extends Entity
     }
 
     /**
-     * メッセージカードへの文字入れが有効であるか。
-     */
-    public function getTextEnabled(): ?bool
-    {
-        return $this->textEnabled;
-    }
-
-    /**
-     * メッセージカードの種類。
+     * ラッピングの種類。
      *
-     * @return list<GiftType>
+     * @return list<Type>
      */
     public function getTypes(): array
     {
@@ -49,10 +41,14 @@ class GiftCard extends Entity
     }
 
     /**
-     * メッセージカードに関する注意事項。
+     * ラッピングに関する注意事項。
      */
     public function getComment(): ?string
     {
         return $this->comment;
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(Wrapping::class);

@@ -20,27 +20,27 @@ class Sale extends Entity
         'customer' => Customer::class,
         'details' => [
             'array' => true,
-            'entity' => SaleDetail::class,
+            'entity' => Detail::class,
         ],
         'saleDeliveries' => [
             'array' => true,
-            'entity' => SaleDelivery::class,
+            'entity' => Delivery::class,
         ],
         'segment' => [
             'nullable' => true,
-            'entity' => SaleSegment::class,
+            'entity' => Segment::class,
         ],
         'totals' => [
             'nullable' => true,
-            'entity' => SaleTotals::class,
+            'entity' => Totals::class,
         ],
         'application' => [
             'nullable' => true,
-            'entity' => SaleApplication::class,
+            'entity' => Application::class,
         ],
         'shopCoupon' => [
             'nullable' => true,
-            'entity' => SaleShopCoupon::class,
+            'entity' => ShopCoupon::class,
         ],
         'acceptedMailState' => [
             'enum' => MailState::class,
@@ -114,14 +114,14 @@ class Sale extends Entity
     protected string $externalOrderId;
 
     protected $customer;
-    /** @var list<SaleDetail> */
+    /** @var list<Detail> */
     protected array $details;
-    /** @var list<SaleDelivery> */
+    /** @var list<Delivery> */
     protected array $saleDeliveries;
-    protected ?SaleSegment $segment;
-    protected ?SaleTotals $totals;
-    protected ?SaleApplication $application;
-    protected ?SaleShopCoupon $shopCoupon;
+    protected ?Segment $segment;
+    protected ?Totals $totals;
+    protected ?Application $application;
+    protected ?ShopCoupon $shopCoupon;
 
     /**
      * 売上ID
@@ -525,7 +525,7 @@ class Sale extends Entity
 
     /**
      * 受注明細
-     * @return list<SaleDetail>
+     * @return list<Detail>
      */
     public function getDetails(): array
     {
@@ -535,7 +535,7 @@ class Sale extends Entity
 
     /**
      * お届け先
-     * @return list<SaleDelivery>
+     * @return list<Delivery>
      */
     public function getSaleDeliveries(): array
     {
@@ -545,36 +545,36 @@ class Sale extends Entity
 
     /**
      * 分割された受注の情報
-     * @return SaleSegment|null
+     * @return Segment|null
      */
-    public function getSegment(): ?SaleSegment
+    public function getSegment(): ?Segment
     {
         return $this->segment ?? null;
     }
 
     /**
      * 税率別の受注金額
-     * @return SaleTotals|null
+     * @return Totals|null
      */
-    public function getTotals(): ?SaleTotals
+    public function getTotals(): ?Totals
     {
         return $this->totals ?? null;
     }
 
     /**
      * 受注を作成したOAuthアプリケーション情報
-     * @return SaleApplication|null
+     * @return Application|null
      */
-    public function getApplication(): ?SaleApplication
+    public function getApplication(): ?Application
     {
         return $this->application ?? null;
     }
 
     /**
      * 受注で使用されたショップクーポン情報
-     * @return SaleShopCoupon|null
+     * @return ShopCoupon|null
      */
-    public function getShopCoupon(): ?SaleShopCoupon
+    public function getShopCoupon(): ?ShopCoupon
     {
         return $this->shopCoupon ?? null;
     }

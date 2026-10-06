@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
@@ -11,7 +12,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
  */
-class SaleDelivery extends Entity
+class Delivery extends Entity
 {
     const FIELD_TYPES = [
         'furigana' => [
@@ -325,3 +326,7 @@ class SaleDelivery extends Entity
         return $this->delivered;
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(Delivery::class);

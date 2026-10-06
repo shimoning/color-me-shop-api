@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
@@ -20,7 +21,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
  */
-class SaleCustomerCreateInput extends Entity implements RequestEntity
+class CustomerCreateInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'furigana' => ['allowNull' => true, 'value' => Furigana::class],
@@ -63,3 +64,7 @@ class SaleCustomerCreateInput extends Entity implements RequestEntity
         return new self(['id' => $customerId]);
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(CustomerCreateInput::class);

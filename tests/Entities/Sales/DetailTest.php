@@ -3,18 +3,18 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetail;
+use Shimoning\ColorMeShopApi\Entities\Sales\Detail;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleDetailTest extends TestCase
 {
     public function test_商品名が欠損していればgetter呼び出し時に固有例外になる(): void
     {
-        $detail = new SaleDetail([]);
+        $detail = new Detail([]);
 
         $this->expectException(MissingFieldException::class);
         $this->expectExceptionMessage(
-            SaleDetail::class . ' の API フィールド『product_name』が欠損しています。',
+            Detail::class . ' の API フィールド『product_name』が欠損しています。',
         );
 
         $detail->getProductName();
@@ -22,7 +22,7 @@ class SaleDetailTest extends TestCase
 
     public function test_nullableフィールドの欠損は従来どおりnullになる(): void
     {
-        $detail = new SaleDetail([]);
+        $detail = new Detail([]);
 
         $this->assertNull($detail->getSaleDeliveryId());
         $this->assertNull($detail->getProductCost());
@@ -31,7 +31,7 @@ class SaleDetailTest extends TestCase
 
     public function test_完全な受注明細を従来どおり取得できる(): void
     {
-        $detail = new SaleDetail([
+        $detail = new Detail([
             'id' => 11,
             'sale_id' => 1001,
             'account_id' => 'my-shop',

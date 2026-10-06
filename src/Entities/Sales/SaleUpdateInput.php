@@ -22,13 +22,13 @@ class SaleUpdateInput extends Entity implements RequestEntity
         ],
         'saleDeliveries' => [
             'array' => true,
-            'entity' => SaleDeliveryUpdateInput::class,
+            'entity' => DeliveryUpdateInput::class,
         ],
     ];
 
     protected bool $paid;
     protected PointState $pointState;
-    /** @var list<SaleDeliveryUpdateInput> */
+    /** @var list<DeliveryUpdateInput> */
     protected array $saleDeliveries;
 
     /**
@@ -75,7 +75,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
 
     /**
      * お届け先
-     * @return list<SaleDeliveryUpdateInput>
+     * @return list<DeliveryUpdateInput>
      */
     public function getSaleDeliveries(): array
     {
@@ -85,7 +85,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
 
     /**
      * お届け先を設定
-     * @param list<SaleDeliveryUpdateInput> $saleDeliveries
+     * @param list<DeliveryUpdateInput> $saleDeliveries
      * @return void
      */
     public function setSaleDeliveries($saleDeliveries)

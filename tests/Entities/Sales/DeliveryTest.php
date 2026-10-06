@@ -4,18 +4,18 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDelivery;
+use Shimoning\ColorMeShopApi\Entities\Sales\Delivery;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleDeliveryTest extends TestCase
 {
     public function test_配送方法IDが欠損していればgetter呼び出し時に固有例外になる(): void
     {
-        $delivery = new SaleDelivery([]);
+        $delivery = new Delivery([]);
 
         $this->expectException(MissingFieldException::class);
         $this->expectExceptionMessage(
-            SaleDelivery::class . ' の API フィールド『delivery_id』が欠損しています。',
+            Delivery::class . ' の API フィールド『delivery_id』が欠損しています。',
         );
 
         $delivery->getDeliveryId();
@@ -23,7 +23,7 @@ class SaleDeliveryTest extends TestCase
 
     public function test_nullableフィールドの欠損は従来どおりnullになる(): void
     {
-        $delivery = new SaleDelivery([]);
+        $delivery = new Delivery([]);
 
         $this->assertNull($delivery->getPostal());
         $this->assertNull($delivery->getTrackingUrl());
@@ -82,8 +82,8 @@ class SaleDeliveryTest extends TestCase
         ];
     }
 
-    private static function makeDelivery(): SaleDelivery
+    private static function makeDelivery(): Delivery
     {
-        return new SaleDelivery(self::completeData());
+        return new Delivery(self::completeData());
     }
 }

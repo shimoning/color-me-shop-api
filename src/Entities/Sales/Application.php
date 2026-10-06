@@ -2,6 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Sales;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
@@ -9,7 +10,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
  */
-class SaleApplication extends Entity
+class Application extends Entity
 {
     protected string $name;
 
@@ -23,3 +24,7 @@ class SaleApplication extends Entity
         return $this->name;
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(Application::class);
