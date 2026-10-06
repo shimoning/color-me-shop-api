@@ -6,8 +6,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -21,7 +21,7 @@ class OptionCreateInputTest extends TestCase
         ]);
 
         $this->assertInstanceOf(RequestEntity::class, $input);
-        $this->assertContainsOnlyInstancesOf(OptionValueCreateInput::class, $input->toArray()['values']);
+        $this->assertContainsOnlyInstancesOf(ValueCreateInput::class, $input->toArray()['values']);
         $this->assertSame([
             'name' => 'サイズ',
             'values' => [['name' => 'S'], ['name' => 'M']],

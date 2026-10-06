@@ -38,7 +38,7 @@
         "url",
         "user_mail"
     ],
-    "Stock\\Stock": [
+    "Product\\Stock\\Stock": [
         "account_id",
         "category",
         "cool_charge",
@@ -76,7 +76,7 @@
         "variant_model_number",
         "weight"
     ],
-    "Stock\\SearchParameters": [
+    "Product\\Stock\\SearchParameters": [
         "category_id_big",
         "category_id_small",
         "display_state",
@@ -89,7 +89,7 @@
         "recent_zero_stocks",
         "stocks"
     ],
-    "Sales\\Sale": [
+    "Sale\\Sale": [
         "accepted_mail_sent_date",
         "accepted_mail_state",
         "account_id",
@@ -134,7 +134,7 @@
         "wrapping_total_charge",
         "yahoo_point_state"
     ],
-    "Sales\\Detail": [
+    "Sale\\Detail": [
         "account_id",
         "customizations",
         "id",
@@ -159,7 +159,7 @@
         "tax_reduced",
         "unit"
     ],
-    "Sales\\Delivery": [
+    "Sale\\Delivery": [
         "account_id",
         "address1",
         "address2",
@@ -189,7 +189,7 @@
         "wrapping_charge",
         "wrapping_name"
     ],
-    "Sales\\Stat": [
+    "Sale\\Stat\\Stat": [
         "account_id",
         "amount_last_7days",
         "amount_this_month",
@@ -271,14 +271,14 @@
         "sex",
         "tel"
     ],
-    "Customer\\CustomerPointsInput": [
+    "Customer\\Points\\PointsInput": [
         "points"
     ],
-    "Customer\\Points": [
+    "Customer\\Points\\Points": [
         "customer_id",
         "points"
     ],
-    "Product\\Group": [
+    "Product\\Group\\Group": [
         "account_id",
         "display_state",
         "expl",
@@ -289,7 +289,7 @@
         "parent_group_id",
         "sort"
     ],
-    "Product\\BigCategory": [
+    "Product\\Category\\BigCategory": [
         "account_id",
         "children",
         "display_state",
@@ -303,7 +303,7 @@
         "sort",
         "update_date"
     ],
-    "Product\\SmallCategory": [
+    "Product\\Category\\SmallCategory": [
         "account_id",
         "display_state",
         "expl",
@@ -316,12 +316,12 @@
         "sort",
         "update_date"
     ],
-    "Product\\MetaTag": [
+    "Common\\MetaTag": [
         "description",
         "keywords",
         "title"
     ],
-    "Product\\Advertising": [
+    "Product\\Advertising\\Advertising": [
         "account_id",
         "brand",
         "colors",
@@ -334,7 +334,7 @@
         "product_id",
         "sizes"
     ],
-    "Product\\AdvertisingSearchParameters": [
+    "Product\\Advertising\\SearchParameters": [
         "display_state",
         "limit",
         "offset",
@@ -349,7 +349,7 @@
         "position",
         "src"
     ],
-    "Product\\Option": [
+    "Product\\Option\\Option": [
         "account_id",
         "id",
         "make_date",
@@ -358,7 +358,7 @@
         "update_date",
         "values"
     ],
-    "Product\\OptionValue": [
+    "Product\\Option\\Value\\Value": [
         "account_id",
         "make_date",
         "name",
@@ -367,7 +367,7 @@
         "update_date",
         "value_id"
     ],
-    "Product\\Pickup": [
+    "Product\\Pickup\\Pickup": [
         "account_id",
         "make_date",
         "order_num",
@@ -426,7 +426,7 @@
         "weight",
         "without_shipping"
     ],
-    "Product\\ProductImage": [
+    "Product\\Image\\Image": [
         "position",
         "url"
     ],
@@ -457,7 +457,7 @@
         "update_date_max",
         "update_date_min"
     ],
-    "Product\\Variant": [
+    "Product\\Variant\\Variant": [
         "account_id",
         "few_num",
         "id",
@@ -481,7 +481,7 @@
         "update_date",
         "weight"
     ],
-    "Product\\VariantSearchParameters": [
+    "Product\\Variant\\SearchParameters": [
         "fields",
         "limit",
         "model_number",
@@ -524,12 +524,12 @@
     "Product\\StocksIncrementInput": [
         "increment"
     ],
-    "Product\\ProductVariantInput": [
+    "Product\\VariantInput": [
         "option1_value",
         "option2_value",
         "stocks"
     ],
-    "Product\\VariantUpdateInput": [
+    "Product\\Variant\\VariantUpdateInput": [
         "few_num",
         "model_number",
         "option_cost",
@@ -539,44 +539,44 @@
         "stocks",
         "weight"
     ],
-    "Product\\OptionCreateInput": [
+    "Product\\Option\\OptionCreateInput": [
         "name",
         "values"
     ],
-    "Product\\OptionValueCreateInput": [
+    "Product\\Option\\Value\\ValueCreateInput": [
         "name"
     ],
-    "Product\\PickupInput": [
+    "Product\\Pickup\\PickupInput": [
         "order_num",
         "pickup_type"
     ],
-    "Product\\GroupInput": [
+    "Product\\Group\\GroupInput": [
         "display_state",
         "expl",
         "meta_tag",
         "name",
         "parent_group_id"
     ],
-    "Product\\CategoryInput": [
+    "Product\\Category\\CategoryInput": [
         "display_state",
         "expl",
         "meta_tag",
         "name",
         "sort"
     ],
-    "Product\\CategoryChildInput": [
+    "Product\\Category\\ChildInput": [
         "display_state",
         "expl",
         "meta_tag",
         "name",
         "sort"
     ],
-    "Product\\MetaTagInput": [
+    "Common\\MetaTagInput": [
         "description",
         "keywords",
         "title"
     ],
-    "Product\\VariantOption": [
+    "Product\\Variant\\Option": [
         "id",
         "name",
         "value",
@@ -651,7 +651,7 @@
         "charge_ranges_max_weight",
         "delivery_id"
     ],
-    "Sales\\SearchParameters": [
+    "Sale\\SearchParameters": [
         "accepted_mail_state",
         "canceled",
         "customer_furigana",
@@ -673,14 +673,14 @@
         "update_date_max",
         "update_date_min"
     ],
-    "Sales\\Application": [
+    "Sale\\Application": [
         "name"
     ],
-    "Sales\\Customization": [
+    "Sale\\Customization": [
         "title",
         "value"
     ],
-    "Sales\\Segment": [
+    "Sale\\Segment": [
         "card_total_charge",
         "delivery_total_charge",
         "id",
@@ -693,12 +693,12 @@
         "total_price",
         "wrapping_total_charge"
     ],
-    "Sales\\ShopCoupon": [
+    "Sale\\ShopCoupon": [
         "code",
         "id",
         "name"
     ],
-    "Sales\\Totals": [
+    "Sale\\Totals": [
         "discount_amount_for_normal_tax",
         "discount_amount_for_reduced_tax",
         "normal_tax_amount",
@@ -730,21 +730,21 @@
         "provider",
         "uid"
     ],
-    "Customer\\Membership": [
+    "Customer\\Membership\\Membership": [
         "membership_id",
         "name",
         "progress"
     ],
-    "Customer\\MembershipProgress": [
+    "Customer\\Membership\\Progress": [
         "aggregation_period",
         "next_membership",
         "score"
     ],
-    "Customer\\MembershipAggregationPeriod": [
+    "Customer\\Membership\\AggregationPeriod": [
         "end_date",
         "start_date"
     ],
-    "Customer\\NextMembership": [
+    "Customer\\Membership\\NextMembership": [
         "membership_id",
         "name",
         "remaining_score",
@@ -755,21 +755,21 @@
         "offset",
         "total"
     ],
-    "Delivery\\Date": [
+    "Delivery\\Date\\Date": [
         "account_id",
         "days",
         "make_date",
         "times",
         "update_date"
     ],
-    "Delivery\\DateDays": [
+    "Delivery\\Date\\Days": [
         "comment",
         "default",
         "enabled",
         "max",
         "min"
     ],
-    "Delivery\\DateTimes": [
+    "Delivery\\Date\\Times": [
         "comment",
         "enabled",
         "periods"
@@ -820,18 +820,18 @@
         "message",
         "status"
     ],
-    "Sales\\SaleUpdateInput": [
+    "Sale\\SaleUpdateInput": [
         "paid",
         "point_state",
         "sale_deliveries"
     ],
-    "Sales\\SaleCreateInput": [
+    "Sale\\SaleCreateInput": [
         "customer",
         "details",
         "payment_id",
         "sale_deliveries"
     ],
-    "Sales\\CustomerCreateInput": [
+    "Sale\\CustomerCreateInput": [
         "address1",
         "address2",
         "birthday",
@@ -846,7 +846,7 @@
         "tel",
         "tel_mobile"
     ],
-    "Sales\\DeliveryCreateInput": [
+    "Sale\\DeliveryCreateInput": [
         "address1",
         "address2",
         "delivery_id",
@@ -859,14 +859,14 @@
         "preferred_period",
         "tel"
     ],
-    "Sales\\DetailCreateInput": [
+    "Sale\\DetailCreateInput": [
         "option1_value",
         "option2_value",
         "price",
         "product_id",
         "product_num"
     ],
-    "Sales\\DeliveryUpdateInput": [
+    "Sale\\DeliveryUpdateInput": [
         "account_id",
         "address1",
         "address2",

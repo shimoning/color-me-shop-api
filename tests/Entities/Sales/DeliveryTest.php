@@ -4,7 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
-use Shimoning\ColorMeShopApi\Entities\Sales\Delivery;
+use Shimoning\ColorMeShopApi\Entities\Sale\Delivery;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleDeliveryTest extends TestCase

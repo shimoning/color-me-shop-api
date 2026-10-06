@@ -1,0 +1,181 @@
+<?php
+
+namespace Shimoning\ColorMeShopApi\Entities\Product\Category;
+
+use Shimoning\ColorMeShopApi\Aliases;
+
+use DateTimeImmutable;
+use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+
+/**
+ * 商品カテゴリー
+ *
+ * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
+ */
+abstract class Category extends Entity
+{
+    const FIELD_TYPES = [
+        'displayState' => [
+            'enum' => CategoryDisplayState::class,
+        ],
+        'metaTag' => [
+            'allowNull' => true,
+            'entity' => MetaTag::class,
+        ],
+    ];
+
+    protected int $idBig;
+    protected int $idSmall;
+    protected string $accountId;
+
+    protected string $name;
+
+    protected ?string $imageUrl;
+    protected ?string $expl;
+
+    protected ?int $sort;
+    protected CategoryDisplayState $displayState;
+
+    protected int $makeDate;
+    protected int $updateDate;
+
+    protected ?MetaTag $metaTag;
+
+    /**
+     * id_small の実測上の親子判別に従ってカテゴリーを生成する。
+     *
+     * @param array<string, mixed> $data API レスポンスデータ
+     * @throws InvalidFieldException id_small が欠損または整数以外の場合
+     */
+    public static function fromArray(array $data): BigCategory|SmallCategory
+    {
+        $idSmall = $data['id_small'] ?? null;
+        if (! \is_int($idSmall)) {
+            throw InvalidFieldException::for(self::class, 'id_small', 'int', $idSmall);
+        }
+
+        return $idSmall === 0 ? new BigCategory($data) : new SmallCategory($data);
+    }
+
+    /**
+     * 大カテゴリーID
+     * @return int
+     */
+    public function getIdBig(): int
+    {
+        $this->assertFieldInitialized('idBig');
+        return $this->idBig;
+    }
+    /**
+     * 小カテゴリーID。大カテゴリーのことを表している場合は0
+     * @return int
+     */
+    public function getIdSmall(): int
+    {
+        $this->assertFieldInitialized('idSmall');
+        return $this->idSmall;
+    }
+
+    /**
+     * ショップアカウントID
+     * @return string
+     */
+    public function getAccountId(): string
+    {
+        $this->assertFieldInitialized('accountId');
+        return $this->accountId;
+    }
+
+    /**
+     * 商品カテゴリー名
+     * @return string
+     */
+    public function getName(): string
+    {
+        $this->assertFieldInitialized('name');
+        return $this->name;
+    }
+
+    /**
+     * 商品カテゴリー画像URL
+     * @return string|null
+     */
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    /**
+     * 商品カテゴリー説明
+     *
+     * 明示した `null` ではクリアされず、空文字は保存される (2026-09-21)。
+     *
+     * @return string|null
+     * @see docs/api-product-structure.md
+     */
+    public function getExpl(): ?string
+    {
+        return $this->expl;
+    }
+
+    /**
+     * 商品カテゴリーのメタタグ
+     *
+     * 公式 OpenAPI との差分: nullable ではないが、実 API では欠損するため null を返す (2026-09-12)。
+     * 部分更新はマージではなく、送らなかったキーを null に置換する (2026-09-21)。
+     *
+     * @return MetaTag|null
+     * @see docs/api-category-structure.md
+     * @see docs/api-product-structure.md
+     */
+    public function getMetaTag(): ?MetaTag
+    {
+        return $this->metaTag ?? null;
+    }
+
+    /**
+     * 表示順
+     * @return int|null
+     */
+    public function getSort(): ?int
+    {
+        return $this->sort;
+    }
+
+    /**
+     * 表示状態
+     * @return CategoryDisplayState
+     */
+    public function getDisplayState(): CategoryDisplayState
+    {
+        $this->assertFieldInitialized('displayState');
+        return $this->displayState;
+    }
+
+    /**
+     * 商品カテゴリー作成日時
+     * @return DateTimeImmutable
+     */
+    public function getMakeDate(): DateTimeImmutable
+    {
+        $this->assertFieldInitialized('makeDate');
+        return (new DateTimeImmutable)->setTimestamp($this->makeDate);
+    }
+
+    /**
+     * 商品カテゴリー更新日時
+     * @return DateTimeImmutable
+     */
+    public function getUpdateDate(): DateTimeImmutable
+    {
+        $this->assertFieldInitialized('updateDate');
+        return (new DateTimeImmutable)->setTimestamp($this->updateDate);
+    }
+}
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(Category::class);

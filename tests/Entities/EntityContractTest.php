@@ -58,7 +58,7 @@ class EntityContractTest extends TestCase
     /** @var array<class-string<Entity>, array<string, mixed>> */
     private const REQUIRED_CONSTRUCTOR_DATA = [
         \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
-        \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class => ['stocks' => 0],
+        \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class => ['stocks' => 0],
     ];
 
     /** @param class-string<Entity> $class */
@@ -75,28 +75,28 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters::class,
                 'name',
             ],
-            'Product\\AdvertisingSearchParameters' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters::class,
+            'Product\\Advertising\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters::class,
                 'limit',
             ],
-            'Product\\PickupInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\PickupInput::class,
+            'Product\\Pickup\\PickupInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput::class,
                 'order_num',
             ],
-            'Product\\GroupInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\GroupInput::class,
+            'Group\\GroupInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput::class,
                 'parent_group_id',
             ],
-            'Product\\CategoryInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput::class,
+            'Category\\CategoryInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput::class,
                 'expl',
             ],
-            'Product\\CategoryChildInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput::class,
+            'Product\\Category\\ChildInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput::class,
                 'expl',
             ],
-            'Product\\MetaTagInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\MetaTagInput::class,
+            'Common\\MetaTagInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput::class,
                 'title',
             ],
             'Product\\ProductCreateInput' => [
@@ -111,24 +111,24 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Product\SearchParameters::class,
                 'name',
             ],
-            'Product\\VariantUpdateInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput::class,
+            'Product\\Variant\\VariantUpdateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput::class,
                 'stocks',
             ],
-            'Product\\VariantSearchParameters' => [
-                \Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters::class,
+            'Product\\Variant\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters::class,
                 'model_number',
             ],
-            'Stock\\SearchParameters' => [
-                \Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters::class,
+            'Product\\Stock\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters::class,
                 'name',
             ],
-            'Sales\\DeliveryUpdateInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput::class,
+            'Sale\\DeliveryUpdateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput::class,
                 'memo',
             ],
-            'Sales\\SearchParameters' => [
-                \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters::class,
+            'Sale\\SearchParameters' => [
+                \Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters::class,
                 'customer_mail',
             ],
         ];

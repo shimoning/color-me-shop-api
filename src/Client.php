@@ -23,53 +23,53 @@ use Shimoning\ColorMeShopApi\Services\Gift;
 use Shimoning\ColorMeShopApi\Entities\Gift\Gift as GiftEntity;
 
 use Shimoning\ColorMeShopApi\Services\Sales;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\Points as CustomerPoints;
-use Shimoning\ColorMeShopApi\Entities\Sales\Stat as SaleStat;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\Points as CustomerPoints;
+use Shimoning\ColorMeShopApi\Entities\Sale\Stat\Stat as SaleStat;
 
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
 
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
-use Shimoning\ColorMeShopApi\Entities\Delivery\Date;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Date\Date;
 
 use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 use Shimoning\ColorMeShopApi\Services\Product;
-use Shimoning\ColorMeShopApi\Entities\Product\Group as GroupEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\GroupInput as ProductGroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\BigCategory as BigCategoryEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory as SmallCategoryEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput as ProductCategoryInput;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput as ProductCategoryChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\Group as GroupEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput as ProductGroupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory as BigCategoryEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory as SmallCategoryEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput as ProductCategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Variant as ProductVariantEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput as ProductVariantUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Option as ProductOptionEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput as ProductOptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValue as ProductOptionValueEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput as ProductOptionValueCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Pickup as ProductPickupEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\PickupInput as ProductPickupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductImage as ProductImageEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\Advertising as ProductAdvertisingEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant as ProductVariantEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput as ProductVariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Option as ProductOptionEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput as ProductOptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\Value as ProductOptionValueEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput as ProductOptionValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup as ProductPickupEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput as ProductPickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Image\Image as ProductImageEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising as ProductAdvertisingEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as ProductAdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 
 use Shimoning\ColorMeShopApi\Services\Stock;
-use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters as StockSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
 
 /**
  * カラーミーショップ API の各機能を提供するクライアント。
@@ -96,7 +96,7 @@ class Client
     /**
      * 在庫情報一覧を取得する。
      *
-     * @return Page<\Shimoning\ColorMeShopApi\Entities\Stock\Stock>|Errors
+     * @return Page<\Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock>|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -182,7 +182,7 @@ class Client
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function getProductAdvertisings(
-        ?AdvertisingSearchParameters $parameters = null,
+        ?ProductAdvertisingSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors
     {
@@ -470,7 +470,7 @@ class Client
      */
     public function createProductCategoryChild(
         int|string $categoryId,
-        ProductCategoryChildInput $input,
+        ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategoryEntity|Errors {
         return $this->productService($accessToken)->createCategoryChild($categoryId, $input, $accessToken);
@@ -488,7 +488,7 @@ class Client
     public function updateProductCategoryChild(
         int|string $categoryId,
         int|string $id,
-        ProductCategoryChildInput $input,
+        ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategoryEntity|Errors {
         return $this->productService($accessToken)->updateCategoryChild($categoryId, $id, $input, $accessToken);
@@ -875,7 +875,7 @@ class Client
      */
     public function changeCustomerPoints(
         int|string $id,
-        CustomerPointsInput $input,
+        PointsInput $input,
         ?string $accessToken = null,
     ): CustomerPoints|Errors {
         return $this->customerService($accessToken)->changePoints($id, $input, $accessToken);

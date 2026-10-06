@@ -94,31 +94,31 @@ use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters as StockSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
-use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
-use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as AdvertisingSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\CustomerCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\CustomerCreateInput as SaleCustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SaleSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
@@ -226,7 +226,7 @@ $furigana->isValid();  // false
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
 
-`SalesSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
+`SaleSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
 
 各 API に必要なスコープは、`Services` と `Client` の対応するメソッドの PHPDoc に記載している。公式 OpenAPI でスコープの宣言が空の 6 操作 (ショップ・決済・配送の取得、商品グループ一覧・単体、商品カテゴリー一覧) には記載がない。その一覧と推測は [docs/auth-scope-audit.md](docs/auth-scope-audit.md) にまとめている。
 
@@ -357,7 +357,7 @@ if ($shopOrErrors instanceof Errors) {
 検索条件とアクセストークンはどちらも省略可能。ただし、`Client` にアクセストークンを設定していない場合は、メソッドの第2引数へ指定する必要がある。
 
 ```php
-$searchParameters = new SalesSearchParameters([
+$searchParameters = new SaleSearchParameters([
     'make_date_min' => '2024-01-01',
     'make_date_max' => '2024-01-31 23:59:59',
     'accepted_mail_state' => 'not_yet',
@@ -444,7 +444,7 @@ $input = new SaleCreateInput([
         ],
     ],
     // 既存の顧客の受注にする場合。ゲスト購入なら氏名や住所などを配列で渡す
-    'customer' => CustomerCreateInput::existing($customerId),
+    'customer' => SaleCustomerCreateInput::existing($customerId),
 ]);
 
 $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API の既定)
@@ -465,7 +465,7 @@ $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API �
 要求側 Entity は明示したフィールドだけを送信する。JSON ボディの入力 Entity はコンストラクタ配列で
 明示した `null` も送信し、指定しなかったフィールドは送信しない。各種検索条件 Entity も未指定フィールドを
 除外するが、GET クエリでは `http_build_query()` の仕様により明示した `null` も送信されない。
-要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時や setter での設定時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと (0.22.0 以降、[ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。ただし入れ子の入力の配列 (`details` / `sale_deliveries` など) に、すべてのキーが文字列の連想配列を 1 つコンストラクタで渡した場合は、後方互換のため要素 1 件として扱う。setter (`SaleUpdateInput::setSaleDeliveries()` など) ではこの扱いはなく、連番の配列でなければ例外になる。また、商品オプションの作成の `values` (`Product\OptionCreateInput`) は、個別の検証により文字列キーの配列も受け付けない。
+要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時や setter での設定時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと (0.22.0 以降、[ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。ただし入れ子の入力の配列 (`details` / `sale_deliveries` など) に、すべてのキーが文字列の連想配列を 1 つコンストラクタで渡した場合は、後方互換のため要素 1 件として扱う。setter (`SaleUpdateInput::setSaleDeliveries()` など) ではこの扱いはなく、連番の配列でなければ例外になる。また、商品オプションの作成の `values` (`Product\Option\OptionCreateInput`) は、個別の検証により文字列キーの配列も受け付けない。
 
 ```php
 $saleOrErrors = $client->getSale($saleId);
@@ -599,7 +599,7 @@ $customerOrErrors = $client->updateCustomer($customerId, new CustomerUpdateInput
 
 #### ショップポイントを増減
 ```php
-$pointsOrErrors = $client->changeCustomerPoints($customerId, new CustomerPointsInput([
+$pointsOrErrors = $client->changeCustomerPoints($customerId, new PointsInput([
     'points' => 100, // 負の値で減算
 ]));
 
@@ -611,9 +611,9 @@ if ($pointsOrErrors instanceof Errors) {
 }
 ```
 
-この API の応答は他の顧客 API と異なり `customer` などのキーで包まれないため、専用の `Entities\Customer\Points` を返す。保有ポイントを超える減算は API 側で `422` になる。
+この API の応答は他の顧客 API と異なり `customer` などのキーで包まれないため、専用の `Entities\Customer\Points\Points` を返す。保有ポイントを超える減算は API 側で `422` になる。
 
-`Client::changeCustomerPoints()` は、内部で `Services\Customer::changePoints(int|string $id, CustomerPointsInput $input, ?string $accessToken = null)` を呼び出す。
+`Client::changeCustomerPoints()` は、内部で `Services\Customer::changePoints(int|string $id, PointsInput $input, ?string $accessToken = null)` を呼び出す。
 
 ### 商品
 #### 商品一覧を取得
@@ -714,7 +714,7 @@ if (! $advertisingsOrErrors instanceof Errors) {
 
 `product_ids` は整数配列で指定し、クエリではカンマ区切りになる。広告一覧の既定 `limit` は 50 件、OpenAPI 上の最大値は 250 件。
 
-画像専用 GET の要素は `url` と `position` を持つ `ProductImage`。商品本体の `images` 要素 (`src` / `mobile` / `position`) とは別構造。
+画像専用 GET の要素は `url` と `position` を持つ `Product\Image\Image`。商品本体の `images` 要素 (`src` / `mobile` / `position`) とは別構造。
 
 #### 商品グループ単体を取得
 ```php
@@ -756,7 +756,7 @@ if ($updatedOrErrors instanceof Errors) {
 
 `category_id_small` / `stocks` / `group_ids` / `variants` は更新専用のフィールドで、`ProductUpdateInput` だけが持つ。公式 OpenAPI の作成 request にはこの 4 項目がなく、実 API は作成時に送っても反映せず、エラーにもしない (2026-10-02 の観測、[ColorMe Shop API 商品応答構造の実測記録](docs/api-product-structure.md))。作成した商品の在庫数やグループは、作成後に `updateProduct()` で設定する。
 
-`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `StocksIncrementInput`、`variants` の要素は `ProductVariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new StocksIncrementInput(['increment' => 5])`、`'variants' => [new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
+`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `StocksIncrementInput`、`variants` の要素は `VariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new StocksIncrementInput(['increment' => 5])`、`'variants' => [new VariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
 
 0.22.0 で、作成と更新で共用していた `ProductInput` を `ProductCreateInput` と `ProductUpdateInput` に分け、`ProductInput` は削除した ([ADR 0026](docs/adr/0026-split-product-input-into-create-and-update.md))。更新の呼び出しは `new ProductInput(` を `new ProductUpdateInput(` に、作成の呼び出しは `new ProductCreateInput(` に書き換える。作成で更新専用の 4 項目を指定していた場合、その指定はもともと反映されていなかった。
 商品自体を削除する API は公式に存在しない。
@@ -786,7 +786,7 @@ if (! $optionOrErrors instanceof Errors) {
     $optionOrErrors->getValues(); // ['S', 'M']
 }
 
-$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new OptionValueCreateInput(['name' => 'L']));
+$valueOrErrors = $client->createProductOptionValue($productId, $optionId, new ValueCreateInput(['name' => 'L']));
 if (! $valueOrErrors instanceof Errors) {
     $valueId = $valueOrErrors->getValueId();
 }
@@ -926,7 +926,7 @@ if ($categoriesOrErrors instanceof Errors) {
 `meta_tag` が省略または `null` の場合、`Category::getMetaTag()` は `null` を返す。
 
 #### 商品カテゴリーを作成・更新
-大カテゴリーは `CategoryInput`、小カテゴリーは `CategoryChildInput` を使い、それぞれ作成と更新で共用する。両者は同じフィールド (`name` / `expl` / `sort` / `display_state` / `meta_tag`) を持つが、応答の `BigCategory` / `SmallCategory` に合わせた別の型で互いに代入できない。
+大カテゴリーは `CategoryInput`、小カテゴリーは `ChildInput` を使い、それぞれ作成と更新で共用する。両者は同じフィールド (`name` / `expl` / `sort` / `display_state` / `meta_tag`) を持つが、応答の `BigCategory` / `SmallCategory` に合わせた別の型で互いに代入できない。
 指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` はそのまま送信される。ただし実 API の観測 (2026-09-21) では、カテゴリーの `expl` は `null` を送っても旧値のまま残り、空文字 `''` は保存された (説明を消すには空文字を送る)。`meta_tag` の部分更新はマージではなく置換で、送らなかったキーは `null` になる。作成では公式 API が `name` を必須とするが、ライブラリは送信前に検証せず API の `422` に委ねる。
 `display_state` は `showing` / `hidden` / `members_only` (`CategoryDisplayState` の値、または同 enum のインスタンス) を受け付ける。
 
@@ -941,7 +941,7 @@ if (! $categoryOrErrors instanceof Errors) {
     $categoryId = $categoryOrErrors->getIdBig(); // BigCategory
 }
 
-$childOrErrors = $client->createProductCategoryChild($categoryId, new CategoryChildInput([
+$childOrErrors = $client->createProductCategoryChild($categoryId, new ChildInput([
     'name' => '半袖',
 ]));
 if (! $childOrErrors instanceof Errors) {
@@ -949,7 +949,7 @@ if (! $childOrErrors instanceof Errors) {
 }
 
 $client->updateProductCategory($categoryId, new CategoryInput(['expl' => ''])); // BigCategory|Errors。説明を消すには空文字を送る (null はクリアされない)
-$client->updateProductCategoryChild($categoryId, $childId, new CategoryChildInput(['display_state' => 'hidden'])); // SmallCategory|Errors
+$client->updateProductCategoryChild($categoryId, $childId, new ChildInput(['display_state' => 'hidden'])); // SmallCategory|Errors
 ```
 
 応答の `category` は `Category::fromArray()` で変換し、大カテゴリーの操作で `id_small` が `0` 以外の応答が返るなど期待した親子の型でない場合は `InvalidFieldException` になる。
@@ -1016,7 +1016,7 @@ if ($settingOrErrors instanceof Errors) {
 }
 ```
 
-`days` と `times` は `Entities\Delivery\DateDays` と `Entities\Delivery\DateTimes` として返る。`enabled` / `default` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。
+`days` と `times` は `Entities\Delivery\Date\Days` と `Entities\Delivery\Date\Times` として返る。`enabled` / `default` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。
 
 `Client::getDeliveryDateSetting()` は、内部で `Services\Delivery::dateSetting(?string $accessToken = null)` を呼び出す。
 
@@ -1052,7 +1052,7 @@ if ($stocksOrErrors instanceof Errors) {
 }
 ```
 
-在庫 API は商品検索専用のパラメータや不正な `display_state` を渡しても**エラーにせず黙って無視する**ため、`Product\SearchParameters` は流用せず、在庫 API が受け付ける 11 パラメータ（`ids` / `category_id_big` / `category_id_small` / `model_number` / `name` / `display_state` / `stocks` / `recent_zero_stocks` / `fields` / `limit` / `offset`）だけを持つ `Stock\SearchParameters` を使う。`limit` の上限は 50 で、超える値を指定すると API 側で 50 に丸められる。`fields` で応答のキーを絞った場合、除外した非 null フィールドの getter は商品 API と同じく `MissingFieldException` を投げる。
+在庫 API は商品検索専用のパラメータや不正な `display_state` を渡しても**エラーにせず黙って無視する**ため、`Product\SearchParameters` は流用せず、在庫 API が受け付ける 11 パラメータ（`ids` / `category_id_big` / `category_id_small` / `model_number` / `name` / `display_state` / `stocks` / `recent_zero_stocks` / `fields` / `limit` / `offset`）だけを持つ `Product\Stock\SearchParameters` を使う。`limit` の上限は 50 で、超える値を指定すると API 側で 50 に丸められる。`fields` で応答のキーを絞った場合、除外した非 null フィールドの getter は商品 API と同じく `MissingFieldException` を投げる。
 
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
@@ -1140,7 +1140,7 @@ $pagination->getOffset();
 
 ### 要求側入力クラスの改名
 
-書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残しており、次のメジャーな変更で削除する。旧名と新名の対応は[非推奨のクラス名の対応表](docs/class-aliases.md)にある。
+書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残していたが、0.24.0 で削除した ([ADR 0030](docs/adr/0030-place-entities-by-api-path.md))。旧名と新名の対応は[非推奨のクラス名の対応表](docs/class-aliases.md)にある。
 
 ### フリガナの検証
 

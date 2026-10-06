@@ -35,7 +35,7 @@ class ProductUpdateInput extends Entity implements RequestEntity
         'groupIds' => ['array' => true, 'scalar' => 'int'],
         'variants' => [
             'array' => true,
-            'entity' => ProductVariantInput::class,
+            'entity' => VariantInput::class,
             'strictList' => true,
             'allowNull' => true,
         ],
@@ -58,7 +58,7 @@ class ProductUpdateInput extends Entity implements RequestEntity
     protected StocksIncrementInput|int|null $stocks;
     /** @var list<int>|null 更新専用 */
     protected ?array $groupIds;
-    /** @var list<ProductVariantInput>|null 更新専用 */
+    /** @var list<VariantInput>|null 更新専用 */
     protected ?array $variants;
     protected ?bool $taxReduced;
 }

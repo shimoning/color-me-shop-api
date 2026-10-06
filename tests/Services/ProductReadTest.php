@@ -6,14 +6,14 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Product\Advertising;
-use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as ProductAdvertisingSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
-use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Image\Image as ProductImageEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Services\Product;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -29,7 +29,7 @@ class ProductReadTest extends TestCase
             'meta' => ['total' => 1, 'limit' => 50, 'offset' => 0],
         ]));
 
-        $page = (new Product('token', $mock->client()))->products(new SearchParameters([
+        $page = (new Product('token', $mock->client()))->products(new ProductSearchParameters([
             'ids' => [101, 102], 'group_ids' => [301, 302], 'limit' => 100,
         ]));
 
@@ -44,7 +44,7 @@ class ProductReadTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":20,"offset":0}}');
 
-        (new Product('token', $mock->client()))->products(new SearchParameters([
+        (new Product('token', $mock->client()))->products(new ProductSearchParameters([
             'name' => null,
             'limit' => 20,
         ]));
@@ -70,7 +70,7 @@ class ProductReadTest extends TestCase
     public function test_商品一覧の射影応答は省略されたnullableと非nullableを区別する(): void
     {
         $mock = HttpMock::json(200, self::fixture('products_projection.json'));
-        $page = (new Product('token', $mock->client()))->products(new SearchParameters(['fields' => 'id,name']));
+        $page = (new Product('token', $mock->client()))->products(new ProductSearchParameters(['fields' => 'id,name']));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(['fields' => 'id,name'], $mock->query());
@@ -112,14 +112,14 @@ class ProductReadTest extends TestCase
         $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());
     }
 
-    public function test_画像専用GETはProductImageのCollectionを返す(): void
+    public function test_画像専用GETはImageのCollectionを返す(): void
     {
         $fixture = self::fixtureArray('products_read.json');
         $mock = HttpMock::json(200, json_encode(['product' => ['id' => 101, 'images' => [$fixture['product_image']]]]));
 
         $images = (new Product('token', $mock->client()))->images(101);
         $this->assertInstanceOf(Collection::class, $images);
-        $this->assertInstanceOf(ProductImage::class, $images[0]);
+        $this->assertInstanceOf(ProductImageEntity::class, $images[0]);
         $this->assertSame('/v1/products/101/images', $mock->request()->getUri()->getPath());
     }
 
@@ -142,7 +142,7 @@ class ProductReadTest extends TestCase
             'product_advertisings' => [$fixture['advertising']],
             'meta' => ['total' => 61, 'limit' => 25, 'offset' => 50],
         ]));
-        $ads = (new Product('token', $adMock->client()))->advertisings(new AdvertisingSearchParameters([
+        $ads = (new Product('token', $adMock->client()))->advertisings(new ProductAdvertisingSearchParameters([
             'product_ids' => [101, 102], 'display_state' => 'showing', 'limit' => 25, 'offset' => 50,
         ]));
         $this->assertInstanceOf(Page::class, $ads);
@@ -173,7 +173,7 @@ class ProductReadTest extends TestCase
     public static function errorMethodProvider(): array
     {
         return [
-            ['products', [new SearchParameters([])]], ['product', [999]],
+            ['products', [new ProductSearchParameters([])]], ['product', [999]],
             ['variants', [999]], ['variant', [999, 999]],
             ['images', [999]], ['advertisings', []], ['group', [999]],
         ];

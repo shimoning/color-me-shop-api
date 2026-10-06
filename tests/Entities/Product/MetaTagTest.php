@@ -4,7 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
+use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class MetaTagTest extends TestCase

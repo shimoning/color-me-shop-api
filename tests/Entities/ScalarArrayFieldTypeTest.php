@@ -11,10 +11,10 @@ use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryMethod;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Entities\Sales\Delivery as SalesDelivery;
-use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\Segment;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sale\Delivery as SalesDelivery;
+use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\Segment;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class ScalarArrayFieldTypeTest extends TestCase

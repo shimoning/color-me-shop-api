@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -74,7 +74,7 @@ class ProductUpdateInputTest extends TestCase
     public function test_stocksとvariantsは構築済みEntityも受け付ける(): void
     {
         $stocks = new StocksIncrementInput(['increment' => 5]);
-        $variant = new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3]);
+        $variant = new VariantInput(['option1_value' => 'S', 'stocks' => 3]);
         $input = new ProductUpdateInput(['stocks' => $stocks, 'variants' => [$variant]]);
 
         $this->assertSame([
@@ -123,7 +123,7 @@ class ProductUpdateInputTest extends TestCase
         } catch (InvalidFieldException $exception) {
             $this->assertSame(
                 ProductUpdateInput::class . " の API フィールド『variants』が不正です。"
-                . '配列要素を ' . ProductVariantInput::class
+                . '配列要素を ' . VariantInput::class
                 . ' に変換できませんでした。原因: 配列要素の型が不正です。',
                 $exception->getMessage(),
             );

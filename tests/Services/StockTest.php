@@ -6,8 +6,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Stock\Stock as StockEntity;
+use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock as StockEntity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Stock;

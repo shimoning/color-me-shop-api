@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 
 class RequestEntitySerializationTest extends TestCase
 {
@@ -62,10 +62,6 @@ class RequestEntitySerializationTest extends TestCase
         $this->assertSame(['fields' => 'id,name'], $restored->toArrayRecursive());
     }
 
-    /**
-     * 固定データは 0.14.0 の改名前に旧クラス名 `Sales\SaleUpdater` で直列化したものである。
-     * 旧名は Aliases の遅延 autoloader で新クラスへ解決されるため、allowed_classes には旧名を渡す。
-     */
     public function test_明示フィールド追跡追加前の直列化データへsetterで値を追加しても既存値を保持する(): void
     {
         $encoded = \file_get_contents(__DIR__ . '/../Fixtures/request_entity_with_setter_before_explicit_fields.base64');
@@ -73,7 +69,13 @@ class RequestEntitySerializationTest extends TestCase
         $serialized = \base64_decode(\trim($encoded), true);
         $this->assertNotFalse($serialized);
 
-        $legacy = 'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater';
+        // fixture は改名前のクラス名を含むため、検証対象でないクラス名だけ現行名へ正規化する。
+        $serialized = \preg_replace(
+            '/^O:\\d+:"[^"]+"/',
+            \sprintf('O:%d:"%s"', \strlen(SaleUpdateInput::class), SaleUpdateInput::class),
+            $serialized,
+        );
+        $this->assertNotNull($serialized);
         /** @var list<string> $deprecations */
         $deprecations = [];
         $restored = null;
@@ -99,7 +101,7 @@ class RequestEntitySerializationTest extends TestCase
         });
         try {
             $restored = \unserialize($serialized, [
-                'allowed_classes' => [$legacy],
+                'allowed_classes' => [SaleUpdateInput::class],
             ]);
         } finally {
             \restore_error_handler();

@@ -3,11 +3,11 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Entities\Product\Category;
-use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\Group;
-use Shimoning\ColorMeShopApi\Entities\Product\MetaTag;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\Category;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
+use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -144,7 +144,8 @@ class ProductResponseFieldsTest extends TestCase
     public function test_旧形式のCategoryペイロードをBigCategoryとして復元するとmeta_tagはnullになる(): void
     {
         $payload = self::legacyPayload(self::LEGACY_EMPTY_CATEGORY_PAYLOAD_BASE64);
-        $oldHeader = 'O:' . \strlen(Category::class) . ':"' . Category::class . '"';
+        $legacy = 'Shimoning\\ColorMeShopApi\\Entities\\Product\\Category';
+        $oldHeader = 'O:' . \strlen($legacy) . ':"' . $legacy . '"';
         $newHeader = 'O:' . \strlen(BigCategory::class) . ':"' . BigCategory::class . '"';
         $category = \unserialize(\str_replace($oldHeader, $newHeader, $payload));
         $this->assertInstanceOf(BigCategory::class, $category);

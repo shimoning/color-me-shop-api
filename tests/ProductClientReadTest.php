@@ -5,9 +5,9 @@ namespace Shimoning\ColorMeShopApi\Tests;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as ProductAdvertisingSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class ProductClientReadTest extends TestCase
@@ -27,7 +27,7 @@ class ProductClientReadTest extends TestCase
     public static function routes(): array
     {
         return [
-            ['getProducts', [new SearchParameters([])], '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products'],
+            ['getProducts', [new ProductSearchParameters([])], '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products'],
             ['getProduct', [101], '{"product":{"id":101}}', '/v1/products/101'],
             ['getProductVariants', [101], '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products/101/variants'],
             ['getProductVariant', [101, 301], '{"variant":{"id":301}}', '/v1/products/101/variants/301'],
@@ -42,7 +42,7 @@ class ProductClientReadTest extends TestCase
         $mock = HttpMock::json(200, '{"product_advertisings":[],"meta":{"total":51,"limit":1,"offset":50}}');
         $client = new Client('token', $mock->client());
 
-        $page = $client->getProductAdvertisings(new AdvertisingSearchParameters(['limit' => 1, 'offset' => 50]));
+        $page = $client->getProductAdvertisings(new ProductAdvertisingSearchParameters(['limit' => 1, 'offset' => 50]));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(51, $page->getTotal());
