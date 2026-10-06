@@ -1056,7 +1056,7 @@ if ($stocksOrErrors instanceof Errors) {
 
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
-`Client::getStocks()` は、内部で `Services\Stock::page(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。
+`Client::getStocks()` は、内部で `Services\Product::stocks(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。`Services\Stock` は 0.25.0 で非推奨にした。`Services\Stock::page()` は `Services\Product::stocks()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
 ### ギフト
 #### ギフト設定を取得
 ```php
