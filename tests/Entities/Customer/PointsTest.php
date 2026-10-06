@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Customer;
 
-use Shimoning\ColorMeShopApi\Entities\Customer\Points;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\Points;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 

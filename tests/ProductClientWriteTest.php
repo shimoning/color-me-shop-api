@@ -10,24 +10,24 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
-use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Group;
-use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Option;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
-use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Option;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\Value;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
+use Shimoning\ColorMeShopApi\Entities\Product\Image\Image;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class ProductClientWriteTest extends TestCase
@@ -96,8 +96,8 @@ class ProductClientWriteTest extends TestCase
                 204, '', 'DELETE', '/v1/products/101/options/201', NoContent::class, '',
             ],
             'createProductOptionValue' => [
-                'createProductOptionValue', [101, 201, new OptionValueCreateInput(['name' => '青'])],
-                201, '{"option_value":{"value_id":3}}', 'POST', '/v1/products/101/options/201/values', OptionValue::class,
+                'createProductOptionValue', [101, 201, new ValueCreateInput(['name' => '青'])],
+                201, '{"option_value":{"value_id":3}}', 'POST', '/v1/products/101/options/201/values', Value::class,
                 '{"option_value":{"name":"青"}}',
             ],
             'deleteProductOptionValue' => [
@@ -121,7 +121,7 @@ class ProductClientWriteTest extends TestCase
             'createProductImage' => [
                 'createProductImage', [101, $stream, 0],
                 201, '{"product_image":{"position":0,"url":"https://example.invalid/a.jpg"}}', 'POST',
-                '/v1/products/101/images', ProductImage::class, null,
+                '/v1/products/101/images', Image::class, null,
             ],
             'deleteProductImage' => [
                 'deleteProductImage', [101, 0],
@@ -148,12 +148,12 @@ class ProductClientWriteTest extends TestCase
                 '{"category":{"sort":2}}',
             ],
             'createProductCategoryChild' => [
-                'createProductCategoryChild', [9001, new CategoryChildInput(['name' => '半袖'])],
+                'createProductCategoryChild', [9001, new ChildInput(['name' => '半袖'])],
                 201, '{"category":{"id_big":9001,"id_small":5}}', 'POST', '/v1/categories/9001/children', SmallCategory::class,
                 '{"category":{"name":"半袖"}}',
             ],
             'updateProductCategoryChild' => [
-                'updateProductCategoryChild', [9001, 5, new CategoryChildInput(['display_state' => 'hidden'])],
+                'updateProductCategoryChild', [9001, 5, new ChildInput(['display_state' => 'hidden'])],
                 200, '{"category":{"id_big":9001,"id_small":5}}', 'PUT', '/v1/categories/9001/children/5', SmallCategory::class,
                 '{"category":{"display_state":"hidden"}}',
             ],
@@ -171,7 +171,7 @@ class ProductClientWriteTest extends TestCase
 
         $result = $client->createProductImage(101, $stream, 0, null, 'photo.png');
 
-        $this->assertInstanceOf(ProductImage::class, $result);
+        $this->assertInstanceOf(Image::class, $result);
         $this->assertStringContainsString('name="image"; filename="photo.png"', $mock->body());
     }
 

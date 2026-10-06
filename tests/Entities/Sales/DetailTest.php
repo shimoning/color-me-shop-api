@@ -3,7 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Sales\Detail;
+use Shimoning\ColorMeShopApi\Entities\Sale\Detail;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class SaleDetailTest extends TestCase

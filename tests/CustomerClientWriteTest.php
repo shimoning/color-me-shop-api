@@ -9,9 +9,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\Points;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\Points;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 
 class CustomerClientWriteTest extends TestCase
@@ -71,7 +71,7 @@ class CustomerClientWriteTest extends TestCase
                 '{"customer":{"name":"カラーミー花子","address1":"渋谷区","fax":null}}',
             ],
             'changeCustomerPoints' => [
-                'changeCustomerPoints', [501, new CustomerPointsInput(['points' => -100])],
+                'changeCustomerPoints', [501, new PointsInput(['points' => -100])],
                 200, '{"customer_id":501,"points":120}', 'POST', '/v1/customers/501/points', Points::class,
                 '{"points":-100}',
             ],

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests;
 
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 

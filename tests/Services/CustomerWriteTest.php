@@ -7,9 +7,9 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\Points;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\Points;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Customer;
@@ -217,7 +217,7 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(200, '{"customer_id":501,"points":220}');
 
         $points = (new Customer('my-token', $mock->client()))
-            ->changePoints(501, new CustomerPointsInput(['points' => 100]));
+            ->changePoints(501, new PointsInput(['points' => 100]));
 
         $this->assertInstanceOf(Points::class, $points);
         $this->assertSame(501, $points->getCustomerId());
@@ -232,7 +232,7 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(200, '{"customer_id":501,"points":120}');
 
         (new Customer('my-token', $mock->client()))
-            ->changePoints(501, new CustomerPointsInput(['points' => -100]));
+            ->changePoints(501, new PointsInput(['points' => -100]));
 
         $this->assertSame(['points' => -100], $mock->jsonBody());
     }
@@ -242,7 +242,7 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(200, '{"customer_id":501,"points":120}');
 
         try {
-            (new Customer('my-token', $mock->client()))->changePoints(501, new CustomerPointsInput([]));
+            (new Customer('my-token', $mock->client()))->changePoints(501, new PointsInput([]));
             $this->fail('points の欠落が拒否されなかった');
         } catch (ParameterException $e) {
             $this->assertStringContainsString('points', $e->getMessage());
@@ -256,7 +256,7 @@ class CustomerWriteTest extends TestCase
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
 
         $errors = (new Customer('my-token', $mock->client()))
-            ->changePoints(501, new CustomerPointsInput(['points' => -100000]));
+            ->changePoints(501, new PointsInput(['points' => -100000]));
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame(422, $errors->getResponse()->getStatus());
@@ -267,6 +267,6 @@ class CustomerWriteTest extends TestCase
         $this->expectException(ParameterException::class);
 
         (new Customer('', (new HttpMock([]))->client()))
-            ->changePoints(501, new CustomerPointsInput(['points' => 1]));
+            ->changePoints(501, new PointsInput(['points' => 1]));
     }
 }

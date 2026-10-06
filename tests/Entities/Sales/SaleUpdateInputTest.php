@@ -3,9 +3,9 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 

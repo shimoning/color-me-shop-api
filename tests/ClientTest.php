@@ -13,18 +13,18 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
-use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Values\Scopes;
@@ -128,7 +128,7 @@ class ClientTest extends TestCase
                 $client->deleteProductOption(101, 201, $accessToken);
             }],
             'createProductOptionValue' => [static function (Client $client, ?string $accessToken): void {
-                $client->createProductOptionValue(101, 201, new OptionValueCreateInput(['name' => '青']), $accessToken);
+                $client->createProductOptionValue(101, 201, new ValueCreateInput(['name' => '青']), $accessToken);
             }],
             'deleteProductOptionValue' => [static function (Client $client, ?string $accessToken): void {
                 $client->deleteProductOptionValue(101, 201, 3, $accessToken);
@@ -155,10 +155,10 @@ class ClientTest extends TestCase
                 $client->updateProductCategory(9001, new CategoryInput(['name' => 'c']), $accessToken);
             }],
             'createProductCategoryChild' => [static function (Client $client, ?string $accessToken): void {
-                $client->createProductCategoryChild(9001, new CategoryChildInput(['name' => 'c']), $accessToken);
+                $client->createProductCategoryChild(9001, new ChildInput(['name' => 'c']), $accessToken);
             }],
             'updateProductCategoryChild' => [static function (Client $client, ?string $accessToken): void {
-                $client->updateProductCategoryChild(9001, 5, new CategoryChildInput(['name' => 'c']), $accessToken);
+                $client->updateProductCategoryChild(9001, 5, new ChildInput(['name' => 'c']), $accessToken);
             }],
             'createProductImage' => [static function (Client $client, ?string $accessToken): void {
                 $client->createProductImage(101, __FILE__, 0, $accessToken);

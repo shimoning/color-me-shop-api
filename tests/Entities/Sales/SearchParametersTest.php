@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class SearchParametersTest extends TestCase

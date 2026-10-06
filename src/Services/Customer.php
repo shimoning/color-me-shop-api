@@ -7,9 +7,9 @@ use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\CustomerPointsInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Customer\Points;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\Points;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
@@ -150,7 +150,7 @@ class Customer extends Service
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
      * @param int|string $id
-     * @param CustomerPointsInput $input
+     * @param PointsInput $input
      * @param string|null $accessToken
      * @return Points|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または `points` が未指定の場合
@@ -159,7 +159,7 @@ class Customer extends Service
      */
     public function changePoints(
         int|string $id,
-        CustomerPointsInput $input,
+        PointsInput $input,
         ?string $accessToken = null,
     ): Points|Errors {
         $response = $this->_request(['json' => true], $accessToken)->post(
@@ -197,14 +197,14 @@ class Customer extends Service
      * @return array<string, mixed>
      * @throws ParameterException `points` が未指定の場合
      */
-    private static function requirePointsField(CustomerPointsInput $input): array
+    private static function requirePointsField(PointsInput $input): array
     {
         $fields = $input->toArrayRecursive();
-        $missing = \array_diff(CustomerPointsInput::REQUIRED_FIELDS, \array_keys($fields));
+        $missing = \array_diff(PointsInput::REQUIRED_FIELDS, \array_keys($fields));
         if ($missing !== []) {
             throw new ParameterException(\sprintf(
                 'ショップポイントの増減には %s を指定してください。',
-                \implode(', ', CustomerPointsInput::REQUIRED_FIELDS),
+                \implode(', ', PointsInput::REQUIRED_FIELDS),
             ));
         }
 

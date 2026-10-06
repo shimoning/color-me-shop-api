@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 

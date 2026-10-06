@@ -8,10 +8,10 @@ use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\ExternalAccount;
-use Shimoning\ColorMeShopApi\Entities\Customer\Membership;
-use Shimoning\ColorMeShopApi\Entities\Customer\MembershipAggregationPeriod;
-use Shimoning\ColorMeShopApi\Entities\Customer\MembershipProgress;
-use Shimoning\ColorMeShopApi\Entities\Customer\NextMembership;
+use Shimoning\ColorMeShopApi\Entities\Customer\Membership\Membership;
+use Shimoning\ColorMeShopApi\Entities\Customer\Membership\AggregationPeriod;
+use Shimoning\ColorMeShopApi\Entities\Customer\Membership\Progress;
+use Shimoning\ColorMeShopApi\Entities\Customer\Membership\NextMembership;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -37,11 +37,11 @@ class CustomerResponseFieldsTest extends TestCase
         $this->assertSame('gold_member', $membership->getMembershipId());
         $this->assertSame('ゴールド会員', $membership->getName());
         $progress = $membership->getProgress();
-        $this->assertInstanceOf(MembershipProgress::class, $progress);
+        $this->assertInstanceOf(Progress::class, $progress);
         $this->assertSame(3000, $progress->getScore());
 
         $aggregationPeriod = $progress->getAggregationPeriod();
-        $this->assertInstanceOf(MembershipAggregationPeriod::class, $aggregationPeriod);
+        $this->assertInstanceOf(AggregationPeriod::class, $aggregationPeriod);
         $this->assertInstanceOf(DateTimeImmutable::class, $aggregationPeriod->getStartDate());
         $this->assertSame(1780239600, $aggregationPeriod->getStartDate()->getTimestamp());
         $this->assertInstanceOf(DateTimeImmutable::class, $aggregationPeriod->getEndDate());
@@ -104,7 +104,7 @@ class CustomerResponseFieldsTest extends TestCase
         ]);
 
         $progress = $membership->getProgress();
-        $this->assertInstanceOf(MembershipProgress::class, $progress);
+        $this->assertInstanceOf(Progress::class, $progress);
         $this->assertNull($progress->getNextMembership());
     }
 
@@ -220,10 +220,10 @@ class CustomerResponseFieldsTest extends TestCase
     ): void {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
-            MembershipProgress::class . ' の API フィールド『' . $field . '』が不正です。',
+            Progress::class . ' の API フィールド『' . $field . '』が不正です。',
         );
 
-        new MembershipProgress([$field => $value]);
+        new Progress([$field => $value]);
     }
 
     #[DataProvider('invalidMembershipAggregationPeriodFieldProvider')]
@@ -233,10 +233,10 @@ class CustomerResponseFieldsTest extends TestCase
     ): void {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
-            MembershipAggregationPeriod::class . ' の API フィールド『' . $field . '』が不正です。',
+            AggregationPeriod::class . ' の API フィールド『' . $field . '』が不正です。',
         );
 
-        new MembershipAggregationPeriod([$field => $value]);
+        new AggregationPeriod([$field => $value]);
     }
 
     #[DataProvider('invalidNextMembershipFieldProvider')]

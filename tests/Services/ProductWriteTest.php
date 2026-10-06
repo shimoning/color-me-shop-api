@@ -13,24 +13,24 @@ use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
-use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Group;
-use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Option;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
-use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Option;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\Value;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
+use Shimoning\ColorMeShopApi\Entities\Product\Image\Image;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Product;
@@ -267,7 +267,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(201, self::fixture('category_child_created.json'));
 
-        $category = (new Product('token', $mock->client()))->createCategoryChild(9001, new CategoryChildInput([
+        $category = (new Product('token', $mock->client()))->createCategoryChild(9001, new ChildInput([
             'name' => '半袖', 'meta_tag' => ['title' => '半袖', 'description' => null],
         ]));
 
@@ -288,7 +288,7 @@ class ProductWriteTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('category_child_created.json'));
 
-        $category = (new Product('token', $mock->client()))->updateCategoryChild('9001', '5', new CategoryChildInput([
+        $category = (new Product('token', $mock->client()))->updateCategoryChild('9001', '5', new ChildInput([
             'sort' => null,
         ]));
 
@@ -304,7 +304,7 @@ class ProductWriteTest extends TestCase
         $small = HttpMock::json(201, self::fixture('category_child_created.json'));
 
         (new Product('token', $big->client()))->createCategory(new CategoryInput([]));
-        (new Product('token', $small->client()))->createCategoryChild(9001, new CategoryChildInput([]));
+        (new Product('token', $small->client()))->createCategoryChild(9001, new ChildInput([]));
 
         $this->assertSame('{"category":{}}', $big->body());
         $this->assertSame('{"category":{}}', $small->body());
@@ -325,7 +325,7 @@ class ProductWriteTest extends TestCase
 
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('SmallCategory');
-        (new Product('token', $mock->client()))->updateCategoryChild(9001, 5, new CategoryChildInput(['name' => 'x']));
+        (new Product('token', $mock->client()))->updateCategoryChild(9001, 5, new ChildInput(['name' => 'x']));
     }
 
     public function test_カテゴリー書き込みの応答にid_smallがなければ例外になる(): void
@@ -367,7 +367,7 @@ class ProductWriteTest extends TestCase
 
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(SmallCategory::class . ' を期待しましたが string でした。');
-        (new Product('token', $mock->client()))->createCategoryChild(9001, new CategoryChildInput(['name' => 'x']));
+        (new Product('token', $mock->client()))->createCategoryChild(9001, new ChildInput(['name' => 'x']));
     }
 
     /**
@@ -380,7 +380,7 @@ class ProductWriteTest extends TestCase
         $invalid = HttpMock::json(422, self::fixture('errors_422.json'));
 
         $errors403 = (new Product('token', $forbidden->client()))->updateCategory(9001, new CategoryInput(['name' => 'x']));
-        $errors404 = (new Product('token', $notFound->client()))->updateCategoryChild(9001, 999, new CategoryChildInput(['name' => 'x']));
+        $errors404 = (new Product('token', $notFound->client()))->updateCategoryChild(9001, 999, new ChildInput(['name' => 'x']));
         $errors422 = (new Product('token', $invalid->client()))->createCategory(new CategoryInput([]));
 
         $this->assertInstanceOf(Errors::class, $errors403);
@@ -454,7 +454,7 @@ class ProductWriteTest extends TestCase
         $value = HttpMock::json(201, self::fixture('product_option_value_created.json'));
 
         (new Product('token', $option->client()))->createOption(101, new OptionCreateInput([]));
-        (new Product('token', $value->client()))->createOptionValue(101, 201, new OptionValueCreateInput([]));
+        (new Product('token', $value->client()))->createOptionValue(101, 201, new ValueCreateInput([]));
 
         $this->assertSame('{"option":{}}', $option->body());
         $this->assertSame('{"option_value":{}}', $value->body());
@@ -476,13 +476,13 @@ class ProductWriteTest extends TestCase
         $this->assertSame('Bearer token', $mock->header('Authorization'));
     }
 
-    public function test_オプション値作成はoption_valueキーのJSONをPOSTし201のOptionValueを返す(): void
+    public function test_オプション値作成はoption_valueキーのJSONをPOSTし201のValueを返す(): void
     {
         $mock = HttpMock::json(201, self::fixture('product_option_value_created.json'));
 
-        $value = (new Product('token', $mock->client()))->createOptionValue(101, 201, new OptionValueCreateInput(['name' => 'L']));
+        $value = (new Product('token', $mock->client()))->createOptionValue(101, 201, new ValueCreateInput(['name' => 'L']));
 
-        $this->assertInstanceOf(OptionValue::class, $value);
+        $this->assertInstanceOf(Value::class, $value);
         $this->assertSame(3, $value->getValueId());
         $this->assertSame('L', $value->getName());
         $this->assertSame('POST', $mock->request()->getMethod());
@@ -632,7 +632,7 @@ class ProductWriteTest extends TestCase
 
     // --- image ------------------------------------------------------------
 
-    public function test_画像作成はmultipartでimageとpositionを送信し201のProductImageを返す(): void
+    public function test_画像作成はmultipartでimageとpositionを送信し201のImageを返す(): void
     {
         $path = \tempnam(\sys_get_temp_dir(), 'colorme-image-');
         $this->assertNotFalse($path);
@@ -645,7 +645,7 @@ class ProductWriteTest extends TestCase
             \unlink($path);
         }
 
-        $this->assertInstanceOf(ProductImage::class, $image);
+        $this->assertInstanceOf(Image::class, $image);
         $this->assertSame(0, $image->getPosition());
         $this->assertSame('https://example.invalid/product/101.jpg', $image->getUrl());
         $this->assertSame('POST', $mock->request()->getMethod());
@@ -669,7 +669,7 @@ class ProductWriteTest extends TestCase
 
         $image = (new Product('token', $mock->client()))->createImage(101, $stream, 5);
 
-        $this->assertInstanceOf(ProductImage::class, $image);
+        $this->assertInstanceOf(Image::class, $image);
         $this->assertStringContainsString("\r\n\r\n5\r\n", $mock->body());
         $this->assertStringContainsString('stream-bytes', $mock->body());
     }
@@ -684,7 +684,7 @@ class ProductWriteTest extends TestCase
 
         $image = (new Product('token', $mock->client()))->createImage(101, $stream, 5, null, 'photo.png');
 
-        $this->assertInstanceOf(ProductImage::class, $image);
+        $this->assertInstanceOf(Image::class, $image);
         $this->assertStringContainsString('name="image"; filename="photo.png"', $mock->body());
     }
 

@@ -8,29 +8,29 @@ use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
-use Shimoning\ColorMeShopApi\Entities\Product\Advertising;
-use Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\BigCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\Category;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryChildInput;
-use Shimoning\ColorMeShopApi\Entities\Product\CategoryInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Group;
-use Shimoning\ColorMeShopApi\Entities\Product\GroupInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Option;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValue;
-use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
-use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising;
+use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as ProductAdvertisingSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\Category;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
+use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Option;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\Value;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Product as ProductEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductImage;
+use Shimoning\ColorMeShopApi\Entities\Product\Image\Image as ProductImageEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Product\SmallCategory;
-use Shimoning\ColorMeShopApi\Entities\Product\Variant;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
@@ -48,7 +48,7 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function products(SearchParameters $parameters, ?string $accessToken = null): Page|Errors
+    public function products(ProductSearchParameters $parameters, ?string $accessToken = null): Page|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/products'),
@@ -121,7 +121,7 @@ class Product extends Service
      *
      * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
      *
-     * @return Collection<ProductImage>|Errors
+     * @return Collection<ProductImageEntity>|Errors
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -131,7 +131,7 @@ class Product extends Service
             $this->_endpoint('/products/' . $productId . '/images'),
         );
         return $this->_handle($response, static fn(?array $data): Collection => Collection::cast(
-            ProductImage::class, $data['product']['images'] ?? [],
+            ProductImageEntity::class, $data['product']['images'] ?? [],
         ));
     }
 
@@ -146,13 +146,13 @@ class Product extends Service
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function advertisings(
-        ?AdvertisingSearchParameters $parameters = null,
+        ?ProductAdvertisingSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/product_advertisings'),
-            ($parameters ?? new AdvertisingSearchParameters([]))->toArrayRecursive(),
+            ($parameters ?? new ProductAdvertisingSearchParameters([]))->toArrayRecursive(),
         );
         return $this->_handle($response, static fn(?array $data): Page => Page::build(
             Advertising::class, $data, 'product_advertisings', 'meta', 'GET /v1/product_advertisings のレスポンス',
@@ -336,7 +336,7 @@ class Product extends Service
      */
     public function createCategoryChild(
         int|string $categoryId,
-        CategoryChildInput $input,
+        ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategory|Errors {
         $response = $this->_request(['json' => true], $accessToken)->post(
@@ -361,7 +361,7 @@ class Product extends Service
     public function updateCategoryChild(
         int|string $categoryId,
         int|string $id,
-        CategoryChildInput $input,
+        ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategory|Errors {
         $response = $this->_request(['json' => true], $accessToken)->put(
@@ -510,14 +510,14 @@ class Product extends Service
     public function createOptionValue(
         int|string $productId,
         int|string $optionId,
-        OptionValueCreateInput $input,
+        ValueCreateInput $input,
         ?string $accessToken = null,
-    ): OptionValue|Errors {
+    ): Value|Errors {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products/' . $productId . '/options/' . $optionId . '/values'),
             ['option_value' => self::_jsonObject($input->toArrayRecursive())],
         );
-        return $this->_handle($response, static fn(?array $data): OptionValue => new OptionValue($data['option_value'] ?? []));
+        return $this->_handle($response, static fn(?array $data): Value => new Value($data['option_value'] ?? []));
     }
 
     /**
@@ -673,7 +673,7 @@ class Product extends Service
         int $position,
         ?string $accessToken = null,
         ?string $filename = null,
-    ): ProductImage|Errors {
+    ): ProductImageEntity|Errors {
         $response = $this->_request([], $accessToken)->postMultipart(
             $this->_endpoint('/products/' . $productId . '/images'),
             ['position' => $position],
@@ -681,7 +681,7 @@ class Product extends Service
             [],
             $filename === null ? [] : ['image' => $filename],
         );
-        return $this->_handle($response, static fn(?array $data): ProductImage => new ProductImage($data['product_image'] ?? []));
+        return $this->_handle($response, static fn(?array $data): ProductImageEntity => new ProductImageEntity($data['product_image'] ?? []));
     }
 
     /**

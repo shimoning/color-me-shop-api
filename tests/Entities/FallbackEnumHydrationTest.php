@@ -16,10 +16,10 @@ use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Payment\Financial;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment;
-use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class FallbackEnumHydrationTest extends TestCase

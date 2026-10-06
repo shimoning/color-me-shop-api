@@ -5,8 +5,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
-use Shimoning\ColorMeShopApi\Entities\Sales\Delivery;
-use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\Delivery;
+use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
 
 class NullableObjectFieldCompatibilityTest extends TestCase
 {

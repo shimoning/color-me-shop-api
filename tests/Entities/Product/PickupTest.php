@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
-use Shimoning\ColorMeShopApi\Entities\Product\Pickup;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -37,7 +37,12 @@ class PickupTest extends TestCase
         $serialized = \base64_decode(self::LEGACY_PICKUP_PAYLOAD_BASE64, true);
         $this->assertNotFalse($serialized);
 
-        $pickup = \unserialize($serialized, ['allowed_classes' => [Pickup::class]]);
+        $pickup = \unserialize($serialized, [
+            'allowed_classes' => [
+                Pickup::class,
+                'Shimoning\\ColorMeShopApi\\Entities\\Product\\Pickup',
+            ],
+        ]);
 
         $this->assertInstanceOf(Pickup::class, $pickup);
         $this->assertSame(1, $pickup->getPickupType());

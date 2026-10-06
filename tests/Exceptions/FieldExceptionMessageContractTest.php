@@ -8,13 +8,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Charge;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DateTimes;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Date\Times;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Payment\Cod;
-use Shimoning\ColorMeShopApi\Entities\Product\Category;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
+use Shimoning\ColorMeShopApi\Entities\Product\Category\Category;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -177,8 +177,8 @@ class FieldExceptionMessageContractTest extends TestCase
     public function test_生成箇所のパスはスラッシュ区切りに正規化する(): void
     {
         $this->assertSame(
-            'src/Entities/Product/Category.php',
-            self::normalizePath('src\\Entities\\Product\\Category.php'),
+            'src/Entities/Product/Category/Category.php',
+            self::normalizePath('src\\Entities\\Product\\Category\\Category.php'),
         );
     }
 
@@ -345,7 +345,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 \Error::class,
             ],
             'InvalidFieldException::for/子カテゴリーの配列型不一致' => [
-                self::site('src/Entities/Product/BigCategory.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Product/Category/BigCategory.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
                     Category::fromArray([
                         'id_small' => 0,
@@ -355,7 +355,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 null,
             ],
             'InvalidFieldException::for/カテゴリー識別子欠損' => [
-                self::site('src/Entities/Product/Category.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Product/Category/Category.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
                     Category::fromArray([]);
                 },
@@ -384,7 +384,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/子カテゴリー要素型不一致' => [
-                self::site('src/Entities/Product/BigCategory.php', InvalidFieldException::class . '::forArrayElement', 1),
+                self::site('src/Entities/Product/Category/BigCategory.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
                     Category::fromArray(['id_small' => 0, 'children' => [null]]);
                 },
@@ -419,41 +419,41 @@ class FieldExceptionMessageContractTest extends TestCase
                 null,
             ],
             'InvalidFieldException::for/オプション入力のvaluesのリスト形状不一致' => [
-                self::site('src/Entities/Product/OptionCreateInput.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Product/Option/OptionCreateInput.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput(['values' => [1 => ['name' => 'S']]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput(['values' => [1 => ['name' => 'S']]]);
                 },
                 null,
             ],
             'InvalidFieldException::forArrayElement/オプション入力のvaluesの要素形状不一致' => [
-                self::site('src/Entities/Product/OptionCreateInput.php', InvalidFieldException::class . '::forArrayElement', 1),
+                self::site('src/Entities/Product/Option/OptionCreateInput.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\OptionCreateInput(['values' => [[]]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput(['values' => [[]]]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::for/グループ入力のmeta_tagの形状不一致' => [
-                self::site('src/Entities/Product/MetaTagInput.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Common/MetaTagInput.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\GroupInput(['meta_tag' => []]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput(['meta_tag' => []]);
                 },
                 null,
             ],
             'InvalidFieldException::for/グループ入力のdisplay_stateが応答専用の値' => [
-                self::site('src/Entities/Product/GroupInput.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Product/Group/GroupInput.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\GroupInput(['display_state' => 'sale_for_members']);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput(['display_state' => 'sale_for_members']);
                 },
                 null,
             ],
             'InvalidFieldException::for/受注作成顧客のsexが公式enum外' => [
                 self::site(
-                    'src/Entities/Sales/CustomerCreateInput.php',
+                    'src/Entities/Sale/CustomerCreateInput.php',
                     InvalidFieldException::class . '::for',
                     1,
                 ),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\CustomerCreateInput([
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\CustomerCreateInput([
                         'sex' => 'not_applicable',
                     ]);
                 },
@@ -465,7 +465,7 @@ class FieldExceptionMessageContractTest extends TestCase
                     $mock = HttpMock::json(200, '{"category":"x"}');
                     (new Product('my-token', $mock->client()))->updateCategory(
                         1,
-                        new \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput(['name' => 'x']),
+                        new \Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput(['name' => 'x']),
                     );
                 },
                 null,
@@ -475,7 +475,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 static function (): void {
                     $mock = HttpMock::json(201, '{"category":{"id_big":1,"id_small":5}}');
                     (new Product('my-token', $mock->client()))->createCategory(
-                        new \Shimoning\ColorMeShopApi\Entities\Product\CategoryInput(['name' => 'x']),
+                        new \Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput(['name' => 'x']),
                     );
                 },
                 null,
@@ -497,7 +497,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 null,
             ],
             'MissingFieldException::for/受注顧客の後方互換経路' => [
-                self::site('src/Entities/Sales/Sale.php', MissingFieldException::class . '::for', 1),
+                self::site('src/Entities/Sale/Sale.php', MissingFieldException::class . '::for', 1),
                 static function (): void {
                     (new Sale([]))->getCustomer();
                 },
@@ -592,25 +592,25 @@ class FieldExceptionMessageContractTest extends TestCase
             ],
             'InvalidFieldException::forArrayElement/オプション値' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\Option(['values' => [1]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Option\Option(['values' => [1]]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/配送時間帯' => [
                 static function (): void {
-                    new DateTimes(['periods' => [1]]);
+                    new Times(['periods' => [1]]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/広告の色' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising(['colors' => [1]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising(['colors' => [1]]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/広告のサイズ' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising(['sizes' => [1]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising(['sizes' => [1]]);
                 },
                 \TypeError::class,
             ],
@@ -622,13 +622,13 @@ class FieldExceptionMessageContractTest extends TestCase
             ],
             'InvalidFieldException::forArrayElement/在庫検索の商品ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters(['ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters(['ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/広告検索の商品ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\AdvertisingSearchParameters(['product_ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters(['product_ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
@@ -640,37 +640,37 @@ class FieldExceptionMessageContractTest extends TestCase
             ],
             'InvalidFieldException::forArrayElement/お届け先の明細ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\Delivery(['detail_ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\Delivery(['detail_ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/分割受注の兄弟ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\Segment(['siblings_sale_ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\Segment(['siblings_sale_ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/受注検索の受注ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters(['ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters(['ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/受注検索の顧客ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters(['customer_ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters(['customer_ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/受注検索の決済ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters(['payment_ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters(['payment_ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],
             'InvalidFieldException::forArrayElement/受注検索の取得フィールド' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters(['fields' => [1]]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters(['fields' => [1]]);
                 },
                 \TypeError::class,
             ],
@@ -682,7 +682,7 @@ class FieldExceptionMessageContractTest extends TestCase
             ],
             'InvalidFieldException::forArrayElement/お届け先更新入力の明細ID' => [
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput(['detail_ids' => ['bad']]);
+                    new \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput(['detail_ids' => ['bad']]);
                 },
                 \TypeError::class,
             ],

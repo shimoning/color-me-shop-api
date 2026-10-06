@@ -4,7 +4,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
+use Shimoning\ColorMeShopApi\Entities\Sale\Stat\Stat;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 class StatTest extends TestCase

@@ -3,13 +3,13 @@
 namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\DetailCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\DetailCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\Stat\Stat;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;

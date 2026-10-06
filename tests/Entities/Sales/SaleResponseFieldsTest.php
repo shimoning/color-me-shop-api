@@ -3,13 +3,13 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\Application;
-use Shimoning\ColorMeShopApi\Entities\Sales\Customization;
-use Shimoning\ColorMeShopApi\Entities\Sales\Detail;
-use Shimoning\ColorMeShopApi\Entities\Sales\Segment;
-use Shimoning\ColorMeShopApi\Entities\Sales\ShopCoupon;
-use Shimoning\ColorMeShopApi\Entities\Sales\Totals;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\Application;
+use Shimoning\ColorMeShopApi\Entities\Sale\Customization;
+use Shimoning\ColorMeShopApi\Entities\Sale\Detail;
+use Shimoning\ColorMeShopApi\Entities\Sale\Segment;
+use Shimoning\ColorMeShopApi\Entities\Sale\ShopCoupon;
+use Shimoning\ColorMeShopApi\Entities\Sale\Totals;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;

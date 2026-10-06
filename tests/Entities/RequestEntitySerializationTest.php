@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 
 class RequestEntitySerializationTest extends TestCase
 {
