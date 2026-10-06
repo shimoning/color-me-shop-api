@@ -8,9 +8,9 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomerCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetailCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\DetailCreateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 use Shimoning\ColorMeShopApi\Values\Furigana;
@@ -19,7 +19,7 @@ class SaleCreateInputTest extends TestCase
 {
     public function test_既存顧客のファクトリは顧客IDだけを送信する(): void
     {
-        $customer = SaleCustomerCreateInput::existing(501);
+        $customer = CustomerCreateInput::existing(501);
 
         $this->assertInstanceOf(RequestEntity::class, $customer);
         $this->assertSame(['id' => 501], $customer->toArrayRecursive());
@@ -27,7 +27,7 @@ class SaleCreateInputTest extends TestCase
 
     public function test_顧客IDと他の顧客情報を同時に指定できる(): void
     {
-        $customer = new SaleCustomerCreateInput([
+        $customer = new CustomerCreateInput([
             'id' => 501,
             'name' => '無視される名前',
             'mail' => 'ignored@example.com',
@@ -42,7 +42,7 @@ class SaleCreateInputTest extends TestCase
 
     public function test_ゲスト顧客の型付きフィールドを変換する(): void
     {
-        $customer = new SaleCustomerCreateInput([
+        $customer = new CustomerCreateInput([
             'name' => 'カラーミー太郎',
             'furigana' => 'カラーミータロウ',
             'pref_id' => Prefecture::TOKYO,
@@ -64,12 +64,12 @@ class SaleCreateInputTest extends TestCase
     {
         $this->assertSame(
             ['sex' => 'female'],
-            (new SaleCustomerCreateInput(['sex' => 'female']))->toArrayRecursive(),
+            (new CustomerCreateInput(['sex' => 'female']))->toArrayRecursive(),
         );
 
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('sex');
-        new SaleCustomerCreateInput(['sex' => Sex::UNKNOWN]);
+        new CustomerCreateInput(['sex' => Sex::UNKNOWN]);
     }
 
     public function test_顧客APIでは有効な未回答の性別も受注作成では拒否する(): void
@@ -77,7 +77,7 @@ class SaleCreateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('sex');
 
-        new SaleCustomerCreateInput(['sex' => Sex::NOT_APPLICABLE]);
+        new CustomerCreateInput(['sex' => Sex::NOT_APPLICABLE]);
     }
 
     public function test_お届け先と明細の配列を子Entityへ変換する(): void
@@ -125,8 +125,8 @@ class SaleCreateInputTest extends TestCase
 
     public function test_構築済みの顧客と明細をそのまま利用できる(): void
     {
-        $customer = SaleCustomerCreateInput::existing(9);
-        $detail = new SaleDetailCreateInput([
+        $customer = CustomerCreateInput::existing(9);
+        $detail = new DetailCreateInput([
             'product_id' => 101,
             'product_num' => 2,
             'price' => null,
@@ -153,7 +153,7 @@ class SaleCreateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
             SaleCreateInput::class . ' の API フィールド『details』が不正です。'
-            . 'list<' . SaleDetailCreateInput::class . '> を期待しましたが array でした。',
+            . 'list<' . DetailCreateInput::class . '> を期待しましたが array でした。',
         );
 
         new SaleCreateInput(['details' => [1 => ['product_id' => 2, 'product_num' => 1]]]);
@@ -164,7 +164,7 @@ class SaleCreateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
             SaleCreateInput::class . ' の API フィールド『sale_deliveries』が不正です。'
-            . 'list<' . SaleDeliveryCreateInput::class . '> を期待しましたが array でした。',
+            . 'list<' . DeliveryCreateInput::class . '> を期待しましたが array でした。',
         );
 
         new SaleCreateInput(['sale_deliveries' => [3 => ['name' => 'x']]]);
@@ -173,6 +173,6 @@ class SaleCreateInputTest extends TestCase
     public function test_未指定フィールドを送信しない(): void
     {
         $this->assertSame([], (new SaleCreateInput([]))->toArrayRecursive());
-        $this->assertSame([], (new SaleCustomerCreateInput([]))->toArrayRecursive());
+        $this->assertSame([], (new CustomerCreateInput([]))->toArrayRecursive());
     }
 }

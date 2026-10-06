@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Delivery;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDate;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDateDays;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDateTimes;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Date;
+use Shimoning\ColorMeShopApi\Entities\Delivery\DateDays;
+use Shimoning\ColorMeShopApi\Entities\Delivery\DateTimes;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
@@ -15,7 +15,7 @@ class DeliveryDateTest extends TestCase
 {
     public function test_配送日時設定を子Entityと日時へ変換する(): void
     {
-        $deliveryDate = new DeliveryDate([
+        $deliveryDate = new Date([
             'account_id' => 'my-shop',
             'days' => [
                 'enabled' => true,
@@ -34,13 +34,13 @@ class DeliveryDateTest extends TestCase
         ]);
 
         $this->assertSame('my-shop', $deliveryDate->getAccountId());
-        $this->assertInstanceOf(DeliveryDateDays::class, $deliveryDate->getDays());
+        $this->assertInstanceOf(DateDays::class, $deliveryDate->getDays());
         $this->assertTrue($deliveryDate->getDays()->getEnabled());
         $this->assertSame(3, $deliveryDate->getDays()->getDefault());
         $this->assertSame(2, $deliveryDate->getDays()->getMin());
         $this->assertSame(14, $deliveryDate->getDays()->getMax());
         $this->assertSame('', $deliveryDate->getDays()->getComment());
-        $this->assertInstanceOf(DeliveryDateTimes::class, $deliveryDate->getTimes());
+        $this->assertInstanceOf(DateTimes::class, $deliveryDate->getTimes());
         $this->assertTrue($deliveryDate->getTimes()->getEnabled());
         $this->assertSame(['午前中', '14時から16時'], $deliveryDate->getTimes()->getPeriods());
         $this->assertSame('配送時間帯を選択してください', $deliveryDate->getTimes()->getComment());
@@ -50,7 +50,7 @@ class DeliveryDateTest extends TestCase
 
     public function test_nullableフィールドが欠損していればnullを返す(): void
     {
-        $deliveryDate = new DeliveryDate([
+        $deliveryDate = new Date([
             'account_id' => 'my-shop',
             'days' => ['min' => 2, 'max' => 14],
             'times' => ['periods' => []],
@@ -68,11 +68,11 @@ class DeliveryDateTest extends TestCase
 
     public function test_必須フィールドが欠損していればgetter呼び出し時に固有例外になる(): void
     {
-        $deliveryDate = new DeliveryDate([]);
+        $deliveryDate = new Date([]);
 
         $this->expectException(MissingFieldException::class);
         $this->expectExceptionMessage(
-            DeliveryDate::class . ' の API フィールド『account_id』が欠損しています。',
+            Date::class . ' の API フィールド『account_id』が欠損しています。',
         );
 
         $deliveryDate->getAccountId();
@@ -82,9 +82,9 @@ class DeliveryDateTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
-            DeliveryDateTimes::class . ' の API フィールド『periods』が不正です。',
+            DateTimes::class . ' の API フィールド『periods』が不正です。',
         );
 
-        new DeliveryDateTimes(['periods' => ['午前中', 123]]);
+        new DateTimes(['periods' => ['午前中', 123]]);
     }
 }

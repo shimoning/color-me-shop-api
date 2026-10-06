@@ -38,7 +38,7 @@ use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
 
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDate;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Date;
 
 use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
@@ -781,11 +781,11 @@ class Client
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting
      * @param string|null $accessToken
-     * @return DeliveryDate|Errors
+     * @return Date|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getDeliveryDateSetting(?string $accessToken = null): DeliveryDate|Errors
+    public function getDeliveryDateSetting(?string $accessToken = null): Date|Errors
     {
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;

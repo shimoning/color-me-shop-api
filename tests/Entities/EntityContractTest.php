@@ -57,7 +57,7 @@ class EntityContractTest extends TestCase
 
     /** @var array<class-string<Entity>, array<string, mixed>> */
     private const REQUIRED_CONSTRUCTOR_DATA = [
-        \Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput::class => ['increment' => 0],
+        \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
         \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class => ['stocks' => 0],
     ];
 
@@ -123,8 +123,8 @@ class EntityContractTest extends TestCase
                 \Shimoning\ColorMeShopApi\Entities\Stock\SearchParameters::class,
                 'name',
             ],
-            'Sales\\SaleDeliveryUpdateInput' => [
-                \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput::class,
+            'Sales\\DeliveryUpdateInput' => [
+                \Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput::class,
                 'memo',
             ],
             'Sales\\SearchParameters' => [

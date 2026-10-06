@@ -302,7 +302,7 @@ class ApiFieldNameTest extends TestCase
             );
         }
 
-        if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput::class) {
+        if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class) {
             $data = ['increment' => 0];
         }
         if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class) {

@@ -4,12 +4,12 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleApplication;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomization;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetail;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleSegment;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleShopCoupon;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleTotals;
+use Shimoning\ColorMeShopApi\Entities\Sales\Application;
+use Shimoning\ColorMeShopApi\Entities\Sales\Customization;
+use Shimoning\ColorMeShopApi\Entities\Sales\Detail;
+use Shimoning\ColorMeShopApi\Entities\Sales\Segment;
+use Shimoning\ColorMeShopApi\Entities\Sales\ShopCoupon;
+use Shimoning\ColorMeShopApi\Entities\Sales\Totals;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
@@ -21,7 +21,7 @@ class SaleResponseFieldsTest extends TestCase
         $sale = new Sale(self::fixtureData('sale_with_values'));
 
         $segment = $sale->getSegment();
-        $this->assertInstanceOf(SaleSegment::class, $segment);
+        $this->assertInstanceOf(Segment::class, $segment);
         $this->assertSame(1, $segment->getId());
         $this->assertSame('通常商品', $segment->getName());
         $this->assertSame(4434233, $segment->getParentSaleId());
@@ -35,7 +35,7 @@ class SaleResponseFieldsTest extends TestCase
         $this->assertSame([4434233, 4434234], $segment->getSiblingsSaleIds());
 
         $totals = $sale->getTotals();
-        $this->assertInstanceOf(SaleTotals::class, $totals);
+        $this->assertInstanceOf(Totals::class, $totals);
         $this->assertSame(90, $totals->getNormalTaxAmount());
         $this->assertSame(13, $totals->getReducedTaxAmount());
         $this->assertSame(171, $totals->getDiscountAmountForNormalTax());
@@ -44,11 +44,11 @@ class SaleResponseFieldsTest extends TestCase
         $this->assertSame(171, $totals->getTotalPriceWithReducedTax());
 
         $application = $sale->getApplication();
-        $this->assertInstanceOf(SaleApplication::class, $application);
+        $this->assertInstanceOf(Application::class, $application);
         $this->assertSame('サンプルアプリ', $application->getName());
 
         $shopCoupon = $sale->getShopCoupon();
-        $this->assertInstanceOf(SaleShopCoupon::class, $shopCoupon);
+        $this->assertInstanceOf(ShopCoupon::class, $shopCoupon);
         $this->assertSame(123, $shopCoupon->getId());
         $this->assertSame('新規会員限定クーポン', $shopCoupon->getName());
         $this->assertSame('WELCOME10', $shopCoupon->getCode());
@@ -112,11 +112,11 @@ class SaleResponseFieldsTest extends TestCase
 
     public function test_受注明細の追加フィールドを取得する(): void
     {
-        $detail = new SaleDetail(self::fixtureData('detail_with_values'));
+        $detail = new Detail(self::fixtureData('detail_with_values'));
 
         $this->assertTrue($detail->isTaxReduced());
         $this->assertCount(2, $detail->getCustomizations());
-        $this->assertContainsOnlyInstancesOf(SaleCustomization::class, $detail->getCustomizations());
+        $this->assertContainsOnlyInstancesOf(Customization::class, $detail->getCustomizations());
         $this->assertSame('名入れ', $detail->getCustomizations()[0]->getTitle());
         $this->assertSame('オリジナル名', $detail->getCustomizations()[0]->getValue());
         $this->assertSame('メッセージ', $detail->getCustomizations()[1]->getTitle());
@@ -125,7 +125,7 @@ class SaleResponseFieldsTest extends TestCase
 
     public function test_customizationsの空配列を保持する(): void
     {
-        $detail = new SaleDetail(self::fixtureData('detail_with_empty_customizations'));
+        $detail = new Detail(self::fixtureData('detail_with_empty_customizations'));
 
         $this->assertFalse($detail->isTaxReduced());
         $this->assertSame([], $detail->getCustomizations());
@@ -136,11 +136,11 @@ class SaleResponseFieldsTest extends TestCase
         string $field,
         string $getter,
     ): void {
-        $detail = new SaleDetail(self::fixtureData('detail_with_missing_fields'));
+        $detail = new Detail(self::fixtureData('detail_with_missing_fields'));
 
         $this->expectException(MissingFieldException::class);
         $this->expectExceptionMessage(
-            SaleDetail::class . ' の API フィールド『' . $field . '』が欠損しています。',
+            Detail::class . ' の API フィールド『' . $field . '』が欠損しています。',
         );
 
         $detail->{$getter}();
@@ -151,10 +151,10 @@ class SaleResponseFieldsTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage(
-            SaleDetail::class . ' の API フィールド『' . $field . '』が不正です。',
+            Detail::class . ' の API フィールド『' . $field . '』が不正です。',
         );
 
-        new SaleDetail([$field => $value]);
+        new Detail([$field => $value]);
     }
 
     public function test_customizations配列要素の内部フィールドが不正なら要素変換の固有例外になる(): void
@@ -162,13 +162,13 @@ class SaleResponseFieldsTest extends TestCase
         $fields = self::fixtureData('invalid_customization_fields');
 
         try {
-            new SaleDetail(['customizations' => [$fields]]);
+            new Detail(['customizations' => [$fields]]);
             $this->fail('InvalidFieldException が送出されませんでした。');
         } catch (InvalidFieldException $exception) {
             $this->assertSame(
-                SaleDetail::class
+                Detail::class
                     . ' の API フィールド『customizations』が不正です。'
-                    . '配列要素を ' . SaleCustomization::class
+                    . '配列要素を ' . Customization::class
                     . ' に変換できませんでした。原因: 配列要素を変換できませんでした。',
                 $exception->getMessage(),
             );
@@ -176,7 +176,7 @@ class SaleResponseFieldsTest extends TestCase
             $cause = $exception->getPrevious();
             $this->assertInstanceOf(InvalidFieldException::class, $cause);
             $this->assertStringContainsString(
-                SaleCustomization::class . ' の API フィールド『title』が不正です。',
+                Customization::class . ' の API フィールド『title』が不正です。',
                 $cause->getMessage(),
             );
         }
@@ -200,27 +200,27 @@ class SaleResponseFieldsTest extends TestCase
         $fields = self::fixtureData('invalid_nested_entity_fields');
 
         return [
-            'SaleSegment: bool 型の splitted を厳密に検証' => [
+            'Segment: bool 型の splitted を厳密に検証' => [
                 'segment',
-                SaleSegment::class,
+                Segment::class,
                 'splitted',
                 $fields['segment']['splitted'],
             ],
-            'SaleTotals: snake_case 変換される int 型の normal_tax_amount を検証' => [
+            'Totals: snake_case 変換される int 型の normal_tax_amount を検証' => [
                 'totals',
-                SaleTotals::class,
+                Totals::class,
                 'normal_tax_amount',
                 $fields['totals']['normal_tax_amount'],
             ],
-            'SaleApplication: 唯一の string 型フィールド name を検証' => [
+            'Application: 唯一の string 型フィールド name を検証' => [
                 'application',
-                SaleApplication::class,
+                Application::class,
                 'name',
                 $fields['application']['name'],
             ],
-            'SaleShopCoupon: int 型の識別子 id を検証' => [
+            'ShopCoupon: int 型の識別子 id を検証' => [
                 'shop_coupon',
-                SaleShopCoupon::class,
+                ShopCoupon::class,
                 'id',
                 $fields['shop_coupon']['id'],
             ],

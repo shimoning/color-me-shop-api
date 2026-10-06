@@ -6,8 +6,8 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDetailCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\DetailCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Page;
@@ -193,24 +193,24 @@ class Sales extends Service
         }
 
         foreach ($fields['details'] as $index => $detail) {
-            $missing = \array_diff(SaleDetailCreateInput::REQUIRED_FIELDS, \array_keys($detail));
+            $missing = \array_diff(DetailCreateInput::REQUIRED_FIELDS, \array_keys($detail));
             if ($missing !== []) {
                 throw new ParameterException(\sprintf(
                     '受注明細 details[%d] には %s を指定してください (未指定: %s)。',
                     $index,
-                    \implode(', ', SaleDetailCreateInput::REQUIRED_FIELDS),
+                    \implode(', ', DetailCreateInput::REQUIRED_FIELDS),
                     \implode(', ', $missing),
                 ));
             }
         }
 
         foreach ($fields['sale_deliveries'] ?? [] as $index => $delivery) {
-            $missing = \array_diff(SaleDeliveryCreateInput::REQUIRED_FIELDS, \array_keys($delivery));
+            $missing = \array_diff(DeliveryCreateInput::REQUIRED_FIELDS, \array_keys($delivery));
             if ($missing !== []) {
                 throw new ParameterException(\sprintf(
                     'お届け先 sale_deliveries[%d] には %s を指定してください (未指定: %s)。',
                     $index,
-                    \implode(', ', SaleDeliveryCreateInput::REQUIRED_FIELDS),
+                    \implode(', ', DeliveryCreateInput::REQUIRED_FIELDS),
                     \implode(', ', $missing),
                 ));
             }

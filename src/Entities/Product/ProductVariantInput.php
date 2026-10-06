@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 商品更新の `variants` 配列要素。
  *
  * `option1_value` / `option2_value` / `stocks` はいずれも任意だが、JSON object として送るため
- * 少なくとも1キーを必要とする。`stocks` は int または ProductStocksIncrementInput で、
+ * 少なくとも1キーを必要とする。`stocks` は int または StocksIncrementInput で、
  * OpenAPI に nullable 指定がないため `null` は拒否する。
  *
  * @see docs/adr/0012-allow-nullability-from-api-observations.md
@@ -20,12 +20,12 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 class ProductVariantInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'stocks' => ['entity' => ProductStocksIncrementInput::class, 'orScalar' => 'int'],
+        'stocks' => ['entity' => StocksIncrementInput::class, 'orScalar' => 'int'],
     ];
 
     protected ?string $option1Value;
     protected ?string $option2Value;
-    protected ProductStocksIncrementInput|int|null $stocks;
+    protected StocksIncrementInput|int|null $stocks;
 
     private const KEYS = ['option1_value', 'option2_value', 'stocks'];
     private const SHAPE = 'array{option1_value?: string, option2_value?: string, stocks?: int|array{increment: int}}';

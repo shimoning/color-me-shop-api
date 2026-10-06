@@ -17,17 +17,17 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 class SaleCreateInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'customer' => ['allowNull' => true, 'entity' => SaleCustomerCreateInput::class],
-        'saleDeliveries' => ['array' => true, 'entity' => SaleDeliveryCreateInput::class],
-        'details' => ['array' => true, 'entity' => SaleDetailCreateInput::class],
+        'customer' => ['allowNull' => true, 'entity' => CustomerCreateInput::class],
+        'saleDeliveries' => ['array' => true, 'entity' => DeliveryCreateInput::class],
+        'details' => ['array' => true, 'entity' => DetailCreateInput::class],
     ];
 
     public const REQUIRED_FIELDS = ['payment_id', 'details'];
 
-    protected ?SaleCustomerCreateInput $customer;
-    /** @var list<SaleDeliveryCreateInput> */
+    protected ?CustomerCreateInput $customer;
+    /** @var list<DeliveryCreateInput> */
     protected ?array $saleDeliveries;
-    /** @var list<SaleDetailCreateInput> */
+    /** @var list<DetailCreateInput> */
     protected array $details;
     protected int $paymentId;
 }

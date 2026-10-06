@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
-class SaleDeliveryUpdateInput extends SaleDelivery implements RequestEntity
+class DeliveryUpdateInput extends Delivery implements RequestEntity
 {
     /**
      * 宛名を設定
@@ -266,6 +266,6 @@ class SaleDeliveryUpdateInput extends SaleDelivery implements RequestEntity
     }
 }
 
-// 0.14.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーで削除予定。
-Aliases::defineLegacyAlias(SaleDeliveryUpdateInput::class);
+Aliases::defineLegacyAlias(DeliveryUpdateInput::class);

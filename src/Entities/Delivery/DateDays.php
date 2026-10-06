@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * 配送希望日の設定。
  */
-class DeliveryDateDays extends Entity
+class DateDays extends Entity
 {
     protected ?bool $enabled;
     protected ?int $default;
@@ -59,3 +60,7 @@ class DeliveryDateDays extends Entity
         return $this->comment;
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(DateDays::class);

@@ -7,7 +7,7 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDate;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Date;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -69,7 +69,7 @@ class DeliveryTest extends TestCase
 
         $deliveryDate = (new Delivery('my-token', $mock->client()))->dateSetting();
 
-        $this->assertInstanceOf(DeliveryDate::class, $deliveryDate);
+        $this->assertInstanceOf(Date::class, $deliveryDate);
         $this->assertSame('my-shop', $deliveryDate->getAccountId());
         $this->assertSame(2, $deliveryDate->getDays()->getMin());
         $this->assertSame(['午前中', '14時から16時'], $deliveryDate->getTimes()->getPeriods());
@@ -82,7 +82,7 @@ class DeliveryTest extends TestCase
 
         $deliveryDate = (new Delivery('my-token', $mock->client()))->dateSetting();
 
-        $this->assertInstanceOf(DeliveryDate::class, $deliveryDate);
+        $this->assertInstanceOf(Date::class, $deliveryDate);
         foreach (['getAccountId', 'getDays', 'getTimes'] as $getter) {
             try {
                 $deliveryDate->{$getter}();

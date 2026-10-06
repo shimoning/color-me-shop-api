@@ -15,16 +15,16 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 class Gift extends Entity
 {
     public const FIELD_TYPES = [
-        'noshi' => ['entity' => GiftNoshi::class],
-        'card' => ['entity' => GiftCard::class],
-        'wrapping' => ['entity' => GiftWrapping::class],
+        'noshi' => ['entity' => Noshi::class],
+        'card' => ['entity' => Card::class],
+        'wrapping' => ['entity' => Wrapping::class],
     ];
 
     protected string $accountId;
     protected ?bool $enabled;
-    protected GiftNoshi $noshi;
-    protected GiftCard $card;
-    protected GiftWrapping $wrapping;
+    protected Noshi $noshi;
+    protected Card $card;
+    protected Wrapping $wrapping;
     protected ?int $makeDate;
     protected ?int $updateDate;
 
@@ -48,7 +48,7 @@ class Gift extends Entity
     /**
      * のし設定。
      */
-    public function getNoshi(): GiftNoshi
+    public function getNoshi(): Noshi
     {
         $this->assertFieldInitialized('noshi');
         return $this->noshi;
@@ -57,7 +57,7 @@ class Gift extends Entity
     /**
      * メッセージカード設定。
      */
-    public function getCard(): GiftCard
+    public function getCard(): Card
     {
         $this->assertFieldInitialized('card');
         return $this->card;
@@ -66,7 +66,7 @@ class Gift extends Entity
     /**
      * ラッピング設定。
      */
-    public function getWrapping(): GiftWrapping
+    public function getWrapping(): Wrapping
     {
         $this->assertFieldInitialized('wrapping');
         return $this->wrapping;

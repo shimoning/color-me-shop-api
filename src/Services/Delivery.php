@@ -5,7 +5,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
-use Shimoning\ColorMeShopApi\Entities\Delivery\DeliveryDate;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Date;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
@@ -39,11 +39,11 @@ class Delivery extends Service
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting
      * @param string|null $accessToken
-     * @return DeliveryDate|Errors
+     * @return Date|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function dateSetting(?string $accessToken = null): DeliveryDate|Errors
+    public function dateSetting(?string $accessToken = null): Date|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/deliveries/date'),
@@ -51,7 +51,7 @@ class Delivery extends Service
 
         return $this->_handle(
             $response,
-            fn(?array $data): DeliveryDate => new DeliveryDate($data['delivery_date'] ?? []),
+            fn(?array $data): Date => new Date($data['delivery_date'] ?? []),
         );
     }
 }

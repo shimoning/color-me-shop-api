@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 
 use DateTimeImmutable;
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
@@ -12,16 +13,16 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting
  */
-class DeliveryDate extends Entity
+class Date extends Entity
 {
     public const FIELD_TYPES = [
-        'days' => ['entity' => DeliveryDateDays::class],
-        'times' => ['entity' => DeliveryDateTimes::class],
+        'days' => ['entity' => DateDays::class],
+        'times' => ['entity' => DateTimes::class],
     ];
 
     protected string $accountId;
-    protected DeliveryDateDays $days;
-    protected DeliveryDateTimes $times;
+    protected DateDays $days;
+    protected DateTimes $times;
     protected ?int $makeDate;
     protected ?int $updateDate;
 
@@ -37,7 +38,7 @@ class DeliveryDate extends Entity
     /**
      * 配送希望日の設定。
      */
-    public function getDays(): DeliveryDateDays
+    public function getDays(): DateDays
     {
         $this->assertFieldInitialized('days');
         return $this->days;
@@ -46,7 +47,7 @@ class DeliveryDate extends Entity
     /**
      * 配送時間帯の設定。
      */
-    public function getTimes(): DeliveryDateTimes
+    public function getTimes(): DateTimes
     {
         $this->assertFieldInitialized('times');
         return $this->times;
@@ -74,3 +75,7 @@ class DeliveryDate extends Entity
         return (new DateTimeImmutable())->setTimestamp($this->updateDate);
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(Date::class);

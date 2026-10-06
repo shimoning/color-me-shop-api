@@ -9,11 +9,11 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionProperty;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery;
+use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryMethod;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDelivery;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleSegment;
+use Shimoning\ColorMeShopApi\Entities\Sales\Delivery as SalesDelivery;
+use Shimoning\ColorMeShopApi\Entities\Sales\DeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\Segment;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
@@ -35,9 +35,9 @@ class ScalarArrayFieldTypeTest extends TestCase
     public static function newScalarArrayProvider(): array
     {
         return [
-            '配送方法の利用不可決済ID' => [Delivery::class, 'unavailable_payment_ids', 'int'],
-            'お届け先の明細ID' => [SaleDelivery::class, 'detail_ids', 'int'],
-            '分割受注の兄弟ID' => [SaleSegment::class, 'siblings_sale_ids', 'int'],
+            '配送方法の利用不可決済ID' => [DeliveryMethod::class, 'unavailable_payment_ids', 'int'],
+            'お届け先の明細ID' => [SalesDelivery::class, 'detail_ids', 'int'],
+            '分割受注の兄弟ID' => [Segment::class, 'siblings_sale_ids', 'int'],
             '受注検索の受注ID' => [SalesSearchParameters::class, 'ids', 'int'],
             '受注検索の顧客ID' => [SalesSearchParameters::class, 'customer_ids', 'int'],
             '受注検索の決済ID' => [SalesSearchParameters::class, 'payment_ids', 'int'],
@@ -48,7 +48,7 @@ class ScalarArrayFieldTypeTest extends TestCase
 
     public function test_お届け先更新入力も継承したscalar配列の不正要素を拒否する(): void
     {
-        $this->assertInvalidElement(SaleDeliveryUpdateInput::class, 'detail_ids', 'int');
+        $this->assertInvalidElement(DeliveryUpdateInput::class, 'detail_ids', 'int');
     }
 
     public function test_scalar配列アノテーションには対応するFIELD_TYPES宣言がある(): void

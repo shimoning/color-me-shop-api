@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
+use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -14,7 +14,7 @@ class ProductStocksIncrementInputTest extends TestCase
 {
     public function test_incrementだけを受け付けて直列化する(): void
     {
-        $input = new ProductStocksIncrementInput(['increment' => -2]);
+        $input = new StocksIncrementInput(['increment' => -2]);
 
         $this->assertInstanceOf(RequestEntity::class, $input);
         $this->assertSame(['increment' => -2], $input->toArrayRecursive());
@@ -26,7 +26,7 @@ class ProductStocksIncrementInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('increment');
 
-        new ProductStocksIncrementInput($data);
+        new StocksIncrementInput($data);
     }
 
     /** @return array<string, array{array<string, mixed>}> */

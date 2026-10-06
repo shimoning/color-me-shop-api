@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -13,7 +14,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * 公式 OpenAPI の object 定義に合わせ、`increment` を必須とし、それ以外のキーを拒否する。
  */
-class ProductStocksIncrementInput extends Entity implements RequestEntity
+class StocksIncrementInput extends Entity implements RequestEntity
 {
     protected int $increment;
 
@@ -32,3 +33,7 @@ class ProductStocksIncrementInput extends Entity implements RequestEntity
         parent::__construct($data);
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーで削除予定。
+Aliases::defineLegacyAlias(StocksIncrementInput::class);
