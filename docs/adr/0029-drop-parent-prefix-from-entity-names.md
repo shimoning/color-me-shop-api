@@ -85,3 +85,4 @@ Entity のクラス名に主 Entity の名前を接頭辞として付けるか�
 - [非推奨のクラス名の対応表](../class-aliases.md)
 - 実装とテストの出典コミット: `152b88a`
 - 対応表の移動の出典コミット: `eb1a52a`
+- 名前空間を API の URL に沿わせ、改名の対象と別名を改めた: [ADR 0030](0030-place-entities-by-api-path.md)

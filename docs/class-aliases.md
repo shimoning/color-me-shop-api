@@ -10,38 +10,75 @@
 
 クラス名はいずれも `Shimoning\ColorMeShopApi\Entities\` 以下である。
 
-## 0.24.0: 親の名前の接頭辞を外した改名
+## 0.24.0: 名前空間を API の URL に沿わせる改名
 
-名前空間の主 Entity の名前を、クラス名の接頭辞に付けないように揃えた
-（[ADR 0029](adr/0029-drop-parent-prefix-from-entity-names.md)）。
+Entity の名前空間を公式 API の URL のパスに沿わせ、名前空間の主 Entity の名前をクラス名の接頭辞に付けない
+ように揃えた（[ADR 0029](adr/0029-drop-parent-prefix-from-entity-names.md)、
+[ADR 0030](adr/0030-place-entities-by-api-path.md)）。名前空間 `Sales` は `Sale` になった。
 
 | 旧クラス名 | 新クラス名 |
 | --- | --- |
-| `Sales\SaleApplication` | `Sales\Application` |
-| `Sales\SaleCustomization` | `Sales\Customization` |
-| `Sales\SaleDelivery` | `Sales\Delivery` |
-| `Sales\SaleDetail` | `Sales\Detail` |
-| `Sales\SaleSegment` | `Sales\Segment` |
-| `Sales\SaleShopCoupon` | `Sales\ShopCoupon` |
-| `Sales\SaleTotals` | `Sales\Totals` |
-| `Sales\SaleCustomerCreateInput` | `Sales\CustomerCreateInput` |
-| `Sales\SaleDeliveryCreateInput` | `Sales\DeliveryCreateInput` |
-| `Sales\SaleDeliveryUpdateInput` | `Sales\DeliveryUpdateInput` |
-| `Sales\SaleDetailCreateInput` | `Sales\DetailCreateInput` |
+| `Sales\Sale` | `Sale\Sale` |
+| `Sales\SaleCreateInput` | `Sale\SaleCreateInput` |
+| `Sales\SaleUpdateInput` | `Sale\SaleUpdateInput` |
+| `Sales\SearchParameters` | `Sale\SearchParameters` |
+| `Sales\SaleApplication` | `Sale\Application` |
+| `Sales\SaleCustomization` | `Sale\Customization` |
+| `Sales\SaleDelivery` | `Sale\Delivery` |
+| `Sales\SaleDetail` | `Sale\Detail` |
+| `Sales\SaleSegment` | `Sale\Segment` |
+| `Sales\SaleShopCoupon` | `Sale\ShopCoupon` |
+| `Sales\SaleTotals` | `Sale\Totals` |
+| `Sales\SaleCustomerCreateInput` | `Sale\CustomerCreateInput` |
+| `Sales\SaleDeliveryCreateInput` | `Sale\DeliveryCreateInput` |
+| `Sales\SaleDeliveryUpdateInput` | `Sale\DeliveryUpdateInput` |
+| `Sales\SaleDetailCreateInput` | `Sale\DetailCreateInput` |
+| `Sales\Stat` | `Sale\Stat\Stat` |
+| `Customer\Points` | `Customer\Points\Points` |
+| `Customer\CustomerPointsInput` | `Customer\Points\PointsInput` |
+| `Customer\Membership` | `Customer\Membership\Membership` |
+| `Customer\MembershipAggregationPeriod` | `Customer\Membership\AggregationPeriod` |
+| `Customer\MembershipProgress` | `Customer\Membership\Progress` |
+| `Customer\NextMembership` | `Customer\Membership\NextMembership` |
+| `Delivery\DeliveryDate` | `Delivery\Date\Date` |
+| `Delivery\DeliveryDateDays` | `Delivery\Date\Days` |
+| `Delivery\DeliveryDateTimes` | `Delivery\Date\Times` |
 | `Gift\GiftCard` | `Gift\Card` |
 | `Gift\GiftNoshi` | `Gift\Noshi` |
 | `Gift\GiftType` | `Gift\Type` |
 | `Gift\GiftWrapping` | `Gift\Wrapping` |
-| `Delivery\DeliveryDate` | `Delivery\Date` |
-| `Delivery\DeliveryDateDays` | `Delivery\DateDays` |
-| `Delivery\DeliveryDateTimes` | `Delivery\DateTimes` |
 | `Product\ProductStocksIncrementInput` | `Product\StocksIncrementInput` |
+| `Product\Variant` | `Product\Variant\Variant` |
+| `Product\VariantOption` | `Product\Variant\Option` |
+| `Product\VariantUpdateInput` | `Product\Variant\VariantUpdateInput` |
+| `Product\VariantSearchParameters` | `Product\Variant\SearchParameters` |
+| `Product\Option` | `Product\Option\Option` |
+| `Product\OptionCreateInput` | `Product\Option\OptionCreateInput` |
+| `Product\OptionValue` | `Product\Option\Value\Value` |
+| `Product\OptionValueCreateInput` | `Product\Option\Value\ValueCreateInput` |
+| `Product\Pickup` | `Product\Pickup\Pickup` |
+| `Product\PickupInput` | `Product\Pickup\PickupInput` |
+| `Product\ProductImage` | `Product\Image\Image` |
+| `Product\Advertising` | `Product\Advertising\Advertising` |
+| `Product\AdvertisingSearchParameters` | `Product\Advertising\SearchParameters` |
+| `Product\Group` | `Product\Group\Group` |
+| `Product\GroupInput` | `Product\Group\GroupInput` |
+| `Product\Category` | `Product\Category\Category` |
+| `Product\BigCategory` | `Product\Category\BigCategory` |
+| `Product\CategoryInput` | `Product\Category\CategoryInput` |
+| `Product\SmallCategory` | `Product\Category\SmallCategory` |
+| `Product\CategoryChildInput` | `Product\Category\ChildInput` |
+| `Stock\Stock` | `Product\Stock\Stock` |
+| `Stock\SearchParameters` | `Product\Stock\SearchParameters` |
+| `Product\MetaTag` | `Common\MetaTag` |
+| `Product\MetaTagInput` | `Common\MetaTagInput` |
 
-`Sales\Delivery` と `Delivery\Delivery`、`Sales\CustomerCreateInput` と `Customer\CustomerCreateInput`、
+`Product\Variant` → `Product\Variant\Variant` のように、旧クラス名と新しい名前空間が同じ名前になるものがある。
+旧名はクラスの別名として引き続き使える。
+
+`Sale\Delivery` と `Delivery\Delivery`、`Sale\CustomerCreateInput` と `Customer\CustomerCreateInput`、
 `Gift\Card` と `Payment\Card` のように、別の名前空間に同じ名前のクラスがある。両方を使うファイルでは
 `use ... as` で別名を付けること。
-
-`Product\ProductImage` と `Product\ProductVariantInput` は改名していない。
 
 ## 0.14.0: 要求側入力クラスの改名
 
@@ -50,11 +87,11 @@
 
 | 旧クラス名 | 新クラス名 |
 | --- | --- |
-| `Product\OptionInput` | `Product\OptionCreateInput` |
-| `Product\OptionValueInput` | `Product\OptionValueCreateInput` |
-| `Product\VariantInput` | `Product\VariantUpdateInput` |
-| `Sales\SaleUpdater` | `Sales\SaleUpdateInput` |
-| `Sales\SaleDeliveryUpdater` | `Sales\DeliveryUpdateInput`（0.14.0 から 0.23.0 までは `Sales\SaleDeliveryUpdateInput`） |
+| `Product\OptionInput` | `Product\Option\OptionCreateInput`（0.14.0 から 0.23.0 までは `Product\OptionCreateInput`） |
+| `Product\OptionValueInput` | `Product\Option\Value\ValueCreateInput`（0.14.0 から 0.23.0 までは `Product\OptionValueCreateInput`） |
+| `Product\VariantInput` | `Product\Variant\VariantUpdateInput`（0.14.0 から 0.23.0 までは `Product\VariantUpdateInput`） |
+| `Sales\SaleUpdater` | `Sale\SaleUpdateInput`（0.14.0 から 0.23.0 までは `Sales\SaleUpdateInput`） |
+| `Sales\SaleDeliveryUpdater` | `Sale\DeliveryUpdateInput`（0.14.0 から 0.23.0 までは `Sales\SaleDeliveryUpdateInput`） |
 
 作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、
 子要素の `MetaTagInput` は据え置いた（`ProductInput` は 0.22.0 で作成用と更新用に分けた）。検索条件の
