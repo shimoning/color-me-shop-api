@@ -12,7 +12,8 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 /**
  * 在庫情報 API を操作するサービス。
  *
- * @deprecated 0.25.0 から。Services\Product::stocks() を使うこと。次のメジャーな変更で削除する。
+ * @deprecated 0.25.0 Services\Product::stocks() を使うこと。
+ * @see docs/adr/0032-merge-stock-service-into-product-service.md
  */
 class Stock extends Service
 {
