@@ -22,7 +22,7 @@ use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
 use Shimoning\ColorMeShopApi\Services\Gift;
 use Shimoning\ColorMeShopApi\Entities\Gift\Gift as GiftEntity;
 
-use Shimoning\ColorMeShopApi\Services\Sales;
+use Shimoning\ColorMeShopApi\Services\Sale as SaleService;
 use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
@@ -734,12 +734,12 @@ class Client
         return $this->salesService($accessToken)->sendMail($id, $mailType, $accessToken);
     }
 
-    private function salesService(?string $accessToken = null): Sales
+    private function salesService(?string $accessToken = null): SaleService
     {
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return new Sales($this->accessToken ?? '', $this->httpClient);
+        return new SaleService($this->accessToken ?? '', $this->httpClient);
     }
 
     /**

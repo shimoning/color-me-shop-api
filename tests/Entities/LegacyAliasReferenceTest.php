@@ -14,7 +14,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * src/Entities の型宣言が互換用の旧クラス名に依存していないことを検証する。
+ * src のクラス参照が互換用の旧クラス名に依存していないことを検証する。
  */
 class LegacyAliasReferenceTest extends TestCase
 {
@@ -88,6 +88,21 @@ PHP;
                 static fn (string $violation): bool => \preg_match('/^fixture\.php:\d+: /', $violation) !== 1,
             )),
         );
+    }
+
+    public function test_トークン走査がServiceの旧クラス名への参照を検出する(): void
+    {
+        $source = <<<'PHP'
+<?php
+use Shimoning\ColorMeShopApi\Services\Sales;
+
+function acceptLegacyService(Sales $service): void {}
+PHP;
+
+        $this->assertSame([
+            'service.php:2: Shimoning\\ColorMeShopApi\\Services\\Sales',
+            'service.php:4: Shimoning\\ColorMeShopApi\\Services\\Sales',
+        ], self::legacyReferences($source, 'service.php'));
     }
 
     public function test_クラス参照ではない名前と現行クラス名を誤検出しない(): void

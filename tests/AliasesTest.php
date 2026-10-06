@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Shimoning\ColorMeShopApi\Aliases;
 
 /**
- * 改名した Entity の旧クラス名が、非推奨の別名として解決できることを固定する。
+ * 改名したクラスの旧名が、非推奨の別名として解決できることを固定する。
  *
  * 他のテストによる別名の事前登録を避けるため、各テストを状態を引き継がない別プロセスで実行する。
  */
@@ -33,10 +33,28 @@ class AliasesTest extends TestCase
             return;
         }
 
-        $input = new $current($data);
+        $input = self::newInstance($current, $data);
 
         // instanceof 自体は旧名を autoload しないため、事前に class_exists($legacy) を呼ばない。
         $this->assertTrue($input instanceof $legacy);
+    }
+
+    #[DataProvider('aliasProvider')]
+    public function test_新名で生成したインスタンスを旧名の型宣言へ渡せる(
+        string $legacy,
+        string $current,
+        array $data,
+    ): void {
+        if ((new \ReflectionClass($current))->isAbstract()) {
+            $this->assertTrue(\class_exists($legacy));
+            return;
+        }
+
+        $instance = self::newInstance($current, $data);
+        /** @var callable(object): object $acceptLegacy */
+        $acceptLegacy = eval('return static function (\\' . $legacy . ' $value): object { return $value; };');
+
+        $this->assertSame($instance, $acceptLegacy($instance));
     }
 
     #[DataProvider('removedAliasProvider')]
@@ -176,7 +194,7 @@ class AliasesTest extends TestCase
             return;
         }
 
-        $entity = new $legacy($data);
+        $entity = self::newInstance($legacy, $data);
 
         $this->assertInstanceOf($current, $entity);
     }
@@ -188,6 +206,13 @@ class AliasesTest extends TestCase
         array $data,
     ): void
     {
+        // Service は HTTP クライアントなどの実行時依存を持つため、Entity 向けの直列化互換性の対象外。
+        if (\is_a($current, \Shimoning\ColorMeShopApi\Services\Service::class, true)) {
+            $this->assertTrue(\class_exists($legacy));
+            $this->assertSame($current, (new \ReflectionClass($legacy))->getName());
+            return;
+        }
+
         if ((new \ReflectionClass($current))->isAbstract()) {
             $this->assertTrue(\class_exists($legacy));
             $this->assertSame($current, (new \ReflectionClass($legacy))->getName());
@@ -205,6 +230,8 @@ class AliasesTest extends TestCase
     public function test_別名の対応表はすべての改名を網羅する(): void
     {
         $this->assertSame([
+            'Shimoning\\ColorMeShopApi\\Services\\Sales'
+                => \Shimoning\ColorMeShopApi\Services\Sale::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
                 => \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'
@@ -316,5 +343,18 @@ class AliasesTest extends TestCase
             'Shimoning\\ColorMeShopApi\\Entities\\Stock\\SearchParameters'
                 => \Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters::class,
         ], Aliases::MAP);
+    }
+
+    /**
+     * @param class-string $class
+     * @param array<string, mixed> $data
+     */
+    private static function newInstance(string $class, array $data): object
+    {
+        if (\is_a($class, \Shimoning\ColorMeShopApi\Services\Service::class, true)) {
+            return new $class('dummy-token');
+        }
+
+        return new $class($data);
     }
 }

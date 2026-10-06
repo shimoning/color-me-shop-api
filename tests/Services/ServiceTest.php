@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Services\Product;
-use Shimoning\ColorMeShopApi\Services\Sales;
+use Shimoning\ColorMeShopApi\Services\Sale;
 use Shimoning\ColorMeShopApi\Services\Service;
 use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -79,7 +79,7 @@ class ServiceTest extends TestCase
             'Delivery' => [Delivery::class],
             'Payment' => [Payment::class],
             'Product' => [Product::class],
-            'Sales' => [Sales::class],
+            'Sale' => [Sale::class],
             'Shop' => [Shop::class],
         ];
     }

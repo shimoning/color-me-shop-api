@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Services\Gift;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Services\Product;
-use Shimoning\ColorMeShopApi\Services\Sales;
+use Shimoning\ColorMeShopApi\Services\Sale;
 use Shimoning\ColorMeShopApi\Services\Service;
 use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Services\Stock;
@@ -65,13 +65,13 @@ class AuthScopeDocumentationTest extends TestCase
             'Product::deletePickup' => [Product::class, 'deletePickup', 'deleteProductPickup', [AuthScope::WRITE_PRODUCTS]],
             'Product::createImage' => [Product::class, 'createImage', 'createProductImage', [AuthScope::READ_PRODUCTS, AuthScope::WRITE_PRODUCTS]],
             'Product::deleteImage' => [Product::class, 'deleteImage', 'deleteProductImage', [AuthScope::WRITE_PRODUCTS]],
-            'Sales::page' => [Sales::class, 'page', 'getSales', [AuthScope::READ_SALES]],
-            'Sales::one' => [Sales::class, 'one', 'getSale', [AuthScope::READ_SALES]],
-            'Sales::stat' => [Sales::class, 'stat', 'statSales', [AuthScope::READ_SALES]],
-            'Sales::create' => [Sales::class, 'create', 'createSale', [AuthScope::WRITE_SALES]],
-            'Sales::update' => [Sales::class, 'update', 'updateSale', [AuthScope::WRITE_SALES]],
-            'Sales::cancel' => [Sales::class, 'cancel', 'cancelSale', [AuthScope::WRITE_SALES]],
-            'Sales::sendMail' => [Sales::class, 'sendMail', 'sendSalesMail', [AuthScope::WRITE_SALES]],
+            'Sale::page' => [Sale::class, 'page', 'getSales', [AuthScope::READ_SALES]],
+            'Sale::one' => [Sale::class, 'one', 'getSale', [AuthScope::READ_SALES]],
+            'Sale::stat' => [Sale::class, 'stat', 'statSales', [AuthScope::READ_SALES]],
+            'Sale::create' => [Sale::class, 'create', 'createSale', [AuthScope::WRITE_SALES]],
+            'Sale::update' => [Sale::class, 'update', 'updateSale', [AuthScope::WRITE_SALES]],
+            'Sale::cancel' => [Sale::class, 'cancel', 'cancelSale', [AuthScope::WRITE_SALES]],
+            'Sale::sendMail' => [Sale::class, 'sendMail', 'sendSalesMail', [AuthScope::WRITE_SALES]],
             'Shop::get' => [Shop::class, 'get', 'getShop', []],
             'Stock::page' => [Stock::class, 'page', 'getStocks', []],
         ];

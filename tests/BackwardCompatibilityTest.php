@@ -17,7 +17,7 @@ class BackwardCompatibilityTest extends TestCase
 {
     public static function serviceProvider(): array
     {
-        $services = ['Customer', 'Delivery', 'Payment', 'Product', 'Sales', 'Shop'];
+        $services = ['Customer', 'Delivery', 'Payment', 'Product', 'Sale', 'Shop'];
 
         $cases = [];
         foreach ($services as $service) {
