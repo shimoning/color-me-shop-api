@@ -110,13 +110,13 @@ use Shimoning\ColorMeShopApi\Entities\Product\OptionValueCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductStocksIncrementInput;
+use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sales\SaleCustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Sales\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sales\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
@@ -444,7 +444,7 @@ $input = new SaleCreateInput([
         ],
     ],
     // 既存の顧客の受注にする場合。ゲスト購入なら氏名や住所などを配列で渡す
-    'customer' => SaleCustomerCreateInput::existing($customerId),
+    'customer' => CustomerCreateInput::existing($customerId),
 ]);
 
 $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API の既定)
@@ -756,7 +756,7 @@ if ($updatedOrErrors instanceof Errors) {
 
 `category_id_small` / `stocks` / `group_ids` / `variants` は更新専用のフィールドで、`ProductUpdateInput` だけが持つ。公式 OpenAPI の作成 request にはこの 4 項目がなく、実 API は作成時に送っても反映せず、エラーにもしない (2026-10-02 の観測、[ColorMe Shop API 商品応答構造の実測記録](docs/api-product-structure.md))。作成した商品の在庫数やグループは、作成後に `updateProduct()` で設定する。
 
-`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `ProductStocksIncrementInput`、`variants` の要素は `ProductVariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new ProductStocksIncrementInput(['increment' => 5])`、`'variants' => [new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
+`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `StocksIncrementInput`、`variants` の要素は `ProductVariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new StocksIncrementInput(['increment' => 5])`、`'variants' => [new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
 
 0.22.0 で、作成と更新で共用していた `ProductInput` を `ProductCreateInput` と `ProductUpdateInput` に分け、`ProductInput` は削除した ([ADR 0026](docs/adr/0026-split-product-input-into-create-and-update.md))。更新の呼び出しは `new ProductInput(` を `new ProductUpdateInput(` に、作成の呼び出しは `new ProductCreateInput(` に書き換える。作成で更新専用の 4 項目を指定していた場合、その指定はもともと反映されていなかった。
 商品自体を削除する API は公式に存在しない。
@@ -1016,7 +1016,7 @@ if ($settingOrErrors instanceof Errors) {
 }
 ```
 
-`days` と `times` は `Entities\Delivery\DeliveryDateDays` と `Entities\Delivery\DeliveryDateTimes` として返る。`enabled` / `default` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。
+`days` と `times` は `Entities\Delivery\DateDays` と `Entities\Delivery\DateTimes` として返る。`enabled` / `default` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。
 
 `Client::getDeliveryDateSetting()` は、内部で `Services\Delivery::dateSetting(?string $accessToken = null)` を呼び出す。
 
@@ -1067,23 +1067,23 @@ if ($giftOrErrors instanceof Errors) {
 } else {
     $giftOrErrors->getEnabled();          // ギフト機能が有効か。公式 OpenAPI では nullable
 
-    $noshi = $giftOrErrors->getNoshi();   // Gift\GiftNoshi
+    $noshi = $giftOrErrors->getNoshi();   // Gift\Noshi
     $noshi->getEnabled();
     $noshi->getTextEnabled();            // 名入れの可否
     $noshi->getTextCharge();             // 名入れの料金
-    foreach ($noshi->getTypes() as $type) {   // list<Gift\GiftType>
+    foreach ($noshi->getTypes() as $type) {   // list<Gift\Type>
         $type->getName();
         $type->getCharge();
     }
     $noshi->getComment();
 
-    $giftOrErrors->getCard();             // Gift\GiftCard: enabled / textEnabled / types / comment
-    $giftOrErrors->getWrapping();         // Gift\GiftWrapping: enabled / types / comment
+    $giftOrErrors->getCard();             // Gift\Card: enabled / textEnabled / types / comment
+    $giftOrErrors->getWrapping();         // Gift\Wrapping: enabled / types / comment
     $giftOrErrors->getUpdateDate();       // ?DateTimeImmutable
 }
 ```
 
-熨斗・メッセージカード・ラッピングは公式 OpenAPI 上で持つフィールドが異なる（カードに `text_charge` はなく、ラッピングに `text_enabled` / `text_charge` はない）ため、`GiftNoshi` / `GiftCard` / `GiftWrapping` の別々の Entity で表す。`enabled` / `text_enabled` / `text_charge` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。実測の詳細は [docs/api-gift-structure.md](docs/api-gift-structure.md) にある。
+熨斗・メッセージカード・ラッピングは公式 OpenAPI 上で持つフィールドが異なる（カードに `text_charge` はなく、ラッピングに `text_enabled` / `text_charge` はない）ため、`Noshi` / `Card` / `Wrapping` の別々の Entity で表す。`enabled` / `text_enabled` / `text_charge` / `comment` / `make_date` / `update_date` は公式 OpenAPI で nullable のため `null` を返しうる。実測の詳細は [docs/api-gift-structure.md](docs/api-gift-structure.md) にある。
 
 `Client::getGift()` は、内部で `Services\Gift::get(?string $accessToken = null)` を呼び出す。
 
@@ -1140,21 +1140,7 @@ $pagination->getOffset();
 
 ### 要求側入力クラスの改名
 
-書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残しており、次のメジャーな変更で削除する。
-
-| 旧クラス名 | 新クラス名 |
-| --- | --- |
-| `Entities\Product\OptionInput` | `Entities\Product\OptionCreateInput` |
-| `Entities\Product\OptionValueInput` | `Entities\Product\OptionValueCreateInput` |
-| `Entities\Product\VariantInput` | `Entities\Product\VariantUpdateInput` |
-| `Entities\Sales\SaleUpdater` | `Entities\Sales\SaleUpdateInput` |
-| `Entities\Sales\SaleDeliveryUpdater` | `Entities\Sales\SaleDeliveryUpdateInput` |
-
-作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、子要素の `MetaTagInput` は据え置いた (`ProductInput` は 0.22.0 で作成用と更新用に分けた)。検索条件の `SearchParameters` 系も今回の対象外である。
-
-旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` はいずれも従来どおり動作する (`unserialize()` の `allowed_classes` には旧名を渡すこと)。
-
-ただし 0.20.0 で `SaleUpdateInput` から `id` を削除したため、`id` を含む旧データの `SaleUpdater` (および 0.19.0 以前の `SaleUpdateInput`) を `unserialize()` すると、PHP 8.2 以降では動的プロパティの非推奨警告が出る。復元自体はでき、`id` は配列化にも送信にも使われない ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。
+書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残しており、次のメジャーな変更で削除する。旧名と新名の対応は[非推奨のクラス名の対応表](docs/class-aliases.md)にある。
 
 ### フリガナの検証
 
