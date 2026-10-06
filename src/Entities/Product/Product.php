@@ -6,6 +6,9 @@ namespace Shimoning\ColorMeShopApi\Entities\Product;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Entities\Product\Option\Option;
+use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 
 /**

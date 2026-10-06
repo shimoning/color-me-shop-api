@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Entities\Customer\Membership\Membership;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
