@@ -101,3 +101,4 @@
 - 改名と遅延 autoloader の出典コミット: `435757c`
 - クラス定義直後の別名登録の出典コミット: `78fabe0`
 - README の移行表と別名の説明の出典コミット: `e79ce04`、`cfea011`
+- 親の名前の接頭辞を外した改名と、旧名の対応先の付け替え: [ADR 0029](0029-drop-parent-prefix-from-entity-names.md)
