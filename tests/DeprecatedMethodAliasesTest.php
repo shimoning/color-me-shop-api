@@ -7,6 +7,7 @@ namespace Shimoning\ColorMeShopApi\Tests;
 use GuzzleHttp\ClientInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
+use ReflectionType;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
@@ -62,6 +63,140 @@ class DeprecatedMethodAliasesTest extends TestCase
         $this->assertStringContainsString('@see docs/adr/0033-unify-client-and-service-method-names.md', $document);
     }
 
+    /**
+     * @param class-string $class
+     */
+    #[DataProvider('deprecatedPhpDocProvider')]
+    public function test_deprecatedメソッドのシグネチャは新名と一致する(
+        string $class,
+        string $oldName,
+        string $newName,
+    ): void {
+        $oldMethod = new ReflectionMethod($class, $oldName);
+        $newMethod = new ReflectionMethod($class, $newName);
+        $oldParameters = $oldMethod->getParameters();
+        $newParameters = $newMethod->getParameters();
+        $methodContext = \sprintf('%s::%s() と %s()', $class, $oldName, $newName);
+
+        $this->assertCount(
+            \count($newParameters),
+            $oldParameters,
+            $methodContext . ' の引数の数が一致しません。',
+        );
+
+        foreach ($oldParameters as $position => $oldParameter) {
+            $newParameter = $newParameters[$position];
+            $parameterContext = \sprintf(
+                '%s の引数 #%d ($%s / $%s)',
+                $methodContext,
+                $position,
+                $oldParameter->getName(),
+                $newParameter->getName(),
+            );
+
+            $this->assertSame(
+                $newParameter->getName(),
+                $oldParameter->getName(),
+                $parameterContext . ' の名前が一致しません。',
+            );
+            $this->assertSame(
+                $newParameter->getPosition(),
+                $oldParameter->getPosition(),
+                $parameterContext . ' の位置が一致しません。',
+            );
+            $this->assertSame(
+                self::reflectionTypeToString($newParameter->getType()),
+                self::reflectionTypeToString($oldParameter->getType()),
+                $parameterContext . ' の型が一致しません。',
+            );
+            $this->assertSame(
+                $newParameter->isDefaultValueAvailable(),
+                $oldParameter->isDefaultValueAvailable(),
+                $parameterContext . ' の既定値の有無が一致しません。',
+            );
+
+            if ($oldParameter->isDefaultValueAvailable() && $newParameter->isDefaultValueAvailable()) {
+                $this->assertSame(
+                    $newParameter->getDefaultValue(),
+                    $oldParameter->getDefaultValue(),
+                    $parameterContext . ' の既定値が一致しません。',
+                );
+                $this->assertSame(
+                    $newParameter->isDefaultValueConstant(),
+                    $oldParameter->isDefaultValueConstant(),
+                    $parameterContext . ' の既定値が定数かどうか一致しません。',
+                );
+
+                if ($oldParameter->isDefaultValueConstant() && $newParameter->isDefaultValueConstant()) {
+                    $this->assertSame(
+                        $newParameter->getDefaultValueConstantName(),
+                        $oldParameter->getDefaultValueConstantName(),
+                        $parameterContext . ' の既定値の定数名が一致しません。',
+                    );
+                }
+            }
+
+            $this->assertSame(
+                $newParameter->isVariadic(),
+                $oldParameter->isVariadic(),
+                $parameterContext . ' の可変長指定が一致しません。',
+            );
+            $this->assertSame(
+                $newParameter->isPassedByReference(),
+                $oldParameter->isPassedByReference(),
+                $parameterContext . ' の参照渡し指定が一致しません。',
+            );
+        }
+
+        $this->assertSame(
+            self::reflectionTypeToString($newMethod->getReturnType()),
+            self::reflectionTypeToString($oldMethod->getReturnType()),
+            $methodContext . ' の戻り値の型が一致しません。',
+        );
+    }
+
+    public function test_Clientのdeprecatedメソッドは名前付き引数で新名と同じリクエストになる(): void
+    {
+        $responseBody = '{"products":[],"meta":{"total":0,"limit":1,"offset":0}}';
+        $oldMock = HttpMock::json(200, $responseBody);
+        $newMock = HttpMock::json(200, $responseBody);
+
+        $oldResult = (new Client('constructor-token', $oldMock->client()))->getProducts(
+            parameters: new ProductSearchParameters(['limit' => 1]),
+            accessToken: 'argument-token',
+        );
+        $newResult = (new Client('constructor-token', $newMock->client()))->getProductPage(
+            parameters: new ProductSearchParameters(['limit' => 1]),
+            accessToken: 'argument-token',
+        );
+
+        $this->assertEquals($newResult, $oldResult);
+        $this->assertSame($newMock->request()->getMethod(), $oldMock->request()->getMethod());
+        $this->assertSame($newMock->uri(), $oldMock->uri());
+        $this->assertSame($newMock->body(), $oldMock->body());
+        $this->assertSame($newMock->header('Authorization'), $oldMock->header('Authorization'));
+    }
+
+    public function test_OAuthのdeprecatedメソッドは名前付き引数で新名と同じリクエストになる(): void
+    {
+        $responseBody = self::fixture('oauth_token.json');
+        $oldMock = HttpMock::json(200, $responseBody);
+        $newMock = HttpMock::json(200, $responseBody);
+
+        $oldResult = (new OAuth(self::oauthOptions(), $oldMock->client()))->exchangeCode2Token(
+            code: 'auth-code',
+        );
+        $newResult = (new OAuth(self::oauthOptions(), $newMock->client()))->exchangeCodeForToken(
+            code: 'auth-code',
+        );
+
+        $this->assertEquals($newResult, $oldResult);
+        $this->assertSame($newMock->request()->getMethod(), $oldMock->request()->getMethod());
+        $this->assertSame($newMock->uri(), $oldMock->uri());
+        $this->assertSame($newMock->body(), $oldMock->body());
+        $this->assertSame($newMock->header('Authorization'), $oldMock->header('Authorization'));
+    }
+
     /** @return array<string, array{\Closure(ClientInterface): object, string, string, list<mixed>, string}> */
     public static function deprecatedMethodProvider(): array
     {
@@ -108,5 +243,10 @@ class DeprecatedMethodAliasesTest extends TestCase
     private static function oauthOptions(): Options
     {
         return new Options('client-id', 'client-secret', 'https://example.test/callback');
+    }
+
+    private static function reflectionTypeToString(?ReflectionType $type): ?string
+    {
+        return $type === null ? null : (string) $type;
     }
 }
