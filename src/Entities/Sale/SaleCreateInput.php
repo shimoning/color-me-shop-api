@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 /**
  * 受注データの作成 (POST /v1/sales) の `sale` 入力。
  *
- * 必須フィールドは Services\Sales::create() が送信前に検証する。
+ * 必須フィールドは Services\Sale::create() が送信前に検証する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
  */

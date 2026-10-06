@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi;
 
 /**
- * 非推奨の Entity 名から現行名への対応表。
+ * 非推奨のクラス名から現行名への対応表。
  *
  * 新しいコードでは現行名を使うこと。旧名で直列化されたデータも復元できる。
  *
@@ -19,6 +19,8 @@ final class Aliases
      * @var array<class-string, class-string>
      */
     public const MAP = [
+        'Shimoning\\ColorMeShopApi\\Services\\Sales'
+            => Services\Sale::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
             => Entities\Product\VariantInput::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'

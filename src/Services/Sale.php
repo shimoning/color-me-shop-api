@@ -2,9 +2,10 @@
 
 namespace Shimoning\ColorMeShopApi\Services;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters;
-use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\Sale as SaleEntity;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\DetailCreateInput;
@@ -17,7 +18,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 /**
  * 受注 API を操作するサービス。
  */
-class Sales extends Service
+class Sale extends Service
 {
     /**
      * 受注データのリストを取得
@@ -27,7 +28,7 @@ class Sales extends Service
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
-     * @return Page<Sale>|Errors
+     * @return Page<SaleEntity>|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -43,7 +44,7 @@ class Sales extends Service
         return $this->_handle(
             $response,
             fn(?array $data): Page => Page::build(
-                Sale::class,
+                SaleEntity::class,
                 $data,
                 'sales',
                 'meta',
@@ -60,17 +61,17 @@ class Sales extends Service
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
      * @param int|string $id
      * @param string|null $accessToken
-     * @return Sale|Errors
+     * @return SaleEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function one(int|string $id, ?string $accessToken = null): Sale|Errors
+    public function one(int|string $id, ?string $accessToken = null): SaleEntity|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/sales/' . $id),
         );
 
-        return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
+        return $this->_handle($response, fn(?array $data): SaleEntity => new SaleEntity($data['sale'] ?? []));
     }
 
     /**
@@ -110,7 +111,7 @@ class Sales extends Service
      * @param SaleCreateInput $input
      * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
      * @param string|null $accessToken
-     * @return Sale|Errors
+     * @return SaleEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-sale-create-observation.md
@@ -119,7 +120,7 @@ class Sales extends Service
         SaleCreateInput $input,
         ?bool $reserveStocks = null,
         ?string $accessToken = null,
-    ): Sale|Errors {
+    ): SaleEntity|Errors {
         $request = $this->_request(['json' => true], $accessToken);
         $fields = self::requireCreateFields($input);
         if (isset($fields['customer']) && \is_array($fields['customer'])) {
@@ -136,7 +137,10 @@ class Sales extends Service
             ['sale' => self::_jsonObject($fields)],
         );
 
-        return $this->_handle($response, static fn(?array $data): Sale => new Sale($data['sale'] ?? []));
+        return $this->_handle(
+            $response,
+            static fn(?array $data): SaleEntity => new SaleEntity($data['sale'] ?? []),
+        );
     }
 
     /**
@@ -148,7 +152,7 @@ class Sales extends Service
      * @param int|string $id
      * @param SaleUpdateInput $input
      * @param string|null $accessToken
-     * @return Sale|Errors
+     * @return SaleEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -156,7 +160,7 @@ class Sales extends Service
         int|string $id,
         SaleUpdateInput $input,
         ?string $accessToken = null,
-    ): Sale|Errors {
+    ): SaleEntity|Errors {
         $response = $this->_request([
             'json' => true,
         ], $accessToken)->put(
@@ -166,7 +170,7 @@ class Sales extends Service
             ],
         );
 
-        return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
+        return $this->_handle($response, fn(?array $data): SaleEntity => new SaleEntity($data['sale'] ?? []));
     }
 
     /**
@@ -228,7 +232,7 @@ class Sales extends Service
      * @param int|string $id
      * @param bool|null $restock
      * @param string|null $accessToken
-     * @return Sale|Errors
+     * @return SaleEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
@@ -236,7 +240,7 @@ class Sales extends Service
         int|string $id,
         ?bool $restock = false,
         ?string $accessToken = null,
-    ): Sale|Errors {
+    ): SaleEntity|Errors {
         $response = $this->_request([
             'json' => true,
         ], $accessToken)->put(
@@ -246,7 +250,7 @@ class Sales extends Service
             ],
         );
 
-        return $this->_handle($response, fn(?array $data): Sale => new Sale($data['sale'] ?? []));
+        return $this->_handle($response, fn(?array $data): SaleEntity => new SaleEntity($data['sale'] ?? []));
     }
 
     /**
@@ -281,3 +285,7 @@ class Sales extends Service
         return $this->_handle($response, fn(?array $_data): bool => true);
     }
 }
+
+// 0.25.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(Sale::class);

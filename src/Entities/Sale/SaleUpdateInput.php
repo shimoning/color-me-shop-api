@@ -10,7 +10,7 @@ use Shimoning\ColorMeShopApi\Constants\PointState;
 /**
  * 受注更新データ
  *
- * 受注 ID は Services\Sales::update() / Client::updateSale() の引数として渡す。
+ * 受注 ID は Services\Sale::update() / Client::updateSale() の引数として渡す。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */

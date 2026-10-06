@@ -2,7 +2,7 @@
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
-use Shimoning\ColorMeShopApi\Services\Sales;
+use Shimoning\ColorMeShopApi\Services\Sale as SaleService;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
@@ -19,7 +19,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
-class SalesTest extends TestCase
+class SaleTest extends TestCase
 {
     /** @return array<string, mixed> */
     private static function createFields(array $overrides = []): array
@@ -36,7 +36,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        $page = (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        $page = (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(2, $page->count());
@@ -48,7 +48,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        $page = (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        $page = (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertSame(120, $page->getTotal());
         $this->assertSame(2, $page->getLimit());
@@ -59,7 +59,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertSame('GET', $mock->request()->getMethod());
         $this->assertSame('https://api.shop-pro.jp/v1/sales', $mock->uri());
@@ -69,7 +69,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        (new Sales('my-token', $mock->client()))->page(new SearchParameters([
+        (new SaleService('my-token', $mock->client()))->page(new SearchParameters([
             'make_date_min' => '2024-01-01',
             'make_date_max' => '2024-01-31 23:59:59',
             'customer_furigana' => 'ヤマダタロウ',
@@ -93,7 +93,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertSame([], $mock->query());
     }
@@ -102,7 +102,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        (new Sales('my-token', $mock->client()))->page(new SearchParameters([
+        (new SaleService('my-token', $mock->client()))->page(new SearchParameters([
             'customer_mail' => 'customer@example.com',
         ]));
 
@@ -130,7 +130,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 
-        $errors = (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        $errors = (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertInstanceOf(Errors::class, $errors);
     }
@@ -139,7 +139,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"sales":[{"id":1001}]}');
 
-        $page = (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        $page = (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame([1001], \array_map(fn($sale) => $sale->getId(), $page->all()));
@@ -160,7 +160,7 @@ class SalesTest extends TestCase
             'GET /v1/sales のレスポンスのページネーション情報「meta.total」が不正です。int を期待しましたが string でした。',
         );
 
-        (new Sales('my-token', $mock->client()))->page(new SearchParameters([]));
+        (new SaleService('my-token', $mock->client()))->page(new SearchParameters([]));
     }
 
     // --- one --------------------------------------------------------------
@@ -169,7 +169,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $sale = (new Sales('my-token', $mock->client()))->one(1001);
+        $sale = (new SaleService('my-token', $mock->client()))->one(1001);
 
         $this->assertInstanceOf(Sale::class, $sale);
         $this->assertSame(1001, $sale->getId());
@@ -179,7 +179,7 @@ class SalesTest extends TestCase
     public function test_受注fixtureで欠損する決済方法IDは参照時に固有例外になる(): void
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
-        $sale = (new Sales('my-token', $mock->client()))->one(1001);
+        $sale = (new SaleService('my-token', $mock->client()))->one(1001);
 
         $this->expectException(MissingFieldException::class);
 
@@ -190,7 +190,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        (new Sales('my-token', $mock->client()))->one('1001');
+        (new SaleService('my-token', $mock->client()))->one('1001');
 
         $this->assertSame('https://api.shop-pro.jp/v1/sales/1001', $mock->uri());
     }
@@ -199,7 +199,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(404, '{"errors":[{"code":"404100","message":"NG","status":404}]}');
 
-        $errors = (new Sales('my-token', $mock->client()))->one(9999);
+        $errors = (new SaleService('my-token', $mock->client()))->one(9999);
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame('404100', $errors[0]->getCode());
@@ -211,7 +211,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_stat.json'));
 
-        $stat = (new Sales('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
+        $stat = (new SaleService('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->assertInstanceOf(Stat::class, $stat);
         $this->assertSame(12000, $stat->getAmountToday());
@@ -222,7 +222,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_stat.json'));
 
-        (new Sales('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
+        (new SaleService('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->assertStringContainsString('make_date=2024-01-01', $mock->uri());
     }
@@ -231,7 +231,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_stat.json'));
 
-        (new Sales('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
+        (new SaleService('my-token', $mock->client()))->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->assertSame('https://api.shop-pro.jp/v1/sales/stat?make_date=2024-01-01', $mock->uri());
         $this->assertSame(['make_date' => '2024-01-01'], $mock->query());
@@ -240,7 +240,7 @@ class SalesTest extends TestCase
     public function test_sales_statキーがない成功応答は参照時に固有例外になる(): void
     {
         $mock = HttpMock::json(200, '{}');
-        $stat = (new Sales('my-token', $mock->client()))
+        $stat = (new SaleService('my-token', $mock->client()))
             ->stat(new \DateTimeImmutable('2024-01-01 12:00:00'));
 
         $this->assertInstanceOf(Stat::class, $stat);
@@ -255,7 +255,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(201, self::fixture('sale.json'));
 
-        $sale = (new Sales('my-token', $mock->client()))->create(
+        $sale = (new SaleService('my-token', $mock->client()))->create(
             new SaleCreateInput(self::createFields()),
         );
 
@@ -274,7 +274,7 @@ class SalesTest extends TestCase
             new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
             new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
         ]);
-        $sales = new Sales('my-token', $mock->client());
+        $sales = new SaleService('my-token', $mock->client());
         $input = new SaleCreateInput(self::createFields());
 
         $sales->create($input);
@@ -293,7 +293,7 @@ class SalesTest extends TestCase
             new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
             new \GuzzleHttp\Psr7\Response(201, [], self::fixture('sale.json')),
         ]);
-        $sales = new Sales('my-token', $mock->client());
+        $sales = new SaleService('my-token', $mock->client());
 
         $sales->create(new SaleCreateInput(self::createFields(['customer' => ['id' => 501]])));
         $sales->create(new SaleCreateInput(self::createFields(['customer' => [
@@ -314,7 +314,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(401, '{"errors":[{"code":"401200","message":"現在契約中のプランではご利用いただけません。","status":401}]}');
 
-        $errors = (new Sales('my-token', $mock->client()))->create(
+        $errors = (new SaleService('my-token', $mock->client()))->create(
             new SaleCreateInput(self::createFields()),
         );
 
@@ -327,7 +327,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(201, self::fixture('sale.json'));
 
         try {
-            (new Sales('my-token', $mock->client()))->create(new SaleCreateInput([]));
+            (new SaleService('my-token', $mock->client()))->create(new SaleCreateInput([]));
             $this->fail(ParameterException::class . ' が投げられませんでした。');
         } catch (ParameterException $exception) {
             $this->assertSame(
@@ -346,7 +346,7 @@ class SalesTest extends TestCase
             unset($fields[$missing]);
 
             try {
-                (new Sales('my-token', $mock->client()))->create(new SaleCreateInput($fields));
+                (new SaleService('my-token', $mock->client()))->create(new SaleCreateInput($fields));
                 $this->fail($missing . ' の欠落が拒否されませんでした。');
             } catch (ParameterException $exception) {
                 $this->assertStringContainsString('未指定: ' . $missing, $exception->getMessage());
@@ -360,7 +360,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(201, self::fixture('sale.json'));
 
         try {
-            (new Sales('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
+            (new SaleService('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
                 'details' => [],
             ])));
             $this->fail('details の空配列が拒否されませんでした。');
@@ -381,7 +381,7 @@ class SalesTest extends TestCase
             unset($detail[$missing]);
 
             try {
-                (new Sales('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
+                (new SaleService('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
                     'details' => [$detail],
                 ])));
                 $this->fail($missing . ' の欠落が拒否されませんでした。');
@@ -414,7 +414,7 @@ class SalesTest extends TestCase
             unset($delivery[$missing]);
 
             try {
-                (new Sales('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
+                (new SaleService('my-token', $mock->client()))->create(new SaleCreateInput(self::createFields([
                     'sale_deliveries' => [$delivery],
                 ])));
                 $this->fail($missing . ' の欠落が拒否されませんでした。');
@@ -433,7 +433,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(201, self::fixture('sale.json'));
 
-        (new Sales('my-token', $mock->client()))->create(
+        (new SaleService('my-token', $mock->client()))->create(
             new SaleCreateInput(self::createFields()),
         );
 
@@ -447,7 +447,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
         $updater = new SaleUpdateInput(['paid' => true, 'point_state' => 'fixed']);
-        $sale = (new Sales('my-token', $mock->client()))->update('external-1001', $updater);
+        $sale = (new SaleService('my-token', $mock->client()))->update('external-1001', $updater);
 
         $this->assertInstanceOf(Sale::class, $sale);
         $this->assertSame('PUT', $mock->request()->getMethod());
@@ -459,7 +459,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
         $updater = new SaleUpdateInput(['paid' => true, 'point_state' => 'fixed']);
-        (new Sales('my-token', $mock->client()))->update(1001, $updater);
+        (new SaleService('my-token', $mock->client()))->update(1001, $updater);
 
         $this->assertSame(
             ['sale' => ['paid' => true, 'point_state' => 'fixed']],
@@ -472,7 +472,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        (new Sales('my-token', $mock->client()))->update(1001, new SaleUpdateInput([]));
+        (new SaleService('my-token', $mock->client()))->update(1001, new SaleUpdateInput([]));
 
         $this->assertSame('{"sale":{}}', $mock->body());
     }
@@ -483,7 +483,7 @@ class SalesTest extends TestCase
 
         $updater = new SaleUpdateInput([]);
         $updater->setPaid(true);
-        (new Sales('my-token', $mock->client()))->update(1001, $updater);
+        (new SaleService('my-token', $mock->client()))->update(1001, $updater);
 
         $this->assertSame(
             ['sale' => ['paid' => true]],
@@ -496,7 +496,7 @@ class SalesTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('sale.json'));
         $input = new SaleUpdateInput(['id' => 1001, 'paid' => true]);
 
-        (new Sales('my-token', $mock->client()))->update(1001, $input);
+        (new SaleService('my-token', $mock->client()))->update(1001, $input);
 
         $this->assertSame(['sale' => ['paid' => true]], $mock->jsonBody());
     }
@@ -505,7 +505,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
 
-        $errors = (new Sales('my-token', $mock->client()))
+        $errors = (new SaleService('my-token', $mock->client()))
             ->update(1001, new SaleUpdateInput(['paid' => true, 'point_state' => PointState::FIXED->value]));
 
         $this->assertInstanceOf(Errors::class, $errors);
@@ -518,7 +518,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        $sale = (new Sales('my-token', $mock->client()))->cancel(1001);
+        $sale = (new SaleService('my-token', $mock->client()))->cancel(1001);
 
         $this->assertInstanceOf(Sale::class, $sale);
         $this->assertSame('PUT', $mock->request()->getMethod());
@@ -529,7 +529,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        (new Sales('my-token', $mock->client()))->cancel(1001);
+        (new SaleService('my-token', $mock->client()))->cancel(1001);
 
         $this->assertSame(['restock' => false], $mock->jsonBody());
     }
@@ -538,7 +538,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        (new Sales('my-token', $mock->client()))->cancel(1001, true);
+        (new SaleService('my-token', $mock->client()))->cancel(1001, true);
 
         $this->assertSame(['restock' => true], $mock->jsonBody());
     }
@@ -549,7 +549,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, '{}');
 
-        $result = (new Sales('my-token', $mock->client()))->sendMail(1001, MailType::ACCEPTED);
+        $result = (new SaleService('my-token', $mock->client()))->sendMail(1001, MailType::ACCEPTED);
 
         $this->assertTrue($result);
         $this->assertSame('POST', $mock->request()->getMethod());
@@ -560,7 +560,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, '{}');
 
-        (new Sales('my-token', $mock->client()))->sendMail(1001, MailType::DELIVERED);
+        (new SaleService('my-token', $mock->client()))->sendMail(1001, MailType::DELIVERED);
 
         $this->assertSame(['mail' => ['type' => 'delivered']], $mock->jsonBody());
     }
@@ -569,7 +569,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(422, self::fixture('errors_422.json'));
 
-        $errors = (new Sales('my-token', $mock->client()))->sendMail(1001, MailType::PAID);
+        $errors = (new SaleService('my-token', $mock->client()))->sendMail(1001, MailType::PAID);
 
         $this->assertInstanceOf(Errors::class, $errors);
     }
@@ -580,7 +580,7 @@ class SalesTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));
 
-        (new Sales('my-token', $mock->client()))->one(1001, 'override-token');
+        (new SaleService('my-token', $mock->client()))->one(1001, 'override-token');
 
         $this->assertSame('Bearer override-token', $mock->header('Authorization'));
     }

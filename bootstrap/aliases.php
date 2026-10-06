@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * 改名した Entity の旧クラス名を解決できるようにする。
+ * 改名したクラスの旧名を解決できるようにする。
  *
  * 対応表と解決の仕組みは Shimoning\ColorMeShopApi\Aliases を参照。
  */

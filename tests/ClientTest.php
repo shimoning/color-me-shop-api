@@ -577,7 +577,7 @@ class ClientTest extends TestCase
     }
 
     /**
-     * getSale() は salesService() と Sales::one() の両方にトークンを渡している。
+     * getSale() は salesService() と Sale::one() の両方にトークンを渡している。
      * getCustomer() も同様に Customer のコンストラクタとメソッドの両方に渡している。
      * 二重に渡していても最終的に使われるトークンが一致することを固定する。
      */
