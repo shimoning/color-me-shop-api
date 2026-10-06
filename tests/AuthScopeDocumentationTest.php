@@ -39,6 +39,7 @@ class AuthScopeDocumentationTest extends TestCase
             'Gift::get' => [Gift::class, 'get', 'getGift', []],
             'Payment::all' => [Payment::class, 'all', 'getPayments', []],
             'Product::products' => [Product::class, 'products', 'getProducts', [AuthScope::READ_PRODUCTS]],
+            'Product::stocks' => [Product::class, 'stocks', 'getStocks', []],
             'Product::product' => [Product::class, 'product', 'getProduct', [AuthScope::READ_PRODUCTS]],
             'Product::variants' => [Product::class, 'variants', 'getProductVariants', [AuthScope::READ_PRODUCTS]],
             'Product::variant' => [Product::class, 'variant', 'getProductVariant', [AuthScope::READ_PRODUCTS]],
@@ -127,6 +128,7 @@ class AuthScopeDocumentationTest extends TestCase
         \sort($providedServiceClasses);
         \sort($providedServices);
         \sort($declaredServices);
+        $providedClientMethods = \array_values(\array_unique($providedClientMethods));
         \sort($providedClientMethods);
         \sort($declaredClientMethods);
 

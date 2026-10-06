@@ -8,7 +8,6 @@ use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock as StockEntity;
-use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Services\Stock;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -16,17 +15,20 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 class StockTest extends TestCase
 {
-    public function test_在庫一覧は検索クエリとmetaを持つPageを返す(): void
+    public function test_pageは従来と同じリクエストで同じ在庫一覧を返す(): void
     {
         $mock = HttpMock::json(200, self::fixture('stocks_page.json'));
 
-        $page = (new Stock('token', $mock->client()))->page(new SearchParameters([
-            'ids' => [101, 102],
-            'display_state' => 'showing',
-            'recent_zero_stocks' => true,
-            'limit' => 50,
-            'offset' => 10,
-        ]));
+        $page = (new Stock('constructor-token', $mock->client()))->page(
+            new SearchParameters([
+                'ids' => [101, 102],
+                'display_state' => 'showing',
+                'recent_zero_stocks' => true,
+                'limit' => 50,
+                'offset' => 10,
+            ]),
+            'argument-token',
+        );
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertCount(2, $page);
@@ -46,66 +48,38 @@ class StockTest extends TestCase
             'limit' => '50',
             'offset' => '10',
         ], $mock->query());
+        $this->assertSame('Bearer argument-token', $mock->header('Authorization'));
     }
 
-    public function test_エラー応答はErrorsになる(): void
+    public function test_page引数のアクセストークンを省略すると構築時のトークンを使う(): void
     {
-        $mock = HttpMock::json(401, self::fixture('errors_401.json'));
+        $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
-        $result = (new Stock('token', $mock->client()))->page(new SearchParameters([]));
+        (new Stock('constructor-token', $mock->client()))->page(new SearchParameters([]));
 
-        $this->assertInstanceOf(Errors::class, $result);
-    }
-
-    public function test_在庫一覧の200応答でmetaが欠損しても要素を保持する(): void
-    {
-        $response = self::fixtureArray('stocks_page.json');
-        unset($response['meta']);
-        $mock = HttpMock::json(200, \json_encode($response, \JSON_THROW_ON_ERROR));
-
-        $page = (new Stock('token', $mock->client()))->page(new SearchParameters([]));
-        $getters = [
-            'getTotal' => static fn(Page $page): int => $page->getTotal(),
-            'getLimit' => static fn(Page $page): int => $page->getLimit(),
-            'getOffset' => static fn(Page $page): int => $page->getOffset(),
-        ];
-
-        $this->assertInstanceOf(Page::class, $page);
-        $this->assertCount(2, $page);
-        $this->assertContainsOnlyInstancesOf(StockEntity::class, $page->all());
-
-        foreach ($getters as $method => $getter) {
-            $actualException = null;
-            try {
-                $getter($page);
-            } catch (MissingPaginationException $exception) {
-                $actualException = $exception;
-            }
-
-            $this->assertInstanceOf(MissingPaginationException::class, $actualException, $method);
-            $this->assertSame(
-                'GET /v1/stocks のレスポンスにページネーション情報「meta」がありません。ページング値を取得できません。',
-                $actualException->getMessage(),
-                $method,
-            );
-        }
+        $this->assertSame('Bearer constructor-token', $mock->header('Authorization'));
     }
 
     public function test_page引数のアクセストークンが空なら送信前に例外になる(): void
     {
-        $this->expectException(ParameterException::class);
-        (new Stock('constructor-token'))->page(new SearchParameters([]), '');
+        $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
+        $stock = new Stock('constructor-token', $mock->client());
+
+        try {
+            $stock->page(new SearchParameters([]), '');
+            $this->fail('空のアクセストークンで API 呼び出しが受理された');
+        } catch (ParameterException $exception) {
+            $this->assertSame('アクセストークンは必ず指定してください', $exception->getMessage());
+            $this->assertSame(0, $mock->countRequests());
+        }
     }
 
-    public function test_page引数のアクセストークンを優先する(): void
+    public function test_pageのエラー応答はErrorsになる(): void
     {
-        $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
+        $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 
-        (new Stock('constructor-token', $mock->client()))->page(
-            new SearchParameters([]),
-            'argument-token',
-        );
+        $result = (new Stock('constructor-token', $mock->client()))->page(new SearchParameters([]));
 
-        $this->assertSame('Bearer argument-token', $mock->header('Authorization'));
+        $this->assertInstanceOf(Errors::class, $result);
     }
 }
