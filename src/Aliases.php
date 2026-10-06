@@ -19,16 +19,8 @@ final class Aliases
      * @var array<class-string, class-string>
      */
     public const MAP = [
-        'Shimoning\\ColorMeShopApi\\Entities\\Product\\OptionInput'
-            => Entities\Product\Option\OptionCreateInput::class,
-        'Shimoning\\ColorMeShopApi\\Entities\\Product\\OptionValueInput'
-            => Entities\Product\Option\Value\ValueCreateInput::class,
-        'Shimoning\\ColorMeShopApi\\Entities\\Product\\VariantInput'
-            => Entities\Product\Variant\VariantUpdateInput::class,
-        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDeliveryUpdater'
-            => Entities\Sale\DeliveryUpdateInput::class,
-        'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater'
-            => Entities\Sale\SaleUpdateInput::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
+            => Entities\Product\VariantInput::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'
             => Entities\Sale\Sale::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleCreateInput'

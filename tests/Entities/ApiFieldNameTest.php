@@ -305,7 +305,7 @@ class ApiFieldNameTest extends TestCase
         if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class) {
             $data = ['increment' => 0];
         }
-        if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class) {
+        if ($data === [] && $class === \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class) {
             $data = ['stocks' => 0];
         }
 

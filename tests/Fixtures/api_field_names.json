@@ -524,7 +524,7 @@
     "Product\\StocksIncrementInput": [
         "increment"
     ],
-    "Product\\ProductVariantInput": [
+    "Product\\VariantInput": [
         "option1_value",
         "option2_value",
         "stocks"

@@ -39,26 +39,44 @@ class AliasesTest extends TestCase
         $this->assertTrue($input instanceof $legacy);
     }
 
-    public function test_旧名の受注更新から生成した配送先を旧名で型判定して渡せる(): void
+    #[DataProvider('removedAliasProvider')]
+    public function test_0_14_0で導入した旧名のうち再利用しない名前は解決しない(string $removed): void
     {
-        $this->assertFalse(\class_exists(\Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater::class, false));
-        $sale = new \Shimoning\ColorMeShopApi\Entities\Sales\SaleUpdater([
-            'sale_deliveries' => [['id' => 1]],
-        ]);
-        $delivery = $sale->getSaleDeliveries()[0];
+        $this->assertFalse(\class_exists($removed));
+    }
 
-        $this->assertTrue($delivery instanceof \Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater);
-        $acceptLegacy = static fn(\Shimoning\ColorMeShopApi\Entities\Sales\SaleDeliveryUpdater $value): object => $value;
-        $this->assertSame($delivery, $acceptLegacy($delivery));
+    /** @return array<string, array{string}> */
+    public static function removedAliasProvider(): array
+    {
+        return [
+            'Product\\OptionInput' => ['Shimoning\\ColorMeShopApi\\Entities\\Product\\OptionInput'],
+            'Product\\OptionValueInput' => ['Shimoning\\ColorMeShopApi\\Entities\\Product\\OptionValueInput'],
+            'Sales\\SaleUpdater' => ['Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater'],
+            'Sales\\SaleDeliveryUpdater' => [
+                'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDeliveryUpdater',
+            ],
+        ];
+    }
+
+    public function test_旧Product_VariantInput_aliasはvariant更新入力として解決しない(): void
+    {
+        $input = new \Shimoning\ColorMeShopApi\Entities\Product\VariantInput(['stocks' => 0]);
+
+        $this->assertNotInstanceOf(
+            \Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput::class,
+            $input,
+        );
     }
 
     public static function aliasProvider(): array
     {
         $cases = [];
         foreach (Aliases::MAP as $legacy => $current) {
-            $data = $current === \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class
-                ? ['increment' => 0]
-                : [];
+            $data = match ($current) {
+                \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
+                \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class => ['stocks' => 0],
+                default => [],
+            };
             $cases[$legacy] = [$legacy, $current, $data];
         }
         return $cases;
@@ -187,16 +205,8 @@ class AliasesTest extends TestCase
     public function test_別名の対応表はすべての改名を網羅する(): void
     {
         $this->assertSame([
-            'Shimoning\\ColorMeShopApi\\Entities\\Product\\OptionInput'
-                => \Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput::class,
-            'Shimoning\\ColorMeShopApi\\Entities\\Product\\OptionValueInput'
-                => \Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput::class,
-            'Shimoning\\ColorMeShopApi\\Entities\\Product\\VariantInput'
-                => \Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput::class,
-            'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleDeliveryUpdater'
-                => \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput::class,
-            'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleUpdater'
-                => \Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput::class,
+            'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
+                => \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'
                 => \Shimoning\ColorMeShopApi\Entities\Sale\Sale::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Sales\\SaleCreateInput'

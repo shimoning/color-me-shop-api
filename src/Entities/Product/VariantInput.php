@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -17,7 +18,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * @see docs/adr/0012-allow-nullability-from-api-observations.md
  */
-class ProductVariantInput extends Entity implements RequestEntity
+class VariantInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'stocks' => ['entity' => StocksIncrementInput::class, 'orScalar' => 'int'],
@@ -46,3 +47,7 @@ class ProductVariantInput extends Entity implements RequestEntity
         parent::__construct($data);
     }
 }
+
+// 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(VariantInput::class);

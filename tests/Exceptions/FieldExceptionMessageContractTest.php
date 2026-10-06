@@ -412,9 +412,9 @@ class FieldExceptionMessageContractTest extends TestCase
                 null,
             ],
             'InvalidFieldException::for/商品variant入力の形状不一致' => [
-                self::site('src/Entities/Product/ProductVariantInput.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Entities/Product/VariantInput.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
-                    new \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput(['weight' => 1]);
+                    new \Shimoning\ColorMeShopApi\Entities\Product\VariantInput(['weight' => 1]);
                 },
                 null,
             ],

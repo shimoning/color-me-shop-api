@@ -58,7 +58,7 @@ class EntityContractTest extends TestCase
     /** @var array<class-string<Entity>, array<string, mixed>> */
     private const REQUIRED_CONSTRUCTOR_DATA = [
         \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
-        \Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput::class => ['stocks' => 0],
+        \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class => ['stocks' => 0],
     ];
 
     /** @param class-string<Entity> $class */

@@ -7,22 +7,22 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
-class ProductVariantInputTest extends TestCase
+class VariantInputTest extends TestCase
 {
     public function test_配列と既存instanceを受け付け再帰的に直列化する(): void
     {
         $increment = new StocksIncrementInput(['increment' => 2]);
 
-        $fromArray = new ProductVariantInput([
+        $fromArray = new VariantInput([
             'option1_value' => 'S',
             'option2_value' => '赤',
             'stocks' => ['increment' => 1],
         ]);
-        $fromInstance = new ProductVariantInput(['stocks' => $increment]);
+        $fromInstance = new VariantInput(['stocks' => $increment]);
 
         $this->assertInstanceOf(RequestEntity::class, $fromArray);
         $this->assertSame([
@@ -37,7 +37,7 @@ class ProductVariantInputTest extends TestCase
     {
         $this->assertSame(
             ['stocks' => 3],
-            (new ProductVariantInput(['stocks' => 3]))->toArrayRecursive(),
+            (new VariantInput(['stocks' => 3]))->toArrayRecursive(),
         );
     }
 
@@ -46,7 +46,7 @@ class ProductVariantInputTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
 
-        new ProductVariantInput($data);
+        new VariantInput($data);
     }
 
     /** @return array<string, array{array<string, mixed>}> */
