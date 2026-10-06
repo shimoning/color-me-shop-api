@@ -87,9 +87,18 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
+    public function getProductPage(?ProductSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    {
+        return $this->productService($accessToken)->page($parameters ?? new ProductSearchParameters([]), $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getProductPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
     public function getProducts(?ProductSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
-        return $this->productService($accessToken)->products($parameters ?? new ProductSearchParameters([]), $accessToken);
+        return $this->getProductPage($parameters, $accessToken);
     }
 
     /**
@@ -99,12 +108,21 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getStocks(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    public function getProductStockPage(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
-        return $this->productService($accessToken)->stocks(
+        return $this->productService($accessToken)->stockPage(
             $parameters ?? new StockSearchParameters([]),
             $accessToken,
         );
+    }
+
+    /**
+     * @deprecated 0.25.0 getProductStockPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function getStocks(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    {
+        return $this->getProductStockPage($parameters, $accessToken);
     }
 
     /**
@@ -117,7 +135,7 @@ class Client
      */
     public function getProduct(int|string $id, ?string $accessToken = null): ProductEntity|Errors
     {
-        return $this->productService($accessToken)->product($id, $accessToken);
+        return $this->productService($accessToken)->one($id, $accessToken);
     }
 
     /**
@@ -132,12 +150,24 @@ class Client
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
      */
+    public function getProductVariantPage(
+        int|string $productId,
+        ?VariantSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->productService($accessToken)->variantPage($productId, $parameters, $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getProductVariantPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
     public function getProductVariants(
         int|string $productId,
         ?VariantSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
-        return $this->productService($accessToken)->variants($productId, $parameters, $accessToken);
+        return $this->getProductVariantPage($productId, $parameters, $accessToken);
     }
 
     /**
@@ -153,7 +183,7 @@ class Client
         int|string $id,
         ?string $accessToken = null,
     ): ProductVariantEntity|Errors {
-        return $this->productService($accessToken)->variant($productId, $id, $accessToken);
+        return $this->productService($accessToken)->variantOne($productId, $id, $accessToken);
     }
 
     /**
@@ -167,7 +197,7 @@ class Client
      */
     public function getProductImages(int|string $productId, ?string $accessToken = null): Collection|Errors
     {
-        return $this->productService($accessToken)->images($productId, $accessToken);
+        return $this->productService($accessToken)->imageAll($productId, $accessToken);
     }
 
     /**
@@ -180,12 +210,23 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException meta の型が不正な場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getProductAdvertisings(
+    public function getProductAdvertisingPage(
         ?ProductAdvertisingSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors
     {
-        return $this->productService($accessToken)->advertisings($parameters, $accessToken);
+        return $this->productService($accessToken)->advertisingPage($parameters, $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getProductAdvertisingPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function getProductAdvertisings(
+        ?ProductAdvertisingSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->getProductAdvertisingPage($parameters, $accessToken);
     }
 
     /**
@@ -195,7 +236,7 @@ class Client
      */
     public function getProductGroup(int|string $id, ?string $accessToken = null): GroupEntity|Errors
     {
-        return $this->productService($accessToken)->group($id, $accessToken);
+        return $this->productService($accessToken)->groupOne($id, $accessToken);
     }
 
     /**
@@ -540,12 +581,23 @@ class Client
      * @return AccessToken|OAuthErrorResponse|Errors
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function exchangeCode2Token(
+    public function exchangeCodeForToken(
         OAuthOptions $options,
         string $code,
     ): AccessToken|OAuthErrorResponse|Errors
     {
-        return (new OAuth($options, $this->httpClient))->exchangeCode2Token($code);
+        return (new OAuth($options, $this->httpClient))->exchangeCodeForToken($code);
+    }
+
+    /**
+     * @deprecated 0.25.0 exchangeCodeForToken() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function exchangeCode2Token(
+        OAuthOptions $options,
+        string $code,
+    ): AccessToken|OAuthErrorResponse|Errors {
+        return $this->exchangeCodeForToken($options, $code);
     }
 
 
@@ -595,13 +647,24 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getSales(
+    public function getSalePage(
         ?SalesSearchParameters $searchParameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
         return $this
             ->salesService($accessToken)
             ->page($searchParameters ?? new SalesSearchParameters([]), $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getSalePage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function getSales(
+        ?SalesSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->getSalePage($searchParameters, $accessToken);
     }
 
     /**
@@ -616,9 +679,18 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function statSales(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
+    public function getSaleStat(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
     {
         return $this->salesService($accessToken)->stat($dateTime, $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getSaleStat() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function statSales(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
+    {
+        return $this->getSaleStat($dateTime, $accessToken);
     }
 
     /**
@@ -714,12 +786,24 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function sendSalesMail(
+    public function sendSaleMail(
         int|string $id,
         MailType $mailType,
         ?string $accessToken = null,
     ): bool|Errors {
         return $this->salesService($accessToken)->sendMail($id, $mailType, $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 sendSaleMail() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function sendSalesMail(
+        int|string $id,
+        MailType $mailType,
+        ?string $accessToken = null,
+    ): bool|Errors {
+        return $this->sendSaleMail($id, $mailType, $accessToken);
     }
 
     private function salesService(?string $accessToken = null): SaleService
@@ -793,7 +877,7 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getCustomers(
+    public function getCustomerPage(
         ?CustomerSearchParameters $searchParameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
@@ -802,6 +886,17 @@ class Client
         }
         return (new Customer($this->accessToken ?? '', $this->httpClient))
             ->page($searchParameters ?? new CustomerSearchParameters([]));
+    }
+
+    /**
+     * @deprecated 0.25.0 getCustomerPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function getCustomers(
+        ?CustomerSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->getCustomerPage($searchParameters, $accessToken);
     }
 
     /**
@@ -894,7 +989,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return (new Product($this->accessToken ?? '', $this->httpClient))->groups();
+        return (new Product($this->accessToken ?? '', $this->httpClient))->groupAll();
     }
 
     /**
@@ -912,6 +1007,6 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return (new Product($this->accessToken ?? '', $this->httpClient))->categories();
+        return (new Product($this->accessToken ?? '', $this->httpClient))->categoryAll();
     }
 }

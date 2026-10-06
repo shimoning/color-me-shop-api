@@ -50,7 +50,7 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function products(ProductSearchParameters $parameters, ?string $accessToken = null): Page|Errors
+    public function page(ProductSearchParameters $parameters, ?string $accessToken = null): Page|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/products'),
@@ -63,13 +63,22 @@ class Product extends Service
     }
 
     /**
+     * @deprecated 0.25.0 page() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function products(ProductSearchParameters $parameters, ?string $accessToken = null): Page|Errors
+    {
+        return $this->page($parameters, $accessToken);
+    }
+
+    /**
      * 在庫情報一覧を取得する。
      *
      * @return Page<StockEntity>|Errors
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function stocks(StockSearchParameters $parameters, ?string $accessToken = null): Page|Errors
+    public function stockPage(StockSearchParameters $parameters, ?string $accessToken = null): Page|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/stocks'),
@@ -93,10 +102,19 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function product(int|string $id, ?string $accessToken = null): ProductEntity|Errors
+    public function one(int|string $id, ?string $accessToken = null): ProductEntity|Errors
     {
         $response = $this->_request([], $accessToken)->get($this->_endpoint('/products/' . $id));
         return $this->_handle($response, static fn(?array $data): ProductEntity => new ProductEntity($data['product'] ?? []));
+    }
+
+    /**
+     * @deprecated 0.25.0 one() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function product(int|string $id, ?string $accessToken = null): ProductEntity|Errors
+    {
+        return $this->one($id, $accessToken);
     }
 
     /**
@@ -111,7 +129,7 @@ class Product extends Service
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
      */
-    public function variants(
+    public function variantPage(
         int|string $productId,
         ?VariantSearchParameters $parameters = null,
         ?string $accessToken = null,
@@ -126,6 +144,18 @@ class Product extends Service
     }
 
     /**
+     * @deprecated 0.25.0 variantPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function variants(
+        int|string $productId,
+        ?VariantSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->variantPage($productId, $parameters, $accessToken);
+    }
+
+    /**
      * バリエーション単体。
      *
      * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
@@ -133,12 +163,21 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function variant(int|string $productId, int|string $id, ?string $accessToken = null): Variant|Errors
+    public function variantOne(int|string $productId, int|string $id, ?string $accessToken = null): Variant|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/products/' . $productId . '/variants/' . $id),
         );
         return $this->_handle($response, static fn(?array $data): Variant => new Variant($data['variant'] ?? []));
+    }
+
+    /**
+     * @deprecated 0.25.0 variantOne() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function variant(int|string $productId, int|string $id, ?string $accessToken = null): Variant|Errors
+    {
+        return $this->variantOne($productId, $id, $accessToken);
     }
 
     /**
@@ -150,7 +189,7 @@ class Product extends Service
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function images(int|string $productId, ?string $accessToken = null): Collection|Errors
+    public function imageAll(int|string $productId, ?string $accessToken = null): Collection|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/products/' . $productId . '/images'),
@@ -158,6 +197,15 @@ class Product extends Service
         return $this->_handle($response, static fn(?array $data): Collection => Collection::cast(
             ProductImageEntity::class, $data['product']['images'] ?? [],
         ));
+    }
+
+    /**
+     * @deprecated 0.25.0 imageAll() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function images(int|string $productId, ?string $accessToken = null): Collection|Errors
+    {
+        return $this->imageAll($productId, $accessToken);
     }
 
     /**
@@ -170,7 +218,7 @@ class Product extends Service
      * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException meta の型が不正な場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function advertisings(
+    public function advertisingPage(
         ?ProductAdvertisingSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors
@@ -185,14 +233,34 @@ class Product extends Service
     }
 
     /**
+     * @deprecated 0.25.0 advertisingPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function advertisings(
+        ?ProductAdvertisingSearchParameters $parameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->advertisingPage($parameters, $accessToken);
+    }
+
+    /**
      * 商品グループ単体。
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function group(int|string $id, ?string $accessToken = null): Group|Errors
+    public function groupOne(int|string $id, ?string $accessToken = null): Group|Errors
     {
         $response = $this->_request([], $accessToken)->get($this->_endpoint('/groups/' . $id));
         return $this->_handle($response, static fn(?array $data): Group => new Group($data['group'] ?? []));
+    }
+
+    /**
+     * @deprecated 0.25.0 groupOne() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function group(int|string $id, ?string $accessToken = null): Group|Errors
+    {
+        return $this->groupOne($id, $accessToken);
     }
 
     /**
@@ -204,7 +272,7 @@ class Product extends Service
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function groups(?string $accessToken = null): Collection|Errors
+    public function groupAll(?string $accessToken = null): Collection|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/groups'),
@@ -217,6 +285,15 @@ class Product extends Service
     }
 
     /**
+     * @deprecated 0.25.0 groupAll() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function groups(?string $accessToken = null): Collection|Errors
+    {
+        return $this->groupAll($accessToken);
+    }
+
+    /**
      * 商品カテゴリー一覧を取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
@@ -226,7 +303,7 @@ class Product extends Service
      * @throws InvalidFieldException Category::fromArray() で API フィールドが不正、または categories の要素が配列以外の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function categories(?string $accessToken = null): Collection|Errors
+    public function categoryAll(?string $accessToken = null): Collection|Errors
     {
         $response = $this->_request([], $accessToken)->get(
             $this->_endpoint('/categories'),
@@ -261,6 +338,15 @@ class Product extends Service
                 return new Collection($items);
             },
         );
+    }
+
+    /**
+     * @deprecated 0.25.0 categoryAll() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function categories(?string $accessToken = null): Collection|Errors
+    {
+        return $this->categoryAll($accessToken);
     }
 
     // --- グループ・カテゴリーの書き込み系 (ADR 0010 / 0014) ----------------

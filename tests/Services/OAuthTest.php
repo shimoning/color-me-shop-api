@@ -104,13 +104,13 @@ class OAuthTest extends TestCase
         $this->assertStringStartsWith('https://oauth.example.test/authorize?', $url);
     }
 
-    // --- exchangeCode2Token -----------------------------------------------
+    // --- exchangeCodeForToken -----------------------------------------------
 
     public function test_認可コードをアクセストークンに交換する(): void
     {
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));
 
-        $token = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        $token = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         $this->assertInstanceOf(AccessToken::class, $token);
         $this->assertSame('dummy-access-token', $token->getAccessToken());
@@ -124,7 +124,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"scope":"read_products"}');
 
-        $token = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        $token = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         $this->assertInstanceOf(AccessToken::class, $token);
         $this->assertSame([AuthScope::READ_PRODUCTS], $token->getScopes());
@@ -140,7 +140,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(204, '');
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertCount(0, $errors);
@@ -154,7 +154,7 @@ class OAuthTest extends TestCase
         $body = '"unexpected"';
         $mock = HttpMock::json(200, $body);
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertCount(0, $errors);
@@ -167,7 +167,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));
 
-        (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         $this->assertSame('POST', $mock->request()->getMethod());
         $this->assertSame('https://api.shop-pro.jp/oauth/token', $mock->uri());
@@ -181,7 +181,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));
 
-        (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         \parse_str($mock->body(), $body);
         $this->assertSame([
@@ -197,7 +197,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));
 
-        (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('auth-code');
+        (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('auth-code');
 
         $this->assertNull($mock->header('Authorization'));
     }
@@ -207,7 +207,7 @@ class OAuthTest extends TestCase
         $body = self::fixture('oauth_error_401.json');
         $mock = HttpMock::json(401, $body);
 
-        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(ErrorResponse::class, $error);
         $this->assertSame('invalid_client', $error->getError());
@@ -225,7 +225,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(400, '{"error":"invalid_request"}');
 
-        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(ErrorResponse::class, $error);
         $this->assertSame('invalid_request', $error->getError());
@@ -238,7 +238,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"error":"server_error"}');
 
-        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(ErrorResponse::class, $error);
         $this->assertSame('server_error', $error->getError());
@@ -250,7 +250,7 @@ class OAuthTest extends TestCase
         $body = '{"error":"invalid_request","errors":[{"code":"401010","message":"unauthorized","status":401}]}';
         $mock = HttpMock::json(400, $body);
 
-        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(ErrorResponse::class, $error);
         $this->assertSame('invalid_request', $error->getError());
@@ -263,7 +263,7 @@ class OAuthTest extends TestCase
         $body = '{"error":null,"error_description":"upstream error"}';
         $mock = HttpMock::json(400, $body);
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertCount(0, $errors);
@@ -282,7 +282,7 @@ class OAuthTest extends TestCase
         ], \JSON_THROW_ON_ERROR);
         $mock = HttpMock::json(400, $body);
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertCount(0, $errors);
@@ -305,7 +305,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(400, '{"error":"invalid_request","state":123}');
 
-        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(ErrorResponse::class, $error);
         $this->assertNull($error->getState());
@@ -317,7 +317,7 @@ class OAuthTest extends TestCase
         $body = '{"error_description":"説明だけ"}';
         $mock = HttpMock::json(400, $body);
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertCount(0, $errors);
@@ -328,7 +328,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(400, '{}');
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertCount(0, $errors);
@@ -339,7 +339,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(400, '{"error":"temporarily_unavailable","request_id":"req-1"}');
 
-        $error = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $error = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(ErrorResponse::class, $error);
         $this->assertSame('req-1', $error->getRaw()['request_id']);
@@ -350,7 +350,7 @@ class OAuthTest extends TestCase
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 
-        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCode2Token('invalid-code');
+        $errors = (new OAuth($this->options(), $mock->client()))->exchangeCodeForToken('invalid-code');
 
         $this->assertInstanceOf(Errors::class, $errors);
         $this->assertSame('401010', $errors[0]->getCode());

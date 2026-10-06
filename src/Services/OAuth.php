@@ -76,7 +76,7 @@ class OAuth
      * @return AccessToken|ErrorResponse|Errors
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function exchangeCode2Token(string $code): AccessToken|ErrorResponse|Errors
+    public function exchangeCodeForToken(string $code): AccessToken|ErrorResponse|Errors
     {
         $response = (new Request(new RequestOptions(['form' => true]), $this->_httpClient))->post(
             $this->_options->getEndpointUri() . '/token',
@@ -104,5 +104,14 @@ class OAuth
         }
 
         return new AccessToken($parsedBody);
+    }
+
+    /**
+     * @deprecated 0.25.0 exchangeCodeForToken() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function exchangeCode2Token(string $code): AccessToken|ErrorResponse|Errors
+    {
+        return $this->exchangeCodeForToken($code);
     }
 }

@@ -29,7 +29,7 @@ class AuthScopeDocumentationTest extends TestCase
     public static function apiMethodProvider(): array
     {
         return [
-            'Customer::page' => [Customer::class, 'page', 'getCustomers', [AuthScope::READ_SALES]],
+            'Customer::page' => [Customer::class, 'page', 'getCustomerPage', [AuthScope::READ_SALES]],
             'Customer::one' => [Customer::class, 'one', 'getCustomer', [AuthScope::READ_SALES]],
             'Customer::create' => [Customer::class, 'create', 'createCustomer', [AuthScope::WRITE_SALES]],
             'Customer::update' => [Customer::class, 'update', 'updateCustomer', [AuthScope::WRITE_SALES]],
@@ -38,16 +38,16 @@ class AuthScopeDocumentationTest extends TestCase
             'Delivery::dateSetting' => [Delivery::class, 'dateSetting', 'getDeliveryDateSetting', []],
             'Gift::get' => [Gift::class, 'get', 'getGift', []],
             'Payment::all' => [Payment::class, 'all', 'getPayments', []],
-            'Product::products' => [Product::class, 'products', 'getProducts', [AuthScope::READ_PRODUCTS]],
-            'Product::stocks' => [Product::class, 'stocks', 'getStocks', []],
-            'Product::product' => [Product::class, 'product', 'getProduct', [AuthScope::READ_PRODUCTS]],
-            'Product::variants' => [Product::class, 'variants', 'getProductVariants', [AuthScope::READ_PRODUCTS]],
-            'Product::variant' => [Product::class, 'variant', 'getProductVariant', [AuthScope::READ_PRODUCTS]],
-            'Product::images' => [Product::class, 'images', 'getProductImages', [AuthScope::READ_PRODUCTS]],
-            'Product::advertisings' => [Product::class, 'advertisings', 'getProductAdvertisings', [AuthScope::READ_PRODUCTS]],
-            'Product::group' => [Product::class, 'group', 'getProductGroup', []],
-            'Product::groups' => [Product::class, 'groups', 'getProductGroups', []],
-            'Product::categories' => [Product::class, 'categories', 'getProductCategories', []],
+            'Product::page' => [Product::class, 'page', 'getProductPage', [AuthScope::READ_PRODUCTS]],
+            'Product::stockPage' => [Product::class, 'stockPage', 'getProductStockPage', []],
+            'Product::one' => [Product::class, 'one', 'getProduct', [AuthScope::READ_PRODUCTS]],
+            'Product::variantPage' => [Product::class, 'variantPage', 'getProductVariantPage', [AuthScope::READ_PRODUCTS]],
+            'Product::variantOne' => [Product::class, 'variantOne', 'getProductVariant', [AuthScope::READ_PRODUCTS]],
+            'Product::imageAll' => [Product::class, 'imageAll', 'getProductImages', [AuthScope::READ_PRODUCTS]],
+            'Product::advertisingPage' => [Product::class, 'advertisingPage', 'getProductAdvertisingPage', [AuthScope::READ_PRODUCTS]],
+            'Product::groupOne' => [Product::class, 'groupOne', 'getProductGroup', []],
+            'Product::groupAll' => [Product::class, 'groupAll', 'getProductGroups', []],
+            'Product::categoryAll' => [Product::class, 'categoryAll', 'getProductCategories', []],
             'Product::createGroup' => [Product::class, 'createGroup', 'createProductGroup', [AuthScope::WRITE_PRODUCTS]],
             'Product::updateGroup' => [Product::class, 'updateGroup', 'updateProductGroup', [AuthScope::WRITE_PRODUCTS]],
             'Product::createCategory' => [Product::class, 'createCategory', 'createProductCategory', [AuthScope::WRITE_PRODUCTS]],
@@ -66,15 +66,15 @@ class AuthScopeDocumentationTest extends TestCase
             'Product::deletePickup' => [Product::class, 'deletePickup', 'deleteProductPickup', [AuthScope::WRITE_PRODUCTS]],
             'Product::createImage' => [Product::class, 'createImage', 'createProductImage', [AuthScope::READ_PRODUCTS, AuthScope::WRITE_PRODUCTS]],
             'Product::deleteImage' => [Product::class, 'deleteImage', 'deleteProductImage', [AuthScope::WRITE_PRODUCTS]],
-            'Sale::page' => [Sale::class, 'page', 'getSales', [AuthScope::READ_SALES]],
+            'Sale::page' => [Sale::class, 'page', 'getSalePage', [AuthScope::READ_SALES]],
             'Sale::one' => [Sale::class, 'one', 'getSale', [AuthScope::READ_SALES]],
-            'Sale::stat' => [Sale::class, 'stat', 'statSales', [AuthScope::READ_SALES]],
+            'Sale::stat' => [Sale::class, 'stat', 'getSaleStat', [AuthScope::READ_SALES]],
             'Sale::create' => [Sale::class, 'create', 'createSale', [AuthScope::WRITE_SALES]],
             'Sale::update' => [Sale::class, 'update', 'updateSale', [AuthScope::WRITE_SALES]],
             'Sale::cancel' => [Sale::class, 'cancel', 'cancelSale', [AuthScope::WRITE_SALES]],
-            'Sale::sendMail' => [Sale::class, 'sendMail', 'sendSalesMail', [AuthScope::WRITE_SALES]],
+            'Sale::sendMail' => [Sale::class, 'sendMail', 'sendSaleMail', [AuthScope::WRITE_SALES]],
             'Shop::get' => [Shop::class, 'get', 'getShop', []],
-            'Stock::page' => [Stock::class, 'page', 'getStocks', []],
+            'Stock::page' => [Stock::class, 'page', 'getProductStockPage', []],
         ];
     }
 
@@ -111,7 +111,7 @@ class AuthScopeDocumentationTest extends TestCase
         $declaredServiceClasses = self::sourceServiceClasses();
         foreach ($declaredServiceClasses as $class) {
             foreach ((new ReflectionClass($class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if ($method->getDeclaringClass()->getName() === $class) {
+                if ($method->getDeclaringClass()->getName() === $class && ! self::isDeprecated($method)) {
                     $declaredServices[] = $class . '::' . $method->getName();
                 }
             }
@@ -120,7 +120,10 @@ class AuthScopeDocumentationTest extends TestCase
         $declaredClientMethods = [];
         foreach ((new ReflectionClass(Client::class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             // OAuth 認証フローとコンストラクタは Service API のファサードではないため対象外。
-            if (! \in_array($method->getName(), ['__construct', 'getOAuthUrl', 'exchangeCode2Token'], true)) {
+            if (
+                ! \in_array($method->getName(), ['__construct', 'getOAuthUrl', 'exchangeCodeForToken'], true)
+                && ! self::isDeprecated($method)
+            ) {
                 $declaredClientMethods[] = $method->getName();
             }
         }
@@ -135,6 +138,12 @@ class AuthScopeDocumentationTest extends TestCase
         $this->assertSame($declaredServiceClasses, $providedServiceClasses);
         $this->assertSame($declaredServices, $providedServices);
         $this->assertSame($declaredClientMethods, $providedClientMethods);
+    }
+
+    private static function isDeprecated(ReflectionMethod $method): bool
+    {
+        $document = $method->getDocComment();
+        return \is_string($document) && \str_contains($document, '@deprecated');
     }
 
     /**

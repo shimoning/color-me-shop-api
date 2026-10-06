@@ -16,7 +16,7 @@ class StockClientTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('stocks_page.json'));
 
-        $result = (new Client('token', $mock->client()))->getStocks(new SearchParameters([
+        $result = (new Client('token', $mock->client()))->getProductStockPage(new SearchParameters([
             'stocks' => 5,
             'fields' => 'product_id,name,stocks',
         ]));
@@ -34,7 +34,7 @@ class StockClientTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
-        (new Client('token', $mock->client()))->getStocks();
+        (new Client('token', $mock->client()))->getProductStockPage();
 
         $this->assertSame([], $mock->query());
     }
@@ -43,7 +43,7 @@ class StockClientTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
-        (new Client('constructor-token', $mock->client()))->getStocks(null, 'argument-token');
+        (new Client('constructor-token', $mock->client()))->getProductStockPage(null, 'argument-token');
 
         $this->assertSame('Bearer argument-token', $mock->header('Authorization'));
     }
@@ -52,6 +52,6 @@ class StockClientTest extends TestCase
     {
         $this->expectException(ParameterException::class);
 
-        (new Client(''))->getStocks();
+        (new Client(''))->getProductStockPage();
     }
 }

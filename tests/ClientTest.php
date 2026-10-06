@@ -43,11 +43,11 @@ class ClientTest extends TestCase
             'getShop' => [static function (Client $client, ?string $accessToken): void {
                 $client->getShop($accessToken);
             }],
-            'getSales' => [static function (Client $client, ?string $accessToken): void {
-                $client->getSales(null, $accessToken);
+            'getSalePage' => [static function (Client $client, ?string $accessToken): void {
+                $client->getSalePage(null, $accessToken);
             }],
-            'statSales' => [static function (Client $client, ?string $accessToken): void {
-                $client->statSales(new \DateTimeImmutable('2024-01-01'), $accessToken);
+            'getSaleStat' => [static function (Client $client, ?string $accessToken): void {
+                $client->getSaleStat(new \DateTimeImmutable('2024-01-01'), $accessToken);
             }],
             'getSale' => [static function (Client $client, ?string $accessToken): void {
                 $client->getSale(1001, $accessToken);
@@ -64,8 +64,8 @@ class ClientTest extends TestCase
             'cancelSale' => [static function (Client $client, ?string $accessToken): void {
                 $client->cancelSale(1001, false, $accessToken);
             }],
-            'sendSalesMail' => [static function (Client $client, ?string $accessToken): void {
-                $client->sendSalesMail(1001, MailType::PAID, $accessToken);
+            'sendSaleMail' => [static function (Client $client, ?string $accessToken): void {
+                $client->sendSaleMail(1001, MailType::PAID, $accessToken);
             }],
             'getPayments' => [static function (Client $client, ?string $accessToken): void {
                 $client->getPayments($accessToken);
@@ -79,8 +79,8 @@ class ClientTest extends TestCase
             'getGift' => [static function (Client $client, ?string $accessToken): void {
                 $client->getGift($accessToken);
             }],
-            'getCustomers' => [static function (Client $client, ?string $accessToken): void {
-                $client->getCustomers(null, $accessToken);
+            'getCustomerPage' => [static function (Client $client, ?string $accessToken): void {
+                $client->getCustomerPage(null, $accessToken);
             }],
             'getCustomer' => [static function (Client $client, ?string $accessToken): void {
                 $client->getCustomer(501, $accessToken);
@@ -91,14 +91,14 @@ class ClientTest extends TestCase
             'getProductCategories' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductCategories($accessToken);
             }],
-            'getProducts' => [static function (Client $client, ?string $accessToken): void {
-                $client->getProducts(null, $accessToken);
+            'getProductPage' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductPage(null, $accessToken);
             }],
             'getProduct' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProduct(101, $accessToken);
             }],
-            'getProductVariants' => [static function (Client $client, ?string $accessToken): void {
-                $client->getProductVariants(101, null, $accessToken);
+            'getProductVariantPage' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductVariantPage(101, null, $accessToken);
             }],
             'getProductVariant' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductVariant(101, 301, $accessToken);
@@ -106,8 +106,8 @@ class ClientTest extends TestCase
             'getProductImages' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductImages(101, $accessToken);
             }],
-            'getProductAdvertisings' => [static function (Client $client, ?string $accessToken): void {
-                $client->getProductAdvertisings(null, $accessToken);
+            'getProductAdvertisingPage' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductAdvertisingPage(null, $accessToken);
             }],
             'getProductGroup' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductGroup(401, $accessToken);
@@ -288,7 +288,7 @@ class ClientTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
-        $page = (new Client('my-token', $mock->client()))->getSales();
+        $page = (new Client('my-token', $mock->client()))->getSalePage();
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(2, $page->count());
@@ -300,7 +300,7 @@ class ClientTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('sales_page.json'));
 
         (new Client('my-token', $mock->client()))
-            ->getSales(new SalesSearchParameters(['limit' => 30, 'offset' => 60]));
+            ->getSalePage(new SalesSearchParameters(['limit' => 30, 'offset' => 60]));
 
         $this->assertSame(['limit' => '30', 'offset' => '60'], $mock->query());
     }
@@ -338,7 +338,7 @@ class ClientTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('sales_stat.json'));
 
-        $stat = (new Client('my-token', $mock->client()))->statSales(new \DateTimeImmutable('2024-01-01'));
+        $stat = (new Client('my-token', $mock->client()))->getSaleStat(new \DateTimeImmutable('2024-01-01'));
 
         $this->assertSame(12000, $stat->getAmountToday());
         $this->assertStringContainsString('make_date=2024-01-01', $mock->uri());
@@ -379,7 +379,7 @@ class ClientTest extends TestCase
     {
         $mock = HttpMock::json(200, '{}');
 
-        $result = (new Client('my-token', $mock->client()))->sendSalesMail(1001, MailType::PAID);
+        $result = (new Client('my-token', $mock->client()))->sendSaleMail(1001, MailType::PAID);
 
         $this->assertTrue($result);
         $this->assertSame('https://api.shop-pro.jp/v1/sales/1001/mails', $mock->uri());
@@ -451,7 +451,7 @@ class ClientTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('customers_page.json'));
 
-        $page = (new Client('my-token', $mock->client()))->getCustomers();
+        $page = (new Client('my-token', $mock->client()))->getCustomerPage();
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(2, $page->count());
@@ -463,7 +463,7 @@ class ClientTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('customers_page.json'));
 
         (new Client('my-token', $mock->client()))
-            ->getCustomers(new CustomerSearchParameters(['limit' => 5]));
+            ->getCustomerPage(new CustomerSearchParameters(['limit' => 5]));
 
         $this->assertSame(['limit' => '5'], $mock->query());
     }
@@ -536,7 +536,7 @@ class ClientTest extends TestCase
         $mock = HttpMock::json(200, self::fixture('oauth_token.json'));
         $options = new OAuthOptions('my-client-id', 'my-secret', 'https://example.test/callback');
 
-        $token = (new Client(null, $mock->client()))->exchangeCode2Token($options, 'auth-code');
+        $token = (new Client(null, $mock->client()))->exchangeCodeForToken($options, 'auth-code');
 
         $this->assertInstanceOf(AccessToken::class, $token);
         $this->assertSame('dummy-access-token', $token->getAccessToken());
@@ -550,7 +550,7 @@ class ClientTest extends TestCase
 
         $this->assertInstanceOf(
             AccessToken::class,
-            (new Client(null, $mock->client()))->exchangeCode2Token($options, 'code'),
+            (new Client(null, $mock->client()))->exchangeCodeForToken($options, 'code'),
         );
     }
 
@@ -559,7 +559,7 @@ class ClientTest extends TestCase
         $mock = HttpMock::json(401, self::fixture('oauth_error_401.json'));
         $options = new OAuthOptions('my-client-id', 'my-secret', 'https://example.test/callback');
 
-        $error = (new Client(null, $mock->client()))->exchangeCode2Token($options, 'invalid-code');
+        $error = (new Client(null, $mock->client()))->exchangeCodeForToken($options, 'invalid-code');
 
         $this->assertInstanceOf(OAuthErrorResponse::class, $error);
         $this->assertSame('invalid_client', $error->getError());
