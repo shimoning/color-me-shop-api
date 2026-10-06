@@ -43,7 +43,7 @@ Entity のクラス名に主 Entity の名前を接頭辞として付けるか�
     1 つにまとめられない。出典: `a86fd98`。
   - `Product\ProductVariantInput`（商品更新の `variants[]` の要素）: 接頭辞を外した `VariantInput` は
     ADR 0016 で改名した `VariantUpdateInput` の旧名として使っている。ADR 0016 の規則に従った
-    `VariantUpdateInput` も、項目の異なるバリエーション更新 API の入力が使っている。
+    `VariantUpdateInput` も、項目の異なるバリエーション更新 API の入力が使っている。出典: `152b88a`。
 - 旧名は ADR 0016 と同じ仕組みで非推奨の別名として残し、次のメジャーな変更で削除する。ADR 0016 の旧名
   `Sales\SaleDeliveryUpdater` の対応先は、新しい `Sales\DeliveryUpdateInput` に付け替える。出典: `152b88a`。
 - 旧名と新名の対応表は README から[非推奨のクラス名の対応表](../class-aliases.md)に移し、README からは
@@ -67,9 +67,11 @@ Entity のクラス名に主 Entity の名前を接頭辞として付けるか�
 
 次の点が変わる。
 
-- 新名で型宣言・`instanceof` を書くことを推奨する。旧名も別名として動作するため、既存のコードは
-  そのまま動く
-- `get_class()` や `::class` の結果、例外のメッセージに含まれるクラス名は新名になる
+- 新名で型宣言・`instanceof` を書くことを推奨する。旧名での生成、旧名での `instanceof` と型宣言、旧名で
+  直列化されたデータの復元は、別名により引き続き成立する
+- **クラス名の文字列に依存するコードは互換でない。** `get_class()` の結果と、例外のメッセージに含まれる
+  クラス名は新名になる。一方、旧名の `::class` は旧名の文字列のままなので、`get_class($x) === SaleDelivery::class`
+  のような比較は成立しなくなる
 - 別の名前空間に同じ名前のクラスができる（`Sales\Delivery` と `Delivery\Delivery`、
   `Sales\CustomerCreateInput` と `Customer\CustomerCreateInput`、`Gift\Card` と `Payment\Card`）。両方を使う
   ファイルでは `use ... as` が必要になる

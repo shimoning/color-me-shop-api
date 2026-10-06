@@ -5,6 +5,8 @@
 
 旧名での生成、旧名での `instanceof` と型宣言、旧名で `serialize()` されたデータの `unserialize()` は
 いずれも従来どおり動作する（`unserialize()` の `allowed_classes` には旧名を渡すこと）。
+ただし、クラス名の文字列に依存するコードは互換でない。`get_class()` の結果は新名になる一方、旧名の
+`::class` は旧名の文字列のままなので、両者の比較は成立しなくなる。
 
 クラス名はいずれも `Shimoning\ColorMeShopApi\Entities\` 以下である。
 
