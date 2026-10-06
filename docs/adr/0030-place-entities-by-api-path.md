@@ -85,3 +85,4 @@ URL の名前を重ねなくてよくなる。
 - [非推奨のクラス名の対応表](../class-aliases.md)
 - 実装とテストの出典コミット: `d187813`
 - 0.14.0 の別名の削除と `VariantInput` への改名の出典コミット: `99da427`
+- 受注の Service の改名: [ADR 0031](0031-rename-sales-service-to-sale.md)

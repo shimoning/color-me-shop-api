@@ -1112,7 +1112,7 @@ if (! $customersOrErrors instanceof Errors) {
 }
 ```
 
-`Services\Sales::page()` と `Services\Customer::page()` は API レスポンスの `meta` から `Pagination` を生成し、`Page` に保持する。`meta` が完全な整数値で揃っている場合、`Page` の各 getter は従来どおり内部の `Pagination` に処理を委譲する。
+`Services\Sale::page()` と `Services\Customer::page()` は API レスポンスの `meta` から `Pagination` を生成し、`Page` に保持する。`meta` が完全な整数値で揃っている場合、`Page` の各 getter は従来どおり内部の `Pagination` に処理を委譲する。
 
 `meta` キーが欠損している場合も、レスポンスの要素は `Page` に保持され、`foreach`、`count()`、`all()`、配列アクセスで利用できる。ただしページング値を `0` などで代替はせず、`getTotal()`、`getLimit()`、`getOffset()` を呼ぶと `MissingPaginationException` が投げられる。例外メッセージには欠損したキーと対象エンドポイントが含まれる。
 

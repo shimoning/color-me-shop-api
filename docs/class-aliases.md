@@ -8,7 +8,22 @@
 ただし、クラス名の文字列に依存するコードは互換でない。`get_class()` の結果は新名になる一方、旧名の
 `::class` は旧名の文字列のままなので、両者の比較は成立しなくなる。
 
-クラス名はいずれも `Shimoning\ColorMeShopApi\Entities\` 以下である。
+クラス名は、断りがなければ `Shimoning\ColorMeShopApi\Entities\` 以下である。
+
+## 0.25.0: 受注の Service の改名
+
+ほかの Service と同じ単数形にし、Entity の名前空間 `Entities\Sale` と揃えた
+（[ADR 0031](adr/0031-rename-sales-service-to-sale.md)）。`Client` のメソッド名（`getSales()` など）は変わらない。
+この表のクラス名は `Shimoning\ColorMeShopApi\` 以下である。
+
+| 旧クラス名 | 新クラス名 |
+| --- | --- |
+| `Services\Sales` | `Services\Sale` |
+
+`Services\Sale` と `Entities\Sale\Sale` を両方使うファイルでは、`use ... as` で別名を付けること。
+
+Service は HTTP クライアントなどの実行時の依存を持ち、直列化して使うことを想定していないため、旧名での `unserialize()` の
+互換は確かめていない。旧名での生成と `instanceof`・型宣言は動作する。
 
 ## 0.24.0: 名前空間を API の URL に沿わせる改名
 
