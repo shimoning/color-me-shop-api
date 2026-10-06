@@ -48,6 +48,7 @@ Entity の名前空間を公式 API の URL のパスに沿わせ、名前空間
 | `Gift\GiftType` | `Gift\Type` |
 | `Gift\GiftWrapping` | `Gift\Wrapping` |
 | `Product\ProductStocksIncrementInput` | `Product\StocksIncrementInput` |
+| `Product\ProductVariantInput` | `Product\VariantInput` |
 | `Product\Variant` | `Product\Variant\Variant` |
 | `Product\VariantOption` | `Product\Variant\Option` |
 | `Product\VariantUpdateInput` | `Product\Variant\VariantUpdateInput` |
@@ -80,23 +81,24 @@ Entity の名前空間を公式 API の URL のパスに沿わせ、名前空間
 `Gift\Card` と `Payment\Card` のように、別の名前空間に同じ名前のクラスがある。両方を使うファイルでは
 `use ... as` で別名を付けること。
 
-## 0.14.0: 要求側入力クラスの改名
+## 0.14.0: 要求側入力クラスの改名（0.24.0 で別名を削除）
 
 書き込み入力クラスの命名を `<対象><操作>Input` に統一した
-（[ADR 0016](adr/0016-unify-request-input-entity-names.md)）。
+（[ADR 0016](adr/0016-unify-request-input-entity-names.md)）。このとき残した次の旧名の別名は、0.24.0 で削除した
+（[ADR 0030](adr/0030-place-entities-by-api-path.md)）。旧名での生成・型判定・`unserialize()` はできない。
+新しいクラス名に書き換えること。
 
-| 旧クラス名 | 新クラス名 |
+| 削除した旧クラス名 | 新クラス名（0.24.0） |
 | --- | --- |
-| `Product\OptionInput` | `Product\Option\OptionCreateInput`（0.14.0 から 0.23.0 までは `Product\OptionCreateInput`） |
-| `Product\OptionValueInput` | `Product\Option\Value\ValueCreateInput`（0.14.0 から 0.23.0 までは `Product\OptionValueCreateInput`） |
-| `Product\VariantInput` | `Product\Variant\VariantUpdateInput`（0.14.0 から 0.23.0 までは `Product\VariantUpdateInput`） |
-| `Sales\SaleUpdater` | `Sale\SaleUpdateInput`（0.14.0 から 0.23.0 までは `Sales\SaleUpdateInput`） |
-| `Sales\SaleDeliveryUpdater` | `Sale\DeliveryUpdateInput`（0.14.0 から 0.23.0 までは `Sales\SaleDeliveryUpdateInput`） |
+| `Product\OptionInput` | `Product\Option\OptionCreateInput` |
+| `Product\OptionValueInput` | `Product\Option\Value\ValueCreateInput` |
+| `Product\VariantInput` | `Product\Variant\VariantUpdateInput` |
+| `Sales\SaleUpdater` | `Sale\SaleUpdateInput` |
+| `Sales\SaleDeliveryUpdater` | `Sale\DeliveryUpdateInput` |
 
-作成と更新で共用する `ProductInput` / `GroupInput` / `CategoryInput` / `CategoryChildInput` / `PickupInput` と、
-子要素の `MetaTagInput` は据え置いた（`ProductInput` は 0.22.0 で作成用と更新用に分けた）。検索条件の
-`SearchParameters` 系も対象外である。
+`Product\VariantInput` は、0.24.0 から商品更新の `variants[]` の要素（0.23.0 までの `Product\ProductVariantInput`）の
+クラス名である。0.23.0 までの `Product\VariantInput` とは別のクラスを指す。
 
-0.20.0 で `SaleUpdateInput` から `id` を削除したため、`id` を含む旧データの `SaleUpdater`（および 0.19.0 以前の
-`SaleUpdateInput`）を `unserialize()` すると、PHP 8.2 以降では動的プロパティの非推奨警告が出る。復元自体は
-でき、`id` は配列化にも送信にも使われない（[ADR 0022](adr/0022-take-sale-id-as-update-argument.md)）。
+0.20.0 で `SaleUpdateInput` から `id` を削除したため、`id` を含む 0.19.0 以前の `Sales\SaleUpdateInput` の直列化
+データを `unserialize()` すると、PHP 8.2 以降では動的プロパティの非推奨警告が出る。復元自体はでき、`id` は配列化
+にも送信にも使われない（[ADR 0022](adr/0022-take-sale-id-as-update-argument.md)）。

@@ -41,6 +41,12 @@ Entity は API の領域ごとの名前空間に置いていたが、どの名�
   から最終的な名前を直接指し、ADR 0029 で付けた未リリースの途中の名前（`Sales\Application` など）は別名に
   しない。出典: `d187813`。
 - `Services` のクラス名と名前空間は変えない。出典: `d187813`。
+- **ADR 0016 で 0.14.0 に残した 5 件の旧名の別名（`Product\OptionInput`、`Product\OptionValueInput`、
+  `Product\VariantInput`、`Sales\SaleUpdater`、`Sales\SaleDeliveryUpdater`）を、このリリースで削除する。**
+  ADR 0016 は次のメジャーな変更で削除するとしていたが、利用者の指定により前倒しする。出典: `99da427`。
+- 空いた `Product\VariantInput` に、商品更新の `variants[]` の要素（0.23.0 までの `Product\ProductVariantInput`）を
+  改名する。ADR 0029 では、この名前が 0.14.0 の旧名として使われていたため例外として残していた。
+  `Product\ProductVariantInput` は非推奨の別名として残す。出典: `99da427`。
 
 ## 代替案と却下理由
 
@@ -61,11 +67,14 @@ URL の名前を重ねなくてよくなる。
 
 次の点が変わる。
 
-- 0.23.0 の 54 クラスの名前が変わる。旧名は別名として動作するが、クラス名の文字列に依存するコードは互換で
+- 0.23.0 の 55 クラスの名前が変わる。旧名は別名として動作するが、クラス名の文字列に依存するコードは互換で
   ない（ADR 0029 と同じ）
 - `Product\Variant` → `Product\Variant\Variant` のように、旧クラス名と新しい名前空間が同じ名前になるものが
   ある
 - 名前空間が 1 段深くなる Entity が増え、`use` の行が長くなる
+- 0.14.0 の 5 件の旧名は使えなくなる。旧名での生成・型判定、旧名で直列化されたデータの `unserialize()` は
+  できない。`Product\VariantInput` は 0.23.0 までと別のクラス（バリエーション更新 API の入力ではなく、商品更新の
+  `variants[]` の要素）を指すようになり、旧名のまま使っていたコードは型が合わずに失敗する
 - 商品広告・グループ・カテゴリー・在庫の配置は、URL の規則の例外として残る
 
 ## 関連
@@ -75,3 +84,4 @@ URL の名前を重ねなくてよくなる。
 - [ADR 0029: Entity のクラス名に親の名前の接頭辞を付けない](0029-drop-parent-prefix-from-entity-names.md)
 - [非推奨のクラス名の対応表](../class-aliases.md)
 - 実装とテストの出典コミット: `d187813`
+- 0.14.0 の別名の削除と `VariantInput` への改名の出典コミット: `99da427`

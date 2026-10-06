@@ -111,7 +111,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput;
-use Shimoning\ColorMeShopApi\Entities\Product\ProductVariantInput;
+use Shimoning\ColorMeShopApi\Entities\Product\VariantInput;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
@@ -756,7 +756,7 @@ if ($updatedOrErrors instanceof Errors) {
 
 `category_id_small` / `stocks` / `group_ids` / `variants` は更新専用のフィールドで、`ProductUpdateInput` だけが持つ。公式 OpenAPI の作成 request にはこの 4 項目がなく、実 API は作成時に送っても反映せず、エラーにもしない (2026-10-02 の観測、[ColorMe Shop API 商品応答構造の実測記録](docs/api-product-structure.md))。作成した商品の在庫数やグループは、作成後に `updateProduct()` で設定する。
 
-`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `StocksIncrementInput`、`variants` の要素は `ProductVariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new StocksIncrementInput(['increment' => 5])`、`'variants' => [new ProductVariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
+`stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `StocksIncrementInput`、`variants` の要素は `VariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new StocksIncrementInput(['increment' => 5])`、`'variants' => [new VariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
 
 0.22.0 で、作成と更新で共用していた `ProductInput` を `ProductCreateInput` と `ProductUpdateInput` に分け、`ProductInput` は削除した ([ADR 0026](docs/adr/0026-split-product-input-into-create-and-update.md))。更新の呼び出しは `new ProductInput(` を `new ProductUpdateInput(` に、作成の呼び出しは `new ProductCreateInput(` に書き換える。作成で更新専用の 4 項目を指定していた場合、その指定はもともと反映されていなかった。
 商品自体を削除する API は公式に存在しない。
@@ -1140,7 +1140,7 @@ $pagination->getOffset();
 
 ### 要求側入力クラスの改名
 
-書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残しており、次のメジャーな変更で削除する。旧名と新名の対応は[非推奨のクラス名の対応表](docs/class-aliases.md)にある。
+書き込み入力クラスの命名を `<対象><操作>Input` に統一した ([ADR 0016](docs/adr/0016-unify-request-input-entity-names.md))。旧クラス名は非推奨の別名として残していたが、0.24.0 で削除した ([ADR 0030](docs/adr/0030-place-entities-by-api-path.md))。旧名と新名の対応は[非推奨のクラス名の対応表](docs/class-aliases.md)にある。
 
 ### フリガナの検証
 
