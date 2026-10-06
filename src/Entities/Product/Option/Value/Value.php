@@ -10,7 +10,7 @@ use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
- * 独立した productValue スキーマの応答。
+ * 独立した productOptionValue スキーマの応答。
  *
  * 商品の中の `options[].values` は文字列の配列で、この object ではない。
  *
