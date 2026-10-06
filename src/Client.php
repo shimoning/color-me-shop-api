@@ -68,7 +68,6 @@ use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as Pr
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 
-use Shimoning\ColorMeShopApi\Services\Stock;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
 
 /**
@@ -102,7 +101,7 @@ class Client
      */
     public function getStocks(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
-        return $this->stockService($accessToken)->page(
+        return $this->productService($accessToken)->stocks(
             $parameters ?? new StockSearchParameters([]),
             $accessToken,
         );
@@ -500,17 +499,6 @@ class Client
             $this->accessToken = $accessToken;
         }
         return new Product($this->accessToken ?? '', $this->httpClient);
-    }
-
-    /**
-     * 在庫情報 API のサービスを、引数のアクセストークンを優先して生成する。
-     */
-    private function stockService(?string $accessToken): Stock
-    {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return new Stock($this->accessToken ?? '', $this->httpClient);
     }
 
     /**
