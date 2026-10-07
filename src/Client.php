@@ -45,6 +45,15 @@ use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearc
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 
 use Shimoning\ColorMeShopApi\Services\Product;
+use Shimoning\ColorMeShopApi\Services\Product\Advertising as ProductAdvertisingService;
+use Shimoning\ColorMeShopApi\Services\Product\Category as ProductCategoryService;
+use Shimoning\ColorMeShopApi\Services\Product\Group as ProductGroupService;
+use Shimoning\ColorMeShopApi\Services\Product\Image as ProductImageService;
+use Shimoning\ColorMeShopApi\Services\Product\Option as ProductOptionService;
+use Shimoning\ColorMeShopApi\Services\Product\Option\Value as ProductOptionValueService;
+use Shimoning\ColorMeShopApi\Services\Product\Pickup as ProductPickupService;
+use Shimoning\ColorMeShopApi\Services\Product\Stock as ProductStockService;
+use Shimoning\ColorMeShopApi\Services\Product\Variant as ProductVariantService;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\Group as GroupEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput as ProductGroupInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory as BigCategoryEntity;
@@ -110,7 +119,7 @@ class Client
      */
     public function getProductStockPage(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
-        return $this->productService($accessToken)->stockPage(
+        return $this->productStockService($accessToken)->page(
             $parameters ?? new StockSearchParameters([]),
             $accessToken,
         );
@@ -155,7 +164,7 @@ class Client
         ?VariantSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
-        return $this->productService($accessToken)->variantPage($productId, $parameters, $accessToken);
+        return $this->productVariantService($accessToken)->page($productId, $parameters, $accessToken);
     }
 
     /**
@@ -183,7 +192,7 @@ class Client
         int|string $id,
         ?string $accessToken = null,
     ): ProductVariantEntity|Errors {
-        return $this->productService($accessToken)->variantOne($productId, $id, $accessToken);
+        return $this->productVariantService($accessToken)->one($productId, $id, $accessToken);
     }
 
     /**
@@ -197,7 +206,7 @@ class Client
      */
     public function getProductImages(int|string $productId, ?string $accessToken = null): Collection|Errors
     {
-        return $this->productService($accessToken)->imageAll($productId, $accessToken);
+        return $this->productImageService($accessToken)->all($productId, $accessToken);
     }
 
     /**
@@ -215,7 +224,7 @@ class Client
         ?string $accessToken = null,
     ): Page|Errors
     {
-        return $this->productService($accessToken)->advertisingPage($parameters, $accessToken);
+        return $this->productAdvertisingService($accessToken)->page($parameters, $accessToken);
     }
 
     /**
@@ -236,7 +245,7 @@ class Client
      */
     public function getProductGroup(int|string $id, ?string $accessToken = null): GroupEntity|Errors
     {
-        return $this->productService($accessToken)->groupOne($id, $accessToken);
+        return $this->productGroupService($accessToken)->one($id, $accessToken);
     }
 
     /**
@@ -285,7 +294,7 @@ class Client
         ProductVariantUpdateInput $input,
         ?string $accessToken = null,
     ): ProductVariantEntity|Errors {
-        return $this->productService($accessToken)->updateVariant($productId, $id, $input, $accessToken);
+        return $this->productVariantService($accessToken)->update($productId, $id, $input, $accessToken);
     }
 
     /**
@@ -301,7 +310,7 @@ class Client
         ProductOptionCreateInput $input,
         ?string $accessToken = null,
     ): ProductOptionEntity|Errors {
-        return $this->productService($accessToken)->createOption($productId, $input, $accessToken);
+        return $this->productOptionService($accessToken)->create($productId, $input, $accessToken);
     }
 
     /**
@@ -314,7 +323,7 @@ class Client
      */
     public function deleteProductOption(int|string $productId, int|string $id, ?string $accessToken = null): NoContent|Errors
     {
-        return $this->productService($accessToken)->deleteOption($productId, $id, $accessToken);
+        return $this->productOptionService($accessToken)->delete($productId, $id, $accessToken);
     }
 
     /**
@@ -331,7 +340,7 @@ class Client
         ProductOptionValueCreateInput $input,
         ?string $accessToken = null,
     ): ProductOptionValueEntity|Errors {
-        return $this->productService($accessToken)->createOptionValue($productId, $optionId, $input, $accessToken);
+        return $this->productOptionValueService($accessToken)->create($productId, $optionId, $input, $accessToken);
     }
 
     /**
@@ -348,7 +357,7 @@ class Client
         int|string $id,
         ?string $accessToken = null,
     ): NoContent|Errors {
-        return $this->productService($accessToken)->deleteOptionValue($productId, $optionId, $id, $accessToken);
+        return $this->productOptionValueService($accessToken)->delete($productId, $optionId, $id, $accessToken);
     }
 
     /**
@@ -364,7 +373,7 @@ class Client
         ProductPickupInput $input,
         ?string $accessToken = null,
     ): ProductPickupEntity|Errors {
-        return $this->productService($accessToken)->createPickup($productId, $input, $accessToken);
+        return $this->productPickupService($accessToken)->create($productId, $input, $accessToken);
     }
 
     /**
@@ -380,7 +389,7 @@ class Client
         ProductPickupInput $input,
         ?string $accessToken = null,
     ): ProductPickupEntity|Errors {
-        return $this->productService($accessToken)->updatePickup($productId, $input, $accessToken);
+        return $this->productPickupService($accessToken)->update($productId, $input, $accessToken);
     }
 
     /**
@@ -399,7 +408,7 @@ class Client
         PickupType|int|string $pickupType,
         ?string $accessToken = null,
     ): ProductPickupEntity|Errors {
-        return $this->productService($accessToken)->deletePickup($productId, $pickupType, $accessToken);
+        return $this->productPickupService($accessToken)->delete($productId, $pickupType, $accessToken);
     }
 
     /**
@@ -420,7 +429,7 @@ class Client
         ?string $accessToken = null,
         ?string $filename = null,
     ): ProductImageEntity|Errors {
-        return $this->productService($accessToken)->createImage($productId, $image, $position, $accessToken, $filename);
+        return $this->productImageService($accessToken)->create($productId, $image, $position, $accessToken, $filename);
     }
 
     /**
@@ -433,7 +442,7 @@ class Client
      */
     public function deleteProductImage(int|string $productId, int $position, ?string $accessToken = null): NoContent|Errors
     {
-        return $this->productService($accessToken)->deleteImage($productId, $position, $accessToken);
+        return $this->productImageService($accessToken)->delete($productId, $position, $accessToken);
     }
 
     /**
@@ -449,7 +458,7 @@ class Client
      */
     public function createProductGroup(ProductGroupInput $input, ?string $accessToken = null): GroupEntity|Errors
     {
-        return $this->productService($accessToken)->createGroup($input, $accessToken);
+        return $this->productGroupService($accessToken)->create($input, $accessToken);
     }
 
     /**
@@ -465,7 +474,7 @@ class Client
         ProductGroupInput $input,
         ?string $accessToken = null,
     ): GroupEntity|Errors {
-        return $this->productService($accessToken)->updateGroup($id, $input, $accessToken);
+        return $this->productGroupService($accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -479,7 +488,7 @@ class Client
      */
     public function createProductCategory(ProductCategoryInput $input, ?string $accessToken = null): BigCategoryEntity|Errors
     {
-        return $this->productService($accessToken)->createCategory($input, $accessToken);
+        return $this->productCategoryService($accessToken)->create($input, $accessToken);
     }
 
     /**
@@ -496,7 +505,7 @@ class Client
         ProductCategoryInput $input,
         ?string $accessToken = null,
     ): BigCategoryEntity|Errors {
-        return $this->productService($accessToken)->updateCategory($id, $input, $accessToken);
+        return $this->productCategoryService($accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -513,7 +522,7 @@ class Client
         ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategoryEntity|Errors {
-        return $this->productService($accessToken)->createCategoryChild($categoryId, $input, $accessToken);
+        return $this->productCategoryService($accessToken)->createChild($categoryId, $input, $accessToken);
     }
 
     /**
@@ -531,15 +540,65 @@ class Client
         ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategoryEntity|Errors {
-        return $this->productService($accessToken)->updateCategoryChild($categoryId, $id, $input, $accessToken);
+        return $this->productCategoryService($accessToken)->updateChild($categoryId, $id, $input, $accessToken);
     }
 
     private function productService(?string $accessToken): Product
     {
+        return new Product($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productVariantService(?string $accessToken): ProductVariantService
+    {
+        return new ProductVariantService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productOptionService(?string $accessToken): ProductOptionService
+    {
+        return new ProductOptionService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productOptionValueService(?string $accessToken): ProductOptionValueService
+    {
+        return new ProductOptionValueService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productPickupService(?string $accessToken): ProductPickupService
+    {
+        return new ProductPickupService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productImageService(?string $accessToken): ProductImageService
+    {
+        return new ProductImageService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productGroupService(?string $accessToken): ProductGroupService
+    {
+        return new ProductGroupService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productCategoryService(?string $accessToken): ProductCategoryService
+    {
+        return new ProductCategoryService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productAdvertisingService(?string $accessToken): ProductAdvertisingService
+    {
+        return new ProductAdvertisingService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function productStockService(?string $accessToken): ProductStockService
+    {
+        return new ProductStockService($this->effectiveAccessToken($accessToken), $this->httpClient);
+    }
+
+    private function effectiveAccessToken(?string $accessToken): string
+    {
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return new Product($this->accessToken ?? '', $this->httpClient);
+        return $this->accessToken ?? '';
     }
 
     /**
@@ -989,7 +1048,7 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return (new Product($this->accessToken ?? '', $this->httpClient))->groupAll();
+        return $this->productGroupService($accessToken)->all($accessToken);
     }
 
     /**
@@ -1007,6 +1066,6 @@ class Client
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return (new Product($this->accessToken ?? '', $this->httpClient))->categoryAll();
+        return $this->productCategoryService($accessToken)->all($accessToken);
     }
 }
