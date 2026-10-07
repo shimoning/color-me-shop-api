@@ -164,8 +164,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 variantPage() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Variant::page() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function variants(int|string $productId, ?VariantSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
@@ -185,8 +186,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 variantOne() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Variant::one() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function variant(int|string $productId, int|string $id, ?string $accessToken = null): Variant|Errors
     {
@@ -207,8 +209,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 imageAll() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Image::all() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function images(int|string $productId, ?string $accessToken = null): Collection|Errors
     {
@@ -230,8 +233,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 advertisingPage() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Advertising::page() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function advertisings(?AdvertisingSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
@@ -251,8 +255,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 groupOne() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Group::one() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function group(int|string $id, ?string $accessToken = null): Group|Errors
     {
@@ -274,8 +279,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 groupAll() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Group::all() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function groups(?string $accessToken = null): Collection|Errors
     {
@@ -298,8 +304,9 @@ class Product extends Service
     }
 
     /**
-     * @deprecated 0.25.0 categoryAll() を使うこと。
+     * @deprecated 0.25.0 Services\Product\Category::all() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
+     * @see docs/adr/0034-split-product-service.md
      */
     public function categories(?string $accessToken = null): Collection|Errors
     {

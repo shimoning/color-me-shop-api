@@ -127,13 +127,25 @@ class DeprecatedMethodAliasesTest extends TestCase
     public function test_deprecatedメソッドのPHPDocが移行先とADRを示す(
         string $class,
         string $oldName,
+        string $newClass,
         string $newName,
     ): void {
         $document = (new ReflectionMethod($class, $oldName))->getDocComment();
+        $newDocument = (new ReflectionMethod($newClass, $newName))->getDocComment();
+        $migration = $class === $newClass
+            ? $newName . '()'
+            : \str_replace('Shimoning\\ColorMeShopApi\\', '', $newClass) . '::' . $newName . '()';
 
         $this->assertIsString($document);
-        $this->assertStringContainsString('@deprecated 0.25.0 ' . $newName . '() を使うこと。', $document);
+        $this->assertStringContainsString('@deprecated 0.25.0 ' . $migration . ' を使うこと。', $document);
         $this->assertStringContainsString('@see docs/adr/0033-unify-client-and-service-method-names.md', $document);
+        if ($class !== $newClass) {
+            $this->assertStringContainsString('@see docs/adr/0034-split-product-service.md', $document);
+        }
+        $this->assertTrue(
+            $newDocument === false || !\str_contains($newDocument, '@deprecated'),
+            $migration . ' は非推奨でないこと。',
+        );
     }
 
     /**
@@ -143,10 +155,11 @@ class DeprecatedMethodAliasesTest extends TestCase
     public function test_deprecatedメソッドのシグネチャは新名と一致する(
         string $class,
         string $oldName,
+        string $newClass,
         string $newName,
     ): void {
         $oldMethod = new ReflectionMethod($class, $oldName);
-        $newMethod = new ReflectionMethod($class, $newName);
+        $newMethod = new ReflectionMethod($newClass, $newName);
         $oldParameters = $oldMethod->getParameters();
         $newParameters = $newMethod->getParameters();
         $methodContext = \sprintf('%s::%s() と %s()', $class, $oldName, $newName);
@@ -300,7 +313,7 @@ class DeprecatedMethodAliasesTest extends TestCase
         ];
     }
 
-    /** @return array<string, array{class-string, string, string}> */
+    /** @return array<string, array{class-string, string, class-string, string}> */
     public static function deprecatedPhpDocProvider(): array
     {
         $cases = [];
@@ -308,7 +321,17 @@ class DeprecatedMethodAliasesTest extends TestCase
             $class = \str_starts_with($name, 'Client::')
                 ? Client::class
                 : (\str_starts_with($name, 'Product::') ? Product::class : OAuth::class);
-            $cases[$name] = [$class, $oldName, $newName];
+            [$newClass, $directName] = match ($name) {
+                'Product::variants' => [ProductVariant::class, 'page'],
+                'Product::variant' => [ProductVariant::class, 'one'],
+                'Product::images' => [ProductImage::class, 'all'],
+                'Product::advertisings' => [ProductAdvertising::class, 'page'],
+                'Product::group' => [ProductGroup::class, 'one'],
+                'Product::groups' => [ProductGroup::class, 'all'],
+                'Product::categories' => [ProductCategory::class, 'all'],
+                default => [$class, $newName],
+            };
+            $cases[$name] = [$class, $oldName, $newClass, $directName];
         }
         return $cases;
     }
