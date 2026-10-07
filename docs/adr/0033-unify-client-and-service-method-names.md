@@ -85,3 +85,4 @@
 - [ADR 0032: 在庫の Service を Services\Product に統合する](0032-merge-stock-service-into-product-service.md)
 - 実装とテストの出典コミット: `27bf9d7`
 - 商品の Service のサブ Service への分割: [ADR 0034](0034-split-product-service.md)
+- ページングの旧名を全件取得に切り替える予定の取り消し: [ADR 0035](0035-follow-api-without-client-side-features.md)
