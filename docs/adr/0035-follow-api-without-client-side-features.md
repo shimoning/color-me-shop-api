@@ -22,6 +22,11 @@
 | `GET /v1/customers` | 10 | 100 |
 | `GET /v1/product_advertisings` | 50 | 250 |
 
+同日に実 API で確かめたところ、既定値はすべて公式 OpenAPI のとおりで、上限を超える `limit` はエラーにならず
+上限に丸められた。ただしバリエーション一覧の上限は、公式 OpenAPI の 50 ではなく 100 だった。いずれの API でも、
+上限を超える件数を 1 回で取得することはできない。詳細は[ページングの limit の実測記録](../api-pagination-limit-observation.md)
+にある。出典: `7688418`。
+
 全件取得をライブラリで作るには、`offset` を進めながら繰り返し呼び出す必要がある。公式 OpenAPI は、
 アクセストークンごとに 1 分あたり 120 リクエストを目安とし、超えたリクエストを 429 で拒否するとしている。
 繰り返しの呼び出しでは、429 の再試行、途中のエラーの扱い、件数が多いときのメモリの扱いを、ライブラリが
@@ -60,3 +65,4 @@
 - [ADR 0033: Client と Service のメソッド名を整理する](0033-unify-client-and-service-method-names.md)
 - 公式 OpenAPI: `https://api.shop-pro.jp/v1/spec/open_api.json`（2026-10-07 に取得）
 - README の予定の取り消しの出典コミット: `57f9c34`
+- [ページングの limit の実測記録](../api-pagination-limit-observation.md)（出典コミット: `7688418`）
