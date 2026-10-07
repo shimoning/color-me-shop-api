@@ -88,11 +88,13 @@ class DeprecatedMethodAliasesTest extends TestCase
         string $newName,
     ): void {
         $document = (new ReflectionMethod(Product::class, $oldName))->getDocComment();
+        $newMethod = new ReflectionMethod($newClass, $newName);
         $migration = \str_replace('Shimoning\\ColorMeShopApi\\', '', $newClass) . '::' . $newName . '()';
 
         $this->assertIsString($document);
         $this->assertStringContainsString('@deprecated 0.26.0 ' . $migration . ' を使うこと。', $document);
         $this->assertStringContainsString('@see docs/adr/0034-split-product-service.md', $document);
+        $this->assertMethodIsNotDeprecated($newMethod, $migration);
     }
 
     /**
@@ -131,7 +133,7 @@ class DeprecatedMethodAliasesTest extends TestCase
         string $newName,
     ): void {
         $document = (new ReflectionMethod($class, $oldName))->getDocComment();
-        $newDocument = (new ReflectionMethod($newClass, $newName))->getDocComment();
+        $newMethod = new ReflectionMethod($newClass, $newName);
         $migration = $class === $newClass
             ? $newName . '()'
             : \str_replace('Shimoning\\ColorMeShopApi\\', '', $newClass) . '::' . $newName . '()';
@@ -142,10 +144,7 @@ class DeprecatedMethodAliasesTest extends TestCase
         if ($class !== $newClass) {
             $this->assertStringContainsString('@see docs/adr/0034-split-product-service.md', $document);
         }
-        $this->assertTrue(
-            $newDocument === false || !\str_contains($newDocument, '@deprecated'),
-            $migration . ' は非推奨でないこと。',
-        );
+        $this->assertMethodIsNotDeprecated($newMethod, $migration);
     }
 
     /**
@@ -392,6 +391,16 @@ class DeprecatedMethodAliasesTest extends TestCase
         $this->assertSame(
             self::reflectionTypeToString($newMethod->getReturnType()),
             self::reflectionTypeToString($oldMethod->getReturnType()),
+        );
+    }
+
+    private function assertMethodIsNotDeprecated(ReflectionMethod $method, string $migration): void
+    {
+        $document = $method->getDocComment();
+
+        $this->assertTrue(
+            $document === false || !\str_contains($document, '@deprecated'),
+            $migration . ' は非推奨でないこと。',
         );
     }
 
