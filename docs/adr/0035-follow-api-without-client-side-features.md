@@ -67,3 +67,4 @@
 - 公式 OpenAPI: `https://api.shop-pro.jp/v1/spec/open_api.json`（2026-10-07 に取得）
 - README の予定の取り消しの出典コミット: `57f9c34`
 - [ページングの limit の実測記録](../api-pagination-limit-observation.md)（出典コミット: `7688418`）
+- limit の値オブジェクトによる検証: [ADR 0036](0036-validate-limit-per-api.md)
