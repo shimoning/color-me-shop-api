@@ -53,5 +53,6 @@
 
 ## 関連
 
-- [ColorMe Shop API 商品応答構造の実測記録](api-product-structure.md)（商品一覧の `limit=100` が 50 に丸められた観測）
+- [ColorMe Shop API 商品応答構造の実測記録](api-product-structure.md)（商品一覧の `limit=100` が 50 に丸められ、
+  バリエーション一覧の `limit=100` が `meta.limit=100` で返った以前の観測）
 - [ADR 0035: 公式 API にない機能をライブラリで作らない](adr/0035-follow-api-without-client-side-features.md)
