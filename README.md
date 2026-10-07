@@ -1180,7 +1180,7 @@ $pagination->getOffset();
 
 `Services\Product` の取得メソッドも、`page()` / `one()` と、サブリソースの `<対象>Page()` / `<対象>One()` / `<対象>All()` に揃えた (`products()` → `page()`、`variants()` → `variantPage()`、`groups()` → `groupAll()` など)。`Services\OAuth::exchangeCode2Token()` は `exchangeCodeForToken()` にした。
 
-旧メソッド名は非推奨として残しており、新しいメソッドに委譲する。次のメジャーな変更で削除する。ページングの `getProducts()` などの旧名は、ページを順にたどる全件取得を実装するときに、全件を返すメソッドとして使う予定である。
+旧メソッド名は非推奨として残しており、新しいメソッドに委譲する。次のメジャーな変更で削除する。ページングの `getProducts()` などの旧名も、意味を変えずに非推奨のまま削除する。公式 API に全件取得がないため、ページを順にたどる全件取得はライブラリでは提供しない ([ADR 0035](docs/adr/0035-follow-api-without-client-side-features.md))。
 
 ### Service の整理
 
