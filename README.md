@@ -1156,6 +1156,8 @@ $pagination->getOffset();
 | `Services\Product\Advertising` | `page()` |
 | `Services\Product\Stock` | `page()` |
 
+カテゴリーの応答が期待した形でないときの `InvalidFieldException` のメッセージは、発生元のクラス名が `Services\Product\Category` になった (例外の型は変わらない)。
+
 `Services\Product` には商品本体の `page()` / `one()` / `create()` / `update()` を残した。サブリソースのメソッド (`variantPage()`、`createGroup()`、`stockPage()` など 24 個) は非推奨とし、対応するサブ Service に委譲する。次のメジャーな変更で削除する。
 
 ## 0.25.0 の変更

@@ -28,6 +28,10 @@
   - `Services\Product\Advertising`（`page`）、`Services\Product\Stock`（`page`）
 - メソッド名は、ADR 0033 の Service の規則（クラス名にあたる対象を省き、`page` / `one` / `all` を使う）に
   従う。引数の名前・型・既定値・戻り値・挙動は、移す元のメソッドと同じにする。出典: `416c5c3`。
+- ただし、カテゴリーの応答が期待した形でないときの `InvalidFieldException` のメッセージは、発生元のクラス名が
+  `Services\Product` から `Services\Product\Category` に変わる。非推奨の `Services\Product` のメソッドを経由しても
+  同じである。発生元は実際に処理するサブ Service の方が正確であり、0.24.0 の改名（ADR 0029）と同じく、例外
+  メッセージのクラス名が変わることは受け入れて記録する。例外の型は変わらない。出典: `416c5c3`。
 - 補助処理は、それを使うサブ Service に移す。出典: `416c5c3`。
 - **サブ Service を公開の入口とする。** `Client` も内部でサブ Service を使う。`Client` の公開メソッドは
   変えない。出典: `416c5c3`。
@@ -56,6 +60,8 @@
 - `Services\Product`（クラス）と `Services\Product\`（名前空間）、非推奨の `Services\Stock` と
   `Services\Product\Stock` が並ぶ。両方を使うファイルでは `use ... as` が必要になる
 - 非推奨のメソッドを削除するまで、`Services\Product` は委譲のためのメソッドを抱える
+- カテゴリーの応答が不正なときの例外メッセージに含まれるクラス名が `Services\Product\Category` になる。
+  メッセージの文字列を照合しているコードは互換でない
 
 ## 関連
 

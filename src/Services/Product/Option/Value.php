@@ -37,10 +37,11 @@ class Value extends Service
 
     /**
      * オプション値を削除する。成功は 204 でボディがないため NoContent を返す。
-     * 実測では最後の1件の削除は 422 で、`field` のない Errors になる。
+     * 実測では最後の1件の削除は 422 で、`field` のない Errors になる (2026-09-20)。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
      *
+     * @see docs/api-product-structure.md
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
