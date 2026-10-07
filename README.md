@@ -25,6 +25,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [在庫](#在庫)
   * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
+* [0.27.0 の変更](#0270-の変更)
 * [0.26.0 の変更](#0260-の変更)
 * [0.25.0 の変更](#0250-の変更)
 * [0.14.0 の変更](#0140-の変更)
@@ -212,6 +213,7 @@ $limit->get(); // 50
 
 * `Values\DateTime`: `YYYY-MM-DD` または `YYYY-MM-DD hh:mm:ss` 形式の文字列、もしくは `DateTimeInterface` を受け付ける
 * `Values\Furigana`: `ァ`〜`ヶ`、長音符、半角・全角スペースと空文字を受け付ける (`^[ァ-ヶー 　]*$`)。公式 OpenAPI が許容する `ヷヸヹヺ` は、2026-09-25 の実 API で422拒否を確認したため除外している
+* `Values\Limit`: 1 〜 100 を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する (下の表)
 
 `Values\Furigana` は `Values\FallbackValue` を実装しており、**応答側では検証に通らない値でも生の文字列を保持する**。管理画面から `ヷヸヹヺ` を入力した顧客は、API の応答で HTML 数値文字参照 (`&#12535;` など) を含む文字列を返すためである。この場合も顧客の取得と一覧取得は失敗せず、`isValid()` で妥当性を判定できる。
 
@@ -645,7 +647,7 @@ if ($productsOrErrors instanceof Errors) {
 }
 ```
 
-`ids` と `group_ids` は整数配列で指定し、クエリではカンマ区切りになる。商品一覧の `limit` は API 側で最大 50 件。
+`ids` と `group_ids` は整数配列で指定し、クエリではカンマ区切りになる。商品一覧の `limit` は 1 〜 50 で、範囲外は送信前に `InvalidFieldException` になる。
 `fields` を `id,name` のように絞ると、応答には指定した商品フィールドだけが含まれる。
 省略された nullable フィールドの getter は `null` を返し、非 nullable フィールドの getter は `MissingFieldException` を投げる。
 
@@ -684,7 +686,7 @@ if (! $variantOrErrors instanceof Errors) {
 }
 ```
 
-バリエーション一覧の既定 `limit` は 10 件。検索条件の `model_number` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
+バリエーション一覧の既定 `limit` は 10 件で、指定できるのは 1 〜 100 (公式 OpenAPI の最大は 50 だが、実 API は 100 を受け付ける)。検索条件の `model_number` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
 
 #### 画像と商品広告を取得
 ```php
@@ -714,7 +716,7 @@ if (! $advertisingsOrErrors instanceof Errors) {
 }
 ```
 
-`product_ids` は整数配列で指定し、クエリではカンマ区切りになる。広告一覧の既定 `limit` は 50 件、OpenAPI 上の最大値は 250 件。
+`product_ids` は整数配列で指定し、クエリではカンマ区切りになる。広告一覧の既定 `limit` は 50 件で、指定できるのは 1 〜 250。
 
 画像専用 GET の要素は `url` と `position` を持つ `Product\Image\Image`。商品本体の `images` 要素 (`src` / `mobile` / `position`) とは別構造。
 
@@ -1054,7 +1056,7 @@ if ($stocksOrErrors instanceof Errors) {
 }
 ```
 
-在庫 API は商品検索専用のパラメータや不正な `display_state` を渡しても**エラーにせず黙って無視する**ため、`Product\SearchParameters` は流用せず、在庫 API が受け付ける 11 パラメータ（`ids` / `category_id_big` / `category_id_small` / `model_number` / `name` / `display_state` / `stocks` / `recent_zero_stocks` / `fields` / `limit` / `offset`）だけを持つ `Product\Stock\SearchParameters` を使う。`limit` の上限は 50 で、超える値を指定すると API 側で 50 に丸められる。`fields` で応答のキーを絞った場合、除外した非 null フィールドの getter は商品 API と同じく `MissingFieldException` を投げる。
+在庫 API は商品検索専用のパラメータや不正な `display_state` を渡しても**エラーにせず黙って無視する**ため、`Product\SearchParameters` は流用せず、在庫 API が受け付ける 11 パラメータ（`ids` / `category_id_big` / `category_id_small` / `model_number` / `name` / `display_state` / `stocks` / `recent_zero_stocks` / `fields` / `limit` / `offset`）だけを持つ `Product\Stock\SearchParameters` を使う。`limit` は 1 〜 50 で、範囲外は送信前に `InvalidFieldException` になる (API は上限を超える値を 50 に丸めるが、ライブラリでは拒否する)。`fields` で応答のキーを絞った場合、除外した非 null フィールドの getter は商品 API と同じく `MissingFieldException` を投げる。
 
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
@@ -1137,6 +1139,23 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.27.0 の変更
+
+### 一覧取得の limit の検証
+
+一覧取得の検索条件の `limit` を、API ごとの上限を持つ値オブジェクトで検証するようにした ([ADR 0036](docs/adr/0036-validate-limit-per-api.md))。上限は実 API で確かめた値で、下限は 1 である ([ページングの limit の実測記録](docs/api-pagination-limit-observation.md))。範囲外の値は、検索条件の生成時に `InvalidFieldException` になる。
+
+| 検索条件 | 値オブジェクト | 範囲 |
+| --- | --- | --- |
+| `Entities\Product\SearchParameters` | `Values\Product\Limit` | 1 〜 50 |
+| `Entities\Product\Stock\SearchParameters` | `Values\Product\Stock\Limit` | 1 〜 50 |
+| `Entities\Product\Variant\SearchParameters` | `Values\Product\Variant\Limit` | 1 〜 100 |
+| `Entities\Product\Advertising\SearchParameters` | `Values\Product\Advertising\Limit` | 1 〜 250 |
+| `Entities\Sale\SearchParameters` | `Values\Sale\Limit` | 1 〜 100 |
+| `Entities\Customer\SearchParameters` | `Values\Customer\Limit` | 1 〜 100 |
+
+これまで API が上限に丸めていた値 (在庫の 51 〜 100、商品の 51 以上、バリエーションの 101 以上、商品広告の 251 以上) と、商品・バリエーション・商品広告の 0 以下は、送信前に拒否されるようになる。`limit` は整数で指定する (値オブジェクトのインスタンスは受け付けない)。
 
 ## 0.26.0 の変更
 
