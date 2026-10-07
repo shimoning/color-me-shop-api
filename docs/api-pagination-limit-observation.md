@@ -43,11 +43,28 @@
 
 既定値は、6 つの API すべてで公式 OpenAPI の記述と一致した。
 
+### 0 以下の `limit`
+
+同日に、6 つの API に `limit=0` と `limit=-1` を送った。
+
+| API | `limit=0` | `limit=-1` |
+| --- | --- | --- |
+| `GET /v1/products` | 200、要素 0 件、`meta.limit=0`、`meta.total=10` | 200、要素 0 件、`meta.limit=0` |
+| `GET /v1/stocks` | 200、要素 0 件、`meta.limit=0`、`meta.total=2` | 200、要素 0 件、`meta.limit=0` |
+| `GET /v1/products/{product_id}/variants` | 200、要素 0 件、`meta.limit=0`、`meta.total=2` | 200、要素 0 件、`meta.limit=0` |
+| `GET /v1/sales` | 200、要素 0 件、`meta.limit=0`、`meta.total=1` | 200、要素 0 件、`meta.limit=0` |
+| `GET /v1/customers` | 200、要素 0 件、`meta.limit=0`、`meta.total=10` | 200、要素 0 件、`meta.limit=0` |
+| `GET /v1/product_advertisings` | 200、要素 0 件、`meta.limit=0`、`meta.total=10` | 200、要素 0 件、`meta.limit=0` |
+
+**0 以下の `limit` も、どの API でもエラーにならず、`meta.limit` は 0 になって要素は返らなかった。** `meta.total` は
+`limit` を指定しない場合と同じ値だった。顧客一覧の公式 OpenAPI の schema には `minimum: 1` があるが、実 API は
+0 も負の値も受け付けた。
+
 ## 確かめていないこと
 
 - 観測に使ったショップの件数は、どの API も全部で 10 件以下だった。返った要素の件数は丸めた後の上限に届かず、
   上限の件数まで実際に要素が返るかは確かめていない。上限は `meta.limit` で判断した
-- `limit` に 0 以下の値や整数でない値を送った場合
+- `limit` に整数でない値を送った場合
 - バリエーション一覧で、上限 100 が商品やバリエーションの数によって変わるか
 - 観測は 1 ショップ、各 API について 1 回である
 
