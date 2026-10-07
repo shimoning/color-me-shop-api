@@ -27,12 +27,12 @@ class ProductClientReadTest extends TestCase
     public static function routes(): array
     {
         return [
-            ['getProducts', [new ProductSearchParameters([])], '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products'],
+            ['getProductPage', [new ProductSearchParameters([])], '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products'],
             ['getProduct', [101], '{"product":{"id":101}}', '/v1/products/101'],
-            ['getProductVariants', [101], '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products/101/variants'],
+            ['getProductVariantPage', [101], '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}', '/v1/products/101/variants'],
             ['getProductVariant', [101, 301], '{"variant":{"id":301}}', '/v1/products/101/variants/301'],
             ['getProductImages', [101], '{"product":{"id":101,"images":[]}}', '/v1/products/101/images'],
-            ['getProductAdvertisings', [], '{"product_advertisings":[]}', '/v1/product_advertisings'],
+            ['getProductAdvertisingPage', [], '{"product_advertisings":[]}', '/v1/product_advertisings'],
             ['getProductGroup', [401], '{"group":{"id":401}}', '/v1/groups/401'],
         ];
     }
@@ -42,7 +42,7 @@ class ProductClientReadTest extends TestCase
         $mock = HttpMock::json(200, '{"product_advertisings":[],"meta":{"total":51,"limit":1,"offset":50}}');
         $client = new Client('token', $mock->client());
 
-        $page = $client->getProductAdvertisings(new ProductAdvertisingSearchParameters(['limit' => 1, 'offset' => 50]));
+        $page = $client->getProductAdvertisingPage(new ProductAdvertisingSearchParameters(['limit' => 1, 'offset' => 50]));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(51, $page->getTotal());
@@ -54,7 +54,7 @@ class ProductClientReadTest extends TestCase
         $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
         $client = new Client('token', $mock->client());
 
-        $client->getProductVariants(101, new VariantSearchParameters([
+        $client->getProductVariantPage(101, new VariantSearchParameters([
             'model_number' => 'TEST', 'fields' => 'id,model_number',
         ]));
 

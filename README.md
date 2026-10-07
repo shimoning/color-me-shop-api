@@ -25,6 +25,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [在庫](#在庫)
   * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
+* [0.25.0 の変更](#0250-の変更)
 * [0.14.0 の変更](#0140-の変更)
 * [未実装](#未実装)
 * [開発者向け](#開発者向け)
@@ -294,7 +295,7 @@ if (! is_string($code)) {
     throw new \RuntimeException('認可コードを取得できませんでした。');
 }
 
-$result = (new Client())->exchangeCode2Token($oAuthOptions, $code);
+$result = (new Client())->exchangeCodeForToken($oAuthOptions, $code);
 if ($result instanceof OAuthErrorResponse) {
     $result->getError();            // OAuth エラーコード (必須)
     $result->getErrorDescription(); // 人間が読める補足説明
@@ -328,7 +329,7 @@ OAuth の必須・任意フィールドが不正な型の場合や、既知の�
 
 0.19.0 で `ErrorResponse` から `state` プロパティを削除し、`toArray()` と `toArrayRecursive()` の出力から `state` キーを外した ([ADR 0021](docs/adr/0021-drop-state-from-token-error-response.md))。`getState()` は非推奨として残しており、応答に文字列の `state` があればそれを返し、なければ `null` を返す。次のメジャーな変更で削除する。応答に含まれた `state` は `getRaw()` から取得できる。
 
-0.9.0 では `Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` の戻り値が
+0.9.0 では `Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` (0.25.0 で `exchangeCodeForToken()` に改名) の戻り値が
 `AccessToken|Errors` から `AccessToken|ErrorResponse|Errors` へ変わるため、OAuth エラーを
 `Errors` だけで判定していたコードには破壊的変更となる。
 
@@ -364,10 +365,10 @@ $searchParameters = new SaleSearchParameters([
     'limit' => 50,
     'offset' => 0,
 ]);
-$salesOrErrors = $client->getSales($searchParameters);
+$salesOrErrors = $client->getSalePage($searchParameters);
 
 // 検索条件を省略し、メソッドの引数でアクセストークンを設定する場合
-$salesOrErrors = (new Client())->getSales(null, $token);
+$salesOrErrors = (new Client())->getSalePage(null, $token);
 
 if ($salesOrErrors instanceof Errors) {
     // エラー処理
@@ -385,7 +386,7 @@ if ($salesOrErrors instanceof Errors) {
 
 #### 売上集計の取得
 ```php
-$statOrErrors = $client->statSales(new \DateTimeImmutable('2024-01-01'));
+$statOrErrors = $client->getSaleStat(new \DateTimeImmutable('2024-01-01'));
 
 if ($statOrErrors instanceof Errors) {
     // エラー処理
@@ -398,7 +399,7 @@ if ($statOrErrors instanceof Errors) {
 }
 ```
 
-`getDate()` は `statSales()` に渡した基準日の 00:00 (JST) を `DateTimeImmutable` で返す。API は unixtime で返すため、元の整数が必要なら `getRaw()` から取得できる。
+`getDate()` は `getSaleStat()` に渡した基準日の 00:00 (JST) を `DateTimeImmutable` で返す。API は unixtime で返すため、元の整数が必要なら `getRaw()` から取得できる。
 
 集計は基準日を起点とした 3 つの固定期間に限られ、任意の日数範囲には対応していない。
 
@@ -502,7 +503,7 @@ if ($canceledSaleOrErrors instanceof Errors) {
 送信できるメール種別は `MailType::ACCEPTED`、`MailType::PAID`、`MailType::DELIVERED`。
 
 ```php
-$sentOrErrors = $client->sendSalesMail($saleId, MailType::DELIVERED);
+$sentOrErrors = $client->sendSaleMail($saleId, MailType::DELIVERED);
 
 if ($sentOrErrors instanceof Errors) {
     // エラー処理
@@ -521,10 +522,10 @@ $searchParameters = new CustomerSearchParameters([
     'limit' => 50,
     'offset' => 0,
 ]);
-$customersOrErrors = $client->getCustomers($searchParameters);
+$customersOrErrors = $client->getCustomerPage($searchParameters);
 
 // 検索条件を省略する場合
-$customersOrErrors = $client->getCustomers();
+$customersOrErrors = $client->getCustomerPage();
 
 if ($customersOrErrors instanceof Errors) {
     // エラー処理
@@ -541,7 +542,7 @@ if ($customersOrErrors instanceof Errors) {
 }
 ```
 
-`Client::getCustomers()` は、内部で `Services\Customer::page(SearchParameters $searchParameters, ?string $accessToken = null)` を呼び出す。
+`Client::getCustomerPage()` は、内部で `Services\Customer::page(SearchParameters $searchParameters, ?string $accessToken = null)` を呼び出す。
 
 #### 顧客データの取得
 ```php
@@ -625,7 +626,7 @@ $parameters = new ProductSearchParameters([
     'limit' => 50,
     'offset' => 0,
 ]);
-$productsOrErrors = $client->getProducts($parameters);
+$productsOrErrors = $client->getProductPage($parameters);
 
 if ($productsOrErrors instanceof Errors) {
     // エラー処理
@@ -667,7 +668,7 @@ $variantParameters = new VariantSearchParameters([
     'limit' => 10,
     'offset' => 0,
 ]);
-$variantsOrErrors = $client->getProductVariants(101, $variantParameters);
+$variantsOrErrors = $client->getProductVariantPage(101, $variantParameters);
 if (! $variantsOrErrors instanceof Errors) {
     foreach ($variantsOrErrors as $variant) {
         $variant->getTitle();
@@ -700,7 +701,7 @@ $advertisingParameters = new AdvertisingSearchParameters([
     'limit' => 25,
     'offset' => 50,
 ]);
-$advertisingsOrErrors = $client->getProductAdvertisings($advertisingParameters);
+$advertisingsOrErrors = $client->getProductAdvertisingPage($advertisingParameters);
 if (! $advertisingsOrErrors instanceof Errors) {
     foreach ($advertisingsOrErrors as $advertising) {
         $advertising->getProductId();
@@ -863,7 +864,7 @@ if ($groupsOrErrors instanceof Errors) {
 }
 ```
 
-`Client::getProductGroups()` は、内部で `Services\Product::groups(?string $accessToken = null)` を呼び出す。
+`Client::getProductGroups()` は、内部で `Services\Product::groupAll(?string $accessToken = null)` を呼び出す。
 
 #### 商品グループを作成・更新
 作成と更新は同じ `GroupInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。
@@ -922,7 +923,7 @@ if ($categoriesOrErrors instanceof Errors) {
 }
 ```
 
-`Client::getProductCategories()` は、内部で `Services\Product::categories(?string $accessToken = null)` を呼び出す。
+`Client::getProductCategories()` は、内部で `Services\Product::categoryAll(?string $accessToken = null)` を呼び出す。
 `meta_tag` が省略または `null` の場合、`Category::getMetaTag()` は `null` を返す。
 
 #### 商品カテゴリーを作成・更新
@@ -1023,7 +1024,7 @@ if ($settingOrErrors instanceof Errors) {
 ### 在庫
 #### 在庫情報を検索
 ```php
-$stocksOrErrors = $client->getStocks(new StockSearchParameters([
+$stocksOrErrors = $client->getProductStockPage(new StockSearchParameters([
     'stocks' => 5,                 // 在庫数が 5 以下
     'recent_zero_stocks' => true,  // 過去 1 週間以内にオプションが更新された商品
     'display_state' => 'showing',
@@ -1031,7 +1032,7 @@ $stocksOrErrors = $client->getStocks(new StockSearchParameters([
 ]));
 
 // 検索条件を省略する場合
-$stocksOrErrors = $client->getStocks();
+$stocksOrErrors = $client->getProductStockPage();
 
 if ($stocksOrErrors instanceof Errors) {
     // エラー処理
@@ -1056,7 +1057,7 @@ if ($stocksOrErrors instanceof Errors) {
 
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
-`Client::getStocks()` は、内部で `Services\Product::stocks(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。`Services\Stock` は 0.25.0 で非推奨にした。`Services\Stock::page()` は `Services\Product::stocks()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
+`Client::getProductStockPage()` は、内部で `Services\Product::stockPage(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。`Services\Stock` は 0.25.0 で非推奨にした。`Services\Stock::page()` は `Services\Product::stockPage()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
 ### ギフト
 #### ギフト設定を取得
 ```php
@@ -1095,7 +1096,7 @@ if ($giftOrErrors instanceof Errors) {
 * `getOffset()`: 取得開始位置
 
 ```php
-$customersOrErrors = $client->getCustomers(new CustomerSearchParameters([
+$customersOrErrors = $client->getCustomerPage(new CustomerSearchParameters([
     'limit' => 50,
     'offset' => 100,
 ]));
@@ -1135,6 +1136,32 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.25.0 の変更
+
+### メソッド名の整理
+
+`Client` の一覧取得は、ページングするもの (`Page` を返す) を `get<対象>Page()`、全件を返すもの (`Collection` を返す) を `get<対象の複数形>()` とした。あわせて、取得系の動詞を `get` に揃え、受注 1 件を対象とするメソッドを単数形にした ([ADR 0033](docs/adr/0033-unify-client-and-service-method-names.md))。
+
+| 旧メソッド名 | 新メソッド名 |
+| --- | --- |
+| `getProducts()` | `getProductPage()` |
+| `getStocks()` | `getProductStockPage()` |
+| `getProductVariants()` | `getProductVariantPage()` |
+| `getProductAdvertisings()` | `getProductAdvertisingPage()` |
+| `getSales()` | `getSalePage()` |
+| `getCustomers()` | `getCustomerPage()` |
+| `statSales()` | `getSaleStat()` |
+| `sendSalesMail()` | `sendSaleMail()` |
+| `exchangeCode2Token()` | `exchangeCodeForToken()` |
+
+`Services\Product` の取得メソッドも、`page()` / `one()` と、サブリソースの `<対象>Page()` / `<対象>One()` / `<対象>All()` に揃えた (`products()` → `page()`、`variants()` → `variantPage()`、`groups()` → `groupAll()` など)。`Services\OAuth::exchangeCode2Token()` は `exchangeCodeForToken()` にした。
+
+旧メソッド名は非推奨として残しており、新しいメソッドに委譲する。次のメジャーな変更で削除する。ページングの `getProducts()` などの旧名は、ページを順にたどる全件取得を実装するときに、全件を返すメソッドとして使う予定である。
+
+### Service の整理
+
+受注の `Services\Sales` を `Services\Sale` に改名した。旧名は非推奨の別名として残している ([ADR 0031](docs/adr/0031-rename-sales-service-to-sale.md)、[非推奨のクラス名の対応表](docs/class-aliases.md))。在庫一覧の取得は `Services\Product` に統合し、`Services\Stock` を非推奨にした ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
 
 ## 0.14.0 の変更
 

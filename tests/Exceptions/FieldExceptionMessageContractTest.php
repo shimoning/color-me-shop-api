@@ -379,7 +379,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 self::site('src/Services/Product.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
                     $mock = HttpMock::json(200, '{"categories":[null]}');
-                    (new Product('my-token', $mock->client()))->categories();
+                    (new Product('my-token', $mock->client()))->categoryAll();
                 },
                 \TypeError::class,
             ],

@@ -51,3 +51,4 @@ Service のクラス名がすべて単数形になり、受注の Entity の名�
 - [ADR 0030: Entity の名前空間を API の URL に沿わせる](0030-place-entities-by-api-path.md)
 - [非推奨のクラス名の対応表](../class-aliases.md)
 - 実装とテストの出典コミット: `be4f286`
+- 在庫の Service の統合: [ADR 0032](0032-merge-stock-service-into-product-service.md)

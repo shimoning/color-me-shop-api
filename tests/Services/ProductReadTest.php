@@ -29,7 +29,7 @@ class ProductReadTest extends TestCase
             'meta' => ['total' => 1, 'limit' => 50, 'offset' => 0],
         ]));
 
-        $page = (new Product('token', $mock->client()))->products(new ProductSearchParameters([
+        $page = (new Product('token', $mock->client()))->page(new ProductSearchParameters([
             'ids' => [101, 102], 'group_ids' => [301, 302], 'limit' => 100,
         ]));
 
@@ -44,7 +44,7 @@ class ProductReadTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":20,"offset":0}}');
 
-        (new Product('token', $mock->client()))->products(new ProductSearchParameters([
+        (new Product('token', $mock->client()))->page(new ProductSearchParameters([
             'name' => null,
             'limit' => 20,
         ]));
@@ -56,12 +56,12 @@ class ProductReadTest extends TestCase
     {
         $fixture = self::fixtureArray('products_read.json');
         $productMock = HttpMock::json(200, json_encode(['product' => $fixture['product']]));
-        $product = (new Product('token', $productMock->client()))->product('101');
+        $product = (new Product('token', $productMock->client()))->one('101');
         $this->assertInstanceOf(ProductEntity::class, $product);
         $this->assertSame('https://api.shop-pro.jp/v1/products/101', $productMock->uri());
 
         $variantMock = HttpMock::json(200, json_encode(['variant' => $fixture['variant']]));
-        $variant = (new Product('token', $variantMock->client()))->variant(101, 301);
+        $variant = (new Product('token', $variantMock->client()))->variantOne(101, 301);
         $this->assertInstanceOf(Variant::class, $variant);
         $this->assertNull($variant->getOption2());
         $this->assertSame('https://api.shop-pro.jp/v1/products/101/variants/301', $variantMock->uri());
@@ -70,7 +70,7 @@ class ProductReadTest extends TestCase
     public function test_商品一覧の射影応答は省略されたnullableと非nullableを区別する(): void
     {
         $mock = HttpMock::json(200, self::fixture('products_projection.json'));
-        $page = (new Product('token', $mock->client()))->products(new ProductSearchParameters(['fields' => 'id,name']));
+        $page = (new Product('token', $mock->client()))->page(new ProductSearchParameters(['fields' => 'id,name']));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(['fields' => 'id,name'], $mock->query());
@@ -90,7 +90,7 @@ class ProductReadTest extends TestCase
             'meta' => ['total' => 16, 'limit' => 100, 'offset' => 10],
         ]));
 
-        $page = (new Product('token', $mock->client()))->variants(101, new VariantSearchParameters([
+        $page = (new Product('token', $mock->client()))->variantPage(101, new VariantSearchParameters([
             'limit' => 100, 'offset' => 10,
         ]));
         $this->assertInstanceOf(Page::class, $page);
@@ -105,7 +105,7 @@ class ProductReadTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
-        (new Product('token', $mock->client()))->variants(101, new VariantSearchParameters([
+        (new Product('token', $mock->client()))->variantPage(101, new VariantSearchParameters([
             'model_number' => 'TEST', 'fields' => 'id,model_number',
         ]));
 
@@ -117,7 +117,7 @@ class ProductReadTest extends TestCase
         $fixture = self::fixtureArray('products_read.json');
         $mock = HttpMock::json(200, json_encode(['product' => ['id' => 101, 'images' => [$fixture['product_image']]]]));
 
-        $images = (new Product('token', $mock->client()))->images(101);
+        $images = (new Product('token', $mock->client()))->imageAll(101);
         $this->assertInstanceOf(Collection::class, $images);
         $this->assertInstanceOf(ProductImageEntity::class, $images[0]);
         $this->assertSame('/v1/products/101/images', $mock->request()->getUri()->getPath());
@@ -126,11 +126,11 @@ class ProductReadTest extends TestCase
     public function test_画像ゼロ枚とバリエーション既定件数を扱える(): void
     {
         $imagesMock = HttpMock::json(200, '{"product":{"id":101,"images":[]}}');
-        $images = (new Product('token', $imagesMock->client()))->images(101);
+        $images = (new Product('token', $imagesMock->client()))->imageAll(101);
         $this->assertSame(0, $images->count());
 
         $variantsMock = HttpMock::json(200, '{"variants":[],"meta":{"total":16,"limit":10,"offset":0}}');
-        $variants = (new Product('token', $variantsMock->client()))->variants(101);
+        $variants = (new Product('token', $variantsMock->client()))->variantPage(101);
         $this->assertSame(10, $variants->getLimit());
         $this->assertSame([], $variantsMock->query());
     }
@@ -142,7 +142,7 @@ class ProductReadTest extends TestCase
             'product_advertisings' => [$fixture['advertising']],
             'meta' => ['total' => 61, 'limit' => 25, 'offset' => 50],
         ]));
-        $ads = (new Product('token', $adMock->client()))->advertisings(new ProductAdvertisingSearchParameters([
+        $ads = (new Product('token', $adMock->client()))->advertisingPage(new ProductAdvertisingSearchParameters([
             'product_ids' => [101, 102], 'display_state' => 'showing', 'limit' => 25, 'offset' => 50,
         ]));
         $this->assertInstanceOf(Page::class, $ads);
@@ -156,7 +156,7 @@ class ProductReadTest extends TestCase
         $this->assertSame('/v1/product_advertisings', $adMock->request()->getUri()->getPath());
 
         $groupMock = HttpMock::json(200, '{"group":{"id":401,"name":"テストグループ"}}');
-        $group = (new Product('token', $groupMock->client()))->group(401);
+        $group = (new Product('token', $groupMock->client()))->groupOne(401);
         $this->assertInstanceOf(Group::class, $group);
         $this->assertSame(401, $group->getId());
         $this->assertSame('/v1/groups/401', $groupMock->request()->getUri()->getPath());
@@ -173,9 +173,9 @@ class ProductReadTest extends TestCase
     public static function errorMethodProvider(): array
     {
         return [
-            ['products', [new ProductSearchParameters([])]], ['product', [999]],
-            ['variants', [999]], ['variant', [999, 999]],
-            ['images', [999]], ['advertisings', []], ['group', [999]],
+            ['page', [new ProductSearchParameters([])]], ['one', [999]],
+            ['variantPage', [999]], ['variantOne', [999, 999]],
+            ['imageAll', [999]], ['advertisingPage', []], ['groupOne', [999]],
         ];
     }
 }

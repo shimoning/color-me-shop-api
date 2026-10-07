@@ -27,7 +27,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('stocks_page.json'));
 
-        $page = (new Product('token', $mock->client()))->stocks(new StockSearchParameters([
+        $page = (new Product('token', $mock->client()))->stockPage(new StockSearchParameters([
             'ids' => [101, 102],
             'display_state' => 'showing',
             'recent_zero_stocks' => true,
@@ -59,7 +59,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 
-        $result = (new Product('token', $mock->client()))->stocks(new StockSearchParameters([]));
+        $result = (new Product('token', $mock->client()))->stockPage(new StockSearchParameters([]));
 
         $this->assertInstanceOf(Errors::class, $result);
     }
@@ -70,7 +70,7 @@ class ProductTest extends TestCase
         unset($response['meta']);
         $mock = HttpMock::json(200, \json_encode($response, \JSON_THROW_ON_ERROR));
 
-        $page = (new Product('token', $mock->client()))->stocks(new StockSearchParameters([]));
+        $page = (new Product('token', $mock->client()))->stockPage(new StockSearchParameters([]));
         $getters = [
             'getTotal' => static fn(Page $page): int => $page->getTotal(),
             'getLimit' => static fn(Page $page): int => $page->getLimit(),
@@ -101,14 +101,14 @@ class ProductTest extends TestCase
     public function test_stocks引数のアクセストークンが空なら送信前に例外になる(): void
     {
         $this->expectException(ParameterException::class);
-        (new Product('constructor-token'))->stocks(new StockSearchParameters([]), '');
+        (new Product('constructor-token'))->stockPage(new StockSearchParameters([]), '');
     }
 
     public function test_stocks引数のアクセストークンを優先する(): void
     {
         $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
-        (new Product('constructor-token', $mock->client()))->stocks(
+        (new Product('constructor-token', $mock->client()))->stockPage(
             new StockSearchParameters([]),
             'argument-token',
         );
@@ -122,7 +122,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('groups.json'));
 
-        $groups = (new Product('my-token', $mock->client()))->groups();
+        $groups = (new Product('my-token', $mock->client()))->groupAll();
 
         $this->assertInstanceOf(Collection::class, $groups);
         $this->assertSame(2, $groups->count());
@@ -142,7 +142,7 @@ class ProductTest extends TestCase
             . '{"id":2,"account_id":"my-shop","name":"新着商品","display_state":"showing","parent_group_id":null}'
             . ']}');
 
-        $groups = (new Product('my-token', $mock->client()))->groups();
+        $groups = (new Product('my-token', $mock->client()))->groupAll();
 
         $this->assertInstanceOf(Collection::class, $groups);
         $this->assertSame(GroupDisplayState::MEMBER_ONLY, $groups[0]->getDisplayState());
@@ -153,7 +153,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"group":{"id":1,"account_id":"my-shop","name":"会員限定","display_state":"members_only","parent_group_id":null}}');
 
-        $group = (new Product('my-token', $mock->client()))->group(1);
+        $group = (new Product('my-token', $mock->client()))->groupOne(1);
 
         $this->assertInstanceOf(Group::class, $group);
         $this->assertSame(GroupDisplayState::MEMBER_ONLY, $group->getDisplayState());
@@ -163,7 +163,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('groups.json'));
 
-        (new Product('my-token', $mock->client()))->groups();
+        (new Product('my-token', $mock->client()))->groupAll();
 
         $this->assertSame('https://api.shop-pro.jp/v1/groups', $mock->uri());
         $this->assertSame('Bearer my-token', $mock->header('Authorization'));
@@ -173,14 +173,14 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, '{}');
 
-        $this->assertSame(0, (new Product('my-token', $mock->client()))->groups()->count());
+        $this->assertSame(0, (new Product('my-token', $mock->client()))->groupAll()->count());
     }
 
     public function test_商品グループのエラーレスポンス(): void
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 
-        $this->assertInstanceOf(Errors::class, (new Product('my-token', $mock->client()))->groups());
+        $this->assertInstanceOf(Errors::class, (new Product('my-token', $mock->client()))->groupAll());
     }
 
     // --- categories -------------------------------------------------------
@@ -189,7 +189,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, self::fixture('categories.json'));
 
-        $categories = (new Product('my-token', $mock->client()))->categories();
+        $categories = (new Product('my-token', $mock->client()))->categoryAll();
 
         $this->assertSame(1, $categories->count());
         $this->assertContainsOnlyInstancesOf(BigCategory::class, $categories->all());
@@ -199,7 +199,7 @@ class ProductTest extends TestCase
     public function test_子カテゴリーにはchildrenのgetterがない(): void
     {
         $mock = HttpMock::json(200, '{"categories":[{"id_small":0,"children":[{"id_big":1,"id_small":1}]}]}');
-        $categories = (new Product('my-token', $mock->client()))->categories();
+        $categories = (new Product('my-token', $mock->client()))->categoryAll();
         $child = $categories[0]->getChildren()[0];
 
         $this->assertInstanceOf(SmallCategory::class, $child);
@@ -210,7 +210,7 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, '{"categories":[{"id_small":1}]}');
 
-        $categories = (new Product('my-token', $mock->client()))->categories();
+        $categories = (new Product('my-token', $mock->client()))->categoryAll();
 
         $this->assertSame(1, $categories->count());
         $this->assertInstanceOf(SmallCategory::class, $categories[0]);
@@ -222,7 +222,7 @@ class ProductTest extends TestCase
 
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('id_small');
-        (new Product('my-token', $mock->client()))->categories();
+        (new Product('my-token', $mock->client()))->categoryAll();
     }
 
     #[DataProvider('invalidTopLevelCategoryProvider')]
@@ -233,7 +233,7 @@ class ProductTest extends TestCase
         $mock = HttpMock::json(200, $body);
 
         try {
-            (new Product('my-token', $mock->client()))->categories();
+            (new Product('my-token', $mock->client()))->categoryAll();
             $this->fail('不正なカテゴリー要素が受理されました。');
         } catch (InvalidFieldException $exception) {
             $this->assertStringContainsString($field, $exception->getMessage());
@@ -257,14 +257,14 @@ class ProductTest extends TestCase
         $mock = HttpMock::json(200, '{"categories":"invalid"}');
 
         $this->expectException(ParameterException::class);
-        (new Product('my-token', $mock->client()))->categories();
+        (new Product('my-token', $mock->client()))->categoryAll();
     }
 
     public function test_商品カテゴリーは正しいエンドポイントにGETする(): void
     {
         $mock = HttpMock::json(200, self::fixture('categories.json'));
 
-        (new Product('my-token', $mock->client()))->categories();
+        (new Product('my-token', $mock->client()))->categoryAll();
 
         $this->assertSame('https://api.shop-pro.jp/v1/categories', $mock->uri());
     }
@@ -273,13 +273,13 @@ class ProductTest extends TestCase
     {
         $mock = HttpMock::json(200, '{}');
 
-        $this->assertSame(0, (new Product('my-token', $mock->client()))->categories()->count());
+        $this->assertSame(0, (new Product('my-token', $mock->client()))->categoryAll()->count());
     }
 
     public function test_商品カテゴリーのエラーレスポンス(): void
     {
         $mock = HttpMock::json(401, self::fixture('errors_401.json'));
 
-        $this->assertInstanceOf(Errors::class, (new Product('my-token', $mock->client()))->categories());
+        $this->assertInstanceOf(Errors::class, (new Product('my-token', $mock->client()))->categoryAll());
     }
 }
