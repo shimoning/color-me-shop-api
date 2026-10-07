@@ -9,6 +9,8 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
  */
 class Limit implements Value
 {
+    protected const MAX = 100;
+
     private int $_limit = 10;
 
     /**
@@ -19,7 +21,11 @@ class Limit implements Value
     public function __construct(int $limit)
     {
         if (! $this->validate($limit)) {
-            throw new ParameterException('件数は 1 ~ 100 の間で指定してください。 : '  . $limit);
+            throw new ParameterException(\sprintf(
+                '件数は 1 ~ %d の間で指定してください。 : %d',
+                static::MAX,
+                $limit,
+            ));
         }
         $this->_limit = $limit;
     }
@@ -42,6 +48,6 @@ class Limit implements Value
      */
     public function validate(mixed $value): bool
     {
-        return 0 < $value && $value <= 100;
+        return 0 < $value && $value <= static::MAX;
     }
 }

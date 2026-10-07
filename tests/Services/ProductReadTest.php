@@ -30,14 +30,14 @@ class ProductReadTest extends TestCase
         ]));
 
         $page = (new Product('token', $mock->client()))->page(new ProductSearchParameters([
-            'ids' => [101, 102], 'group_ids' => [301, 302], 'limit' => 100,
+            'ids' => [101, 102], 'group_ids' => [301, 302], 'limit' => 50,
         ]));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertInstanceOf(ProductEntity::class, $page[0]);
         $this->assertSame(50, $page->getLimit());
         $this->assertSame('/v1/products', $mock->request()->getUri()->getPath());
-        $this->assertSame(['ids' => '101,102', 'group_ids' => '301,302', 'limit' => '100'], $mock->query());
+        $this->assertSame(['ids' => '101,102', 'group_ids' => '301,302', 'limit' => '50'], $mock->query());
     }
 
     public function test_商品一覧の検索条件で明示したnullはクエリから省略する(): void

@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Product\Stock\Limit as StockLimit;
 
 /**
  * 在庫一覧 GET の検索条件。
@@ -19,7 +20,7 @@ class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
-        'limit' => ['value' => Limit::class],
+        'limit' => ['value' => StockLimit::class],
         'ids' => ['array' => true, 'scalar' => 'int'],
     ];
 

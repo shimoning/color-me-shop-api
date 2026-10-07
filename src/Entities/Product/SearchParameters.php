@@ -8,11 +8,12 @@ use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\DateTime;
+use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Product\Limit as ProductLimit;
 
 /**
  * 商品一覧 GET の検索条件。
  * ids / group_ids は OpenAPI の説明に従い整数配列をカンマ区切りで送る。
- * 商品一覧 limit の API 上限は 50。
  *
  * @see docs/api-product-structure.md
  */
@@ -26,6 +27,7 @@ class SearchParameters extends Entity implements RequestEntity
         'updateDateMax' => ['value' => DateTime::class],
         'ids' => ['array' => true, 'scalar' => 'int'],
         'groupIds' => ['array' => true, 'scalar' => 'int'],
+        'limit' => ['value' => ProductLimit::class, 'allowNull' => true],
     ];
 
     /** @var list<int>|null */
@@ -58,7 +60,7 @@ class SearchParameters extends Entity implements RequestEntity
      * 省略された非 nullable フィールドの getter は MissingFieldException を投げる。
      */
     protected ?string $fields;
-    protected ?int $limit;
+    protected ?Limit $limit;
     protected ?int $offset;
 
     public function getDisplayState(): ?ProductDisplayState

@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\DateTime;
 use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Customer\Limit as CustomerLimit;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 
 /**
@@ -39,7 +40,7 @@ class SearchParameters extends Entity implements RequestEntity
         ],
 
         'limit' => [
-            'value' => Limit::class,
+            'value' => CustomerLimit::class,
         ],
         'ids' => ['array' => true, 'scalar' => 'int'],
     ];
