@@ -46,3 +46,4 @@
 - [ADR 0030: Entity の名前空間を API の URL に沿わせる](0030-place-entities-by-api-path.md)
 - 実装とテストの出典コミット: `5e03b5c`
 - `Services\Product::stocks()` の `stockPage()` への改名: [ADR 0033](0033-unify-client-and-service-method-names.md)
+- 在庫の取得の `Services\Product\Stock` への移動: [ADR 0034](0034-split-product-service.md)

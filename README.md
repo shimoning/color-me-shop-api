@@ -25,6 +25,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [在庫](#在庫)
   * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
+* [0.26.0 の変更](#0260-の変更)
 * [0.25.0 の変更](#0250-の変更)
 * [0.14.0 の変更](#0140-の変更)
 * [未実装](#未実装)
@@ -864,7 +865,7 @@ if ($groupsOrErrors instanceof Errors) {
 }
 ```
 
-`Client::getProductGroups()` は、内部で `Services\Product::groupAll(?string $accessToken = null)` を呼び出す。
+`Client::getProductGroups()` は、内部で `Services\Product\Group::all(?string $accessToken = null)` を呼び出す。
 
 #### 商品グループを作成・更新
 作成と更新は同じ `GroupInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` は「未設定へ戻す」要求として送信される。
@@ -923,7 +924,7 @@ if ($categoriesOrErrors instanceof Errors) {
 }
 ```
 
-`Client::getProductCategories()` は、内部で `Services\Product::categoryAll(?string $accessToken = null)` を呼び出す。
+`Client::getProductCategories()` は、内部で `Services\Product\Category::all(?string $accessToken = null)` を呼び出す。
 `meta_tag` が省略または `null` の場合、`Category::getMetaTag()` は `null` を返す。
 
 #### 商品カテゴリーを作成・更新
@@ -1057,7 +1058,7 @@ if ($stocksOrErrors instanceof Errors) {
 
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
-`Client::getProductStockPage()` は、内部で `Services\Product::stockPage(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。`Services\Stock` は 0.25.0 で非推奨にした。`Services\Stock::page()` は `Services\Product::stockPage()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
+`Client::getProductStockPage()` は、内部で `Services\Product\Stock::page(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。`Services\Stock` は 0.25.0 で非推奨にした。`Services\Stock::page()` は `Services\Product\Stock::page()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
 ### ギフト
 #### ギフト設定を取得
 ```php
@@ -1136,6 +1137,28 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.26.0 の変更
+
+### 商品の Service の分割
+
+`Services\Product` を、Entity の名前空間と同じ単位のサブ Service に分けた ([ADR 0034](docs/adr/0034-split-product-service.md))。`Client` の公開メソッドは変わらない。
+
+| サブ Service | メソッド |
+| --- | --- |
+| `Services\Product\Variant` | `page()` / `one()` / `update()` |
+| `Services\Product\Option` | `create()` / `delete()` |
+| `Services\Product\Option\Value` | `create()` / `delete()` |
+| `Services\Product\Pickup` | `create()` / `update()` / `delete()` |
+| `Services\Product\Image` | `all()` / `create()` / `delete()` |
+| `Services\Product\Group` | `one()` / `all()` / `create()` / `update()` |
+| `Services\Product\Category` | `all()` / `create()` / `update()` / `createChild()` / `updateChild()` |
+| `Services\Product\Advertising` | `page()` |
+| `Services\Product\Stock` | `page()` |
+
+カテゴリーの応答が期待した形でないときの `InvalidFieldException` のメッセージは、発生元のクラス名が `Services\Product\Category` になった (例外の型は変わらない)。
+
+`Services\Product` には商品本体の `page()` / `one()` / `create()` / `update()` を残した。サブリソースのメソッド (`variantPage()`、`createGroup()`、`stockPage()` など 24 個) は非推奨とし、対応するサブ Service に委譲する。次のメジャーな変更で削除する。
 
 ## 0.25.0 の変更
 

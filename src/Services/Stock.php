@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 /**
  * 在庫情報 API を操作するサービス。
  *
- * @deprecated 0.25.0 Services\Product::stockPage() を使うこと。
+ * @deprecated 0.25.0 Services\Product\Stock::page() を使うこと。
  * @see docs/adr/0032-merge-stock-service-into-product-service.md
  */
 class Stock extends Service
@@ -26,6 +26,6 @@ class Stock extends Service
      */
     public function page(SearchParameters $parameters, ?string $accessToken = null): Page|Errors
     {
-        return (new Product($this->_accessToken, $this->_httpClient))->stockPage($parameters, $accessToken);
+        return (new Product\Stock($this->_accessToken, $this->_httpClient))->page($parameters, $accessToken);
     }
 }

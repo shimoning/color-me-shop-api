@@ -84,3 +84,4 @@
 - [ADR 0031: 受注の Service を Services\Sale に改名する](0031-rename-sales-service-to-sale.md)
 - [ADR 0032: 在庫の Service を Services\Product に統合する](0032-merge-stock-service-into-product-service.md)
 - 実装とテストの出典コミット: `27bf9d7`
+- 商品の Service のサブ Service への分割: [ADR 0034](0034-split-product-service.md)

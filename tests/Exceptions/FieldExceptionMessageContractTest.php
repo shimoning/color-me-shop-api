@@ -376,7 +376,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 \UnexpectedValueException::class,
             ],
             'InvalidFieldException::forArrayElement/カテゴリー要素型不一致' => [
-                self::site('src/Services/Product.php', InvalidFieldException::class . '::forArrayElement', 1),
+                self::site('src/Services/Product/Category.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
                     $mock = HttpMock::json(200, '{"categories":[null]}');
                     (new Product('my-token', $mock->client()))->categoryAll();
@@ -460,7 +460,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 null,
             ],
             'InvalidFieldException::for/カテゴリー書き込み応答のcategoryが配列以外' => [
-                self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 1),
+                self::site('src/Services/Product/Category.php', InvalidFieldException::class . '::for', 1),
                 static function (): void {
                     $mock = HttpMock::json(200, '{"category":"x"}');
                     (new Product('my-token', $mock->client()))->updateCategory(
@@ -471,7 +471,7 @@ class FieldExceptionMessageContractTest extends TestCase
                 null,
             ],
             'InvalidFieldException::for/カテゴリー書き込み応答の親子型不一致' => [
-                self::site('src/Services/Product.php', InvalidFieldException::class . '::for', 2),
+                self::site('src/Services/Product/Category.php', InvalidFieldException::class . '::for', 2),
                 static function (): void {
                     $mock = HttpMock::json(201, '{"category":{"id_big":1,"id_small":5}}');
                     (new Product('my-token', $mock->client()))->createCategory(

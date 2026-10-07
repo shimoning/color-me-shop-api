@@ -16,6 +16,15 @@ use Shimoning\ColorMeShopApi\Services\Gift;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Services\Product;
+use Shimoning\ColorMeShopApi\Services\Product\Advertising as ProductAdvertising;
+use Shimoning\ColorMeShopApi\Services\Product\Category as ProductCategory;
+use Shimoning\ColorMeShopApi\Services\Product\Group as ProductGroup;
+use Shimoning\ColorMeShopApi\Services\Product\Image as ProductImage;
+use Shimoning\ColorMeShopApi\Services\Product\Option as ProductOption;
+use Shimoning\ColorMeShopApi\Services\Product\Option\Value as ProductOptionValue;
+use Shimoning\ColorMeShopApi\Services\Product\Pickup as ProductPickup;
+use Shimoning\ColorMeShopApi\Services\Product\Stock as ProductStock;
+use Shimoning\ColorMeShopApi\Services\Product\Variant as ProductVariant;
 use Shimoning\ColorMeShopApi\Services\Sale;
 use Shimoning\ColorMeShopApi\Services\Service;
 use Shimoning\ColorMeShopApi\Services\Shop;
@@ -39,33 +48,33 @@ class AuthScopeDocumentationTest extends TestCase
             'Gift::get' => [Gift::class, 'get', 'getGift', []],
             'Payment::all' => [Payment::class, 'all', 'getPayments', []],
             'Product::page' => [Product::class, 'page', 'getProductPage', [AuthScope::READ_PRODUCTS]],
-            'Product::stockPage' => [Product::class, 'stockPage', 'getProductStockPage', []],
             'Product::one' => [Product::class, 'one', 'getProduct', [AuthScope::READ_PRODUCTS]],
-            'Product::variantPage' => [Product::class, 'variantPage', 'getProductVariantPage', [AuthScope::READ_PRODUCTS]],
-            'Product::variantOne' => [Product::class, 'variantOne', 'getProductVariant', [AuthScope::READ_PRODUCTS]],
-            'Product::imageAll' => [Product::class, 'imageAll', 'getProductImages', [AuthScope::READ_PRODUCTS]],
-            'Product::advertisingPage' => [Product::class, 'advertisingPage', 'getProductAdvertisingPage', [AuthScope::READ_PRODUCTS]],
-            'Product::groupOne' => [Product::class, 'groupOne', 'getProductGroup', []],
-            'Product::groupAll' => [Product::class, 'groupAll', 'getProductGroups', []],
-            'Product::categoryAll' => [Product::class, 'categoryAll', 'getProductCategories', []],
-            'Product::createGroup' => [Product::class, 'createGroup', 'createProductGroup', [AuthScope::WRITE_PRODUCTS]],
-            'Product::updateGroup' => [Product::class, 'updateGroup', 'updateProductGroup', [AuthScope::WRITE_PRODUCTS]],
-            'Product::createCategory' => [Product::class, 'createCategory', 'createProductCategory', [AuthScope::WRITE_PRODUCTS]],
-            'Product::updateCategory' => [Product::class, 'updateCategory', 'updateProductCategory', [AuthScope::WRITE_PRODUCTS]],
-            'Product::createCategoryChild' => [Product::class, 'createCategoryChild', 'createProductCategoryChild', [AuthScope::WRITE_PRODUCTS]],
-            'Product::updateCategoryChild' => [Product::class, 'updateCategoryChild', 'updateProductCategoryChild', [AuthScope::WRITE_PRODUCTS]],
             'Product::create' => [Product::class, 'create', 'createProduct', [AuthScope::WRITE_PRODUCTS]],
             'Product::update' => [Product::class, 'update', 'updateProduct', [AuthScope::WRITE_PRODUCTS]],
-            'Product::updateVariant' => [Product::class, 'updateVariant', 'updateProductVariant', [AuthScope::WRITE_PRODUCTS]],
-            'Product::createOption' => [Product::class, 'createOption', 'createProductOption', [AuthScope::WRITE_PRODUCTS]],
-            'Product::deleteOption' => [Product::class, 'deleteOption', 'deleteProductOption', [AuthScope::WRITE_PRODUCTS]],
-            'Product::createOptionValue' => [Product::class, 'createOptionValue', 'createProductOptionValue', [AuthScope::WRITE_PRODUCTS]],
-            'Product::deleteOptionValue' => [Product::class, 'deleteOptionValue', 'deleteProductOptionValue', [AuthScope::WRITE_PRODUCTS]],
-            'Product::createPickup' => [Product::class, 'createPickup', 'createProductPickup', [AuthScope::WRITE_PRODUCTS]],
-            'Product::updatePickup' => [Product::class, 'updatePickup', 'updateProductPickup', [AuthScope::WRITE_PRODUCTS]],
-            'Product::deletePickup' => [Product::class, 'deletePickup', 'deleteProductPickup', [AuthScope::WRITE_PRODUCTS]],
-            'Product::createImage' => [Product::class, 'createImage', 'createProductImage', [AuthScope::READ_PRODUCTS, AuthScope::WRITE_PRODUCTS]],
-            'Product::deleteImage' => [Product::class, 'deleteImage', 'deleteProductImage', [AuthScope::WRITE_PRODUCTS]],
+            'ProductAdvertising::page' => [ProductAdvertising::class, 'page', 'getProductAdvertisingPage', [AuthScope::READ_PRODUCTS]],
+            'ProductCategory::all' => [ProductCategory::class, 'all', 'getProductCategories', []],
+            'ProductCategory::create' => [ProductCategory::class, 'create', 'createProductCategory', [AuthScope::WRITE_PRODUCTS]],
+            'ProductCategory::update' => [ProductCategory::class, 'update', 'updateProductCategory', [AuthScope::WRITE_PRODUCTS]],
+            'ProductCategory::createChild' => [ProductCategory::class, 'createChild', 'createProductCategoryChild', [AuthScope::WRITE_PRODUCTS]],
+            'ProductCategory::updateChild' => [ProductCategory::class, 'updateChild', 'updateProductCategoryChild', [AuthScope::WRITE_PRODUCTS]],
+            'ProductGroup::one' => [ProductGroup::class, 'one', 'getProductGroup', []],
+            'ProductGroup::all' => [ProductGroup::class, 'all', 'getProductGroups', []],
+            'ProductGroup::create' => [ProductGroup::class, 'create', 'createProductGroup', [AuthScope::WRITE_PRODUCTS]],
+            'ProductGroup::update' => [ProductGroup::class, 'update', 'updateProductGroup', [AuthScope::WRITE_PRODUCTS]],
+            'ProductImage::all' => [ProductImage::class, 'all', 'getProductImages', [AuthScope::READ_PRODUCTS]],
+            'ProductImage::create' => [ProductImage::class, 'create', 'createProductImage', [AuthScope::READ_PRODUCTS, AuthScope::WRITE_PRODUCTS]],
+            'ProductImage::delete' => [ProductImage::class, 'delete', 'deleteProductImage', [AuthScope::WRITE_PRODUCTS]],
+            'ProductOption::create' => [ProductOption::class, 'create', 'createProductOption', [AuthScope::WRITE_PRODUCTS]],
+            'ProductOption::delete' => [ProductOption::class, 'delete', 'deleteProductOption', [AuthScope::WRITE_PRODUCTS]],
+            'ProductOptionValue::create' => [ProductOptionValue::class, 'create', 'createProductOptionValue', [AuthScope::WRITE_PRODUCTS]],
+            'ProductOptionValue::delete' => [ProductOptionValue::class, 'delete', 'deleteProductOptionValue', [AuthScope::WRITE_PRODUCTS]],
+            'ProductPickup::create' => [ProductPickup::class, 'create', 'createProductPickup', [AuthScope::WRITE_PRODUCTS]],
+            'ProductPickup::update' => [ProductPickup::class, 'update', 'updateProductPickup', [AuthScope::WRITE_PRODUCTS]],
+            'ProductPickup::delete' => [ProductPickup::class, 'delete', 'deleteProductPickup', [AuthScope::WRITE_PRODUCTS]],
+            'ProductStock::page' => [ProductStock::class, 'page', 'getProductStockPage', []],
+            'ProductVariant::page' => [ProductVariant::class, 'page', 'getProductVariantPage', [AuthScope::READ_PRODUCTS]],
+            'ProductVariant::one' => [ProductVariant::class, 'one', 'getProductVariant', [AuthScope::READ_PRODUCTS]],
+            'ProductVariant::update' => [ProductVariant::class, 'update', 'updateProductVariant', [AuthScope::WRITE_PRODUCTS]],
             'Sale::page' => [Sale::class, 'page', 'getSalePage', [AuthScope::READ_SALES]],
             'Sale::one' => [Sale::class, 'one', 'getSale', [AuthScope::READ_SALES]],
             'Sale::stat' => [Sale::class, 'stat', 'getSaleStat', [AuthScope::READ_SALES]],
