@@ -213,7 +213,6 @@ $limit->get(); // 50
 
 * `Values\DateTime`: `YYYY-MM-DD` または `YYYY-MM-DD hh:mm:ss` 形式の文字列、もしくは `DateTimeInterface` を受け付ける
 * `Values\Furigana`: `ァ`〜`ヶ`、長音符、半角・全角スペースと空文字を受け付ける (`^[ァ-ヶー 　]*$`)。公式 OpenAPI が許容する `ヷヸヹヺ` は、2026-09-25 の実 API で422拒否を確認したため除外している
-* `Values\Limit`: 1 〜 100 を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する (下の表)
 
 `Values\Furigana` は `Values\FallbackValue` を実装しており、**応答側では検証に通らない値でも生の文字列を保持する**。管理画面から `ヷヸヹヺ` を入力した顧客は、API の応答で HTML 数値文字参照 (`&#12535;` など) を含む文字列を返すためである。この場合も顧客の取得と一覧取得は失敗せず、`isValid()` で妥当性を判定できる。
 
@@ -228,7 +227,7 @@ $furigana->isValid();  // false
 
 要求側では従来どおり検証され、検証に通らない値は拒否される。例外の型は経路によって異なり、値オブジェクトを直接構築した場合は `ParameterException`、`CustomerCreateInput` などの要求 Entity を経由した場合は `InvalidFieldException` に包まれる。
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
-* `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける
+* `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する ([0.27.0 の変更](#0270-の変更))
 
 `SaleSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
 
@@ -1155,7 +1154,7 @@ $pagination->getOffset();
 | `Entities\Sale\SearchParameters` | `Values\Sale\Limit` | 1 〜 100 |
 | `Entities\Customer\SearchParameters` | `Values\Customer\Limit` | 1 〜 100 |
 
-これまで API が上限に丸めていた値 (在庫の 51 〜 100、商品の 51 以上、バリエーションの 101 以上、商品広告の 251 以上) と、商品・バリエーション・商品広告の 0 以下は、送信前に拒否されるようになる。`limit` は整数で指定する (値オブジェクトのインスタンスは受け付けない)。
+これまで API が上限に丸めていた値 (在庫の 51 〜 100、商品の 51 以上、バリエーションの 101 以上、商品広告の 251 以上) と、商品・バリエーション・商品広告の 0 以下 (観測した `0` と `-1` は API で要素が返らなかった) は、送信前に拒否されるようになる。`limit` は整数で指定する (値オブジェクトのインスタンスは受け付けない)。
 
 ## 0.26.0 の変更
 
