@@ -43,28 +43,29 @@
 
 既定値は、6 つの API すべてで公式 OpenAPI の記述と一致した。
 
-### 0 以下の `limit`
+### `limit=0` と `limit=-1`
 
-同日に、6 つの API に `limit=0` と `limit=-1` を送った。
+同日に、6 つの API に `limit=0` と `limit=-1` を送った。どれも HTTP 200 で、要素は 0 件、`meta.limit` は `0` だった。
+表の値は `meta.total` で、比較のため `limit` を指定しない場合の値も並べる。
 
-| API | `limit=0` | `limit=-1` |
-| --- | --- | --- |
-| `GET /v1/products` | 200、要素 0 件、`meta.limit=0`、`meta.total=10` | 200、要素 0 件、`meta.limit=0` |
-| `GET /v1/stocks` | 200、要素 0 件、`meta.limit=0`、`meta.total=2` | 200、要素 0 件、`meta.limit=0` |
-| `GET /v1/products/{product_id}/variants` | 200、要素 0 件、`meta.limit=0`、`meta.total=2` | 200、要素 0 件、`meta.limit=0` |
-| `GET /v1/sales` | 200、要素 0 件、`meta.limit=0`、`meta.total=1` | 200、要素 0 件、`meta.limit=0` |
-| `GET /v1/customers` | 200、要素 0 件、`meta.limit=0`、`meta.total=10` | 200、要素 0 件、`meta.limit=0` |
-| `GET /v1/product_advertisings` | 200、要素 0 件、`meta.limit=0`、`meta.total=10` | 200、要素 0 件、`meta.limit=0` |
+| API | 指定なし | `limit=0` | `limit=-1` |
+| --- | ---: | ---: | ---: |
+| `GET /v1/products` | 10 | 10 | 10 |
+| `GET /v1/stocks` | 2 | 2 | 2 |
+| `GET /v1/products/{product_id}/variants` | 2 | 2 | 2 |
+| `GET /v1/sales` | 1 | 1 | 1 |
+| `GET /v1/customers` | 10 | 10 | 10 |
+| `GET /v1/product_advertisings` | 10 | 10 | 10 |
 
-**0 以下の `limit` も、どの API でもエラーにならず、`meta.limit` は 0 になって要素は返らなかった。** `meta.total` は
-`limit` を指定しない場合と同じ値だった。顧客一覧の公式 OpenAPI の schema には `minimum: 1` があるが、実 API は
-0 も負の値も受け付けた。
+**`limit=0` と `limit=-1` は、どの API でもエラーにならず、`meta.limit` は 0 になって要素は返らなかった。**
+`meta.total` は `limit` を指定しない場合と同じ値だった。顧客一覧の公式 OpenAPI の schema には `minimum: 1` があるが、
+実 API は `0` と `-1` を受け付けた。
 
 ## 確かめていないこと
 
 - 観測に使ったショップの件数は、どの API も全部で 10 件以下だった。返った要素の件数は丸めた後の上限に届かず、
   上限の件数まで実際に要素が返るかは確かめていない。上限は `meta.limit` で判断した
-- `limit` に整数でない値を送った場合
+- `limit` に `-2` 以下の値や、整数でない値を送った場合
 - バリエーション一覧で、上限 100 が商品やバリエーションの数によって変わるか
 - 観測は 1 ショップ、各 API について 1 回である
 
