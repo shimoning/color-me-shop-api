@@ -57,12 +57,15 @@ class ProductClientReadTest extends TestCase
             ->getProductPage(new ProductSearchParameters([
                 'ids' => [101, 102],
                 'group_ids' => [301, 302],
+                'fields' => ['id', 'name'],
             ]));
 
         $this->assertStringContainsString('ids=101%2C102', $mock->uri());
         $this->assertStringNotContainsString('ids%5B0%5D', $mock->uri());
         $this->assertStringContainsString('group_ids=301%2C302', $mock->uri());
         $this->assertStringNotContainsString('group_ids%5B0%5D', $mock->uri());
+        $this->assertStringContainsString('fields=id%2Cname', $mock->uri());
+        $this->assertStringNotContainsString('fields%5B0%5D', $mock->uri());
     }
 
     public function test_getProductAdvertisingPageは複数商品IDをカンマ区切りで送信する(): void
@@ -83,9 +86,11 @@ class ProductClientReadTest extends TestCase
         $client = new Client('token', $mock->client());
 
         $client->getProductVariantPage(101, new VariantSearchParameters([
-            'model_number' => 'TEST', 'fields' => 'id,model_number',
+            'model_number' => 'TEST', 'fields' => ['id', 'name'],
         ]));
 
-        $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());
+        $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,name'], $mock->query());
+        $this->assertStringContainsString('fields=id%2Cname', $mock->uri());
+        $this->assertStringNotContainsString('fields%5B0%5D', $mock->uri());
     }
 }

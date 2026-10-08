@@ -18,7 +18,7 @@ class StockClientTest extends TestCase
 
         $result = (new Client('token', $mock->client()))->getProductStockPage(new SearchParameters([
             'stocks' => 5,
-            'fields' => 'product_id,name,stocks',
+            'fields' => ['id', 'name'],
         ]));
 
         $this->assertInstanceOf(Page::class, $result);
@@ -26,8 +26,10 @@ class StockClientTest extends TestCase
         $this->assertSame('/v1/stocks', $mock->request()->getUri()->getPath());
         $this->assertSame([
             'stocks' => '5',
-            'fields' => 'product_id,name,stocks',
+            'fields' => 'id,name',
         ], $mock->query());
+        $this->assertStringContainsString('fields=id%2Cname', $mock->uri());
+        $this->assertStringNotContainsString('fields%5B0%5D', $mock->uri());
     }
 
     public function test_getStocksは検索条件を省略できる(): void

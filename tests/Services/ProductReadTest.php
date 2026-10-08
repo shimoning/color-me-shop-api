@@ -70,7 +70,7 @@ class ProductReadTest extends TestCase
     public function test_商品一覧の射影応答は省略されたnullableと非nullableを区別する(): void
     {
         $mock = HttpMock::json(200, self::fixture('products_projection.json'));
-        $page = (new Product('token', $mock->client()))->page(new ProductSearchParameters(['fields' => 'id,name']));
+        $page = (new Product('token', $mock->client()))->page(new ProductSearchParameters(['fields' => ['id', 'name']]));
 
         $this->assertInstanceOf(Page::class, $page);
         $this->assertSame(['fields' => 'id,name'], $mock->query());
@@ -106,7 +106,7 @@ class ProductReadTest extends TestCase
         $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
         (new Product('token', $mock->client()))->variantPage(101, new VariantSearchParameters([
-            'model_number' => 'TEST', 'fields' => 'id,model_number',
+            'model_number' => 'TEST', 'fields' => ['id', 'model_number'],
         ]));
 
         $this->assertSame(['model_number' => 'TEST', 'fields' => 'id,model_number'], $mock->query());

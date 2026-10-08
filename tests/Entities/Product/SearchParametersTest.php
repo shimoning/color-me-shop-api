@@ -21,7 +21,7 @@ class SearchParametersTest extends TestCase
             'update_date_max' => '2024-12-31', 'sales_price_min' => 1,
             'sales_price_max' => 2, 'price_min' => 3, 'price_max' => 4,
             'members_price_min' => 5, 'members_price_max' => 6, 'jan_code' => '123',
-            'sort' => '-make_date', 'fields' => 'id,name', 'limit' => 50, 'offset' => 10,
+            'sort' => '-make_date', 'fields' => ['id', 'name'], 'limit' => 50, 'offset' => 10,
         ];
         $parameters = new SearchParameters($input);
 
@@ -33,6 +33,7 @@ class SearchParametersTest extends TestCase
         $this->assertSame(ProductDisplayState::SHOWING, $parameters->getDisplayState());
         $this->assertSame('2024-01-01', $actual['make_date_min']);
         $this->assertSame('id,name', $actual['fields']);
+        $this->assertSame(['id', 'name'], $parameters->toArray()['fields']);
         $this->assertSame(50, $actual['limit']);
     }
 
@@ -45,5 +46,31 @@ class SearchParametersTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         new SearchParameters(['ids' => [101, 'bad']]);
+    }
+
+    public function test_空のfieldsは送らない(): void
+    {
+        $parameters = new SearchParameters(['fields' => []]);
+
+        $this->assertSame([], $parameters->toArray()['fields']);
+        $this->assertSame([], $parameters->toArrayRecursive());
+    }
+
+    /** @dataProvider invalidFieldsProvider */
+    public function test_不正なfieldsを拒否する(mixed $fields): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new SearchParameters(['fields' => $fields]);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidFieldsProvider(): array
+    {
+        return [
+            '文字列' => ['id,name'],
+            '文字列でない要素' => [['id', 1]],
+            'リストでない配列' => [['first' => 'id']],
+        ];
     }
 }

@@ -13,18 +13,37 @@ use Shimoning\ColorMeShopApi\Values\Product\Variant\Limit as VariantLimit;
 
 /**
  * 商品バリエーション一覧 GET の検索条件。
+ * fields は文字列の配列で指定し、クエリではカンマ区切りで送る。
+ *
  * @see docs/api-product-structure.md
+ * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'limit' => ['value' => VariantLimit::class, 'allowNull' => true],
+        'fields' => ['array' => true, 'scalar' => 'string'],
     ];
 
     protected ?string $modelNumber;
-    protected ?string $fields;
+    /** @var list<string>|null */
+    protected ?array $fields;
     protected ?Limit $limit;
     protected ?int $offset;
+
+    /** @return array<string, mixed> */
+    public function toArrayRecursive($ignoreNull = true): array
+    {
+        $parameters = parent::toArrayRecursive($ignoreNull);
+        if (isset($parameters['fields']) && is_array($parameters['fields'])) {
+            if ($parameters['fields'] === []) {
+                unset($parameters['fields']);
+            } else {
+                $parameters['fields'] = implode(',', $parameters['fields']);
+            }
+        }
+        return $parameters;
+    }
 }
 
 // 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
