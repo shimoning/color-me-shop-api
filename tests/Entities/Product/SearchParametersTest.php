@@ -8,7 +8,7 @@ use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
-use Shimoning\ColorMeShopApi\Values\Sort;
+use Shimoning\ColorMeShopApi\Values\Product\Sort;
 
 class SearchParametersTest extends TestCase
 {
@@ -54,6 +54,20 @@ class SearchParametersTest extends TestCase
         $this->assertSame(['sort' => '-sales_price,make_date'], $parameters->toArrayRecursive());
     }
 
+    public function test_sortは商品一覧で使用できる5列を受け付ける(): void
+    {
+        $parameters = new SearchParameters([
+            'sort' => ['make_date', '-update_date', 'sales_price', '-price', 'members_price'],
+        ]);
+
+        $sorts = $parameters->toArray()['sort'];
+        $this->assertContainsOnlyInstancesOf(Sort::class, $sorts);
+        $this->assertSame(
+            ['sort' => 'make_date,-update_date,sales_price,-price,members_price'],
+            $parameters->toArrayRecursive(),
+        );
+    }
+
     public function test_空のsort配列はクエリから除外する(): void
     {
         $parameters = new SearchParameters(['sort' => []]);
@@ -88,6 +102,8 @@ class SearchParametersTest extends TestCase
             'ハイフン2つ' => [['--make_date']],
             '空白' => [['make date']],
             'カンマ' => [['make_date,sales_price']],
+            '仕様にない列' => [['name']],
+            '大文字の列' => [['SALES_PRICE']],
             '空でない連想配列' => [['first' => 'make_date']],
             '整数' => [1],
         ];

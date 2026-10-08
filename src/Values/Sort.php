@@ -15,8 +15,11 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
  *
  * @see docs/api-product-sort-observation.md
  */
-final class Sort implements Value
+class Sort implements Value
 {
+    /** @var list<string>|null */
+    protected const FIELDS = null;
+
     private readonly string $field;
     private readonly SortDirection $direction;
 
@@ -38,6 +41,13 @@ final class Sort implements Value
 
         if (! self::isValidField($field)) {
             throw new ParameterException('並び順の列名の形式が不正です。');
+        }
+
+        if (static::FIELDS !== null && ! \in_array($field, static::FIELDS, true)) {
+            throw new ParameterException(\sprintf(
+                '並び順の列名は次のいずれかを指定してください: %s',
+                \implode(', ', static::FIELDS),
+            ));
         }
 
         $this->field = $field;
@@ -90,7 +100,8 @@ final class Sort implements Value
             $value = \substr($value, 1);
         }
 
-        return self::isValidField($value);
+        return self::isValidField($value)
+            && (static::FIELDS === null || \in_array($value, static::FIELDS, true));
     }
 
     private static function isValidField(string $value): bool
