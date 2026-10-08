@@ -12,12 +12,12 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 
 /**
  * 顧客一覧 GET の検索条件。
- * ids は整数配列で指定し、クエリではカンマ区切りで送る。
+ * ids / fields は配列で指定し、クエリではカンマ区切りで送る。
  *
  * before/after は直感的でないためサポートしない。
  * make_date_max/make_date_min を使用すること。
  *
- * TODO: fields のサポート
+ * 公式 OpenAPI との差分: fields の記載はないが、実 API は受け付ける (2026-10-08)。
  *
  * @see docs/api-search-query-format-observation.md
  */
@@ -48,10 +48,13 @@ class SearchParameters extends Entity implements RequestEntity
             'value' => CustomerLimit::class,
         ],
         'ids' => ['array' => true, 'scalar' => 'int'],
+        'fields' => ['array' => true, 'scalar' => 'string'],
     ];
 
     /** @var list<int>|null */
     protected ?array $ids;
+    /** @var list<string>|null */
+    protected ?array $fields;
 
     protected ?string $name;
     protected ?Furigana $furigana;
@@ -77,11 +80,13 @@ class SearchParameters extends Entity implements RequestEntity
     public function toArrayRecursive($ignoreNull = true): array
     {
         $parameters = parent::toArrayRecursive($ignoreNull);
-        if (isset($parameters['ids']) && is_array($parameters['ids'])) {
-            if ($parameters['ids'] === []) {
-                unset($parameters['ids']);
-            } else {
-                $parameters['ids'] = implode(',', $parameters['ids']);
+        foreach (['ids', 'fields'] as $field) {
+            if (isset($parameters[$field]) && is_array($parameters[$field])) {
+                if ($parameters[$field] === []) {
+                    unset($parameters[$field]);
+                } else {
+                    $parameters[$field] = implode(',', $parameters[$field]);
+                }
             }
         }
         return $parameters;

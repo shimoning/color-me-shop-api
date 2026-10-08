@@ -26,6 +26,7 @@ use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
+use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -507,6 +508,30 @@ class ClientTest extends TestCase
 
         $this->assertStringContainsString('ids=501%2C502', $mock->uri());
         $this->assertStringNotContainsString('ids%5B0%5D', $mock->uri());
+    }
+
+    public function test_getCustomerPageはfieldsをカンマ区切りで送信して部分レスポンスを扱う(): void
+    {
+        $mock = HttpMock::json(200, '{"customers":[{"id":501,"name":"山田太郎"}],"meta":{"total":1,"limit":10,"offset":0}}');
+
+        $page = (new Client('my-token', $mock->client()))
+            ->getCustomerPage(new CustomerSearchParameters(['fields' => ['id', 'name']]));
+
+        $this->assertStringContainsString('fields=id%2Cname', $mock->uri());
+        $this->assertStringNotContainsString('%5B0%5D', $mock->uri());
+
+        $customer = $page->all()[0];
+        $this->assertSame(501, $customer->getId());
+        $this->assertSame('山田太郎', $customer->getName());
+
+        foreach (['getAccountId', 'getPoints', 'isMember', 'getSalesCount', 'getMakeDate', 'getUpdateDate'] as $getter) {
+            try {
+                $customer->{$getter}();
+                $this->fail($getter . ' が MissingFieldException を投げなかった');
+            } catch (MissingFieldException $exception) {
+                $this->assertSame(MissingFieldException::class, $exception::class);
+            }
+        }
     }
 
     public function test_getCustomerは顧客を1件取得する(): void

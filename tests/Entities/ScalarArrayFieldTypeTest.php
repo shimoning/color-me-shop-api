@@ -43,6 +43,7 @@ class ScalarArrayFieldTypeTest extends TestCase
             '受注検索の決済ID' => [SalesSearchParameters::class, 'payment_ids', 'int'],
             '受注検索の取得フィールド' => [SalesSearchParameters::class, 'fields', 'string'],
             '顧客検索の顧客ID' => [CustomerSearchParameters::class, 'ids', 'int'],
+            '顧客検索の取得フィールド' => [CustomerSearchParameters::class, 'fields', 'string'],
         ];
     }
 
