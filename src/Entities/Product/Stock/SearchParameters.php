@@ -12,12 +12,11 @@ use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Values\Product\Stock\Limit as StockLimit;
 
 /**
- * 在庫一覧 GET の検索条件。
- * fields は文字列の配列で指定し、クエリではカンマ区切りで送る。
+ * 在庫一覧 (GET /v1/stocks) の検索条件。
  *
- * 在庫 API は対象外パラメータと不正な display_state を黙って無視するため、
- * 商品検索とは専用クラスを分け、有効なパラメータ集合を型で限定する。
+ * ids は整数の配列、fields は文字列の配列で指定し、クエリではカンマ区切りで送る。
  *
+ * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
@@ -25,8 +24,8 @@ class SearchParameters extends Entity implements RequestEntity
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'limit' => ['value' => StockLimit::class],
-        'ids' => ['array' => true, 'scalar' => 'int'],
-        'fields' => ['array' => true, 'scalar' => 'string'],
+        'ids' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
+        'fields' => ['array' => true, 'scalar' => 'string', 'delimiter' => ','],
     ];
 
     /** @var list<int>|null */
@@ -48,21 +47,6 @@ class SearchParameters extends Entity implements RequestEntity
         return $this->displayState;
     }
 
-    /** @return array<string, mixed> */
-    public function toArrayRecursive($ignoreNull = true): array
-    {
-        $parameters = parent::toArrayRecursive($ignoreNull);
-        foreach (['ids', 'fields'] as $field) {
-            if (isset($parameters[$field]) && is_array($parameters[$field])) {
-                if ($parameters[$field] === []) {
-                    unset($parameters[$field]);
-                } else {
-                    $parameters[$field] = implode(',', $parameters[$field]);
-                }
-            }
-        }
-        return $parameters;
-    }
 }
 
 // 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。

@@ -28,7 +28,8 @@ class Entity
      * フィールドの型と変換方法の定義。
      *
      * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、scalar、配列への変換と null の扱いを
-     * 宣言する。要求では array フィールドにリストを要求する。API のフィールド名は FIELD_NAMES に定義する。
+     * 宣言する。要求では array フィールドにリストを要求し、delimiter 指定の配列は再帰配列化時に連結する。
+     * API のフィールド名は FIELD_NAMES に定義する。
      *
      * @see docs/adr/0023-validate-scalar-array-elements-via-field-types.md
      * @see docs/adr/0025-reject-non-list-arrays-in-requests.md
@@ -487,6 +488,7 @@ class Entity
         self::assertScalarDeclaration($objectField);
         self::assertOrScalarDeclaration($objectField);
         self::assertStrictListDeclaration($objectField);
+        self::assertDelimiterDeclaration($objectField);
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
             if (isset($objectField['orScalar']) && self::isScalarType($value, $objectField['orScalar'])) {
@@ -640,6 +642,27 @@ class Entity
         }
     }
 
+    private static function assertDelimiterDeclaration(mixed $objectField): void
+    {
+        if (! \is_array($objectField) || ! \array_key_exists('delimiter', $objectField)) {
+            return;
+        }
+        if (! \is_string($objectField['delimiter']) || $objectField['delimiter'] === '') {
+            throw new \LogicException('delimiter は空でない文字列を指定してください。');
+        }
+        if (($objectField['array'] ?? null) !== true) {
+            throw new \LogicException('delimiter は array => true と組み合わせて指定してください。');
+        }
+        if (! \in_array($objectField['scalar'] ?? null, ['int', 'string'], true)) {
+            throw new \LogicException('delimiter は scalar と組み合わせて指定してください。');
+        }
+        foreach (['entity', 'value', 'enum', 'orScalar'] as $key) {
+            if (\array_key_exists($key, $objectField)) {
+                throw new \LogicException("delimiter は {$key} と組み合わせて指定できません。");
+            }
+        }
+    }
+
     private static function isScalarType(mixed $value, string $scalar): bool
     {
         return match ($scalar) {
@@ -776,6 +799,8 @@ class Entity
             if (self::isInternalProperty($key)) {
                 continue;
             }
+            $fieldType = static::FIELD_TYPES[$key] ?? null;
+            self::assertDelimiterDeclaration($fieldType);
             if ($request && $requestFields !== null && ! isset($requestFields[$key])) {
                 continue;
             }
@@ -787,7 +812,17 @@ class Entity
                 continue;
             }
             if (\is_array($value)) {
+                if (
+                    \is_array($fieldType)
+                    && \array_key_exists('delimiter', $fieldType)
+                    && $value === []
+                ) {
+                    continue;
+                }
                 $value = array_map([$this, 'parse'], $value);
+                if (\is_array($fieldType) && \array_key_exists('delimiter', $fieldType)) {
+                    $value = \implode($fieldType['delimiter'], $value);
+                }
             } else {
                 $value = $this->parse($value);
             }

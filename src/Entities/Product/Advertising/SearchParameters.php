@@ -13,13 +13,18 @@ use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Values\Product\Advertising\Limit as AdvertisingLimit;
 
 /**
- * 商品広告一覧 GET の検索条件。product_ids は整数配列をカンマ区切りで送る。
+ * 商品広告一覧 (GET /v1/product_advertisings) の検索条件。
+ *
+ * product_ids は整数の配列で指定し、クエリではカンマ区切りで送る。
+ *
+ * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
-        'productIds' => ['array' => true, 'scalar' => 'int'],
+        'productIds' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
         'limit' => ['value' => AdvertisingLimit::class, 'allowNull' => true],
     ];
 
@@ -34,19 +39,6 @@ class SearchParameters extends Entity implements RequestEntity
         return $this->displayState;
     }
 
-    /** @return array<string, mixed> */
-    public function toArrayRecursive($ignoreNull = true): array
-    {
-        $parameters = parent::toArrayRecursive($ignoreNull);
-        if (isset($parameters['product_ids']) && is_array($parameters['product_ids'])) {
-            if ($parameters['product_ids'] === []) {
-                unset($parameters['product_ids']);
-            } else {
-                $parameters['product_ids'] = implode(',', $parameters['product_ids']);
-            }
-        }
-        return $parameters;
-    }
 }
 
 // 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。

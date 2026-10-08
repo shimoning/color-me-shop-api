@@ -79,6 +79,10 @@ class ScalarArrayFieldTypeTest extends TestCase
                 }
 
                 $definition = $class::FIELD_TYPES[$property->getName()] ?? null;
+                // クエリで区切り文字でつなぐ delimiter だけは、型の宣言に加えて指定できる。
+                if (\is_array($definition) && \array_key_exists('delimiter', $definition)) {
+                    unset($definition['delimiter']);
+                }
                 if ($definition !== ['array' => true, 'scalar' => $scalar]) {
                     $violations[] = $id;
                 }
