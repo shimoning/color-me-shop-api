@@ -316,6 +316,25 @@ class ClientTest extends TestCase
         $this->assertStringNotContainsString('ids%5B0%5D', $mock->uri());
     }
 
+    public function test_getSalePageは配列の検索条件をカンマ区切りで送信する(): void
+    {
+        $mock = HttpMock::json(200, self::fixture('sales_page.json'));
+
+        (new Client('my-token', $mock->client()))
+            ->getSalePage(new SalesSearchParameters([
+                'customer_ids' => [501, 502],
+                'payment_ids' => [3, 4],
+                'fields' => ['id', 'paid'],
+            ]));
+
+        $this->assertStringContainsString('customer_ids=501%2C502', $mock->uri());
+        $this->assertStringContainsString('payment_ids=3%2C4', $mock->uri());
+        $this->assertStringContainsString('fields=id%2Cpaid', $mock->uri());
+        $this->assertStringNotContainsString('customer_ids%5B0%5D', $mock->uri());
+        $this->assertStringNotContainsString('payment_ids%5B0%5D', $mock->uri());
+        $this->assertStringNotContainsString('fields%5B0%5D', $mock->uri());
+    }
+
     public function test_getSaleは受注を1件取得する(): void
     {
         $mock = HttpMock::json(200, self::fixture('sale.json'));

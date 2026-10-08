@@ -11,10 +11,15 @@ use Shimoning\ColorMeShopApi\Values\Customer\Limit as CustomerLimit;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 
 /**
+ * 顧客一覧 GET の検索条件。
+ * ids は整数配列で指定し、クエリではカンマ区切りで送る。
+ *
  * before/after は直感的でないためサポートしない。
  * make_date_max/make_date_min を使用すること。
  *
  * TODO: fields のサポート
+ *
+ * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
