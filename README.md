@@ -97,7 +97,6 @@ use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
-use Shimoning\ColorMeShopApi\Constants\SortDirection;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
@@ -131,7 +130,6 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Values\DateTime as ApiDateTime;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
-use Shimoning\ColorMeShopApi\Values\Sort;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 ```
 
@@ -633,7 +631,7 @@ $parameters = new ProductSearchParameters([
     'ids' => [101, 102],
     'group_ids' => [301, 302],
     'display_state' => 'showing',
-    'sort' => [new Sort('sales_price', SortDirection::DESC), new Sort('make_date')],
+    'sort' => ['-sales_price', 'make_date'],
     'limit' => 50,
     'offset' => 0,
 ]);
@@ -1152,12 +1150,14 @@ $pagination->getOffset();
 
 ### 商品一覧の並び順
 
-商品一覧の検索条件の `sort` を、汎用の値オブジェクト `Values\Sort` で指定するようにした ([ADR 0038](docs/adr/0038-represent-sort-with-value-object.md))。`Sort` 1 つか、`Sort` の配列で指定し、クエリでは空白なしのカンマ区切り (`-sales_price,make_date`) で送る。文字列での指定 (`'sort' => '-make_date'`) は、生成時に `InvalidFieldException` になる。
+商品一覧の検索条件の `sort` を、文字列の配列で指定するようにした ([ADR 0038](docs/adr/0038-represent-sort-with-value-object.md))。各要素はカラム名で、`-` で始めると降順になる。内部では各要素を汎用の値オブジェクト `Values\Sort` (カラム名と向きを分けて持つ) にし、クエリでは空白なしのカンマ区切り (`-sales_price,make_date`) で送る。`toArray()` の `sort` は `Values\Sort` の配列になる。
 
 ```php
-new ProductSearchParameters(['sort' => new Sort('-update_date')]);
-new ProductSearchParameters(['sort' => [new Sort('sales_price', SortDirection::DESC), new Sort('make_date')]]);
+new ProductSearchParameters(['sort' => ['-update_date']]);
+new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
 ```
+
+文字列 1 つでの指定 (`'sort' => '-make_date'`) と、`Values\Sort` のインスタンスは、生成時に `InvalidFieldException` になる。
 
 公式 OpenAPI が挙げるカラムは `make_date` / `update_date` / `sales_price` / `price` / `members_price` の 5 つで、2026-10-08 の観測では、それ以外の値はエラーにならず既定の並び (`-make_date`) と同じ結果になった ([商品一覧の sort の実測記録](docs/api-product-sort-observation.md))。
 
