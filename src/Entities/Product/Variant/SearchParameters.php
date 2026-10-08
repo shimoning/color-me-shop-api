@@ -8,20 +8,22 @@ use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Product\Variant\Limit as VariantLimit;
 
 /**
  * 商品バリエーション一覧 GET の検索条件。
- *
- * 公式 OpenAPI との差分: limit の上限を 50 と説明しているが、実 API では 100 (2026-10-07)。
- *
  * @see docs/api-product-structure.md
- * @see docs/api-pagination-limit-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
+    public const FIELD_TYPES = [
+        'limit' => ['value' => VariantLimit::class, 'allowNull' => true],
+    ];
+
     protected ?string $modelNumber;
     protected ?string $fields;
-    protected ?int $limit;
+    protected ?Limit $limit;
     protected ?int $offset;
 }
 

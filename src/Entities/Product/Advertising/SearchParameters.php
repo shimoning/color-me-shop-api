@@ -9,22 +9,24 @@ use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Product\Advertising\Limit as AdvertisingLimit;
 
 /**
  * 商品広告一覧 GET の検索条件。product_ids は整数配列をカンマ区切りで送る。
- * limit の既定値は 50、OpenAPI 上の最大値は 250。
  */
 class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
         'displayState' => ['enum' => ProductDisplayState::class],
         'productIds' => ['array' => true, 'scalar' => 'int'],
+        'limit' => ['value' => AdvertisingLimit::class, 'allowNull' => true],
     ];
 
     /** @var list<int>|null */
     protected ?array $productIds;
     protected ?ProductDisplayState $displayState;
-    protected ?int $limit;
+    protected ?Limit $limit;
     protected ?int $offset;
 
     public function getDisplayState(): ?ProductDisplayState

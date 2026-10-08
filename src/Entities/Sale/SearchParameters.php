@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Values\DateTime;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Sale\Limit as SaleLimit;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 
 /**
@@ -47,7 +48,7 @@ class SearchParameters extends Entity implements RequestEntity
             'enum' => MailState::class,
         ],
         'limit' => [
-            'value' => Limit::class,
+            'value' => SaleLimit::class,
         ],
         'ids' => ['array' => true, 'scalar' => 'int'],
         'customerIds' => ['array' => true, 'scalar' => 'int'],

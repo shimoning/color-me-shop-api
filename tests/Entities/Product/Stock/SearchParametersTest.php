@@ -51,16 +51,14 @@ class SearchParametersTest extends TestCase
         $this->assertSame([], (new SearchParameters(['ids' => []]))->toArrayRecursive());
     }
 
-    public function test_falseの真偽値とAPIが受理する上限超過limitも明示値として送る(): void
+    public function test_falseの真偽値を明示値として送る(): void
     {
         $parameters = new SearchParameters([
             'recent_zero_stocks' => false,
-            'limit' => 100,
         ]);
 
         $this->assertSame([
             'recent_zero_stocks' => false,
-            'limit' => 100,
         ], $parameters->toArrayRecursive());
     }
 
