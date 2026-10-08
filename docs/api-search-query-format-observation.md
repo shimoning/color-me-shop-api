@@ -62,6 +62,25 @@ HTTP 500 の応答は、いずれも `errors[]` の `code` が `500000`、`messa
 
 **配列の形式はエラーにならず、中身のない受注の要素が返った。**
 
+## 顧客一覧の `fields`
+
+公式 OpenAPI の `GET /v1/customers` には `fields` パラメータがない（同日に取得した OpenAPI で、`ids`、`name`、`furigana`、
+`mail`、`postal`、`tel`、`line_uid`、`membership_id`、`sex`、`member`、`receive_mail_magazine`、`make_date_min`、
+`make_date_max`、`update_date_min`、`update_date_max`、`limit`、`offset` の 17 個）。同日に、`limit=2` を付けて次を送った。
+
+| 送った形式 | 応答 |
+| --- | --- |
+| `fields` を指定しない | HTTP 200、2 件、要素のキーは 29 個 |
+| `fields=id,name` | HTTP 200、2 件、要素のキーは `id`、`name` の 2 個 |
+| `fields=id` | HTTP 200、2 件、要素のキーは `id` の 1 個 |
+| 配列の形式（`fields[0]=id&fields[1]=name`） | HTTP 200、2 件、要素はキーを 1 つも持たなかった |
+
+あわせて、顧客の単体取得（`GET /v1/customers/{customer_id}`）に `fields=id,name` を送ると、HTTP 200 で `customer` の
+キーは 2 個だった。
+
+**公式 OpenAPI に記載はないが、実 API の顧客一覧と顧客の単体取得は、カンマ区切りの `fields` で応答のキーを
+絞り込んだ。** 配列の形式は、受注一覧の `fields` と同じく、エラーにならず中身のない要素が返った。
+
 ## 真偽値の項目
 
 PHP の `http_build_query()` は真偽値を `1` / `0` にする。公式 OpenAPI は次の項目を `type: boolean` としている。
