@@ -42,6 +42,13 @@ class SearchParametersTest extends TestCase
         $this->assertSame([], $parameters->toArrayRecursive());
     }
 
+    public function test_fieldsの文字列を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new SearchParameters(['fields' => 'id,name']);
+    }
+
     public function test_fieldsの文字列以外の要素を拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
