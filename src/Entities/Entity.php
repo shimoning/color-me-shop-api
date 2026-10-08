@@ -653,6 +653,14 @@ class Entity
         if (($objectField['array'] ?? null) !== true) {
             throw new \LogicException('delimiter は array => true と組み合わせて指定してください。');
         }
+        if (! \in_array($objectField['scalar'] ?? null, ['int', 'string'], true)) {
+            throw new \LogicException('delimiter は scalar と組み合わせて指定してください。');
+        }
+        foreach (['entity', 'value', 'enum', 'orScalar'] as $key) {
+            if (\array_key_exists($key, $objectField)) {
+                throw new \LogicException("delimiter は {$key} と組み合わせて指定できません。");
+            }
+        }
     }
 
     private static function isScalarType(mixed $value, string $scalar): bool

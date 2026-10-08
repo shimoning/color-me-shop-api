@@ -885,6 +885,37 @@ class EntityTest extends TestCase
             'non string' => [['array' => true, 'delimiter' => 1]],
             'without array' => [['delimiter' => ',']],
             'non boolean array' => [['array' => 1, 'delimiter' => ',']],
+            'without scalar' => [['array' => true, 'delimiter' => ',']],
+            'with entity' => [[
+                'array' => true,
+                'entity' => NestedEntity::class,
+                'delimiter' => ',',
+            ]],
+            'with scalar and entity' => [[
+                'array' => true,
+                'scalar' => 'string',
+                'entity' => NestedEntity::class,
+                'delimiter' => ',',
+            ]],
+            'with value' => [[
+                'array' => true,
+                'scalar' => 'int',
+                'value' => Limit::class,
+                'delimiter' => ',',
+            ]],
+            'with enum' => [[
+                'array' => true,
+                'scalar' => 'string',
+                'enum' => MailState::class,
+                'delimiter' => ',',
+            ]],
+            'with orScalar' => [[
+                'array' => true,
+                'scalar' => 'int',
+                'entity' => NestedEntity::class,
+                'orScalar' => 'int',
+                'delimiter' => ',',
+            ]],
         ];
     }
 
