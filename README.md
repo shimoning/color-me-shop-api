@@ -1160,7 +1160,7 @@ $pagination->getOffset();
 
 商品・在庫・バリエーションの検索条件に `fields` を文字列で渡すと、生成時に `InvalidFieldException` になる。文字列の `fields` を持つまま `serialize()` した、これらの検索条件は `unserialize()` で復元できない (`TypeError`)。
 
-商品広告の一覧取得 (`GET /v1/product_advertisings`) は、実 API が `fields` を受け付けないため、検索条件に `fields` を持たない。
+商品広告の一覧取得 (`GET /v1/product_advertisings`) は、実 API が `fields` を指定しても応答を絞り込まないため、検索条件に `fields` を持たない。
 
 ## 0.27.0 の変更
 
