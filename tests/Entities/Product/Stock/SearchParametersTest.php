@@ -23,7 +23,7 @@ class SearchParametersTest extends TestCase
             'display_state' => 'showing',
             'stocks' => 5,
             'recent_zero_stocks' => true,
-            'fields' => 'product_id,name,stocks',
+            'fields' => ['product_id', 'name', 'stocks'],
             'limit' => 50,
             'offset' => 10,
         ]);
@@ -42,6 +42,7 @@ class SearchParametersTest extends TestCase
             'limit' => 50,
             'offset' => 10,
         ], $parameters->toArrayRecursive());
+        $this->assertSame(['product_id', 'name', 'stocks'], $parameters->toArray()['fields']);
         $this->assertSame(ProductDisplayState::SHOWING, $parameters->getDisplayState());
     }
 
@@ -83,6 +84,32 @@ class SearchParametersTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         new SearchParameters(['ids' => [101, '102']]);
+    }
+
+    public function test_空のfieldsは送らない(): void
+    {
+        $parameters = new SearchParameters(['fields' => []]);
+
+        $this->assertSame([], $parameters->toArray()['fields']);
+        $this->assertSame([], $parameters->toArrayRecursive());
+    }
+
+    /** @dataProvider invalidFieldsProvider */
+    public function test_不正なfieldsを拒否する(mixed $fields): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new SearchParameters(['fields' => $fields]);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidFieldsProvider(): array
+    {
+        return [
+            '文字列' => ['product_id,name'],
+            '文字列でない要素' => [['product_id', 1]],
+            'リストでない配列' => [['first' => 'product_id']],
+        ];
     }
 
     public function test_不正な掲載状態を拒否する(): void

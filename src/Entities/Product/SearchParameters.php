@@ -14,8 +14,10 @@ use Shimoning\ColorMeShopApi\Values\Product\Limit as ProductLimit;
 /**
  * 商品一覧 GET の検索条件。
  * ids / group_ids は OpenAPI の説明に従い整数配列をカンマ区切りで送る。
+ * fields は文字列の配列で指定し、クエリではカンマ区切りで送る。
  *
  * @see docs/api-product-structure.md
+ * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
@@ -27,6 +29,7 @@ class SearchParameters extends Entity implements RequestEntity
         'updateDateMax' => ['value' => DateTime::class],
         'ids' => ['array' => true, 'scalar' => 'int'],
         'groupIds' => ['array' => true, 'scalar' => 'int'],
+        'fields' => ['array' => true, 'scalar' => 'string'],
         'limit' => ['value' => ProductLimit::class, 'allowNull' => true],
     ];
 
@@ -55,11 +58,13 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?string $janCode;
     protected ?string $sort;
     /**
-     * 応答に含める商品フィールドのカンマ区切り一覧。
+     * 応答に含める商品フィールドの一覧。
      * fields を絞った応答では、省略された nullable フィールドの getter は null を返す。
      * 省略された非 nullable フィールドの getter は MissingFieldException を投げる。
+     *
+     * @var list<string>|null
      */
-    protected ?string $fields;
+    protected ?array $fields;
     protected ?Limit $limit;
     protected ?int $offset;
 
@@ -72,7 +77,7 @@ class SearchParameters extends Entity implements RequestEntity
     public function toArrayRecursive($ignoreNull = true): array
     {
         $parameters = parent::toArrayRecursive($ignoreNull);
-        foreach (['ids', 'group_ids'] as $field) {
+        foreach (['ids', 'group_ids', 'fields'] as $field) {
             if (isset($parameters[$field]) && is_array($parameters[$field])) {
                 if ($parameters[$field] === []) {
                     unset($parameters[$field]);

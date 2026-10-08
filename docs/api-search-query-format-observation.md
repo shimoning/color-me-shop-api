@@ -62,6 +62,41 @@ HTTP 500 の応答は、いずれも `errors[]` の `code` が `500000`、`messa
 
 **配列の形式はエラーにならず、中身のない受注の要素が返った。**
 
+## 顧客一覧の `fields`
+
+公式 OpenAPI の `GET /v1/customers` には `fields` パラメータがない（同日に取得した OpenAPI で、`ids`、`name`、`furigana`、
+`mail`、`postal`、`tel`、`line_uid`、`membership_id`、`sex`、`member`、`receive_mail_magazine`、`make_date_min`、
+`make_date_max`、`update_date_min`、`update_date_max`、`limit`、`offset` の 17 個）。同日に、`limit=2` を付けて次を送った。
+
+| 送った形式 | 応答 |
+| --- | --- |
+| `fields` を指定しない | HTTP 200、2 件、要素のキーは 29 個 |
+| `fields=id,name` | HTTP 200、2 件、要素のキーは `id`、`name` の 2 個 |
+| `fields=id` | HTTP 200、2 件、要素のキーは `id` の 1 個 |
+| 配列の形式（`fields[0]=id&fields[1]=name`） | HTTP 200、2 件、要素はキーを 1 つも持たなかった |
+
+あわせて、顧客の単体取得（`GET /v1/customers/{customer_id}`）に `fields=id,name` を送ると、HTTP 200 で `customer` の
+キーは 2 個だった。
+
+**公式 OpenAPI に記載はないが、実 API の顧客一覧と顧客の単体取得は、カンマ区切りの `fields` で応答のキーを
+絞り込んだ。** 配列の形式は、受注一覧の `fields` と同じく、エラーにならず中身のない要素が返った。
+
+## 商品・在庫・バリエーション・商品広告の `fields`
+
+同日に、`limit=2` を付けて、`fields` を指定しない場合、カンマ区切りで指定した場合、配列の形式で指定した場合を
+送った。公式 OpenAPI では、商品・在庫・バリエーションの一覧には `fields`（`type: string`、カンマ区切り）があり、
+商品広告の一覧にはない。バリエーションは、バリエーションを持つ商品で確かめた。
+
+| API | 指定なしのキー数 | カンマ区切り | 配列の形式 |
+| --- | ---: | --- | --- |
+| `GET /v1/products` | 49 | `id,name` で `id`、`name` の 2 個 | キーを持たない要素 |
+| `GET /v1/stocks` | 36 | `id,name` で `name` の 1 個（在庫の要素は `id` を持たない） | キーを持たない要素 |
+| `GET /v1/products/{product_id}/variants` | 22 | `id,title` で `id`、`title` の 2 個 | キーを持たない要素 |
+| `GET /v1/product_advertisings` | 11 | `id,product_id` を指定しても 11 個 | 11 個 |
+
+いずれも HTTP 200 だった。**商品・在庫・バリエーションは、カンマ区切りの `fields` で応答のキーを絞り込み、配列の
+形式ではキーを持たない要素を返した。商品広告は、`fields` を指定しても応答のキーが変わらなかった。**
+
 ## 真偽値の項目
 
 PHP の `http_build_query()` は真偽値を `1` / `0` にする。公式 OpenAPI は次の項目を `type: boolean` としている。

@@ -15,6 +15,9 @@ use Shimoning\ColorMeShopApi\Entities\Sale\Delivery as SalesDelivery;
 use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\Segment;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class ScalarArrayFieldTypeTest extends TestCase
@@ -43,6 +46,10 @@ class ScalarArrayFieldTypeTest extends TestCase
             '受注検索の決済ID' => [SalesSearchParameters::class, 'payment_ids', 'int'],
             '受注検索の取得フィールド' => [SalesSearchParameters::class, 'fields', 'string'],
             '顧客検索の顧客ID' => [CustomerSearchParameters::class, 'ids', 'int'],
+            '顧客検索の取得フィールド' => [CustomerSearchParameters::class, 'fields', 'string'],
+            '商品検索の取得フィールド' => [ProductSearchParameters::class, 'fields', 'string'],
+            '在庫検索の取得フィールド' => [StockSearchParameters::class, 'fields', 'string'],
+            'バリエーション検索の取得フィールド' => [VariantSearchParameters::class, 'fields', 'string'],
         ];
     }
 

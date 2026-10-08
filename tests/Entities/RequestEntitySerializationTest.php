@@ -49,6 +49,8 @@ class RequestEntitySerializationTest extends TestCase
 
     public function test_明示フィールド追跡追加前の直列化データは従来のnull省略で復元する(): void
     {
+        // 0.28.0 で fields の型が文字列から配列へ変わったため、fixture の fields は配列へ書き換えている。
+        // このテストの目的は fields の型ではなく、明示フィールド追跡の互換性を検証することである。
         $encoded = \file_get_contents(__DIR__ . '/../Fixtures/request_entity_before_explicit_fields.base64');
         $this->assertNotFalse($encoded);
         $serialized = \base64_decode(\trim($encoded), true);
@@ -60,6 +62,26 @@ class RequestEntitySerializationTest extends TestCase
 
         $this->assertInstanceOf(SearchParameters::class, $restored);
         $this->assertSame(['fields' => 'id,name'], $restored->toArrayRecursive());
+    }
+
+    /**
+     * fields が文字列だった旧直列化データを復元できない既知の非互換性を記録する。
+     */
+    public function test_文字列fieldsを持つ旧商品検索条件は型変更により復元できない(): void
+    {
+        $encoded = \file_get_contents(
+            __DIR__ . '/../Fixtures/request_entity_before_explicit_fields_with_string_fields.base64',
+        );
+        $this->assertNotFalse($encoded);
+        $serialized = \base64_decode(\trim($encoded), true);
+        $this->assertNotFalse($serialized);
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Cannot assign string to property');
+
+        \unserialize($serialized, [
+            'allowed_classes' => [SearchParameters::class],
+        ]);
     }
 
     public function test_明示フィールド追跡追加前の直列化データへsetterで値を追加しても既存値を保持する(): void

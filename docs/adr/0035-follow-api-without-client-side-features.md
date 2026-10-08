@@ -68,3 +68,4 @@
 - README の予定の取り消しの出典コミット: `57f9c34`
 - [ページングの limit の実測記録](../api-pagination-limit-observation.md)（出典コミット: `7688418`）
 - limit の値オブジェクトによる検証: [ADR 0036](0036-validate-limit-per-api.md)
+- 公式 OpenAPI に記載はないが実 API が受け付ける顧客一覧の fields の扱い: [ADR 0037](0037-unify-search-fields-as-string-list.md)
