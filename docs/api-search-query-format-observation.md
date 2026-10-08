@@ -22,22 +22,22 @@
 | `GET /v1/customers` | `ids` |
 | `GET /v1/sales` | `ids`、`customer_ids`、`payment_ids` |
 
-それぞれに、PHP の `http_build_query()` が配列から作る形式（`ids[0]=1&ids[1]=2`）、カンマ区切り（`ids=1,2`）、
-1 件だけの指定を送った。
+それぞれに、PHP の `http_build_query()` が配列から作る形式（`ids[0]=1&ids[1]=2`）と、配列でない文字列の形式
+（複数件ならカンマ区切りの `ids=1,2`、1 件なら `ids=1`）を送った。
 
-| API | パラメータ | 配列の形式 | カンマ区切り | 1 件 |
-| --- | --- | --- | --- | --- |
-| `GET /v1/customers` | `ids`（2 件） | HTTP 500 | HTTP 200、`meta.total=2` | HTTP 200、`meta.total=1` |
-| `GET /v1/sales` | `ids`（1 件） | HTTP 500 | HTTP 200、`meta.total=1` | HTTP 200、`meta.total=1` |
-| `GET /v1/sales` | `customer_ids`（1 件） | HTTP 500 | HTTP 200、`meta.total=1` | HTTP 200、`meta.total=1` |
-| `GET /v1/sales` | `payment_ids`（1 件） | HTTP 500 | HTTP 200、`meta.total=1` | HTTP 200、`meta.total=1` |
+| API | パラメータ | 配列の形式 | 文字列の形式 |
+| --- | --- | --- | --- |
+| `GET /v1/customers` | `ids`（2 件） | HTTP 500 | カンマ区切りの 2 件で HTTP 200、`meta.total=2`。1 件で HTTP 200、`meta.total=1` |
+| `GET /v1/sales` | `ids`（1 件） | HTTP 500 | 1 件で HTTP 200、`meta.total=1` |
+| `GET /v1/sales` | `customer_ids`（1 件） | HTTP 500 | 1 件で HTTP 200、`meta.total=1` |
+| `GET /v1/sales` | `payment_ids`（1 件） | HTTP 500 | 1 件で HTTP 200、`meta.total=1` |
 
 HTTP 500 の応答は、いずれも `errors[]` の `code` が `500000`、`message` が `Internal Server Error` だった。
 
-**配列の形式は、4 つの項目すべてで HTTP 500 になった。カンマ区切りは HTTP 200 になった。**
+**配列の形式は、4 つの項目すべてで HTTP 500 になった。配列でない文字列の形式は HTTP 200 になった。** カンマを含む
+複数件の指定は、顧客の `ids` だけで確かめた。
 
-ショップの受注が 1 件だったため、受注の 3 項目は 1 要素の配列とカンマ区切りで確かめた。顧客の `ids` は 2 件で
-確かめた。
+ショップの受注が 1 件だったため、受注の 3 項目は 1 要素の配列と、カンマを含まない 1 件の文字列で確かめた。
 
 ## 受注一覧の `fields`
 
