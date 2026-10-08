@@ -13,10 +13,12 @@ use Shimoning\ColorMeShopApi\Values\Sale\Limit as SaleLimit;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 
 /**
- * before/after は直感的でないためサポートしない。
- * make_date_max/make_date_min を使用すること。
+ * 受注一覧 GET の検索条件。
+ * ids / customer_ids / payment_ids / fields は配列をカンマ区切りで送る。
  *
- * TODO: fields のサポート
+ * before/after は直感的でないためサポートしない。make_date_max/make_date_min を使用すること。
+ *
+ * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
@@ -77,9 +79,25 @@ class SearchParameters extends Entity implements RequestEntity
     /** @var list<int>|null */
     protected ?array $paymentIds;
     /** @var list<string>|null */
-    protected ?array $fields;   // TODO: SaleFields
+    protected ?array $fields;
     protected ?Limit $limit;
     protected ?int $offset;
+
+    /** @return array<string, mixed> */
+    public function toArrayRecursive($ignoreNull = true): array
+    {
+        $parameters = parent::toArrayRecursive($ignoreNull);
+        foreach (['ids', 'customer_ids', 'payment_ids', 'fields'] as $field) {
+            if (isset($parameters[$field]) && is_array($parameters[$field])) {
+                if ($parameters[$field] === []) {
+                    unset($parameters[$field]);
+                } else {
+                    $parameters[$field] = implode(',', $parameters[$field]);
+                }
+            }
+        }
+        return $parameters;
+    }
 }
 
 // 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。

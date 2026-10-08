@@ -67,4 +67,18 @@ class SearchParameters extends Entity implements RequestEntity
 
     protected ?Limit $limit;
     protected ?int $offset;
+
+    /** @return array<string, mixed> */
+    public function toArrayRecursive($ignoreNull = true): array
+    {
+        $parameters = parent::toArrayRecursive($ignoreNull);
+        if (isset($parameters['ids']) && is_array($parameters['ids'])) {
+            if ($parameters['ids'] === []) {
+                unset($parameters['ids']);
+            } else {
+                $parameters['ids'] = implode(',', $parameters['ids']);
+            }
+        }
+        return $parameters;
+    }
 }

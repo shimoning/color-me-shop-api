@@ -49,6 +49,34 @@ class ProductClientReadTest extends TestCase
         $this->assertSame(['limit' => '1', 'offset' => '50'], $mock->query());
     }
 
+    public function test_getProductPageは複数IDをカンマ区切りで送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}');
+
+        (new Client('token', $mock->client()))
+            ->getProductPage(new ProductSearchParameters([
+                'ids' => [101, 102],
+                'group_ids' => [301, 302],
+            ]));
+
+        $this->assertStringContainsString('ids=101%2C102', $mock->uri());
+        $this->assertStringNotContainsString('ids%5B0%5D', $mock->uri());
+        $this->assertStringContainsString('group_ids=301%2C302', $mock->uri());
+        $this->assertStringNotContainsString('group_ids%5B0%5D', $mock->uri());
+    }
+
+    public function test_getProductAdvertisingPageは複数商品IDをカンマ区切りで送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"product_advertisings":[]}');
+
+        (new Client('token', $mock->client()))->getProductAdvertisingPage(
+            new ProductAdvertisingSearchParameters(['product_ids' => [101, 102]]),
+        );
+
+        $this->assertStringContainsString('product_ids=101%2C102', $mock->uri());
+        $this->assertStringNotContainsString('product_ids%5B0%5D', $mock->uri());
+    }
+
     public function test_バリエーション条件をClient経由で送信する(): void
     {
         $mock = HttpMock::json(200, '{"variants":[],"meta":{"total":0,"limit":10,"offset":0}}');

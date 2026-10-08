@@ -39,6 +39,18 @@ class StockClientTest extends TestCase
         $this->assertSame([], $mock->query());
     }
 
+    public function test_getProductStockPageは複数IDをカンマ区切りで送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
+
+        (new Client('token', $mock->client()))->getProductStockPage(new SearchParameters([
+            'ids' => [101, 102],
+        ]));
+
+        $this->assertStringContainsString('ids=101%2C102', $mock->uri());
+        $this->assertStringNotContainsString('ids%5B0%5D', $mock->uri());
+    }
+
     public function test_getStocksは引数のアクセストークンを優先する(): void
     {
         $mock = HttpMock::json(200, '{"stocks":[],"meta":{"total":0,"limit":10,"offset":0}}');
