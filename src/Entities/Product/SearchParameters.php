@@ -10,16 +10,18 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\DateTime;
 use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Values\Product\Limit as ProductLimit;
+use Shimoning\ColorMeShopApi\Values\Sort;
 
 /**
  * 商品一覧 (GET /v1/products) の検索条件。
  *
- * ids / group_ids は整数の配列、fields は文字列の配列で指定し、
- * クエリではカンマ区切りで送る。
+ * ids / group_ids は整数の配列、fields は文字列の配列で指定する。
+ * sort は Sort またはその配列で指定し、配列の検索条件はクエリではカンマ区切りで送る。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-product-structure.md
  * @see docs/api-search-query-format-observation.md
+ * @see docs/api-product-sort-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
 {
@@ -32,6 +34,13 @@ class SearchParameters extends Entity implements RequestEntity
         'ids' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
         'groupIds' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
         'fields' => ['array' => true, 'scalar' => 'string', 'delimiter' => ','],
+        'sort' => [
+            'array' => true,
+            'value' => Sort::class,
+            'instance' => true,
+            'delimiter' => ',',
+            'allowNull' => true,
+        ],
         'limit' => ['value' => ProductLimit::class, 'allowNull' => true],
     ];
 
@@ -58,7 +67,13 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?int $membersPriceMin;
     protected ?int $membersPriceMax;
     protected ?string $janCode;
-    protected ?string $sort;
+    /**
+     * 並び順。単一の Sort も受け付け、リストに正規化して保持する。
+     * クエリでは各 Sort の API 表現をカンマ区切りで送る。
+     *
+     * @var list<Sort>|null
+     */
+    protected ?array $sort;
     /**
      * 応答に含める商品フィールドの一覧。
      * fields を絞った応答では、省略された nullable フィールドの getter は null を返す。

@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as Pr
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
+use Shimoning\ColorMeShopApi\Values\Sort;
 
 class ProductClientReadTest extends TestCase
 {
@@ -66,6 +67,17 @@ class ProductClientReadTest extends TestCase
         $this->assertStringNotContainsString('group_ids%5B0%5D', $mock->uri());
         $this->assertStringContainsString('fields=id%2Cname', $mock->uri());
         $this->assertStringNotContainsString('fields%5B0%5D', $mock->uri());
+    }
+
+    public function test_getProductPageは複数のsortをカンマ区切りで送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}');
+
+        (new Client('token', $mock->client()))->getProductPage(new ProductSearchParameters([
+            'sort' => [new Sort('-sales_price'), new Sort('make_date')],
+        ]));
+
+        $this->assertStringContainsString('sort=-sales_price%2Cmake_date', $mock->uri());
     }
 
     public function test_getProductAdvertisingPageは複数商品IDをカンマ区切りで送信する(): void

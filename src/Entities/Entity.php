@@ -29,6 +29,7 @@ class Entity
      *
      * プロパティ名をキーとして、子 Entity・enum・値オブジェクト、scalar、配列への変換と null の扱いを
      * 宣言する。要求では array フィールドにリストを要求し、delimiter 指定の配列は再帰配列化時に連結する。
+     * instance は value と組み合わせ、宣言した Value の既存インスタンスだけを受理する。
      * API のフィールド名は FIELD_NAMES に定義する。
      *
      * @see docs/adr/0023-validate-scalar-array-elements-via-field-types.md
@@ -488,6 +489,7 @@ class Entity
         self::assertScalarDeclaration($objectField);
         self::assertOrScalarDeclaration($objectField);
         self::assertStrictListDeclaration($objectField);
+        self::assertInstanceDeclaration($objectField);
         self::assertDelimiterDeclaration($objectField);
         if (\is_array($objectField)) {
             $isArray = !empty($objectField['array']);
@@ -519,6 +521,16 @@ class Entity
             }
             if (isset($objectField['value'])) {
                 $class = $objectField['value'];
+                if (! empty($objectField['instance'])) {
+                    $values = \is_array($value) ? $value : [$value];
+                    foreach ($values as $element) {
+                        if (! $element instanceof $class) {
+                            throw new \TypeError("配列要素が {$class} ではありません。");
+                        }
+                    }
+
+                    return $values;
+                }
                 if ($isArray) {
                     // 配列指定
                     if (static::isHash($value)) {
@@ -642,6 +654,28 @@ class Entity
         }
     }
 
+    private static function assertInstanceDeclaration(mixed $objectField): void
+    {
+        if (! \is_array($objectField) || ! \array_key_exists('instance', $objectField)) {
+            return;
+        }
+        if ($objectField['instance'] !== true) {
+            throw new \LogicException('instance は true を指定してください。');
+        }
+        if (($objectField['array'] ?? null) !== true) {
+            throw new \LogicException('instance は array => true と組み合わせて指定してください。');
+        }
+        $value = $objectField['value'] ?? null;
+        if (! \is_string($value) || ! \is_a($value, Value::class, true)) {
+            throw new \LogicException('instance は Value を実装する value と組み合わせて指定してください。');
+        }
+        foreach (['entity', 'enum', 'scalar', 'orScalar'] as $key) {
+            if (\array_key_exists($key, $objectField)) {
+                throw new \LogicException("instance は {$key} と組み合わせて指定できません。");
+            }
+        }
+    }
+
     private static function assertDelimiterDeclaration(mixed $objectField): void
     {
         if (! \is_array($objectField) || ! \array_key_exists('delimiter', $objectField)) {
@@ -653,13 +687,18 @@ class Entity
         if (($objectField['array'] ?? null) !== true) {
             throw new \LogicException('delimiter は array => true と組み合わせて指定してください。');
         }
-        if (! \in_array($objectField['scalar'] ?? null, ['int', 'string'], true)) {
-            throw new \LogicException('delimiter は scalar と組み合わせて指定してください。');
+        $withScalar = \in_array($objectField['scalar'] ?? null, ['int', 'string'], true);
+        $withValueInstance = isset($objectField['value']) && ($objectField['instance'] ?? null) === true;
+        if (! $withScalar && ! $withValueInstance) {
+            throw new \LogicException('delimiter は scalar または instance 指定の value と組み合わせて指定してください。');
         }
-        foreach (['entity', 'value', 'enum', 'orScalar'] as $key) {
+        foreach (['entity', 'enum', 'orScalar'] as $key) {
             if (\array_key_exists($key, $objectField)) {
                 throw new \LogicException("delimiter は {$key} と組み合わせて指定できません。");
             }
+        }
+        if ($withScalar && \array_key_exists('value', $objectField)) {
+            throw new \LogicException('delimiter は scalar と value を同時に指定できません。');
         }
     }
 

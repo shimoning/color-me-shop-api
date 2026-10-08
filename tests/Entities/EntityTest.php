@@ -38,6 +38,8 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\RequestComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequestScalarArrayEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\StaticShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ScalarArrayEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\ValueInstanceArrayEntity;
+use Shimoning\ColorMeShopApi\Values\Sort;
 
 class EntityTest extends TestCase
 {
@@ -829,6 +831,74 @@ class EntityTest extends TestCase
 
     // --- FIELD_TYPES: delimiter ----------------------------------------
 
+    public function test_instance指定は単一Valueインスタンスを配列に正規化する(): void
+    {
+        $sort = new Sort('-sales_price');
+        $entity = new ValueInstanceArrayEntity(['sorts' => $sort]);
+
+        $this->assertSame([$sort], $entity->toArray()['sorts']);
+        $this->assertSame(['sorts' => '-sales_price'], $entity->toArrayRecursive());
+    }
+
+    public function test_instance指定はValueインスタンスのリストを受理する(): void
+    {
+        $entity = new ValueInstanceArrayEntity([
+            'sorts' => [new Sort('-sales_price'), new Sort('make_date')],
+        ]);
+
+        $this->assertSame(['sorts' => '-sales_price,make_date'], $entity->toArrayRecursive());
+    }
+
+    #[DataProvider('invalidValueInstanceArrayProvider')]
+    public function test_instance指定は宣言されたValue以外を拒否する(mixed $value): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new ValueInstanceArrayEntity(['sorts' => $value]);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidValueInstanceArrayProvider(): array
+    {
+        return [
+            '文字列' => ['make_date'],
+            '文字列の配列' => [['make_date']],
+            '連想配列' => [['first' => new Sort('make_date')]],
+            '異なる型' => [new Limit(10)],
+        ];
+    }
+
+    #[DataProvider('invalidInstanceDeclarationProvider')]
+    public function test_instanceの不正な宣言はLogicExceptionになる(array $declaration): void
+    {
+        $this->expectException(\LogicException::class);
+
+        new class([new Sort('make_date')], $declaration) extends Entity {
+            /** @param array<string, mixed> $declaration */
+            public function __construct(array $data, array $declaration)
+            {
+                $this->build($declaration, $data);
+            }
+        };
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function invalidInstanceDeclarationProvider(): array
+    {
+        return [
+            'false' => [['array' => true, 'value' => Sort::class, 'instance' => false]],
+            'arrayなし' => [['value' => Sort::class, 'instance' => true]],
+            'valueなし' => [['array' => true, 'instance' => true]],
+            'valueがValueでない' => [['array' => true, 'value' => NestedEntity::class, 'instance' => true]],
+            'scalarと併用' => [[
+                'array' => true,
+                'value' => Sort::class,
+                'scalar' => 'string',
+                'instance' => true,
+            ]],
+        ];
+    }
+
     public function test_delimiter指定の配列は区切り文字で連結する(): void
     {
         $entity = new DelimitedArrayEntity([
@@ -886,6 +956,11 @@ class EntityTest extends TestCase
             'without array' => [['delimiter' => ',']],
             'non boolean array' => [['array' => 1, 'delimiter' => ',']],
             'without scalar' => [['array' => true, 'delimiter' => ',']],
+            'value without instance' => [[
+                'array' => true,
+                'value' => Limit::class,
+                'delimiter' => ',',
+            ]],
             'with entity' => [[
                 'array' => true,
                 'entity' => NestedEntity::class,
