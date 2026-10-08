@@ -359,6 +359,8 @@ if ($shopOrErrors instanceof Errors) {
 #### 受注データのリストを取得
 検索条件とアクセストークンはどちらも省略可能。ただし、`Client` にアクセストークンを設定していない場合は、メソッドの第2引数へ指定する必要がある。
 
+`ids` / `customer_ids` / `payment_ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた (`fields` は中身のない要素を返していた) ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+
 ```php
 $searchParameters = new SaleSearchParameters([
     'make_date_min' => '2024-01-01',
@@ -516,6 +518,8 @@ if ($sentOrErrors instanceof Errors) {
 
 ### 顧客
 #### 顧客データの一覧を取得
+`ids` は整数の配列で指定し、クエリではカンマ区切りになる。0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+
 ```php
 $searchParameters = new CustomerSearchParameters([
     'name' => '山田太郎',
