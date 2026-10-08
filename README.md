@@ -25,6 +25,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [在庫](#在庫)
   * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
+* [0.28.0 の変更](#0280-の変更)
 * [0.27.0 の変更](#0270-の変更)
 * [0.26.0 の変更](#0260-の変更)
 * [0.25.0 の変更](#0250-の変更)
@@ -518,7 +519,7 @@ if ($sentOrErrors instanceof Errors) {
 
 ### 顧客
 #### 顧客データの一覧を取得
-`ids` は整数の配列で指定し、クエリではカンマ区切りになる。0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+`ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。`fields` は公式 OpenAPI に記載がないが、実 API は受け付ける (0.28.0 で追加)。`ids` は 0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
 
 ```php
 $searchParameters = new CustomerSearchParameters([
@@ -651,7 +652,7 @@ if ($productsOrErrors instanceof Errors) {
 ```
 
 `ids` と `group_ids` は整数配列で指定し、クエリではカンマ区切りになる。商品一覧の `limit` は 1 〜 50 で、範囲外は送信前に `InvalidFieldException` になる。
-`fields` を `id,name` のように絞ると、応答には指定した商品フィールドだけが含まれる。
+`fields` を `['id', 'name']` のように文字列の配列で指定すると、クエリではカンマ区切りになり、応答には指定した商品フィールドだけが含まれる。
 省略された nullable フィールドの getter は `null` を返し、非 nullable フィールドの getter は `MissingFieldException` を投げる。
 
 #### 商品単体を取得
@@ -670,7 +671,7 @@ if ($productOrErrors instanceof Errors) {
 ```php
 $variantParameters = new VariantSearchParameters([
     'model_number' => 'TEST',
-    'fields' => 'id,title,option1,option2',
+    'fields' => ['id', 'title', 'option1', 'option2'],
     'limit' => 10,
     'offset' => 0,
 ]);
@@ -689,7 +690,7 @@ if (! $variantOrErrors instanceof Errors) {
 }
 ```
 
-バリエーション一覧の既定 `limit` は 10 件で、指定できるのは 1 〜 100 (公式 OpenAPI の最大は 50 だが、実 API は 100 を受け付ける)。検索条件の `model_number` は型番の部分一致検索、`fields` は応答フィールドのカンマ区切り指定に使う。
+バリエーション一覧の既定 `limit` は 10 件で、指定できるのは 1 〜 100 (公式 OpenAPI の最大は 50 だが、実 API は 100 を受け付ける)。検索条件の `model_number` は型番の部分一致検索、`fields` は応答フィールドを文字列の配列で指定する (クエリではカンマ区切りになる)。
 
 #### 画像と商品広告を取得
 ```php
@@ -1142,6 +1143,24 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.28.0 の変更
+
+### 検索条件の fields の指定方法
+
+一覧取得の検索条件の `fields` を、すべて文字列の配列で指定するように揃えた ([ADR 0037](docs/adr/0037-unify-search-fields-as-string-list.md))。クエリではカンマ区切りで送る。
+
+| 検索条件 | 0.27.x まで | 0.28.0 から |
+| --- | --- | --- |
+| `Entities\Product\SearchParameters` | `'fields' => 'id,name'` (文字列) | `'fields' => ['id', 'name']` |
+| `Entities\Product\Stock\SearchParameters` | 文字列 | 文字列の配列 |
+| `Entities\Product\Variant\SearchParameters` | 文字列 | 文字列の配列 |
+| `Entities\Sale\SearchParameters` | 文字列の配列 | 変更なし |
+| `Entities\Customer\SearchParameters` | なし | 文字列の配列 (新規。公式 OpenAPI に記載はないが、実 API は受け付ける) |
+
+商品・在庫・バリエーションの検索条件に `fields` を文字列で渡すと、生成時に `InvalidFieldException` になる。文字列の `fields` を持つまま `serialize()` した、これらの検索条件は `unserialize()` で復元できない (`TypeError`)。
+
+商品広告の一覧取得 (`GET /v1/product_advertisings`) は、実 API が `fields` を受け付けないため、検索条件に `fields` を持たない。
 
 ## 0.27.0 の変更
 
