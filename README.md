@@ -519,7 +519,7 @@ if ($sentOrErrors instanceof Errors) {
 
 ### 顧客
 #### 顧客データの一覧を取得
-`ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。`fields` は公式 OpenAPI に記載がないが、実 API は受け付ける (0.28.0 で追加)。`ids` は 0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+`ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。`fields` は公式 OpenAPI に記載がないが、2026-10-08 の観測で実 API が受け付けて応答を絞り込んだ (0.28.0 で追加)。`ids` は 0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
 
 ```php
 $searchParameters = new CustomerSearchParameters([
@@ -1156,7 +1156,7 @@ $pagination->getOffset();
 | `Entities\Product\Stock\SearchParameters` | 文字列 | 文字列の配列 |
 | `Entities\Product\Variant\SearchParameters` | 文字列 | 文字列の配列 |
 | `Entities\Sale\SearchParameters` | 文字列の配列 | 変更なし |
-| `Entities\Customer\SearchParameters` | なし | 文字列の配列 (新規。公式 OpenAPI に記載はないが、実 API は受け付ける) |
+| `Entities\Customer\SearchParameters` | なし | 文字列の配列 (新規。公式 OpenAPI に記載はないが、2026-10-08 の観測で実 API が受け付けた) |
 
 商品・在庫・バリエーションの検索条件に `fields` を文字列で渡すと、生成時に `InvalidFieldException` になる。文字列の `fields` を持つまま `serialize()` した、これらの検索条件は `unserialize()` で復元できない (`TypeError`)。
 
