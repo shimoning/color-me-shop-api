@@ -16,7 +16,8 @@ use Shimoning\ColorMeShopApi\Values\Sort;
  * 商品一覧 (GET /v1/products) の検索条件。
  *
  * ids / group_ids は整数の配列、fields は文字列の配列で指定する。
- * sort は Sort またはその配列で指定し、配列の検索条件はクエリではカンマ区切りで送る。
+ * sort は文字列の配列で指定し、各要素の先頭に `-` を付けると降順になる。
+ * sort は内部で Sort に変換し、クエリではカンマ区切りで送る。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-product-structure.md
@@ -37,7 +38,6 @@ class SearchParameters extends Entity implements RequestEntity
         'sort' => [
             'array' => true,
             'value' => Sort::class,
-            'instance' => true,
             'delimiter' => ',',
             'allowNull' => true,
         ],
@@ -68,8 +68,8 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?int $membersPriceMax;
     protected ?string $janCode;
     /**
-     * 並び順。単一の Sort も受け付け、リストに正規化して保持する。
-     * クエリでは各 Sort の API 表現をカンマ区切りで送る。
+     * 並び順。文字列の配列で指定し、各要素の先頭に `-` を付けると降順になる。
+     * 内部では Sort のリストとして保持し、クエリではカンマ区切りで送る。
      *
      * @var list<Sort>|null
      */

@@ -9,7 +9,6 @@ use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as Pr
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters as VariantSearchParameters;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
-use Shimoning\ColorMeShopApi\Values\Sort;
 
 class ProductClientReadTest extends TestCase
 {
@@ -74,7 +73,7 @@ class ProductClientReadTest extends TestCase
         $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}');
 
         (new Client('token', $mock->client()))->getProductPage(new ProductSearchParameters([
-            'sort' => [new Sort('-sales_price'), new Sort('make_date')],
+            'sort' => ['-sales_price', 'make_date'],
         ]));
 
         $this->assertStringContainsString('sort=-sales_price%2Cmake_date', $mock->uri());
