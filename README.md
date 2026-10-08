@@ -229,6 +229,7 @@ $furigana->isValid();  // false
 要求側では従来どおり検証され、検証に通らない値は拒否される。例外の型は経路によって異なり、値オブジェクトを直接構築した場合は `ParameterException`、`CustomerCreateInput` などの要求 Entity を経由した場合は `InvalidFieldException` に包まれる。
 * `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する ([0.27.0 の変更](#0270-の変更))
+* `Values\Sort`: 並び順のカラム名と向き (`Constants\SortDirection`) を分けて持つ。向きを省略すると昇順で、`-` で始まるカラム名 (`'-sales_price'`) を向きなしで渡すと降順になる。`-` で始まるカラム名と向きを一緒に渡すと `ParameterException` になる。カラム名が空、`-` が 2 つ以上続く、カンマや空白を含む場合も拒否する。カラム名そのものは検証しない
 
 `SaleSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
 
@@ -630,6 +631,7 @@ $parameters = new ProductSearchParameters([
     'ids' => [101, 102],
     'group_ids' => [301, 302],
     'display_state' => 'showing',
+    'sort' => ['-sales_price', 'make_date'],
     'limit' => 50,
     'offset' => 0,
 ]);
@@ -1145,6 +1147,19 @@ $pagination->getOffset();
 -----
 
 ## 0.28.0 の変更
+
+### 商品一覧の並び順
+
+商品一覧の検索条件の `sort` を、文字列の配列で指定するようにした ([ADR 0038](docs/adr/0038-represent-sort-with-value-object.md))。各要素はカラム名で、`-` で始めると降順になる。内部では各要素を汎用の値オブジェクト `Values\Sort` (カラム名と向きを分けて持つ) にし、クエリでは空白なしのカンマ区切り (`-sales_price,make_date`) で送る。`toArray()` の `sort` は `Values\Sort` の配列になる。
+
+```php
+new ProductSearchParameters(['sort' => ['-update_date']]);
+new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
+```
+
+文字列 1 つでの指定 (`'sort' => '-make_date'`) と、`Values\Sort` のインスタンスは、生成時に `InvalidFieldException` になる。
+
+公式 OpenAPI が挙げるカラムは `make_date` / `update_date` / `sales_price` / `price` / `members_price` の 5 つで、2026-10-08 の観測では、それ以外の値はエラーにならず既定の並び (`-make_date`) と同じ結果になった ([商品一覧の sort の実測記録](docs/api-product-sort-observation.md))。
 
 ### 検索条件の fields の指定方法
 

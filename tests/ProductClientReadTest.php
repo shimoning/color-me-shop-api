@@ -68,6 +68,17 @@ class ProductClientReadTest extends TestCase
         $this->assertStringNotContainsString('fields%5B0%5D', $mock->uri());
     }
 
+    public function test_getProductPageは複数のsortをカンマ区切りで送信する(): void
+    {
+        $mock = HttpMock::json(200, '{"products":[],"meta":{"total":0,"limit":10,"offset":0}}');
+
+        (new Client('token', $mock->client()))->getProductPage(new ProductSearchParameters([
+            'sort' => ['-sales_price', 'make_date'],
+        ]));
+
+        $this->assertStringContainsString('sort=-sales_price%2Cmake_date', $mock->uri());
+    }
+
     public function test_getProductAdvertisingPageは複数商品IDをカンマ区切りで送信する(): void
     {
         $mock = HttpMock::json(200, '{"product_advertisings":[]}');

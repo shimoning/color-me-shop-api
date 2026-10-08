@@ -38,6 +38,8 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\RequestComplexEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequestScalarArrayEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\StaticShadowingPrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ScalarArrayEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\DelimitedValueArrayEntity;
+use Shimoning\ColorMeShopApi\Values\Sort;
 
 class EntityTest extends TestCase
 {
@@ -829,6 +831,43 @@ class EntityTest extends TestCase
 
     // --- FIELD_TYPES: delimiter ----------------------------------------
 
+    public function test_delimiter指定のValue配列は生の値から生成して連結する(): void
+    {
+        $entity = new DelimitedValueArrayEntity([
+            'sorts' => ['-sales_price', 'make_date'],
+        ]);
+
+        $sorts = $entity->toArray()['sorts'];
+        $this->assertContainsOnlyInstancesOf(Sort::class, $sorts);
+        $this->assertSame(['sorts' => '-sales_price,make_date'], $entity->toArrayRecursive());
+    }
+
+    public function test_delimiter指定のValue配列はインスタンスを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new DelimitedValueArrayEntity(['sorts' => [new Sort('make_date')]]);
+    }
+
+    public function test_instance指定は未知のキーとして変換に影響しない(): void
+    {
+        $entity = new class(['sorts' => ['make_date']]) extends Entity implements RequestEntity {
+            public const FIELD_TYPES = [
+                'sorts' => [
+                    'array' => true,
+                    'value' => Sort::class,
+                    'instance' => true,
+                    'delimiter' => ',',
+                ],
+            ];
+
+            /** @var list<Sort>|null */
+            protected ?array $sorts;
+        };
+
+        $this->assertSame(['sorts' => 'make_date'], $entity->toArrayRecursive());
+    }
+
     public function test_delimiter指定の配列は区切り文字で連結する(): void
     {
         $entity = new DelimitedArrayEntity([
@@ -886,6 +925,11 @@ class EntityTest extends TestCase
             'without array' => [['delimiter' => ',']],
             'non boolean array' => [['array' => 1, 'delimiter' => ',']],
             'without scalar' => [['array' => true, 'delimiter' => ',']],
+            'valueがValueでない' => [[
+                'array' => true,
+                'value' => NestedEntity::class,
+                'delimiter' => ',',
+            ]],
             'with entity' => [[
                 'array' => true,
                 'entity' => NestedEntity::class,
