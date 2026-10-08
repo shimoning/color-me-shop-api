@@ -13,11 +13,13 @@ use Shimoning\ColorMeShopApi\Values\Sale\Limit as SaleLimit;
 use Shimoning\ColorMeShopApi\Constants\MailState;
 
 /**
- * 受注一覧 GET の検索条件。
- * ids / customer_ids / payment_ids / fields は配列をカンマ区切りで送る。
+ * 受注一覧 (GET /v1/sales) の検索条件。
  *
- * before/after は直感的でないためサポートしない。make_date_max/make_date_min を使用すること。
+ * ids / customer_ids / payment_ids は整数の配列、fields は文字列の配列で指定し、
+ * クエリではカンマ区切りで送る。
+ * before / after は直感的でないため扱わない。make_date_min / make_date_max を使うこと。
  *
+ * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-search-query-format-observation.md
  */
 class SearchParameters extends Entity implements RequestEntity
@@ -52,10 +54,10 @@ class SearchParameters extends Entity implements RequestEntity
         'limit' => [
             'value' => SaleLimit::class,
         ],
-        'ids' => ['array' => true, 'scalar' => 'int'],
-        'customerIds' => ['array' => true, 'scalar' => 'int'],
-        'paymentIds' => ['array' => true, 'scalar' => 'int'],
-        'fields' => ['array' => true, 'scalar' => 'string'],
+        'ids' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
+        'customerIds' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
+        'paymentIds' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
+        'fields' => ['array' => true, 'scalar' => 'string', 'delimiter' => ','],
     ];
 
     /** @var list<int>|null */
@@ -83,21 +85,6 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?Limit $limit;
     protected ?int $offset;
 
-    /** @return array<string, mixed> */
-    public function toArrayRecursive($ignoreNull = true): array
-    {
-        $parameters = parent::toArrayRecursive($ignoreNull);
-        foreach (['ids', 'customer_ids', 'payment_ids', 'fields'] as $field) {
-            if (isset($parameters[$field]) && is_array($parameters[$field])) {
-                if ($parameters[$field] === []) {
-                    unset($parameters[$field]);
-                } else {
-                    $parameters[$field] = implode(',', $parameters[$field]);
-                }
-            }
-        }
-        return $parameters;
-    }
 }
 
 // 0.24.0 の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。

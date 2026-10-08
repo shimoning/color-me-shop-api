@@ -12,10 +12,12 @@ use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Values\Product\Limit as ProductLimit;
 
 /**
- * 商品一覧 GET の検索条件。
- * ids / group_ids は OpenAPI の説明に従い整数配列をカンマ区切りで送る。
- * fields は文字列の配列で指定し、クエリではカンマ区切りで送る。
+ * 商品一覧 (GET /v1/products) の検索条件。
  *
+ * ids / group_ids は整数の配列、fields は文字列の配列で指定し、
+ * クエリではカンマ区切りで送る。
+ *
+ * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-product-structure.md
  * @see docs/api-search-query-format-observation.md
  */
@@ -27,9 +29,9 @@ class SearchParameters extends Entity implements RequestEntity
         'makeDateMax' => ['value' => DateTime::class],
         'updateDateMin' => ['value' => DateTime::class],
         'updateDateMax' => ['value' => DateTime::class],
-        'ids' => ['array' => true, 'scalar' => 'int'],
-        'groupIds' => ['array' => true, 'scalar' => 'int'],
-        'fields' => ['array' => true, 'scalar' => 'string'],
+        'ids' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
+        'groupIds' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
+        'fields' => ['array' => true, 'scalar' => 'string', 'delimiter' => ','],
         'limit' => ['value' => ProductLimit::class, 'allowNull' => true],
     ];
 
@@ -73,19 +75,4 @@ class SearchParameters extends Entity implements RequestEntity
         return $this->displayState;
     }
 
-    /** @return array<string, mixed> */
-    public function toArrayRecursive($ignoreNull = true): array
-    {
-        $parameters = parent::toArrayRecursive($ignoreNull);
-        foreach (['ids', 'group_ids', 'fields'] as $field) {
-            if (isset($parameters[$field]) && is_array($parameters[$field])) {
-                if ($parameters[$field] === []) {
-                    unset($parameters[$field]);
-                } else {
-                    $parameters[$field] = implode(',', $parameters[$field]);
-                }
-            }
-        }
-        return $parameters;
-    }
 }

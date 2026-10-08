@@ -18,6 +18,7 @@ use Shimoning\ColorMeShopApi\Tests\Doubles\PlainEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\AllowNullObjectFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\ComplexEntity;
+use Shimoning\ColorMeShopApi\Tests\Doubles\DelimitedArrayEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\NestedEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PairTupleEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\RequiredEntity;
@@ -824,6 +825,67 @@ class EntityTest extends TestCase
             public const FIELD_TYPES = ['value' => ['scalar' => 'int']];
             protected int $value;
         };
+    }
+
+    // --- FIELD_TYPES: delimiter ----------------------------------------
+
+    public function test_delimiter指定の配列は区切り文字で連結する(): void
+    {
+        $entity = new DelimitedArrayEntity([
+            'ids' => [10, 20],
+            'fields' => ['id', 'name'],
+        ]);
+
+        $this->assertSame(['ids' => '10,20', 'fields' => 'id|name'], $entity->toArrayRecursive());
+    }
+
+    public function test_delimiter指定の空配列は再帰配列から除外する(): void
+    {
+        $entity = new DelimitedArrayEntity(['ids' => [], 'fields' => []]);
+
+        $this->assertSame([], $entity->toArrayRecursive());
+    }
+
+    public function test_delimiter指定でも未指定と明示したnullを区別する(): void
+    {
+        $this->assertSame([], (new DelimitedArrayEntity([]))->toArrayRecursive());
+        $this->assertSame(
+            ['ids' => null],
+            (new DelimitedArrayEntity(['ids' => null]))->toArrayRecursive(),
+        );
+    }
+
+    public function test_delimiter指定でもtoArrayは配列のまま返す(): void
+    {
+        $entity = new DelimitedArrayEntity(['ids' => [10, 20], 'fields' => []]);
+
+        $this->assertSame([10, 20], $entity->toArray()['ids']);
+        $this->assertSame([], $entity->toArray()['fields']);
+    }
+
+    #[DataProvider('invalidDelimiterDeclarationProvider')]
+    public function test_delimiterの不正な宣言はLogicExceptionになる(array $declaration): void
+    {
+        $this->expectException(\LogicException::class);
+
+        new class(['value'], $declaration) extends Entity {
+            /** @param array<string, mixed> $declaration */
+            public function __construct(array $data, array $declaration)
+            {
+                $this->build($declaration, $data);
+            }
+        };
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function invalidDelimiterDeclarationProvider(): array
+    {
+        return [
+            'empty' => [['array' => true, 'delimiter' => '']],
+            'non string' => [['array' => true, 'delimiter' => 1]],
+            'without array' => [['delimiter' => ',']],
+            'non boolean array' => [['array' => 1, 'delimiter' => ',']],
+        ];
     }
 
     // --- FIELD_TYPES: entity or scalar --------------------------------
