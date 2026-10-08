@@ -16,9 +16,6 @@ use Shimoning\ColorMeShopApi\Values\Product\Stock\Limit as StockLimit;
  *
  * ids は整数の配列、fields は文字列の配列で指定し、クエリではカンマ区切りで送る。
  *
- * 在庫 API は対象外パラメータと不正な display_state を黙って無視するため、
- * 商品検索とはクラスを分け、有効なパラメータ集合を型で限定する。
- *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-search-query-format-observation.md
  */
