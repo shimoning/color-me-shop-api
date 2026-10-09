@@ -111,7 +111,8 @@ class Customer extends Service
      * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
      * 公式 OpenAPI との差分: required 指定はないが、`name` / `address1` を送信前に検証する
-     * (2026-09-25)。`address2` は省略すると空になるため必須として扱う (2026-10-09)。
+     * (2026-09-25)。`address2` は省略すると空になるため必須として扱う (2026-10-09)。消す場合は
+     * `null` を明示する。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *

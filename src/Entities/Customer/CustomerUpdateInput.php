@@ -19,8 +19,8 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  * インスタンスで指定する。
  *
  * 公式 OpenAPI との差分: required 指定はないが `name` / `address1` は実 API で必須である (2026-09-25)。
- * `address2` は省略すると空になるため必須として扱う (2026-10-09)。`tel_mobile` は request にあるが
- * 書き込めないため入力に含めない (2026-09-25)。
+ * `address2` は省略すると空になるため必須として扱う (2026-10-09)。消す場合は `null` を明示する。
+ * `tel_mobile` は request にあるが書き込めないため入力に含めない (2026-09-25)。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-partial-update-observation.md
@@ -37,7 +37,7 @@ class CustomerUpdateInput extends Entity implements RequestEntity
 
     /**
      * 送信前に Service 側で明示を確認するフィールド。`name` / `address1` は実 API で必須、`address2` は
-     * 省略すると空になるため必須とする。
+     * 省略すると空になるため必須とする。消す場合は `null` を明示する。
      */
     public const REQUIRED_FIELDS = ['name', 'address1', 'address2'];
 

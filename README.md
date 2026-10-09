@@ -607,7 +607,7 @@ $customerOrErrors = $client->updateCustomer($customerId, new CustomerUpdateInput
 ]));
 ```
 
-明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。ただし `address2` だけは、実 API が省略すると空にするため (2026-10-09 の観測、[更新 API で送らなかった項目の扱いの実測記録](docs/api-partial-update-observation.md))、必須として扱う。
+明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。ただし `address2` だけは、実 API が省略すると空にするため (2026-10-09 の観測、[更新 API で送らなかった項目の扱いの実測記録](docs/api-partial-update-observation.md))、必須として扱う。`address2` を消す場合は、`null` を明示的にセットする。
 
 公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、`address2` とあわせて、いずれかを指定しないと送信前に `ParameterException` が投げられる (`address2` は 0.30.0 から必須、[ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
 
