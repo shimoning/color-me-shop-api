@@ -86,10 +86,42 @@ class AliasesTest extends TestCase
         );
     }
 
+    public function test_RequestEntityの旧名はinterface_existsで新名の別名として解決できる(): void
+    {
+        $legacy = 'Shimoning\\ColorMeShopApi\\Contracts\\RequestEntity';
+        $current = \Shimoning\ColorMeShopApi\Entities\RequestEntity::class;
+
+        $this->assertFalse(\interface_exists($legacy, false));
+        $this->assertFalse(\interface_exists($current, false));
+        $this->assertTrue(\interface_exists($legacy));
+        $this->assertSame($current, (new \ReflectionClass($legacy))->getName());
+    }
+
+    public function test_RequestEntityは新名の読み込み時に旧名も定義する(): void
+    {
+        $legacy = 'Shimoning\\ColorMeShopApi\\Contracts\\RequestEntity';
+        $current = \Shimoning\ColorMeShopApi\Entities\RequestEntity::class;
+
+        $this->assertFalse(\interface_exists($legacy, false));
+        $this->assertFalse(\interface_exists($current, false));
+        $this->assertTrue(\interface_exists($current));
+        $this->assertTrue(\interface_exists($legacy, false));
+        $this->assertSame($current, (new \ReflectionClass($legacy))->getName());
+
+        $input = new \Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput([]);
+        /** @var callable(object): object $acceptLegacy */
+        $acceptLegacy = eval('return static function (\\' . $legacy . ' $value): object { return $value; };');
+
+        $this->assertSame($input, $acceptLegacy($input));
+    }
+
     public static function aliasProvider(): array
     {
         $cases = [];
         foreach (Aliases::MAP as $legacy => $current) {
+            if ($current === \Shimoning\ColorMeShopApi\Entities\RequestEntity::class) {
+                continue;
+            }
             $data = match ($current) {
                 \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
                 \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class => ['stocks' => 0],
@@ -230,6 +262,8 @@ class AliasesTest extends TestCase
     public function test_別名の対応表はすべての改名を網羅する(): void
     {
         $this->assertSame([
+            'Shimoning\\ColorMeShopApi\\Contracts\\RequestEntity'
+                => \Shimoning\ColorMeShopApi\Entities\RequestEntity::class,
             'Shimoning\\ColorMeShopApi\\Services\\Sales'
                 => \Shimoning\ColorMeShopApi\Services\Sale::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'

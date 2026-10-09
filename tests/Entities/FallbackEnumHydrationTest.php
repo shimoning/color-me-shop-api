@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
 use Shimoning\ColorMeShopApi\Constants\KouzaType;
 use Shimoning\ColorMeShopApi\Constants\PaymentType;
 use Shimoning\ColorMeShopApi\Constants\Sex;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery;

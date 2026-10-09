@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 

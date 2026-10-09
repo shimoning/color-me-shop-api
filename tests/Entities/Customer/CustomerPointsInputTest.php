@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Customer;
 
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;

@@ -138,6 +138,9 @@ class ApiFieldNameTest extends TestCase
             $relative = \substr($file->getPathname(), \strlen($root) + 1, -4);
             $class = 'Shimoning\\ColorMeShopApi\\Entities\\' . \str_replace('/', '\\', $relative);
             if (! \class_exists($class)) {
+                if (\interface_exists($class)) {
+                    continue;
+                }
                 throw new \RuntimeException('Entity クラスを読み込めません: ' . $class);
             }
             $classes[] = \str_replace('/', '\\', $relative);

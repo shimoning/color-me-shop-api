@@ -12,12 +12,26 @@ use ReflectionType;
 use ReflectionUnionType;
 use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 
 /**
  * src のクラス参照が互換用の旧クラス名に依存していないことを検証する。
  */
 class LegacyAliasReferenceTest extends TestCase
 {
+    public function test_旧RequestEntityをimplementsする利用者Entityは新名と要求直列化契約を満たす(): void
+    {
+        /** @var Entity $entity */
+        $entity = eval(<<<'PHP'
+return new class(['name' => null]) extends \Shimoning\ColorMeShopApi\Entities\Entity implements \Shimoning\ColorMeShopApi\Contracts\RequestEntity {
+    protected ?string $name;
+};
+PHP);
+
+        $this->assertInstanceOf(RequestEntity::class, $entity);
+        $this->assertSame(['name' => null], $entity->toArrayRecursive());
+    }
+
     public function test_srcで旧クラス名を参照しない(): void
     {
         $violations = [];

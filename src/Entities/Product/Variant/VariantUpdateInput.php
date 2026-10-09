@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Product\Variant;
 
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 

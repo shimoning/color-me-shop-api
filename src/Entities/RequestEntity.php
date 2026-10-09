@@ -1,6 +1,8 @@
 <?php
 
-namespace Shimoning\ColorMeShopApi\Contracts;
+namespace Shimoning\ColorMeShopApi\Entities;
+
+use Shimoning\ColorMeShopApi\Aliases;
 
 /**
  * 利用者が送信する値を組み立てる Entity の印。
@@ -14,3 +16,7 @@ namespace Shimoning\ColorMeShopApi\Contracts;
 interface RequestEntity
 {
 }
+
+// RequestEntity 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(RequestEntity::class);

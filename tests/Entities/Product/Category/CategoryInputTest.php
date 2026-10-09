@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Category;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;

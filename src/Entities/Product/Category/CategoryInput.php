@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Category;
 use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;

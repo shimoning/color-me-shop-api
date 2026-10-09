@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;

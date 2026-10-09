@@ -22,6 +22,8 @@ final class Aliases
      * @var array<class-string, class-string>
      */
     public const MAP = [
+        'Shimoning\\ColorMeShopApi\\Contracts\\RequestEntity'
+            => Entities\RequestEntity::class,
         'Shimoning\\ColorMeShopApi\\Services\\Sales'
             => Services\Sale::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
@@ -146,7 +148,11 @@ final class Aliases
     public static function defineLegacyAlias(string $current): void
     {
         foreach (self::MAP as $legacy => $target) {
-            if ($target === $current && ! \class_exists($legacy, false)) {
+            if (
+                $target === $current
+                && ! \class_exists($legacy, false)
+                && ! \interface_exists($legacy, false)
+            ) {
                 \class_alias($current, $legacy, false);
             }
         }
@@ -171,7 +177,7 @@ final class Aliases
             }
 
             // 新クラスの読み込み時にも別名が登録されるため、読み込み後に二重定義を避ける。
-            if (\class_exists($current)) {
+            if (\class_exists($current) || \interface_exists($current)) {
                 self::defineLegacyAlias($current);
             }
         });

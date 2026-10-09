@@ -12,7 +12,6 @@ use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
 use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
