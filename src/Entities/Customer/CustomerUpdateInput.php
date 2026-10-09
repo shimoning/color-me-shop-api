@@ -35,7 +35,10 @@ class CustomerUpdateInput extends Entity implements RequestEntity
         'sex' => ['enum' => Sex::class],
     ];
 
-    /** 実 API で必須と確認したフィールド。送信前に Service 側で明示を確認する。 */
+    /**
+     * 送信前に Service 側で明示を確認するフィールド。`name` / `address1` は実 API で必須、`address2` は
+     * 省略すると空になるため必須とする。
+     */
     public const REQUIRED_FIELDS = ['name', 'address1', 'address2'];
 
     protected string $name;

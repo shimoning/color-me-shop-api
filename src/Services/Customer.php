@@ -173,7 +173,8 @@ class Customer extends Service
     }
 
     /**
-     * 顧客更新の入力に、実 API で必須と確認したフィールドが明示されていることを確認する。
+     * 顧客更新の入力に、送信前に明示を求めるフィールド (`CustomerUpdateInput::REQUIRED_FIELDS`) が
+     * 明示されていることを確認する。
      *
      * @return array<string, mixed>
      * @throws ParameterException 未指定の必須フィールドがある場合
