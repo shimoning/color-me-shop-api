@@ -25,6 +25,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [在庫](#在庫)
   * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
+* [0.29.0 の変更](#0290-の変更)
 * [0.28.0 の変更](#0280-の変更)
 * [0.27.0 の変更](#0270-の変更)
 * [0.26.0 の変更](#0260-の変更)
@@ -97,6 +98,7 @@ use Shimoning\ColorMeShopApi\Constants\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\SortDirection;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
@@ -130,6 +132,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Values\DateTime as ApiDateTime;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Sort;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 ```
 
@@ -232,6 +235,8 @@ $furigana->isValid();  // false
 * `Values\Sort`: 並び順のカラム名と向き (`Constants\SortDirection`) を分けて持つ。向きを省略すると昇順で、`-` で始まるカラム名 (`'-sales_price'`) を向きなしで渡すと降順になる。`-` で始まるカラム名と向きを一緒に渡すと `ParameterException` になる。カラム名が空、`-` が 2 つ以上続く、カンマや空白を含む場合も拒否する。汎用の `Values\Sort` はカラム名そのものを検証しない。API ごとの子クラス (商品一覧の `Values\Product\Sort`) は、受け付けるカラム名を限る
 
 `SaleSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
+
+要求 Entity や検索条件の値オブジェクトのフィールドには、生の値の代わりに値オブジェクトのインスタンスも渡せる (0.29.0 から)。宣言したクラスか、その子クラスのインスタンスはそのまま使う。親クラスのインスタンス (たとえば商品の検索条件に基底の `Values\Limit` や汎用の `Values\Sort`) は、宣言したクラスで作り直して検証し直す。要求側では、検証に通らない値を保持した `Values\FallbackValue` のインスタンス (応答から取り出した `isValid()` が `false` の `Furigana` など) は拒否する ([ADR 0040](docs/adr/0040-accept-value-object-instances.md))。
 
 各 API に必要なスコープは、`Services` と `Client` の対応するメソッドの PHPDoc に記載している。公式 OpenAPI でスコープの宣言が空の 6 操作 (ショップ・決済・配送の取得、商品グループ一覧・単体、商品カテゴリー一覧) には記載がない。その一覧と推測は [docs/auth-scope-audit.md](docs/auth-scope-audit.md) にまとめている。
 
@@ -1146,6 +1151,26 @@ $pagination->getOffset();
 
 -----
 
+## 0.29.0 の変更
+
+### 値オブジェクトのインスタンスを受け付ける
+
+要求 Entity や検索条件の値オブジェクトのフィールドで、生の値に加えて値オブジェクトのインスタンスも受け付けるようにした ([ADR 0040](docs/adr/0040-accept-value-object-instances.md))。enum と Entity のフィールドは、以前からインスタンスを受け付けている。
+
+```php
+new CustomerCreateInput([..., 'furigana' => new Furigana('ヤマダ タロウ')]);
+new ProductSearchParameters(['limit' => new Limit(30), 'sort' => [new Sort('price', SortDirection::DESC), 'make_date']]);
+```
+
+| 渡したもの | 扱い |
+| --- | --- |
+| 宣言したクラスか、その子クラスのインスタンス | そのまま使う |
+| 宣言したクラスの親クラスのインスタンス (例: 商品の検索条件に基底の `Values\Limit`) | 宣言したクラスで作り直して検証し直す。`new Limit(80)` は商品の上限 50 を超えるため拒否する |
+| 無関係の値オブジェクト | 拒否する |
+| 検証に通らない値を保持した `Values\FallbackValue` のインスタンス | 要求側では拒否する。応答側ではそのまま受け付ける |
+
+配列のフィールド (商品の検索条件の `sort` など) は、要素ごとに生の値とインスタンスを混在して渡せる。
+
 ## 0.28.0 の変更
 
 ### 商品一覧の並び順
@@ -1157,7 +1182,7 @@ new ProductSearchParameters(['sort' => ['-update_date']]);
 new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
 ```
 
-文字列 1 つでの指定 (`'sort' => '-make_date'`) と、値オブジェクトのインスタンスは、生成時に `InvalidFieldException` になる。
+文字列 1 つでの指定 (`'sort' => '-make_date'`) は、生成時に `InvalidFieldException` になる。0.28.0 では値オブジェクトのインスタンスも拒否していたが、0.29.0 から受け付ける ([0.29.0 の変更](#0290-の変更))。
 
 カラム名は、公式 OpenAPI が挙げる `make_date` / `update_date` / `sales_price` / `price` / `members_price` の 5 つだけを受け付け (大文字・小文字を区別する)、それ以外は生成時に `InvalidFieldException` になる ([ADR 0039](docs/adr/0039-validate-product-sort-fields.md))。2026-10-08 の観測では、実 API はそれ以外の値をエラーにせず、並び順に使わなかった ([商品一覧の sort の実測記録](docs/api-product-sort-observation.md))。
 
@@ -1192,7 +1217,7 @@ new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
 | `Entities\Sale\SearchParameters` | `Values\Sale\Limit` | 1 〜 100 |
 | `Entities\Customer\SearchParameters` | `Values\Customer\Limit` | 1 〜 100 |
 
-これまで API が上限に丸めていた値 (在庫の 51 〜 100、商品の 51 以上、バリエーションの 101 以上、商品広告の 251 以上) と、商品・バリエーション・商品広告の 0 以下 (観測した `0` と `-1` は API で要素が返らなかった) は、送信前に拒否されるようになる。`limit` は整数で指定する (値オブジェクトのインスタンスは受け付けない)。
+これまで API が上限に丸めていた値 (在庫の 51 〜 100、商品の 51 以上、バリエーションの 101 以上、商品広告の 251 以上) と、商品・バリエーション・商品広告の 0 以下 (観測した `0` と `-1` は API で要素が返らなかった) は、送信前に拒否されるようになる。`limit` は整数で指定する (0.28.0 までは値オブジェクトのインスタンスを受け付けなかった。0.29.0 から受け付ける)。
 
 ## 0.26.0 の変更
 
