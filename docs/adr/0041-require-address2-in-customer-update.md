@@ -23,11 +23,11 @@
 
 - **顧客データの更新で、`address2` を `name` / `address1` と同じく必須にする。** `Services\Customer::update()` は、
   `CustomerUpdateInput` で `address2` が明示されていなければ、送信前に `ParameterException` で拒否する。利用者の指定に
-  よる。出典: `454326c`。
+  よる。出典: `d64e2c7`、`454326c`。
 - `address2` は nullable のままとし、明示した `null` は必須を満たすものとして送る。`address2` を消したいときは `null` を
   明示する。出典: `454326c`。
 - この必須は公式 OpenAPI の required 指定ではなく実測に基づくため、ADR 0015 の `name` / `address1` と同じく、
-  `CustomerUpdateInput` の PHPDoc に「公式 OpenAPI との差分」として書く。出典: `454326c`。
+  `CustomerUpdateInput` の PHPDoc に「公式 OpenAPI との差分」として書く。出典: `d64e2c7`、`454326c`。
 - 顧客データの作成（`CustomerCreateInput`）は変えない。作成で `address2` が保存されるかは確かめていない。出典: `454326c`。
 
 ## 代替案と却下理由
