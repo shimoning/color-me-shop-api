@@ -65,10 +65,12 @@ class CustomerClientWriteTest extends TestCase
             ],
             'updateCustomer' => [
                 'updateCustomer', [501, new CustomerUpdateInput([
-                    'name' => 'カラーミー花子', 'address1' => '渋谷区', 'fax' => null,
+                    'name' => 'カラーミー花子', 'address1' => '渋谷区',
+                    'address2' => '桜丘町26-1', 'fax' => null,
                 ])],
                 200, '{"customer":{"id":501}}', 'PUT', '/v1/customers/501', CustomerEntity::class,
-                '{"customer":{"name":"カラーミー花子","address1":"渋谷区","fax":null}}',
+                '{"customer":{"name":"カラーミー花子","address1":"渋谷区",'
+                    . '"address2":"桜丘町26-1","fax":null}}',
             ],
             'changeCustomerPoints' => [
                 'changeCustomerPoints', [501, new PointsInput(['points' => -100])],

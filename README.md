@@ -25,6 +25,7 @@ GMOペパボが提供しているカラーミーショップの API を PHP か�
   * [在庫](#在庫)
   * [ギフト](#ギフト)
   * [ページネーション](#ページネーション)
+* [0.30.0 の変更](#0300-の変更)
 * [0.29.0 の変更](#0290-の変更)
 * [0.28.0 の変更](#0280-の変更)
 * [0.27.0 の変更](#0270-の変更)
@@ -600,14 +601,15 @@ $customerOrErrors = $client->createCustomer(new CustomerCreateInput([
 $customerOrErrors = $client->updateCustomer($customerId, new CustomerUpdateInput([
     'name' => 'カラーミー花子',
     'address1' => '渋谷区桜丘町26-1',
+    'address2' => 'カラーミービル 2F', // 省略すると空になるため必須。消す場合は null を明示する
     'sex' => 'female',
     'fax' => null, // 明示した null はクリア要求として送信される
 ]));
 ```
 
-明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。
+明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。ただし `address2` だけは、実 API が省略すると空にするため (2026-10-09 の観測、[更新 API で送らなかった項目の扱いの実測記録](docs/api-partial-update-observation.md))、必須として扱う。`address2` を消す場合は、`null` を明示的にセットする。
 
-公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、いずれかを指定しないと送信前に `ParameterException` が投げられる。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
+公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、`address2` とあわせて、いずれかを指定しないと送信前に `ParameterException` が投げられる (`address2` は 0.30.0 から必須、[ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
 
 `Client::updateCustomer()` は、内部で `Services\Customer::update(int|string $id, CustomerUpdateInput $input, ?string $accessToken = null)` を呼び出す。
 
@@ -1150,6 +1152,14 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.30.0 の変更
+
+### 顧客データの更新で address2 を必須にした
+
+顧客データの更新 (`Client::updateCustomer()` / `Services\Customer::update()`) で、`CustomerUpdateInput` の `address2` を、`name` / `address1` と同じく必須にした ([ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。実 API は、更新で `address2` を送らないと空にする (2026-10-09 の観測)。これまでは `address2` を指定しない部分更新で、利用者の気づかないうちに `address2` が消えていた。
+
+`address2` を明示しない更新は、送信前に `ParameterException` になる。今の値を保つには今の値を、消すには `null` を明示する。
 
 ## 0.29.0 の変更
 
