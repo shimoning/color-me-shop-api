@@ -3,7 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\DateTime;
 use Shimoning\ColorMeShopApi\Values\Limit;

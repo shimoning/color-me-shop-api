@@ -11,6 +11,18 @@
 
 クラス名は、断りがなければ `Shimoning\ColorMeShopApi\Entities\` 以下である。
 
+## 0.31.0: RequestEntity の移動
+
+基底の型を、属する分類のフォルダに置く規則（`Values\Value`、`Constants\FallbackEnum`、`Entities\Entity`）に揃え、
+`Contracts` を廃止した（[ADR 0042](adr/0042-move-request-entity-to-entities.md)）。この表の名前は
+`Shimoning\ColorMeShopApi\` 以下である。
+
+| 旧インターフェース名 | 新インターフェース名 |
+| --- | --- |
+| `Contracts\RequestEntity` | `Entities\RequestEntity` |
+
+旧名での `implements`、`instanceof` と型宣言は動作する。
+
 ## 0.25.0: 受注の Service の改名
 
 ほかの Service と同じ単数形にし、Entity の名前空間 `Entities\Sale` と揃えた

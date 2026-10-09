@@ -1153,6 +1153,12 @@ $pagination->getOffset();
 
 -----
 
+## 0.31.0 の変更
+
+### RequestEntity を Entities に移した
+
+利用者が送信する値を組み立てる Entity の印 `Contracts\RequestEntity` を `Entities\RequestEntity` に移した ([ADR 0042](docs/adr/0042-move-request-entity-to-entities.md))。旧名は非推奨の別名として残しており、旧名での `implements`、`instanceof` と型宣言は動作する ([非推奨のクラス名の対応表](docs/class-aliases.md))。
+
 ## 0.30.0 の変更
 
 ### 顧客データの更新で address2 を必須にした

@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 
 /**
  * Phase 3 の DI リファクタで公開シグネチャを壊していないことを保証する。
@@ -103,6 +104,13 @@ class BackwardCompatibilityTest extends TestCase
         $constructor = (new \ReflectionClass(Request::class))->getConstructor();
 
         $this->assertSame(0, $constructor->getNumberOfRequiredParameters());
+    }
+
+    public function test_入力EntityはRequestEntityの旧名でも型判定できる(): void
+    {
+        $legacy = 'Shimoning\\ColorMeShopApi\\Contracts\\RequestEntity';
+
+        $this->assertInstanceOf($legacy, new CustomerUpdateInput([]));
     }
 
     public function test_Clientはアクセストークンなしでも生成できる(): void

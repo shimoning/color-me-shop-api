@@ -5,7 +5,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Constants\MailState;

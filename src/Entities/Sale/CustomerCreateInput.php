@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Sale;
 use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\Sex;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Values\Furigana;

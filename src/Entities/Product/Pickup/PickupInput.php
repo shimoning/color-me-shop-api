@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Pickup;
 use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Constants\PickupType;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;

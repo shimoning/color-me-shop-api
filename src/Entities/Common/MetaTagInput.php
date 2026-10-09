@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Common;
 
 use Shimoning\ColorMeShopApi\Aliases;
 
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 

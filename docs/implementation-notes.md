@@ -6,7 +6,7 @@
 
 ## `RequestEntity` の明示フィールドの追跡と、旧形式の直列化データ
 
-対象: `src/Contracts/RequestEntity.php`、`src/Entities/Entity.php`
+対象: `src/Entities/RequestEntity.php`、`src/Entities/Entity.php`
 
 要求側の Entity は、コンストラクタ配列や setter で明示したフィールドだけを送信する。そのために、明示した
 フィールドを Entity の内部で追跡している（[ADR 0014](adr/0014-model-product-write-api.md)）。

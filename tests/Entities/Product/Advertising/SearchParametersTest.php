@@ -3,7 +3,7 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Advertising;
 
 use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
-use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
