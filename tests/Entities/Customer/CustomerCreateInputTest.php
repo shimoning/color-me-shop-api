@@ -95,17 +95,13 @@ class CustomerCreateInputTest extends TestCase
         $this->assertSame('カラーミータロウ', $input->toArrayRecursive()['furigana']);
     }
 
-    /**
-     * Value フィールドは生の値で指定する契約で、Value のインスタンスは受け付けない。
-     * Entity::buildObject() が常に Value のコンストラクタへ渡すためで、Customer\SearchParameters など
-     * 既存の Value フィールドと同じ挙動である。
-     */
-    public function test_フリガナにValueのインスタンスは渡せない(): void
+    public function test_フリガナにFuriganaのインスタンスを渡せる(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('furigana');
+        $furigana = new Furigana('カラーミータロウ');
+        $input = new CustomerCreateInput(self::required(['furigana' => $furigana]));
 
-        new CustomerCreateInput(self::required(['furigana' => new Furigana('カラーミータロウ')]));
+        $this->assertSame($furigana, $input->toArray()['furigana']);
+        $this->assertSame('カラーミータロウ', $input->toArrayRecursive()['furigana']);
     }
 
     public function test_フリガナの明示したnullは送信する(): void

@@ -81,3 +81,4 @@
 - [ページングの limit の実測記録](../api-pagination-limit-observation.md)（出典コミット: `7688418`、`e434e26`、`438fe99`）
 - 実装とテストの出典コミット: `fb563a5`
 - README の記載の出典コミット: `9ecd40c`
+- `limit` に値オブジェクトのインスタンスを受け付けない判断は [ADR 0040](0040-accept-value-object-instances.md) により更新された。

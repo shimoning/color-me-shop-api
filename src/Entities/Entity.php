@@ -685,6 +685,26 @@ class Entity
      */
     private function buildObject(string $class, mixed $value): object
     {
+        if (\is_a($class, Value::class, true) && $value instanceof Value) {
+            if ($value instanceof $class) {
+                if (
+                    ($this instanceof RequestEntity || self::$_requestContext)
+                    && $value instanceof FallbackValue
+                    && ! $value->isValid()
+                ) {
+                    throw new ParameterException('要求に不正なフォールバック値は指定できません。');
+                }
+
+                return $value;
+            }
+
+            if (\is_subclass_of($class, $value::class)) {
+                $value = $value->get();
+            } else {
+                throw new \TypeError('宣言したクラスと互換性のない値オブジェクトです。');
+            }
+        }
+
         $previous = self::$_requestContext;
         self::$_requestContext = $previous || $this instanceof RequestEntity;
         try {

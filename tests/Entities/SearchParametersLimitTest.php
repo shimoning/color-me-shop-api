@@ -50,16 +50,37 @@ class SearchParametersLimitTest extends TestCase
      * @param class-string<Limit> $limitClass
      */
     #[DataProvider('apiProvider')]
-    public function test_Limitのインスタンスは受け付けない(
+    public function test_Limitの同じクラスと親クラスのインスタンスを受け付ける(
         string $parametersClass,
         string $limitClass,
         int $maximum,
     ): void {
-        foreach ([new Limit(1), new $limitClass(1)] as $limit) {
-            $this->expectInvalidLimit(
-                static fn() => new $parametersClass(['limit' => $limit]),
-            );
-        }
+        $declared = new $limitClass(1);
+        $declaredParameters = new $parametersClass(['limit' => $declared]);
+        $this->assertSame($declared, $declaredParameters->toArray()['limit']);
+        $this->assertSame(['limit' => 1], $declaredParameters->toArrayRecursive());
+
+        $parent = new Limit(1);
+        $parentParameters = new $parametersClass(['limit' => $parent]);
+        $this->assertNotSame($parent, $parentParameters->toArray()['limit']);
+        $this->assertInstanceOf($limitClass, $parentParameters->toArray()['limit']);
+        $this->assertSame(['limit' => 1], $parentParameters->toArrayRecursive());
+    }
+
+    public function test_親Limitの値を商品Limitの制約で再検証する(): void
+    {
+        $this->expectInvalidLimit(
+            static fn() => new ProductSearchParameters(['limit' => new Limit(80)]),
+        );
+    }
+
+    public function test_無関係な値オブジェクトは拒否する(): void
+    {
+        $this->expectInvalidLimit(
+            static fn() => new ProductSearchParameters([
+                'limit' => new \Shimoning\ColorMeShopApi\Values\Furigana('カナ'),
+            ]),
+        );
     }
 
     #[DataProvider('apiProvider')]

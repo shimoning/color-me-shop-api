@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Values\Product\Sort;
  * 商品一覧 (GET /v1/products) の検索条件。
  *
  * ids / group_ids は整数の配列、fields は文字列の配列で指定する。
- * sort は文字列の配列で指定し、各要素の先頭に `-` を付けると降順になる。
+ * sort は文字列または Sort の配列で指定し、文字列の先頭に `-` を付けると降順になる。
  * sort で使用できる列は make_date、update_date、sales_price、price、members_price。
  * sort は内部で Sort に変換し、クエリではカンマ区切りで送る。
  *
@@ -69,7 +69,7 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?int $membersPriceMax;
     protected ?string $janCode;
     /**
-     * 並び順。文字列の配列で指定し、各要素の先頭に `-` を付けると降順になる。
+     * 並び順。文字列または Sort の配列で指定し、文字列の先頭に `-` を付けると降順になる。
      * 使用できる列は make_date、update_date、sales_price、price、members_price。
      * 内部では Sort のリストとして保持し、クエリではカンマ区切りで送る。
      *

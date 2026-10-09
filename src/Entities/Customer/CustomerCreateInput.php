@@ -14,8 +14,8 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  * 顧客データの追加 (POST /v1/customers) の `customer` 入力。
  *
  * 明示したフィールドだけを送信し、明示した `null` も送信する。必須6項目の未指定は送信前に、
- * `null` は構築時に拒否する。`add_member` は明示した場合だけ送信する。`furigana` は文字列で指定し、
- * `Furigana` のインスタンスは受け付けない。
+ * `null` は構築時に拒否する。`add_member` は明示した場合だけ送信する。`furigana` は文字列または
+ * `Furigana` のインスタンスで指定する。
  *
  * 公式 OpenAPI との差分: `sex` は作成 request にないが実 API で反映される。`tel_mobile` / `memo` /
  * `points` / `member` / `sales_count` は作成時に無視されるため入力に含めない (2026-09-25)。

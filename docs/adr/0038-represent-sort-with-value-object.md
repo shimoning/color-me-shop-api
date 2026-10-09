@@ -76,3 +76,4 @@
 - 実装とテストの出典コミット: `2d73fd1`（値オブジェクト）、`8662aca`（文字列の配列で受ける形への変更）
 - README の記載の出典コミット: `3bce9b1`
 - 商品一覧の sort のカラム名の検証: [ADR 0039](0039-validate-product-sort-fields.md)
+- `sort` に `Sort` のインスタンスを受け付けない判断は [ADR 0040](0040-accept-value-object-instances.md) により更新された。
