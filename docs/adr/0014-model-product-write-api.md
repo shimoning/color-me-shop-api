@@ -172,3 +172,4 @@ nullable フィールドを明示的な `null` でクリアできる。既存の
 - `Communicator\Request` の現行 HTTP メソッドの出典コミット: `10cf216`
 - 必須フィールド未指定の送信前拒否と、商品の空入力を API へ委ねる観測の出典コミット: `d58cfec`、`66e604d`
 - 商品の作成と更新の入力を共用する判断は [ADR 0026](0026-split-product-input-into-create-and-update.md) により更新された。
+- `RequestEntity` を `Contracts` に置く判断は [ADR 0042](0042-move-request-entity-to-entities.md) により更新された。
