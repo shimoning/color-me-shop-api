@@ -700,6 +700,8 @@ class Entity
 
             if (\is_subclass_of($class, $value::class)) {
                 $value = $value->get();
+            } else {
+                throw new \TypeError('宣言したクラスと互換性のない値オブジェクトです。');
             }
         }
 

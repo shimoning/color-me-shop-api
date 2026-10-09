@@ -7,12 +7,30 @@ use Shimoning\ColorMeShopApi\Constants\SortDirection;
 use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+use Shimoning\ColorMeShopApi\Tests\Doubles\UnrelatedDateTimeValue;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 use Shimoning\ColorMeShopApi\Values\Sort as BaseSort;
 use Shimoning\ColorMeShopApi\Values\Product\Sort;
 
 class SearchParametersTest extends TestCase
 {
+    public function test_make_date_minは無関係な値オブジェクトを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new SearchParameters([
+            'make_date_min' => new UnrelatedDateTimeValue('2024-01-01'),
+        ]);
+    }
+
+    public function test_make_date_minは素のDateTimeImmutableを受け付ける(): void
+    {
+        $source = new \DateTimeImmutable('2024-01-01 12:34:56');
+        $parameters = new SearchParameters(['make_date_min' => $source]);
+
+        $this->assertSame('2024-01-01 12:34:56', $parameters->toArrayRecursive()['make_date_min']);
+    }
+
     public function test_全25条件をOpenAPIのクエリ形式に変換する(): void
     {
         $input = [
