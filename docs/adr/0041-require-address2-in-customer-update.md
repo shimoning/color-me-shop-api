@@ -28,7 +28,7 @@
   明示する。出典: `454326c`。
 - この必須は公式 OpenAPI の required 指定ではなく実測に基づくため、ADR 0015 の `name` / `address1` と同じく、
   `CustomerUpdateInput` の PHPDoc に「公式 OpenAPI との差分」として書く。出典: `454326c`。
-- 顧客データの作成（`CustomerCreateInput`）は変えない。作成で `address2` が保存されるかは確かめていない。
+- 顧客データの作成（`CustomerCreateInput`）は変えない。作成で `address2` が保存されるかは確かめていない。出典: `454326c`。
 
 ## 代替案と却下理由
 
