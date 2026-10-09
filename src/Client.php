@@ -991,6 +991,7 @@ class Client
 
     /**
      * 顧客データを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     * `name` / `address1` / `address2` の未指定は送信前に拒否する。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *

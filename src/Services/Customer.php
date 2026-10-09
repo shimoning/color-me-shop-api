@@ -110,7 +110,8 @@ class Customer extends Service
      *
      * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
-     * 公式 OpenAPI との差分: required 指定はないが、`name` / `address1` を送信前に検証する (2026-09-25)。
+     * 公式 OpenAPI との差分: required 指定はないが、`name` / `address1` を送信前に検証する
+     * (2026-09-25)。`address2` は省略すると空になるため必須として扱う (2026-10-09)。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
      *
@@ -121,6 +122,7 @@ class Customer extends Service
      * @return CustomerEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-partial-update-observation.md
      * @see docs/api-customer-structure.md
      */
     public function update(
