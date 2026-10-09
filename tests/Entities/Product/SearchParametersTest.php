@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Contracts\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
+use Shimoning\ColorMeShopApi\Values\Sort as BaseSort;
 use Shimoning\ColorMeShopApi\Values\Product\Sort;
 
 class SearchParametersTest extends TestCase
@@ -54,6 +55,32 @@ class SearchParametersTest extends TestCase
         $this->assertSame(['sort' => '-sales_price,make_date'], $parameters->toArrayRecursive());
     }
 
+    public function test_sortは生の値と値オブジェクトを混在できる(): void
+    {
+        $declared = new Sort('-sales_price');
+        $parent = new BaseSort('make_date');
+        $parameters = new SearchParameters([
+            'sort' => [$declared, 'price', $parent],
+        ]);
+
+        $sorts = $parameters->toArray()['sort'];
+        $this->assertSame($declared, $sorts[0]);
+        $this->assertSame('price', $sorts[1]->get());
+        $this->assertNotSame($parent, $sorts[2]);
+        $this->assertContainsOnlyInstancesOf(Sort::class, $sorts);
+        $this->assertSame(
+            ['sort' => '-sales_price,price,make_date'],
+            $parameters->toArrayRecursive(),
+        );
+    }
+
+    public function test_親Sortの値を商品Sortの制約で再検証する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+
+        new SearchParameters(['sort' => [new BaseSort('name')]]);
+    }
+
     public function test_sortは商品一覧で使用できる5列を受け付ける(): void
     {
         $parameters = new SearchParameters([
@@ -95,8 +122,7 @@ class SearchParametersTest extends TestCase
     {
         return [
             '文字列' => ['-make_date'],
-            'Sort' => [new Sort('make_date')],
-            'Sortを含む配列' => [[new Sort('make_date')]],
+            '配列でないSort' => [new Sort('make_date')],
             '文字列でない要素' => [['make_date', 1]],
             '空文字' => [['']],
             'ハイフン2つ' => [['--make_date']],

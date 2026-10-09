@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Values\Limit;
+use Shimoning\ColorMeShopApi\Values\Product\Limit as ProductLimit;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PlainEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\AllowNullObjectFieldEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\PrivateFieldEntity;
@@ -619,6 +620,15 @@ class EntityTest extends TestCase
         $this->assertSame([1, 100], \array_map(fn($l) => $l->get(), $entity->getLimits()));
     }
 
+    public function test_value指定の親クラスにサブクラスのインスタンスをそのまま保持する(): void
+    {
+        $limit = new ProductLimit(20);
+        $entity = new ComplexEntity(['limit' => $limit]);
+
+        $this->assertSame($limit, $entity->getLimit());
+        $this->assertSame(['limit' => 20], $entity->toArrayRecursive());
+    }
+
     // --- FIELD_TYPES: enum ---------------------------------------------
 
     public function test_enum指定のフィールドはenumに変換される(): void
@@ -842,30 +852,15 @@ class EntityTest extends TestCase
         $this->assertSame(['sorts' => '-sales_price,make_date'], $entity->toArrayRecursive());
     }
 
-    public function test_delimiter指定のValue配列はインスタンスを拒否する(): void
+    public function test_delimiter指定のValue配列は生の値とインスタンスを混在して連結する(): void
     {
-        $this->expectException(InvalidFieldException::class);
+        $sort = new Sort('make_date');
+        $entity = new DelimitedValueArrayEntity([
+            'sorts' => ['-sales_price', $sort],
+        ]);
 
-        new DelimitedValueArrayEntity(['sorts' => [new Sort('make_date')]]);
-    }
-
-    public function test_instance指定は未知のキーとして変換に影響しない(): void
-    {
-        $entity = new class(['sorts' => ['make_date']]) extends Entity implements RequestEntity {
-            public const FIELD_TYPES = [
-                'sorts' => [
-                    'array' => true,
-                    'value' => Sort::class,
-                    'instance' => true,
-                    'delimiter' => ',',
-                ],
-            ];
-
-            /** @var list<Sort>|null */
-            protected ?array $sorts;
-        };
-
-        $this->assertSame(['sorts' => 'make_date'], $entity->toArrayRecursive());
+        $this->assertSame($sort, $entity->toArray()['sorts'][1]);
+        $this->assertSame(['sorts' => '-sales_price,make_date'], $entity->toArrayRecursive());
     }
 
     public function test_delimiter指定の配列は区切り文字で連結する(): void

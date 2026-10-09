@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 use Shimoning\ColorMeShopApi\Tests\Doubles\FallbackValueEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\FallbackValueRequestEntity;
 use Shimoning\ColorMeShopApi\Tests\Doubles\MixedFallbackValue;
+use Shimoning\ColorMeShopApi\Values\Furigana;
 
 class FallbackValueHydrationTest extends TestCase
 {
@@ -67,6 +68,23 @@ class FallbackValueHydrationTest extends TestCase
         $this->assertFalse($customer->getFurigana()->isValid());
         $this->assertSame(self::RAW, $customer->getRaw()['furigana']);
         $this->assertSame(self::RAW, $customer->toArrayRecursive()['furigana']);
+    }
+
+    public function test_応答は無効なFuriganaインスタンスをそのまま保持する(): void
+    {
+        $furigana = Furigana::fallback(self::RAW);
+        $customer = new Customer(['furigana' => $furigana]);
+
+        $this->assertSame($furigana, $customer->getFurigana());
+        $this->assertSame(self::RAW, $customer->toArrayRecursive()['furigana']);
+    }
+
+    public function test_要求は無効なFuriganaインスタンスを拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('furigana');
+
+        new CustomerCreateInput(['furigana' => Furigana::fallback(self::RAW)]);
     }
 
     public static function objectFields(): array
