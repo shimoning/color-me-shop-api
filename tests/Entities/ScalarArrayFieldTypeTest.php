@@ -53,7 +53,7 @@ class ScalarArrayFieldTypeTest extends TestCase
         ];
     }
 
-    public function test_お届け先更新入力も継承したscalar配列の不正要素を拒否する(): void
+    public function test_お届け先更新入力はscalar配列の不正要素を拒否する(): void
     {
         $this->assertInvalidElement(DeliveryUpdateInput::class, 'detail_ids', 'int');
     }

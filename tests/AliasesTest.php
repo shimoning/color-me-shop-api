@@ -119,7 +119,10 @@ class AliasesTest extends TestCase
     {
         $cases = [];
         foreach (Aliases::MAP as $legacy => $current) {
-            if ($current === \Shimoning\ColorMeShopApi\Entities\RequestEntity::class) {
+            if (
+                $current === \Shimoning\ColorMeShopApi\Entities\RequestEntity::class
+                || $current === \Shimoning\ColorMeShopApi\Services\OAuth\Options::class
+            ) {
                 continue;
             }
             $data = match ($current) {
@@ -266,6 +269,8 @@ class AliasesTest extends TestCase
                 => \Shimoning\ColorMeShopApi\Entities\RequestEntity::class,
             'Shimoning\\ColorMeShopApi\\Services\\Sales'
                 => \Shimoning\ColorMeShopApi\Services\Sale::class,
+            'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
+                => \Shimoning\ColorMeShopApi\Services\OAuth\Options::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
                 => \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'

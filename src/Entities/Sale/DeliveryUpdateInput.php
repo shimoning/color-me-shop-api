@@ -2,8 +2,9 @@
 
 namespace Shimoning\ColorMeShopApi\Entities\Sale;
 
-use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Aliases;
+use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 
@@ -12,8 +13,57 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
  */
-class DeliveryUpdateInput extends Delivery implements RequestEntity
+class DeliveryUpdateInput extends Entity implements RequestEntity
 {
+    const FIELD_TYPES = [
+        'furigana' => [
+            'nullable' => true,
+            'value' => Furigana::class,
+        ],
+        'prefId' => [
+            'enum' => Prefecture::class,
+        ],
+        'detailIds' => ['array' => true, 'scalar' => 'int'],
+    ];
+
+    protected int $id;
+    protected int $saleId;
+    protected string $accountId;
+    protected int $deliveryId;
+    /** @var list<int> */
+    protected array $detailIds;
+
+    protected string $name;
+    protected ?Furigana $furigana;
+
+    protected ?string $postal;
+    protected Prefecture $prefId;
+    protected string $prefName;
+    protected ?string $address1;
+    protected ?string $address2;
+    protected ?string $tel;
+
+    protected ?string $preferredDate;
+    protected ?string $preferredPeriod;
+    protected ?string $slipNumber;
+
+    protected ?string $noshiText;
+    protected ?int $noshiCharge;
+
+    protected ?string $cardName;
+    protected ?string $cardText;
+    protected ?int $cardCharge;
+
+    protected ?string $wrappingName;
+    protected ?int $wrappingCharge;
+
+    protected int $deliveryCharge;
+    protected int $totalCharge;
+
+    protected ?string $trackingUrl;
+    protected ?string $memo;
+    protected bool $delivered;
+
     /**
      * 宛名を設定
      * @param string $name

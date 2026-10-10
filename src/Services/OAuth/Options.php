@@ -1,7 +1,8 @@
 <?php
 
-namespace Shimoning\ColorMeShopApi\Entities\OAuth;
+namespace Shimoning\ColorMeShopApi\Services\OAuth;
 
+use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Constants\AuthRedirectUri;
 
 /**
@@ -84,3 +85,7 @@ class Options
         return $this->endpointUri;
     }
 }
+
+// Options 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(Options::class);
