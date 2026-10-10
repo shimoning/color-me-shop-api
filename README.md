@@ -106,7 +106,7 @@ use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Services\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
@@ -1158,6 +1158,14 @@ $pagination->getOffset();
 ### RequestEntity を Entities に移した
 
 利用者が送信する値を組み立てる Entity の印 `Contracts\RequestEntity` を `Entities\RequestEntity` に移した ([ADR 0042](docs/adr/0042-move-request-entity-to-entities.md))。旧名は非推奨の別名として残しており、旧名での `implements`、`instanceof` と型宣言は動作する ([非推奨のクラス名の対応表](docs/class-aliases.md))。
+
+### 基底の型と配置を揃えた
+
+[ADR 0043](docs/adr/0043-align-base-types-and-placement.md) で次を変えた。
+
+- `Entities\Entity` を `abstract` にした。`Entity` を直接生成することはできない
+- `Sale\DeliveryUpdateInput` の継承元を、応答の `Sale\Delivery` から `Entity` にした。`Sale\Delivery` の `instanceof` を満たさなくなり、`getName()` などの応答の getter を持たなくなった。setter と、送信する内容は変わらない
+- OAuth のアプリ設定 `Entities\OAuth\Options` を `Services\OAuth\Options` に移した。旧名は非推奨の別名として残している ([非推奨のクラス名の対応表](docs/class-aliases.md))
 
 ## 0.30.0 の変更
 
