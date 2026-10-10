@@ -11,7 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 
 use Shimoning\ColorMeShopApi\Services\OAuth;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Services\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Values\Scopes;

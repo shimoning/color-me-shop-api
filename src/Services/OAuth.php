@@ -6,7 +6,7 @@ use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
+use Shimoning\ColorMeShopApi\Services\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;

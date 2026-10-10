@@ -81,12 +81,50 @@ class BackwardCompatibilityTest extends TestCase
 
     public function test_OAuthサービスはOptionsだけで生成できる(): void
     {
-        $options = new \Shimoning\ColorMeShopApi\Entities\OAuth\Options('id', 'secret', 'https://example.test/callback');
+        $options = new \Shimoning\ColorMeShopApi\Services\OAuth\Options('id', 'secret', 'https://example.test/callback');
 
         $this->assertInstanceOf(
             \Shimoning\ColorMeShopApi\Services\OAuth::class,
             new \Shimoning\ColorMeShopApi\Services\OAuth($options),
         );
+    }
+
+    public function test_OAuth_Optionsの旧名で生成したインスタンスは新名の型になる(): void
+    {
+        $options = new \Shimoning\ColorMeShopApi\Entities\OAuth\Options(
+            'id',
+            'secret',
+            'https://example.test/callback',
+        );
+
+        $this->assertInstanceOf(\Shimoning\ColorMeShopApi\Services\OAuth\Options::class, $options);
+    }
+
+    public function test_OAuth_Optionsの新名で生成したインスタンスは旧名で型判定できる(): void
+    {
+        $options = new \Shimoning\ColorMeShopApi\Services\OAuth\Options(
+            'id',
+            'secret',
+            'https://example.test/callback',
+        );
+
+        $this->assertInstanceOf(\Shimoning\ColorMeShopApi\Entities\OAuth\Options::class, $options);
+    }
+
+    public function test_OAuth_Optionsの新名のインスタンスを旧名の型宣言へ渡せる(): void
+    {
+        $options = new \Shimoning\ColorMeShopApi\Services\OAuth\Options(
+            'id',
+            'secret',
+            'https://example.test/callback',
+        );
+        $acceptLegacy = static function (
+            \Shimoning\ColorMeShopApi\Entities\OAuth\Options $value,
+        ): \Shimoning\ColorMeShopApi\Entities\OAuth\Options {
+            return $value;
+        };
+
+        $this->assertSame($options, $acceptLegacy($options));
     }
 
     public function test_Requestは引数なしで生成できる(): void

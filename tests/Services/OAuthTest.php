@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
+use Shimoning\ColorMeShopApi\Services\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;

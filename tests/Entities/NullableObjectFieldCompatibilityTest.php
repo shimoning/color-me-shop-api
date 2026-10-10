@@ -20,6 +20,13 @@ class NullableObjectFieldCompatibilityTest extends TestCase
     ): void {
         $entity = new $class(['furigana' => $value]);
 
+        if ($entity instanceof DeliveryUpdateInput) {
+            $serialized = $entity->toArrayRecursive();
+            $this->assertArrayHasKey('furigana', $serialized);
+            $this->assertNull($serialized['furigana']);
+            return;
+        }
+
         $this->assertNull($entity->getFurigana());
     }
 
