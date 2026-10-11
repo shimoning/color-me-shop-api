@@ -24,6 +24,9 @@
   受注の更新 (`PUT /v1/sales/{sale_id}`) の `sale.sale_deliveries[]` にある 28 項目とし、送信内容は変えない。
   setter は今のまま残し、setter のない `account_id` / `sale_id` / `delivery_id` / `detail_ids` はコンストラクタで渡す。
   応答の getter はなくなる。利用者の指定による。出典: `1c7fbd8`。
+- `Sale\DeliveryUpdateInput` に getter は戻さない。親の `Sale\SaleUpdateInput` は setter と getter を持つが、ほかの
+  入力 Entity は検索条件の `getDisplayState()` を除いて getter を持たず、getter を持たない形に寄せる。
+  `Sale\SaleUpdateInput` の getter と setter をどうするかは、別に検討する。利用者の指定による。
 - **`Entities\OAuth\Options` を `Services\OAuth\Options` に移す。** 使う Service の下に置き、`Entities` には Entity だけを
   置く。`Services\Product` と `Services\Product\Variant` と同じく、クラスと同じ名前の名前空間を作る。クラス名は変えない。
   旧名は [ADR 0016](0016-unify-request-input-entity-names.md) と同じ仕組みで非推奨の別名として残し、次のメジャーな
@@ -37,6 +40,9 @@
 - **`Sale\DeliveryUpdateInput` を、setter のある 23 項目と `id` だけにする案**は、応答由来の項目を入力から外せる。
   しかし公式 OpenAPI の要求には `account_id` などの 4 項目も含まれ、公式 API に準拠する方針
   （[ADR 0035](0035-follow-api-without-client-side-features.md)）に反するうえ、送信内容が変わる破壊的変更になる。
+- **`Sale\DeliveryUpdateInput` に、`Sale\Delivery` から引き継いでいた getter を戻す案**は、親の `Sale\SaleUpdateInput` と
+  setter と getter を持つ形で揃い、getter を使う利用者のコードも壊れない。しかし入力 Entity の大半は getter を持たず、
+  入力 Entity 全体の形からは外れたままになる。
 - **`Sale\DeliveryUpdateInput` をコンストラクタ方式に揃え、setter を非推奨にする案**は、ほかの入力と組み立て方まで
   揃う。しかし `Sale\SaleUpdateInput` の setter も含めて利用者のコードへの影響が大きく、今回は継承元だけを揃える。
 - **`Options` を `Communicator\OAuthOptions` に移す案**は、`Communicator\RequestOptions` と並ぶ。しかしクラス名も
