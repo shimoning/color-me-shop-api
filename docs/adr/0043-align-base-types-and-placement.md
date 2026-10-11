@@ -26,14 +26,14 @@
   応答の getter はなくなる。利用者の指定による。出典: `1c7fbd8`。
 - `Sale\DeliveryUpdateInput` に getter は戻さない。親の `Sale\SaleUpdateInput` は setter と getter を持つが、ほかの
   入力 Entity は検索条件の `getDisplayState()` を除いて getter を持たず、getter を持たない形に寄せる。
-  `Sale\SaleUpdateInput` の getter と setter をどうするかは、別に検討する。利用者の指定による。
+  `Sale\SaleUpdateInput` の getter と setter をどうするかは、別に検討する。利用者の指定による。出典: `b333c75`。
 - **`Entities\OAuth\Options` を `Services\OAuth\Options` に移す。** 使う Service の下に置き、`Entities` には Entity だけを
   置く。`Services\Product` と `Services\Product\Variant` と同じく、クラスと同じ名前の名前空間を作る。クラス名は変えない。
   旧名は [ADR 0016](0016-unify-request-input-entity-names.md) と同じ仕組みで非推奨の別名として残し、次のメジャーな
   変更で削除する。利用者の指定による。出典: `1c7fbd8`。
 - **`Services\OAuth` は `Services\Service` を継承しない。** `Service` はアクセストークンを前提にした基底で、
   アクセストークンを取得する側の `Services\OAuth` には当てはまらない。コードは変えず、例外であることをこの ADR に
-  記録する。利用者の指定による。
+  記録する。利用者の指定による。出典: `e53d593`。
 
 ## 代替案と却下理由
 
