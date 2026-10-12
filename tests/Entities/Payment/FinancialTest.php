@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Payment;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Payment\Financial;
-use Shimoning\ColorMeShopApi\Constants\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
 
 class FinancialTest extends TestCase
 {

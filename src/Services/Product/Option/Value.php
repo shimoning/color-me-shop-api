@@ -17,7 +17,7 @@ class Value extends Service
     /**
      * オプション値を作成する。成功は 201 で、応答の `option_value` を返す。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -39,7 +39,7 @@ class Value extends Service
      * オプション値を削除する。成功は 204 でボディがないため NoContent を返す。
      * 実測では最後の1件の削除は 422 で、`field` のない Errors になる (2026-09-20)。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @see docs/api-product-structure.md
      * @throws ParameterException アクセストークンが空の場合

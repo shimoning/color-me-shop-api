@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Date\Date;

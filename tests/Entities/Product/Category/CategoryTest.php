@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Category\Category;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
-use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 

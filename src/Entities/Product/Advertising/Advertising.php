@@ -7,8 +7,8 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Advertising;
 use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\AdvertisingCondition;
-use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
+use Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingCondition;
+use Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingGender;
 
 /**
  * GET /product_advertisings の商品広告要素。

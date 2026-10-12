@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Services\OAuth;
 
 use Shimoning\ColorMeShopApi\Aliases;
-use Shimoning\ColorMeShopApi\Constants\AuthRedirectUri;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthRedirectUri;
 
 /**
  * OAuth 認証に必要なアプリケーション設定。
@@ -22,7 +22,7 @@ class Options
     /**
      * @param string $clientId
      * @param string $clientSecret
-     * @param \Shimoning\ColorMeShopApi\Constants\AuthRedirectUri|string $redirectUri
+     * @param \Shimoning\ColorMeShopApi\Constants\OAuth\AuthRedirectUri|string $redirectUri
      * @param string|null $endpointUri
      * @return void
      */

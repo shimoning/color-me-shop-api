@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Group;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;

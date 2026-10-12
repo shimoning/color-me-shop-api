@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\Option\Option;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
 
 /**
  * 商品 API 読み取り応答: Product。

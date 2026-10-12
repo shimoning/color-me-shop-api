@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\ShopState;
+use Shimoning\ColorMeShopApi\Constants\Shop\ShopState;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;

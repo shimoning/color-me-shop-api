@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
-use Shimoning\ColorMeShopApi\Constants\PickupType;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;

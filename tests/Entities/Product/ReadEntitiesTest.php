@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryIds;
 use Shimoning\ColorMeShopApi\Entities\Product\Image as EmbeddedImage;

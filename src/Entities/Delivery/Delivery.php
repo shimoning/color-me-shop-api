@@ -6,10 +6,10 @@ namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
-use Shimoning\ColorMeShopApi\Constants\DeliveryChargeFreeType;
-use Shimoning\ColorMeShopApi\Constants\DeliveryChargeType;
-use Shimoning\ColorMeShopApi\Constants\DisplayState;
+use Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeFreeType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\DisplayState;
 
 /**
  * 配送方法

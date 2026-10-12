@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Shop;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop;
-use Shimoning\ColorMeShopApi\Constants\ShopState;
+use Shimoning\ColorMeShopApi\Constants\Shop\ShopState;
 
 class ShopTest extends TestCase
 {

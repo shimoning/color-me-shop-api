@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 
-use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
+use Shimoning\ColorMeShopApi\Constants\Customer\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**

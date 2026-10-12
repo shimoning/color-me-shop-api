@@ -34,7 +34,7 @@ namespace Shimoning\ColorMeShopApi\Examples\OAuthCallback;
 
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Values\Scopes;
@@ -74,7 +74,7 @@ if ($path === '/') {
         $case = AuthScope::tryFrom($name);
         if ($case === null) {
             \http_response_code(500);
-            echo '<h1>不明なスコープ</h1><p><code>' . $escape($name) . '</code> は <code>Constants\AuthScope</code> に定義されていません。</p>';
+            echo '<h1>不明なスコープ</h1><p><code>' . $escape($name) . '</code> は <code>Constants\OAuth\AuthScope</code> に定義されていません。</p>';
             return true;
         }
         $scopes[] = $case;

@@ -6,13 +6,13 @@ namespace Shimoning\ColorMeShopApi\Entities\Shop;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\ShopState;
-use Shimoning\ColorMeShopApi\Constants\DomainPlan;
-use Shimoning\ColorMeShopApi\Constants\ContractPlan;
-use Shimoning\ColorMeShopApi\Constants\OpenState;
+use Shimoning\ColorMeShopApi\Constants\Shop\ShopState;
+use Shimoning\ColorMeShopApi\Constants\Shop\DomainPlan;
+use Shimoning\ColorMeShopApi\Constants\Shop\ContractPlan;
+use Shimoning\ColorMeShopApi\Constants\Shop\OpenState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
-use Shimoning\ColorMeShopApi\Constants\TaxType;
-use Shimoning\ColorMeShopApi\Constants\TaxRoundingMethod;
+use Shimoning\ColorMeShopApi\Constants\Shop\TaxType;
+use Shimoning\ColorMeShopApi\Constants\Shop\TaxRoundingMethod;
 
 /**
  * 商品グループ

@@ -26,12 +26,24 @@ class EnumContractTest extends TestCase
     public static function enumProvider(): array
     {
         $cases = [];
-        foreach (\glob(__DIR__ . '/../../src/Constants/*.php') as $path) {
-            $shortName = \basename($path, '.php');
-            if (\in_array($shortName, self::EXCLUDED, true)) {
+        $base = \realpath(__DIR__ . '/../../src/Constants');
+        self::assertIsString($base);
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($base, \FilesystemIterator::SKIP_DOTS),
+        );
+
+        foreach ($files as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
-            $cases[$shortName] = ['Shimoning\\ColorMeShopApi\\Constants\\' . $shortName];
+
+            $relative = \substr($file->getPathname(), \strlen($base) + 1);
+            $name = \str_replace([\DIRECTORY_SEPARATOR, '.php'], ['\\', ''], $relative);
+            if (\in_array($name, self::EXCLUDED, true)) {
+                continue;
+            }
+
+            $cases[$name] = ['Shimoning\\ColorMeShopApi\\Constants\\' . $name];
         }
         return $cases;
     }
@@ -46,7 +58,14 @@ class EnumContractTest extends TestCase
         }
 
         $this->assertEqualsCanonicalizing(
-            ['ExternalAccountProvider', 'ErrorCode', 'PaymentType', 'Sex', 'KouzaType', 'DeliveryMethodType'],
+            [
+                'Customer\\ExternalAccountProvider',
+                'Delivery\\DeliveryMethodType',
+                'ErrorCode',
+                'Payment\\KouzaType',
+                'Payment\\PaymentType',
+                'Sex',
+            ],
             $actual,
         );
     }

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Group;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class GroupTest extends TestCase

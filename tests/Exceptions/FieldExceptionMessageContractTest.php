@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Exceptions;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Constants\MailState;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailState;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Charge;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Date\Times;
 use Shimoning\ColorMeShopApi\Entities\Entity;

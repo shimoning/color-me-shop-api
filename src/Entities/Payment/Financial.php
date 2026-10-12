@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Payment;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
 
 /**
  * 銀行振り込みの設定情報

@@ -18,7 +18,7 @@ class Image extends Service
     /**
      * 商品画像専用 GET。商品本体の追加画像と別構造。
      *
-     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
+     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
      *
      * @return Collection<ImageEntity>|Errors
      * @throws ParameterException アクセストークンが空の場合
@@ -38,7 +38,7 @@ class Image extends Service
      * 商品画像を作成する。`multipart/form-data` で `image` と `position` (0〜49) を送信する。
      *
      * 必要な scope: `read_products` と `write_products` の両方
-     * ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @param string|resource|StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
      * @param string|null $filename multipart で送るファイル名。省略時はパスまたはストリーム URI の末尾
@@ -66,7 +66,7 @@ class Image extends Service
     /**
      * 商品画像を削除する。成功は 204 でボディがないため NoContent を返す。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合

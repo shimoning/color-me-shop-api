@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Values;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Values\Scopes;
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 class ScopesTest extends TestCase

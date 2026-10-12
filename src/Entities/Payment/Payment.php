@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Payment;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\PaymentType;
 
 /**
  * 決済設定

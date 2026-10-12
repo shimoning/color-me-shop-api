@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Stock;
 
 use DateTimeImmutable;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryIds;
 use Shimoning\ColorMeShopApi\Entities\Product\Image;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock;

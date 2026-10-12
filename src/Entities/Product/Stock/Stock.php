@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Stock;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Aliases;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryIds;
 use Shimoning\ColorMeShopApi\Entities\Product\Image;

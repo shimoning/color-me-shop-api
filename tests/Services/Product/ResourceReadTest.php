@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Services\Product\Category as ProductCategory;
 use Shimoning\ColorMeShopApi\Services\Product\Group as ProductGroup;
 use Shimoning\ColorMeShopApi\Services\Product\Stock as ProductStock;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;

@@ -20,7 +20,7 @@ class Variant extends Service
      *
      * 公式 OpenAPI との差分: 未記載の既定 limit は 10 (2026-09-18)。
      *
-     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
+     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
      *
      * @return Page<VariantEntity>|Errors
      * @throws ParameterException アクセストークンが空の場合
@@ -44,7 +44,7 @@ class Variant extends Service
     /**
      * バリエーション単体。
      *
-     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
+     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -60,7 +60,7 @@ class Variant extends Service
     /**
      * バリエーションを更新する。応答の `variant` は商品 GET の `variants[]` と同じ形。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合

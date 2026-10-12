@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Constants;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState;
 
 class GroupDisplayStateTest extends TestCase
 {

@@ -8,7 +8,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 

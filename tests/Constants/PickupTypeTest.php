@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Constants;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
-use Shimoning\ColorMeShopApi\Constants\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType;
 
 class PickupTypeTest extends TestCase
 {

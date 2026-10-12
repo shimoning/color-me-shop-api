@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Payment;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Constants\KouzaType;
-use Shimoning\ColorMeShopApi\Constants\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\Payment\PaymentType;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment;
 
 class PaymentTest extends TestCase

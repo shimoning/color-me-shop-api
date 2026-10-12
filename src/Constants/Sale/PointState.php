@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shimoning\ColorMeShopApi\Constants;
+namespace Shimoning\ColorMeShopApi\Constants\Sale;
+
+use Shimoning\ColorMeShopApi\Aliases;
 
 /**
  * ショップポイントの付与状態。
@@ -30,3 +32,7 @@ enum PointState: string
         };
     }
 }
+
+// 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(PointState::class);
