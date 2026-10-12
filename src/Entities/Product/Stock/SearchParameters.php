@@ -42,6 +42,9 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?Limit $limit;
     protected ?int $offset;
 
+    /**
+     * @deprecated 0.31.0 送信内容は toArray() で確かめること。
+     */
     public function getDisplayState(): ?ProductDisplayState
     {
         return $this->displayState;
