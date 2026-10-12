@@ -37,6 +37,105 @@ class FinalClassAnnouncementTest extends TestCase
 {
     private const FINAL_ANNOTATION = '@final 0.32.0 で予告。次のメジャーな版で final にする。';
 
+    /** @var list<class-string> */
+    private const FINAL_ANNOUNCEMENT_CLASSES = [
+        Errors::class,
+        \Shimoning\ColorMeShopApi\Communicator\Request::class,
+        \Shimoning\ColorMeShopApi\Communicator\RequestMeta::class,
+        \Shimoning\ColorMeShopApi\Communicator\RequestOptions::class,
+        \Shimoning\ColorMeShopApi\Communicator\Response::class,
+        \Shimoning\ColorMeShopApi\Entities\Common\MetaTag::class,
+        \Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Customer::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\ExternalAccount::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Membership\AggregationPeriod::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Membership\Membership::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Membership\NextMembership::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Membership\Progress::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Points\Points::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Area::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Charge::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Date\Date::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Date\Days::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Date\Times::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Delivery::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Price::class,
+        \Shimoning\ColorMeShopApi\Entities\Delivery\Weight::class,
+        \Shimoning\ColorMeShopApi\Entities\Error::class,
+        \Shimoning\ColorMeShopApi\Entities\Gift\Card::class,
+        \Shimoning\ColorMeShopApi\Entities\Gift\Gift::class,
+        \Shimoning\ColorMeShopApi\Entities\Gift\Noshi::class,
+        \Shimoning\ColorMeShopApi\Entities\Gift\Type::class,
+        \Shimoning\ColorMeShopApi\Entities\Gift\Wrapping::class,
+        \Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken::class,
+        \Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse::class,
+        \Shimoning\ColorMeShopApi\Entities\Page::class,
+        \Shimoning\ColorMeShopApi\Entities\Pagination::class,
+        \Shimoning\ColorMeShopApi\Entities\Payment\Brand::class,
+        \Shimoning\ColorMeShopApi\Entities\Payment\Card::class,
+        \Shimoning\ColorMeShopApi\Entities\Payment\Cod::class,
+        \Shimoning\ColorMeShopApi\Entities\Payment\CodFee::class,
+        \Shimoning\ColorMeShopApi\Entities\Payment\Financial::class,
+        \Shimoning\ColorMeShopApi\Entities\Payment\Payment::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\CategoryIds::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Group\Group::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Image::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Image\Image::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Option\Option::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Option\OptionCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Option\Value\Value::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Option\Value\ValueCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Product::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\SearchParameters::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Variant\Option::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Variant\SearchParameters::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Application::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\CustomerCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Customization::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Delivery::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Detail::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\DetailCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Sale::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Segment::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\ShopCoupon::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Stat\Stat::class,
+        \Shimoning\ColorMeShopApi\Entities\Sale\Totals::class,
+        \Shimoning\ColorMeShopApi\Entities\Shop\Shop::class,
+        \Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException::class,
+        \Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException::class,
+        \Shimoning\ColorMeShopApi\Exceptions\ParameterException::class,
+        \Shimoning\ColorMeShopApi\Services\OAuth\Options::class,
+        \Shimoning\ColorMeShopApi\Values\DateTime::class,
+        \Shimoning\ColorMeShopApi\Values\Furigana::class,
+        \Shimoning\ColorMeShopApi\Values\Scopes::class,
+    ];
+
     /**
      * 利用者によるモックまたはライブラリ内の継承を維持するため、final 化しない具象クラス。
      *
@@ -80,20 +179,47 @@ class FinalClassAnnouncementTest extends TestCase
         MissingFieldException::class,
     ];
 
-    public function test_例外でない具象クラスはfinalまたはfinal化の予告を持つ(): void
+    public function test_既存の具象クラスはfinal化の予告を持ちまだfinalではない(): void
+    {
+        $this->assertCount(95, self::FINAL_ANNOUNCEMENT_CLASSES);
+
+        foreach (self::FINAL_ANNOUNCEMENT_CLASSES as $class) {
+            $reflection = new ReflectionClass($class);
+            $this->assertFalse($reflection->isAbstract(), $class);
+            $this->assertFalse($reflection->isFinal(), $class);
+
+            $document = $reflection->getDocComment();
+            $this->assertIsString($document, $class);
+            $this->assertStringContainsString(self::FINAL_ANNOTATION, $document, $class);
+        }
+    }
+
+    public function test_予告対象にも例外にもない具象クラスはfinalである(): void
     {
         foreach (self::sourceClasses() as $class => $reflection) {
             if (
                 $reflection->isAbstract()
-                || $reflection->isFinal()
+                || \in_array($class, self::FINAL_ANNOUNCEMENT_CLASSES, true)
                 || \in_array($class, self::FINALITY_EXCEPTIONS, true)
             ) {
                 continue;
             }
 
+            $this->assertTrue($reflection->isFinal(), $class);
+        }
+    }
+
+    public function test_final化しない例外はfinalでも予告対象でもない(): void
+    {
+        foreach (self::FINALITY_EXCEPTIONS as $class) {
+            $reflection = new ReflectionClass($class);
+            $this->assertFalse($reflection->isAbstract(), $class);
+            $this->assertFalse($reflection->isFinal(), $class);
+
             $document = $reflection->getDocComment();
-            $this->assertIsString($document, $class);
-            $this->assertStringContainsString(self::FINAL_ANNOTATION, $document, $class);
+            if ($document !== false) {
+                $this->assertStringNotContainsString('@final', $document, $class);
+            }
         }
     }
 
