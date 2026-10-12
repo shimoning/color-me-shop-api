@@ -52,6 +52,7 @@ class SearchParametersTest extends TestCase
         $this->assertSame('101,102', $actual['ids']);
         $this->assertSame('301,302', $actual['group_ids']);
         $this->assertSame(ProductDisplayState::SHOWING, $parameters->getDisplayState());
+        $this->assertSame(ProductDisplayState::SHOWING, $parameters->toArray()['display_state']);
         $this->assertSame('2024-01-01', $actual['make_date_min']);
         $this->assertSame('id,name', $actual['fields']);
         $this->assertSame(['id', 'name'], $parameters->toArray()['fields']);

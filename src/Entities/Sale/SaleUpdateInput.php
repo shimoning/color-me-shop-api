@@ -34,6 +34,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
     /**
      * 入金済みであるか否か
      * @return bool
+     * @deprecated 0.31.0 送信内容は toArrayRecursive() で確かめること。
      */
     public function isPaid(): bool
     {
@@ -45,6 +46,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
      * 入金済みであるか否かを設定
      * @param bool $paid
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPaid(bool $paid)
     {
@@ -55,6 +57,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
     /**
      * ショップポイント付与状態
      * @return PointState
+     * @deprecated 0.31.0 送信内容は toArrayRecursive() で確かめること。
      */
     public function getPointState(): PointState
     {
@@ -66,6 +69,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
      * ショップポイント付与状態を設定
      * @param PointState $pointState
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPointState(PointState $pointState)
     {
@@ -76,6 +80,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
     /**
      * お届け先
      * @return list<DeliveryUpdateInput>
+     * @deprecated 0.31.0 送信内容は toArrayRecursive() で確かめること。
      */
     public function getSaleDeliveries(): array
     {
@@ -87,6 +92,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
      * お届け先を設定
      * @param list<DeliveryUpdateInput> $saleDeliveries
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setSaleDeliveries($saleDeliveries)
     {
@@ -100,6 +106,7 @@ class SaleUpdateInput extends Entity implements RequestEntity
      *
      * @param Sale $sale 変換元の受注データ
      * @return self
+     * @deprecated 0.31.0 送りたい項目だけをコンストラクタの配列で渡すこと。
      */
     static public function convert(Sale $sale): self
     {

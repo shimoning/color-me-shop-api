@@ -44,6 +44,7 @@ class SearchParametersTest extends TestCase
         ], $parameters->toArrayRecursive());
         $this->assertSame(['product_id', 'name', 'stocks'], $parameters->toArray()['fields']);
         $this->assertSame(ProductDisplayState::SHOWING, $parameters->getDisplayState());
+        $this->assertSame(ProductDisplayState::SHOWING, $parameters->toArray()['display_state']);
     }
 
     public function test_未指定と空のidsは送らない(): void

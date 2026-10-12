@@ -68,6 +68,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 宛名を設定
      * @param string $name
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setName(string $name)
     {
@@ -79,6 +80,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 宛名のフリガナを設定
      * @param Furigana $furigana
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setFurigana(Furigana $furigana)
     {
@@ -90,6 +92,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 郵便番号を設定
      * @param string $postal
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPostal(string $postal)
     {
@@ -101,6 +104,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 都道府県の通し番号
      * @param Prefecture $prefId
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPrefId(Prefecture $prefId)
     {
@@ -112,6 +116,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 都道府県名を設定
      * @param string $prefName
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPrefName(string $prefName)
     {
@@ -123,6 +128,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 住所1を設定
      * @param string $address1
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setAddress1(string $address1)
     {
@@ -133,6 +139,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 住所2を設定
      * @param string $address2
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setAddress2(string $address2)
     {
@@ -144,6 +151,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 電話番号を設定
      * @param string $tel
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setTel(string $tel)
     {
@@ -155,6 +163,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 配送希望日を設定
      * @param string $preferredDate
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPreferredDate(string $preferredDate)
     {
@@ -166,6 +175,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 配送希望時間帯を設定
      * @param string $preferredPeriod
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setPreferredPeriod(string $preferredPeriod)
     {
@@ -177,6 +187,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 配送伝票番号を設定
      * @param string $slipNumber
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setSlipNumber(string $slipNumber)
     {
@@ -188,6 +199,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 熨斗の文言の設定
      * @param string $noshiText
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setNoshiText(string $noshiText)
     {
@@ -199,6 +211,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 熨斗の料金の設定
      * @param integer $noshiCharge
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setNoshiCharge(int $noshiCharge)
     {
@@ -210,6 +223,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * メッセージカードの表示名の設定
      * @param string $cardName
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setCardName(string $cardName)
     {
@@ -221,6 +235,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * メッセージカードのテキストの設定
      * @param string $cardText
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setCardText(string $cardText)
     {
@@ -232,6 +247,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * メッセージカードの料金の設定
      * @param integer $cardCharge
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setCardCharge(int $cardCharge)
     {
@@ -243,6 +259,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * ラッピングの表示名の設定
      * @param string $wrappingName
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setWrappingName(string $wrappingName)
     {
@@ -254,6 +271,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * ラッピングの料金の設定
      * @param integer $wrappingCharge
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setWrappingCharge(int $wrappingCharge)
     {
@@ -265,6 +283,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 配送料の設定
      * @param integer $deliveryCharge
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setDeliveryCharge(int $deliveryCharge)
     {
@@ -276,6 +295,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 配送料・手数料の小計を設定
      * @param int $totalCharge
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setTotalCharge(int $totalCharge)
     {
@@ -287,6 +307,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 配送状況確認URLの設定
      * @param string $trackingUrl
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setTrackingUrl(string $trackingUrl)
     {
@@ -298,6 +319,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 備考の設定
      * @param string $memo
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setMemo(string $memo) {
         $this->memo = $memo;
@@ -308,6 +330,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
      * 発送済みであるか否かの設定
      * @param bool $delivered
      * @return void
+     * @deprecated 0.31.0 コンストラクタの配列で指定すること。
      */
     public function setDelivered(bool $delivered)
     {

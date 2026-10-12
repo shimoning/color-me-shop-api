@@ -3,6 +3,8 @@
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Shimoning\ColorMeShopApi\Constants\PointState;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
@@ -13,6 +15,60 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class SaleUpdateInputTest extends TestCase
 {
+    /** @param DeliveryUpdateInput|array<string, mixed> $delivery */
+    #[DataProvider('constructorDeliveryProvider')]
+    public function test_コンストラクタの配列だけでsetterと同じ受注更新データを組み立てられる(
+        DeliveryUpdateInput|array $delivery,
+    ): void {
+        $setterInput = new SaleUpdateInput([]);
+        $setterInput->setPaid(true);
+        $setterInput->setPointState(PointState::FIXED);
+        $setterInput->setSaleDeliveries([
+            new DeliveryUpdateInput(['name' => '山田太郎', 'delivered' => false]),
+        ]);
+
+        $constructorInput = new SaleUpdateInput([
+            'paid' => true,
+            'point_state' => 'fixed',
+            'sale_deliveries' => [$delivery],
+        ]);
+
+        $this->assertSame(
+            $setterInput->toArrayRecursive(),
+            $constructorInput->toArrayRecursive(),
+        );
+    }
+
+    /** @return array<string, array{DeliveryUpdateInput|array<string, mixed>}> */
+    public static function constructorDeliveryProvider(): array
+    {
+        $data = ['name' => '山田太郎', 'delivered' => false];
+
+        return [
+            'DeliveryUpdateInputのインスタンス' => [new DeliveryUpdateInput($data)],
+            '配列' => [$data],
+        ];
+    }
+
+    /** @param PointState|string $pointState */
+    #[DataProvider('pointStateProvider')]
+    public function test_point_stateはenumと文字列のどちらでもコンストラクタに渡せる(
+        PointState|string $pointState,
+    ): void {
+        $input = new SaleUpdateInput(['point_state' => $pointState]);
+
+        $this->assertSame(['point_state' => 'fixed'], $input->toArrayRecursive());
+    }
+
+    /** @return array<string, array{PointState|string}> */
+    public static function pointStateProvider(): array
+    {
+        return [
+            'PointState' => [PointState::FIXED],
+            '文字列' => ['fixed'],
+        ];
+    }
+
     public function test_お届け先更新入力の構築と直列化の特性を保つ(): void
     {
         $data = [

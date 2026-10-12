@@ -474,21 +474,24 @@ $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API �
 公式 OpenAPI はこの操作に認証の宣言 (`security`) を持たないが、実 API は認証を要求する。説明文に従い、必要なスコープは `write_sales` としている (スコープの要否は未検証)。
 
 #### 受注データの更新
-既存の受注から更新用エンティティを生成すると、API が必要とする現在値を引き継げる。
+送りたい項目だけをコンストラクタの配列で渡す。受注の更新 API は送った項目だけを変え、送らなかった項目やお届け先は
+変えない ([更新 API で送らなかった項目の扱いの実測記録](docs/api-partial-update-observation.md)、2026-10-12)。お届け先は
+`id` で指定する。お届け先の `pref_name`、`total_charge`、`tracking_url` は送っても HTTP 200 で無視され、それぞれ
+`pref_id`、料金の項目、`slip_number` から決まる。
 要求側 Entity は明示したフィールドだけを送信する。JSON ボディの入力 Entity はコンストラクタ配列で
 明示した `null` も送信し、指定しなかったフィールドは送信しない。各種検索条件 Entity も未指定フィールドを
 除外するが、GET クエリでは `http_build_query()` の仕様により明示した `null` も送信されない。
 要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時や setter での設定時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと (0.22.0 以降、[ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。ただし入れ子の入力の配列 (`details` / `sale_deliveries` など) に、すべてのキーが文字列の連想配列を 1 つコンストラクタで渡した場合は、後方互換のため要素 1 件として扱う。setter (`SaleUpdateInput::setSaleDeliveries()` など) ではこの扱いはなく、連番の配列でなければ例外になる。また、商品オプションの作成の `values` (`Product\Option\OptionCreateInput`) は、個別の検証により文字列キーの配列も受け付けない。
 
 ```php
-$saleOrErrors = $client->getSale($saleId);
-if (! $saleOrErrors instanceof Errors) {
-    $updater = SaleUpdateInput::convert($saleOrErrors);
-    $updater->setPaid(true);
-    $updater->setPointState(PointState::FIXED);
+$updater = new SaleUpdateInput([
+    'paid' => true,
+    'sale_deliveries' => [
+        ['id' => $deliveryId, 'slip_number' => '1234-5678-9012'],
+    ],
+]);
 
-    $updatedSaleOrErrors = $client->updateSale($saleId, $updater);
-}
+$updatedSaleOrErrors = $client->updateSale($saleId, $updater);
 ```
 
 受注 ID は、他の更新 API と同じく第 1 引数で渡す。`SaleUpdateInput` は受注 ID を持たず、body にも
@@ -1166,6 +1169,17 @@ $pagination->getOffset();
 - `Entities\Entity` を `abstract` にした。`Entity` を直接生成することはできない
 - `Sale\DeliveryUpdateInput` の継承元を、応答の `Sale\Delivery` から `Entity` にした。`Sale\Delivery` の `instanceof` を満たさなくなり、`getName()` などの応答の getter を持たなくなった。setter と、送信する内容は変わらない
 - OAuth のアプリ設定 `Entities\OAuth\Options` を `Services\OAuth\Options` に移した。旧名は非推奨の別名として残している ([非推奨のクラス名の対応表](docs/class-aliases.md))
+
+### 入力 Entity の getter と setter、受注の convert() を非推奨にした
+
+入力 Entity は、コンストラクタの配列で組み立てる形に揃える ([ADR 0044](docs/adr/0044-deprecate-input-accessors-and-sale-convert.md))。次を非推奨にした。動作は変わらず、次のメジャーな変更で削除する。
+
+- `Sale\SaleUpdateInput::convert()`。受注の更新 API は送った項目だけを変えるため、現在の値を引き継ぐ必要はない。送りたい項目だけをコンストラクタの配列で渡す
+- `Sale\SaleUpdateInput` の `isPaid()`、`getPointState()`、`getSaleDeliveries()`、`setPaid()`、`setPointState()`、`setSaleDeliveries()`
+- `Sale\DeliveryUpdateInput` の setter すべて
+- 商品・在庫・商品の広告の検索条件 `SearchParameters` の `getDisplayState()`
+
+値はコンストラクタの配列で指定し、送信内容は `toArrayRecursive()` で確かめる。`toArray()` は指定していない項目も `null` で含み、enum などを展開しないため、送信内容とは異なる。
 
 ## 0.30.0 の変更
 
