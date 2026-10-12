@@ -7,6 +7,7 @@ use DateTimeInterface;
 
 /**
  * 日付の型 (YYYY-MM-DD or YYYY-MM-DD hh:mm:ss)
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class DateTime implements Value
 {

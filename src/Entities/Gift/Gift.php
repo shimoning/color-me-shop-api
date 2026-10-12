@@ -11,6 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * ギフト設定。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/gift/operation/getGift
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Gift extends Entity
 {

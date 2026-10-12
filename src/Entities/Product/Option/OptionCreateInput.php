@@ -18,6 +18,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/adr/0014-model-product-write-api.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class OptionCreateInput extends Entity implements RequestEntity
 {

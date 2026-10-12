@@ -19,6 +19,7 @@ use Shimoning\ColorMeShopApi\Values\Product\Advertising\Limit as AdvertisingLimi
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-search-query-format-observation.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class SearchParameters extends Entity implements RequestEntity
 {

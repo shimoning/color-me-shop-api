@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * ラッピング設定。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Wrapping extends Entity
 {

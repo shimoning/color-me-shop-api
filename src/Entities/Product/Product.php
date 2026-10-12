@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
 /**
  * 商品 API 読み取り応答: Product。
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Product extends Entity
 {

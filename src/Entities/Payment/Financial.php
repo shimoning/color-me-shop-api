@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\KouzaType;
  * 銀行振り込みの設定情報
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Financial extends Entity
 {

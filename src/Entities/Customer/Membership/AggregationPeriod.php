@@ -11,6 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 会員ランク判定に使われる集計期間
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class AggregationPeriod extends Entity
 {

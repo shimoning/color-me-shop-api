@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * 代引き手数料の区分。API の2整数タプルに意味付きの名前を与える。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class CodFee extends Entity
 {

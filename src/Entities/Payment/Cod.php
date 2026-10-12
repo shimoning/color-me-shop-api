@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 決済設定
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Cod extends Entity
 {

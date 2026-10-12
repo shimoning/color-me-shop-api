@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * ギフトの種類。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Type extends Entity
 {

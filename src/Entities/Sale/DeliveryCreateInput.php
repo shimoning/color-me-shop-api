@@ -16,6 +16,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  * `preferred_date` は既存の受注更新入力と同じく文字列をそのまま送信する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class DeliveryCreateInput extends Entity implements RequestEntity
 {

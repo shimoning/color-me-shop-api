@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
 /**
  * GET /product_advertisings の商品広告要素。
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Advertising extends Entity
 {

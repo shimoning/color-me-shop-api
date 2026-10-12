@@ -7,6 +7,7 @@ namespace Shimoning\ColorMeShopApi\Exceptions;
  *
  * meta が配列でない場合、または存在する必須値 (total / limit / offset) が
  * null や int 以外の場合に投げられる。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class InvalidPaginationException extends InvalidFieldException
 {

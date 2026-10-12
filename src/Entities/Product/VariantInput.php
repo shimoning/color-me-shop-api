@@ -17,6 +17,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * OpenAPI に nullable 指定がないため `null` は拒否する。
  *
  * @see docs/adr/0012-allow-nullability-from-api-observations.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class VariantInput extends Entity implements RequestEntity
 {

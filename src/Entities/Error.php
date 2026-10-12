@@ -6,6 +6,7 @@ use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 
 /**
  * API が返したエラーの詳細。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Error extends Entity
 {

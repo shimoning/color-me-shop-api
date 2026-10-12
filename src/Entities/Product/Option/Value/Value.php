@@ -16,6 +16,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-product-structure.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Value extends Entity
 {

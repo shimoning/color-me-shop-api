@@ -134,6 +134,8 @@ class SaleTest extends TestCase
 
     public function test_サブクラスは継承した顧客プロパティへ従来どおり任意の値を代入できる(): void
     {
+        // @final は次のメジャーな版に向けた予告で、現行版では継承できることを確かめる (ADR 0045)
+        // @phpstan-ignore class.extendsFinalByPhpDoc
         $sale = new class([]) extends Sale {
             public function assignCustomer(mixed $customer): void
             {

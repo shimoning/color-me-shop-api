@@ -15,6 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 必須フィールドは Services\Sale::create() が送信前に検証する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class SaleCreateInput extends Entity implements RequestEntity
 {

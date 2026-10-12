@@ -11,6 +11,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 /**
  * バリエーションの option1 / option2 に含まれる選択値。
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Option extends Entity
 {

@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 大カテゴリー。実測レスポンスでは children キーを持つ。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class BigCategory extends Category
 {

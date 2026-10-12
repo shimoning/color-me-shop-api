@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * 配送時間帯の設定。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Times extends Entity
 {

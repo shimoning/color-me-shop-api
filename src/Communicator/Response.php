@@ -6,6 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * HTTP レスポンスとリクエスト情報を保持するオブジェクト。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Response
 {

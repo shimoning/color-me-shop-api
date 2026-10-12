@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 配送料設定の詳細
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Charge extends Entity
 {

@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 注文金額による配送料の区分。API の `[上限, 配送料]` の組に意味付きの名前を与える。
  *
  * @see docs/api-delivery-charge-observation.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Price extends Entity
 {

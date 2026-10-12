@@ -10,6 +10,7 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
  * @template T
  * @extends Collection<T>
  * @phpstan-consistent-constructor
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Page extends Collection
 {

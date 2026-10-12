@@ -10,6 +10,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 次に目指す会員ランク
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class NextMembership extends Entity
 {

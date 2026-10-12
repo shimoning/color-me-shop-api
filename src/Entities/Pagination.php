@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 
 /**
  * API レスポンスのページネーション情報。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Pagination extends Entity
 {
