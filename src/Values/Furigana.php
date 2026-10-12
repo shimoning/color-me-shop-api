@@ -72,7 +72,10 @@ class Furigana implements FallbackValue
      */
     public function validate(mixed $value): bool
     {
-        return \is_string($value)
-            && preg_match('/\A[ァ-ヶー 　]*\z/u', $value) === 1;
+        if ($value === null || \is_scalar($value) || $value instanceof \Stringable) {
+            $value = (string) $value;
+        }
+
+        return preg_match('/\A[ァ-ヶー 　]*\z/u', $value) === 1;
     }
 }

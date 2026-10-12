@@ -69,12 +69,21 @@ class FuriganaTest extends TestCase
         $this->assertFalse($furigana->validate('たろう'));
     }
 
-    public function test_validateは文字列以外をfalseと判定する(): void
+    public function test_validateはstrict_types宣言前と同じ暗黙変換後の値を判定する(): void
     {
         $furigana = new Furigana('ヤマダ');
+        $stringable = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'タロウ';
+            }
+        };
 
         $this->assertFalse($furigana->validate(123));
-        $this->assertFalse($furigana->validate(null));
+        $this->assertFalse($furigana->validate(true));
+        $this->assertTrue($furigana->validate(null));
+        $this->assertTrue($furigana->validate(false));
+        $this->assertTrue($furigana->validate($stringable));
     }
 
     #[DataProvider('invalidProvider')]
