@@ -20,6 +20,7 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
  * `birthday` は既存の顧客作成入力と同じく文字列をそのまま送信する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class CustomerCreateInput extends Entity implements RequestEntity
 {

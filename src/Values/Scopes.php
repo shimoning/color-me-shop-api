@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * OAuth 認証で要求するスコープの集合。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Scopes implements Value
 {

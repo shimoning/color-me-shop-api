@@ -1156,6 +1156,14 @@ $pagination->getOffset();
 
 -----
 
+## 0.32.0 の変更
+
+### 継承しない具象クラスの final 化を予告した
+
+継承を前提にしたクラスは `abstract` に、ライブラリの中で継承しない具象クラスは `final` にする規則を設けた ([ADR 0045](docs/adr/0045-final-by-default-for-concrete-classes.md))。既存の 95 クラス (Entity、`Communicator` のクラス、一部の例外と値オブジェクト、`Services\OAuth\Options`) には docblock の `@final` を付けて予告し、次のメジャーな変更で `final` にする。0.32.0 では動作は変わらない。PHPStan は、`@final` のクラスを継承しているコードを `class.extendsFinalByPhpDoc` として指摘する。
+
+`Client` と Service は、利用者がテストでモックできるように `final` にしない。ライブラリの中で継承される `Entities\Collection`、`Values\Limit`、`Values\Sort`、`Exceptions\ColorMeApiException`、`Exceptions\InvalidFieldException`、`Exceptions\MissingFieldException` も `final` にしない。
+
 ## 0.31.0 の変更
 
 ### RequestEntity を Entities に移した

@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 受注作成時の受注明細。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class DetailCreateInput extends Entity implements RequestEntity
 {

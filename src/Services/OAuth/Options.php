@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Constants\AuthRedirectUri;
 
 /**
  * OAuth 認証に必要なアプリケーション設定。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Options
 {

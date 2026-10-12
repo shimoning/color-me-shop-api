@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 
 /**
  * 小カテゴリー。実測レスポンスに children キーはない。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class SmallCategory extends Category
 {

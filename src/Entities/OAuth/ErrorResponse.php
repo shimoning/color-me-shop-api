@@ -7,6 +7,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**
  * RFC 6749 §5.2 で定義されたトークンエンドポイントのエラー応答。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class ErrorResponse extends Entity
 {

@@ -4,6 +4,7 @@ namespace Shimoning\ColorMeShopApi\Communicator;
 
 /**
  * HTTP リクエストのオプション。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class RequestOptions
 {

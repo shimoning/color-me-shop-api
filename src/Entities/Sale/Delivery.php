@@ -11,6 +11,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  * お届け先
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Delivery extends Entity
 {

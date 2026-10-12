@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**
  * カラーミーショップ API への HTTP リクエストを実行するクライアント。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Request
 {

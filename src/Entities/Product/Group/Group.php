@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
  * 商品グループ
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Group extends Entity
 {

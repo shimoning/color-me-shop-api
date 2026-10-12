@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Image;
 
 /**
  * 在庫情報取得 API の応答 1 行。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Stock extends Entity
 {

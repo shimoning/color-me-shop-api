@@ -5,6 +5,7 @@ namespace Shimoning\ColorMeShopApi\Communicator;
 /**
  * 実行した HTTP リクエストのメタデータ。
  * multipart の stream resource は保持せず、filename と size のスナップショットを保持する。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class RequestMeta
 {

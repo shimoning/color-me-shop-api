@@ -17,6 +17,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/adr/0015-model-customer-write-api.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class PointsInput extends Entity implements RequestEntity
 {

@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 生データには保持する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class MetaTag extends Entity
 {

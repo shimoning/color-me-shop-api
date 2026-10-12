@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  * @see docs/api-customer-structure.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Furigana implements FallbackValue
 {

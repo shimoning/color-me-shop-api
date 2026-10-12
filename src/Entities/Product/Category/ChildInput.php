@@ -27,6 +27,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * @see docs/api-product-structure.md
  * @see docs/adr/0010-split-category-into-big-and-small.md
  * @see docs/adr/0014-model-product-write-api.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class ChildInput extends Entity implements RequestEntity
 {

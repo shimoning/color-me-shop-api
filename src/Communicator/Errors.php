@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  *
  * @extends Collection<Error>
  * @see docs/implementation-notes.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Errors extends Collection
 {

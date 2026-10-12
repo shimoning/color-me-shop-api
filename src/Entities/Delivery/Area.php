@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
  * 都道府県ごとの送料設定
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Area extends Entity
 {

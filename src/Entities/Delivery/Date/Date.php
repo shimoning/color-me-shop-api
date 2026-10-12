@@ -12,6 +12,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 配送日時設定。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveryDateSetting
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Date extends Entity
 {

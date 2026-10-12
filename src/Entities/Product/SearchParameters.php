@@ -24,6 +24,7 @@ use Shimoning\ColorMeShopApi\Values\Product\Sort;
  * @see docs/api-product-structure.md
  * @see docs/api-search-query-format-observation.md
  * @see docs/api-product-sort-observation.md
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class SearchParameters extends Entity implements RequestEntity
 {

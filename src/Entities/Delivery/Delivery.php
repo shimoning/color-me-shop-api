@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Constants\DisplayState;
  * 配送方法
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/delivery/operation/getDeliveries
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Delivery extends Entity
 {

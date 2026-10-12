@@ -8,6 +8,7 @@ use Shimoning\ColorMeShopApi\Constants\AuthScope;
 
 /**
  * OAuth 認証で発行されたアクセストークン情報。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class AccessToken extends Entity
 {

@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * 受注明細
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Detail extends Entity
 {

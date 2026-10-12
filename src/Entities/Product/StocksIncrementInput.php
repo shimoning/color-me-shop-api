@@ -13,6 +13,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 商品在庫数を相対更新する `{"increment": int}` 入力。
  *
  * 公式 OpenAPI の object 定義に合わせ、`increment` を必須とし、それ以外のキーを拒否する。
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class StocksIncrementInput extends Entity implements RequestEntity
 {

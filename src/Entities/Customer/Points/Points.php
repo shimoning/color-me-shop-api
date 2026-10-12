@@ -15,6 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  * トップレベルに持つ。`points` は増減後の保有ポイント数である。
  *
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
+ * @final 0.32.0 で予告。次のメジャーな版で final にする。
  */
 class Points extends Entity
 {
