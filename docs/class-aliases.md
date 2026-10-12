@@ -23,6 +23,17 @@
 
 旧名での `implements`、`instanceof` と型宣言は動作する。
 
+## 0.31.0: OAuth の設定の移動
+
+`Entities` には Entity だけを置くようにし、OAuth のアプリ設定を使う Service の下に移した
+（[ADR 0043](adr/0043-align-base-types-and-placement.md)）。この表のクラス名は `Shimoning\ColorMeShopApi\` 以下である。
+
+| 旧クラス名 | 新クラス名 |
+| --- | --- |
+| `Entities\OAuth\Options` | `Services\OAuth\Options` |
+
+旧名での生成、`instanceof` と型宣言は動作する。
+
 ## 0.25.0: 受注の Service の改名
 
 ほかの Service と同じ単数形にし、Entity の名前空間 `Entities\Sale` と揃えた

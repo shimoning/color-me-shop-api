@@ -26,6 +26,8 @@ final class Aliases
             => Entities\RequestEntity::class,
         'Shimoning\\ColorMeShopApi\\Services\\Sales'
             => Services\Sale::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
+            => Services\OAuth\Options::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
             => Entities\Product\VariantInput::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'

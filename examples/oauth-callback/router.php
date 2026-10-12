@@ -35,7 +35,7 @@ namespace Shimoning\ColorMeShopApi\Examples\OAuthCallback;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Constants\AuthScope;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
+use Shimoning\ColorMeShopApi\Services\OAuth\Options;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 

@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Constants\MailType;
 use Shimoning\ColorMeShopApi\Constants\PickupType;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
-use Shimoning\ColorMeShopApi\Entities\OAuth\Options;
+use Shimoning\ColorMeShopApi\Services\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\SearchParameters as ProductSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;

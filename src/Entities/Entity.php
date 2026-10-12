@@ -21,7 +21,7 @@ use Shimoning\ColorMeShopApi\Values\Value;
 /**
  * API レスポンスを型付きプロパティへ変換するエンティティの基底クラス。
  */
-class Entity
+abstract class Entity
 {
     /**
      * フィールドの型と変換方法の定義。

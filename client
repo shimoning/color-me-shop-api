@@ -26,7 +26,7 @@ $sh->addCode(sprintf("namespace %s;", __NAMESPACE__));
 // - OAuth
 $oAuthOptions = null;
 if (!empty($_ENV['CLIENT_ID']) && !empty($_ENV['CLIENT_SECRET'])) {
-    $oAuthOptions = new Entities\OAuth\Options(
+    $oAuthOptions = new Services\OAuth\Options(
         $_ENV['CLIENT_ID'],
         $_ENV['CLIENT_SECRET'],
         $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,

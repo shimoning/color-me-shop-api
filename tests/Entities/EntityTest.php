@@ -44,6 +44,11 @@ use Shimoning\ColorMeShopApi\Values\Sort;
 
 class EntityTest extends TestCase
 {
+    public function test_Entityは直接生成できない抽象クラスである(): void
+    {
+        $this->assertTrue((new ReflectionClass(Entity::class))->isAbstract());
+    }
+
     #[DataProvider('pairTupleProvider')]
     public function test_2要素のタプル形状を判定する(mixed $value, bool $expected): void
     {

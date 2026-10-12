@@ -41,7 +41,6 @@ class ApiFieldNameTest extends TestCase
         'Entity' => '共通基底クラスで、API フィールドを宣言しない',
         'Collection' => 'Entity を継承せず、toArray() を持たないコレクション',
         'Page' => 'Entity を継承せず、toArray() を持たないページ付きコレクション',
-        'OAuth\\Options' => 'Entity を継承しないアプリ設定 DTO',
         'Product\\Category\\Category' => '抽象基底クラスで、具象クラスを個別に検証する',
         'Delivery\\Price' => 'upper_limit / charge は API の価格別送料タプルに付けたライブラリ独自名',
         'Delivery\\Weight' => 'weight / areas は API の重量別送料タプルに付けたライブラリ独自名',
