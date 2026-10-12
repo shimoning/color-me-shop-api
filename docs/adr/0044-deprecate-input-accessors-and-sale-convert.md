@@ -5,8 +5,8 @@
 
 ## 文脈
 
-入力 Entity（`Entities\RequestEntity` を実装する Entity）は 27 個ある。そのうち 25 個は、コンストラクタに配列を渡す
-方式だけで組み立て、getter も setter も持たない。次だけが揃っていなかった。
+入力 Entity（`Entities\RequestEntity` を実装する Entity）は 27 個ある。そのうち 22 個は、コンストラクタに配列を渡す
+方式だけで組み立て、getter も setter も持たない。次の 5 個だけが揃っていなかった。
 
 - 受注の更新入力 `Sale\SaleUpdateInput` は、3 項目の setter と getter と、取得した受注から作る `convert()` を持つ。
 - 受注のお届け先の更新入力 `Sale\DeliveryUpdateInput` は、23 項目の setter を持つ。getter は
