@@ -69,3 +69,4 @@
 - [ADR 0042: RequestEntity を Entities\RequestEntity に移す](0042-move-request-entity-to-entities.md)
 - [非推奨のクラス名の対応表](../class-aliases.md)
 - 実装とテストの出典コミット: `1c7fbd8`
+- `Sale\DeliveryUpdateInput` の setter を残し、`Sale\SaleUpdateInput` の getter と setter を別に検討するとした判断は [ADR 0044](0044-deprecate-input-accessors-and-sale-convert.md) により更新された。
