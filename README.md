@@ -1164,6 +1164,10 @@ $pagination->getOffset();
 
 `Client` と Service は、利用者がテストでモックできるように `final` にしない。ライブラリの中で継承される `Entities\Collection`、`Values\Limit`、`Values\Sort`、`Exceptions\ColorMeApiException`、`Exceptions\InvalidFieldException`、`Exceptions\MissingFieldException` も `final` にしない。
 
+### すべての PHP ファイルで strict_types を宣言した
+
+src、tests、examples、`client` スクリプトのすべての PHP ファイルで `declare(strict_types=1);` を宣言した ([ADR 0046](docs/adr/0046-declare-strict-types-everywhere.md))。利用者のコードからライブラリを呼ぶときの型の扱いは、利用者のファイルの宣言で決まるため変わらない。`Values\Furigana::validate()` と `Communicator\RequestOptions` の `authorization` は、宣言の前と同じ結果を返す。
+
 ## 0.31.0 の変更
 
 ### RequestEntity を Entities に移した
