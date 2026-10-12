@@ -109,7 +109,7 @@ class DeprecatedInputAccessorsTest extends TestCase
             $cases[$name . '::getDisplayState'] = [
                 $class,
                 'getDisplayState',
-                '送信内容は toArray() で確かめること',
+                '送信内容は toArrayRecursive() で確かめること',
             ];
         }
 
