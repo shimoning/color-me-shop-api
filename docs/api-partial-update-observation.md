@@ -7,7 +7,7 @@
 追加・更新した各コミットであり、[ADR 0000](adr/0000-record-architecture-decisions.md) の収集条件・検証可能性の規則に
 従う。
 
-収集日は **2026-10-09（Asia/Tokyo）**。対象はテスト用ショップ。本ライブラリの `Communicator\Request` で JSON の本文を
+収集日は **2026-10-09（Asia/Tokyo）**（「受注の全項目」の節だけは **2026-10-12**）。対象はテスト用ショップ。本ライブラリの `Communicator\Request` で JSON の本文を
 送った。グループ、大カテゴリー、小カテゴリー、商品（オプションとバリエーションを含む）、顧客は、名前を
 「【検証】部分更新 2026-10-09」で始めて新しく作った。商品は非公開（`display_state: hidden`）で作り、顧客のメールアドレスは
 `example.com` のものを使った。受注は作成 API を使えないため既存の受注を使い、変えた値は元に戻した。お届け先が
@@ -84,6 +84,43 @@
 **`id` だけを送ったお届け先は、項目が空にならず、変わらなかった。空の配列を送っても、お届け先は消えなかった。** どれも
 HTTP 200 で、エラーは返らなかった。比べたのは PUT の応答の件数と、10 秒後の GET の各項目（`update_date` を除く）である。
 
+### 受注の全項目
+
+2026-10-12 に、お届け先が 2 件、明細が 2 件ある受注（上と同じ、ショップの管理者が作った受注）で、公式 OpenAPI の受注の
+更新にある項目を 1 つずつ送った。決済方法は銀行振り込みで、ショップポイントはすべて 0、`point_state` は `assumed` だった。
+顧客のメールアドレスは開発用のもので、通知のメールが届いてよいことを利用者に確かめた。
+
+手順は次のとおり。
+
+1. 2 件のお届け先の空の項目（`preferred_date`、`preferred_period`、`slip_number`、熨斗・メッセージカード・ラッピングの
+   各項目）に、検証用の値を入れた。
+2. 1 件目のお届け先に、`id` と 1 つの項目だけを、今と違う値で送った。ただし `account_id`、`sale_id`、`delivery_id`、
+   `detail_ids` は、変えると受注の構成が変わるため、4 項目をまとめて今と同じ値で送った。受注の `paid` は今と違う値で、
+   `point_state` は今と同じ値で、それぞれだけを送った。項目ごとに元に戻さず、10 秒後の GET を次の比較の基準にした。
+3. 最後に、元の値を 1 回の PUT で送って戻し、10 秒後の GET が最初の GET と（`update_date` を除いて）同じことを確かめた。
+
+比べたのは、受注の全項目（顧客・明細・合計を含み、`update_date` を除く）と、2 件のお届け先の全項目である。要求は並列に
+せず、間を 2 秒以上空けた。
+
+| 送った項目 | HTTP | 変わった項目 |
+| --- | ---: | --- |
+| お届け先の `name`、`furigana`、`postal`、`address1`、`address2`、`tel`、`preferred_date`、`preferred_period`、`noshi_text`、`card_name`、`card_text`、`wrapping_name`、`memo`、`delivered` | 200 | 送った項目だけ |
+| お届け先の `pref_id` | 200 | 送った項目と、`pref_name` |
+| お届け先の `slip_number` | 200 | 送った項目と、`tracking_url` |
+| お届け先の `noshi_charge`、`card_charge`、`wrapping_charge`、`delivery_charge` | 200 | 送った項目と、そのお届け先の `total_charge`、受注の対応する合計（`noshi_total_charge` など）、`total_price`、`totals` |
+| お届け先の `pref_name`、`total_charge`、`tracking_url` | 200 | **何も変わらなかった** |
+| お届け先の `account_id`、`sale_id`、`delivery_id`、`detail_ids`（今と同じ値） | 200 | 何も変わらなかった |
+| 受注の `point_state`（今と同じ値） | 200 | 何も変わらなかった |
+| 受注の `paid` | 200 | 送った項目だけ。`point_state` は `assumed` のままだった |
+
+**どの項目も、送らなかった項目は消えず、変わらなかった。** 変わったのは、送った項目と、それから計算される項目だけで、
+送らなかったもう 1 件のお届け先と明細は、どの段階でも変わらなかった。1 件目のお届け先の `delivered` を変えても、受注の
+`delivered` は変わらなかった（2 件目は未発送のまま）。`paid` と `delivered` を変えても、受注のメールの状態の項目
+（`*_mail_state`、`*_mail_sent_date`）は変わらなかった。
+
+**`pref_name`、`total_charge`、`tracking_url` は、送っても HTTP 200 で、値は変わらなかった。** それぞれ `pref_id`、料金の
+項目、`slip_number` を送ると変わった。最後に元の値へ戻した後の GET は、最初の GET と同じだった。
+
 ### 商品の `stocks`
 
 バリエーションのある商品に、商品の `stocks` だけを送ると、HTTP 200 で、PUT の応答と 10 秒後の GET の `stocks` は変わらな
@@ -98,6 +135,11 @@ HTTP 200 で、エラーは返らなかった。比べたのは PUT の応答の
 - 顧客のほかの nullable の項目（`address2` 以外）が、送らないと空になるかは、`name` と `address1` だけを送った場合に
   変わらなかったことだけを確かめた
 - バリエーションのない商品で、商品の `stocks` を送った場合
+- 受注の `point_state` を今と違う値にした場合（`fixed` にすると元に戻せないため）と、`account_id`、`sale_id`、
+  `delivery_id`、`detail_ids` を今と違う値にした場合
+- Amazon Pay、LINE Pay、楽天ペイの受注で料金の項目を送った場合（公式 OpenAPI によれば、購入者への請求か返金が起きる）
+- 受注のお届け先に `null` を明示して、項目を消せるか
+- 受注の `paid` と `delivered` を変えたときに、通知のメールが送られたか（応答のメールの状態の項目だけを見た）
 - 観測は 1 ショップ、各条件について 1 回である
 
 ## 関連
