@@ -6,7 +6,7 @@
 ## 文脈
 
 `declare(strict_types=1);` を宣言しているファイルと、していないファイルが混ざっていた。src では、`Entities\Entity` や
-`Communicator\Request` などの比較的新しいファイルは宣言していたが、Constants、多くの Entity と Service、例外、値オブジェクト、
+`Communicator\NoContent` などの比較的新しいファイルは宣言していたが、Constants、多くの Entity と Service、例外、値オブジェクト、
 `Client` は宣言していなかった。tests と `client` スクリプトも同じく混ざっていた。
 
 `strict_types` は、宣言したファイルの中から行う関数・メソッドの呼び出しにだけ効く。宣言のないファイルでは、スカラーの
@@ -19,7 +19,7 @@
   よって型の扱いが変わらないようにする。新しく足すファイルも宣言する。利用者の指定による。出典: `a6b2cab`。
 - 規則はテストで守り、宣言のないファイルを検出する。出典: `a6b2cab`。
 - 宣言によって暗黙の変換がなくなる呼び出しのうち、利用者の入力を受けるものは、宣言の前と同じ結果になるよう明示的に
-  扱う。`Values\Furigana::validate()` は `null` とスカラーを文字列に変換してから検証し、`Communicator\RequestOptions` の `authorization`
+  扱う。`Values\Furigana::validate()` は `null`、スカラー、`Stringable` を文字列に変換してから検証し、`Communicator\RequestOptions` の `authorization`
   は文字列に変換してから扱う。出典: `a6b2cab`、`3ed08fb`。
 
 ## 代替案と却下理由
