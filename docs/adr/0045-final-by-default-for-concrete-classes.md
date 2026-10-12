@@ -30,13 +30,10 @@ PHP のライブラリでは、継承させる意図のない具象クラスを 
 - **ライブラリの中で継承される具象クラスは `final` にしない。** `Entities\Collection`、`Values\Limit`、`Values\Sort`、
   `Exceptions\ColorMeApiException`、`Exceptions\InvalidFieldException`、`Exceptions\MissingFieldException` が当たる。
   `Collection` 以外は src で直接生成していないが、利用者が生成していると壊れるため、`abstract` にはしない。出典: `7ce446a`。
-- **既存の 95 クラスは、0.32.0 では docblock の `@final` で予告し、次のメジャーな版で `final` にする。** 動作は変えない。
-  内訳は Entities 83、Communicator 5、Exceptions 3、Values 3、`Services\OAuth\Options` 1 である。利用者の指定による。
-  出典: `7ce446a`。
-- 規則は、src の全クラスを列挙して確かめるテストで守る。予告する 95 クラスと例外のクラスはテストに明示する。予告する
-  クラスは `@final` を持ち、まだ `final` でないこと、例外のクラスは `final` でも `@final` でもないこと、どちらでもない
-  具象クラスは `final` であることを確かめる。ライブラリの中で継承される具象クラスのリストが実際の継承関係と一致する
-  ことも確かめる。出典: `7ce446a`、`8d9c69a`。
+- **規則に従っていない既存の具象クラスは、0.32.0 では docblock の `@final` で予告し、次のメジャーな版で `final` にする。**
+  動作は変えない。利用者の指定による。出典: `7ce446a`。
+- 規則はテストで守り、新しいクラスの `final` の付け忘れと、例外のクラスへの誤った `final` を検出する。
+  出典: `7ce446a`、`8d9c69a`。
 
 ## 代替案と却下理由
 
@@ -56,8 +53,6 @@ PHP のライブラリでは、継承させる意図のない具象クラスを 
 
 - 0.32.0 では動作は変わらない。`@final` のクラスを継承しているコードは、次のメジャーな版で動かなくなる
 - PHPStan は `@final` のクラスの継承を `class.extendsFinalByPhpDoc` として指摘する。利用者は静的解析で予告に気づける
-- 利用者による `Sale` の継承を確かめている `SaleTest` のテストは、この指摘を理由付きで抑えて残す。次のメジャーな版で
-  `final` にするとき、このテストを見直す
 
 ## 関連
 
