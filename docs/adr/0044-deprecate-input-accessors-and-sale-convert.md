@@ -14,7 +14,7 @@
 - 商品・在庫・商品の広告の検索条件 `SearchParameters` は、`getDisplayState()` を持つ。src では使っておらず、テストだけが
   enum への変換を確かめるために使っていた。
 
-入力 Entity の値は、ライブラリが `toArray()` / `toArrayRecursive()` で送信内容にする。src で入力 Entity の getter を
+入力 Entity の値は、ライブラリが `toArrayRecursive()` で送信内容にする。src で入力 Entity の getter を
 呼ぶ箇所はない。部分更新の「渡した項目だけを送り、`null` も明示すれば送る」動作も、`Customer\CustomerUpdateInput` の
 ようにコンストラクタだけで実現できている。
 

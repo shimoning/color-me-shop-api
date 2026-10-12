@@ -1179,7 +1179,7 @@ $pagination->getOffset();
 - `Sale\DeliveryUpdateInput` の setter すべて
 - 商品・在庫・商品の広告の検索条件 `SearchParameters` の `getDisplayState()`
 
-値はコンストラクタの配列で指定し、送信内容は `toArray()` / `toArrayRecursive()` で確かめる。
+値はコンストラクタの配列で指定し、送信内容は `toArrayRecursive()` で確かめる。`toArray()` は指定していない項目も `null` で含み、enum などを展開しないため、送信内容とは異なる。
 
 ## 0.30.0 の変更
 
