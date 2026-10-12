@@ -19,8 +19,8 @@
   よって型の扱いが変わらないようにする。新しく足すファイルも宣言する。利用者の指定による。出典: `a6b2cab`。
 - 規則はテストで守り、宣言のないファイルを検出する。出典: `a6b2cab`。
 - 宣言によって暗黙の変換がなくなる呼び出しのうち、利用者の入力を受けるものは、宣言の前と同じ結果になるよう明示的に
-  扱う。`Values\Furigana::validate()` は文字列でない値に `false` を返し、`Communicator\RequestOptions` の `authorization`
-  は文字列に変換してから扱う。出典: `a6b2cab`。
+  扱う。`Values\Furigana::validate()` は `null` とスカラーを文字列に変換してから検証し、`Communicator\RequestOptions` の `authorization`
+  は文字列に変換してから扱う。出典: `a6b2cab`、`3ed08fb`。
 
 ## 代替案と却下理由
 
@@ -37,4 +37,4 @@
 ## 関連
 
 - [ADR 0000: アーキテクチャ上の意思決定を記録する](0000-record-architecture-decisions.md)
-- 実装とテストの出典コミット: `a6b2cab`
+- 実装とテストの出典コミット: `a6b2cab`、`3ed08fb`
