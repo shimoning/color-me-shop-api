@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 
 // Entity がリフレクションで初期化する readonly プロパティは PHPStan から追跡できないため、

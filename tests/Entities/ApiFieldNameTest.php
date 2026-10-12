@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Entities;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;

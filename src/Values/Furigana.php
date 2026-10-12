@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Values;
 
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -70,6 +72,7 @@ class Furigana implements FallbackValue
      */
     public function validate(mixed $value): bool
     {
-        return preg_match('/\A[ァ-ヶー 　]*\z/u', $value) === 1;
+        return \is_string($value)
+            && preg_match('/\A[ァ-ヶー 　]*\z/u', $value) === 1;
     }
 }

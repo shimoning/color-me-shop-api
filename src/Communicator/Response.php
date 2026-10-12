@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Communicator;
 
 use Psr\Http\Message\ResponseInterface;
