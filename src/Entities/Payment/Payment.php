@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Payment;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\Payment\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\Type;
 
 /**
  * 決済設定
@@ -18,7 +18,7 @@ class Payment extends Entity
 {
     const FIELD_TYPES = [
         'type' => [
-            'enum' => PaymentType::class,
+            'enum' => Type::class,
         ],
         'cod' => [
             'entity' => Cod::class,
@@ -54,7 +54,7 @@ class Payment extends Entity
     protected ?int $sort;
     protected ?string $imageUrl;
 
-    protected PaymentType $type;
+    protected Type $type;
 
     protected bool $display;
     protected bool $useMobile;
@@ -168,9 +168,9 @@ class Payment extends Entity
 
     /**
      * 決済タイプ
-     * @return PaymentType
+     * @return Type
      */
-    public function getType(): PaymentType
+    public function getType(): Type
     {
         $this->assertFieldInitialized('type');
 

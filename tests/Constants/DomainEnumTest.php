@@ -14,9 +14,9 @@ use Shimoning\ColorMeShopApi\Constants\Sale\PointState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\Sex;
-use Shimoning\ColorMeShopApi\Constants\Payment\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\Type as PaymentType;
 use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
-use Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\MethodType as DeliveryMethodType;
 
 /**
  * API のリクエスト・レスポンスに直接現れる enum の値を固定する。

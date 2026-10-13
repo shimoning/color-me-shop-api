@@ -10,7 +10,7 @@ use ReflectionMethod;
 use ReflectionType;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
-use Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as AdvertisingSearchParameters;

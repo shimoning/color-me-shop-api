@@ -59,39 +59,39 @@ class LegacyAliasesTest extends TestCase
         return [
             'ProductDisplayState' => [
                 'Shimoning\ColorMeShopApi\Constants\ProductDisplayState',
-                'Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState',
+                'Shimoning\ColorMeShopApi\Constants\Product\DisplayState',
             ],
             'AdvertisingCondition' => [
                 'Shimoning\ColorMeShopApi\Constants\AdvertisingCondition',
-                'Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingCondition',
+                'Shimoning\ColorMeShopApi\Constants\Product\Advertising\Condition',
             ],
             'AdvertisingGender' => [
                 'Shimoning\ColorMeShopApi\Constants\AdvertisingGender',
-                'Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingGender',
+                'Shimoning\ColorMeShopApi\Constants\Product\Advertising\Gender',
             ],
             'CategoryDisplayState' => [
                 'Shimoning\ColorMeShopApi\Constants\CategoryDisplayState',
-                'Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState',
+                'Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState',
             ],
             'GroupDisplayState' => [
                 'Shimoning\ColorMeShopApi\Constants\GroupDisplayState',
-                'Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState',
+                'Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState',
             ],
             'PickupType' => [
                 'Shimoning\ColorMeShopApi\Constants\PickupType',
-                'Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType',
+                'Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type',
             ],
             'DeliveryChargeFreeType' => [
                 'Shimoning\ColorMeShopApi\Constants\DeliveryChargeFreeType',
-                'Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeFreeType',
+                'Shimoning\ColorMeShopApi\Constants\Delivery\ChargeFreeType',
             ],
             'DeliveryChargeType' => [
                 'Shimoning\ColorMeShopApi\Constants\DeliveryChargeType',
-                'Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeType',
+                'Shimoning\ColorMeShopApi\Constants\Delivery\ChargeType',
             ],
             'DeliveryMethodType' => [
                 'Shimoning\ColorMeShopApi\Constants\DeliveryMethodType',
-                'Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType',
+                'Shimoning\ColorMeShopApi\Constants\Delivery\MethodType',
             ],
             'DisplayState' => [
                 'Shimoning\ColorMeShopApi\Constants\DisplayState',
@@ -111,7 +111,7 @@ class LegacyAliasesTest extends TestCase
             ],
             'ShopState' => [
                 'Shimoning\ColorMeShopApi\Constants\ShopState',
-                'Shimoning\ColorMeShopApi\Constants\Shop\ShopState',
+                'Shimoning\ColorMeShopApi\Constants\Shop\State',
             ],
             'TaxRoundingMethod' => [
                 'Shimoning\ColorMeShopApi\Constants\TaxRoundingMethod',
@@ -127,7 +127,7 @@ class LegacyAliasesTest extends TestCase
             ],
             'PaymentType' => [
                 'Shimoning\ColorMeShopApi\Constants\PaymentType',
-                'Shimoning\ColorMeShopApi\Constants\Payment\PaymentType',
+                'Shimoning\ColorMeShopApi\Constants\Payment\Type',
             ],
             'MailState' => [
                 'Shimoning\ColorMeShopApi\Constants\MailState',
@@ -153,6 +153,31 @@ class LegacyAliasesTest extends TestCase
                 'Shimoning\ColorMeShopApi\Constants\AuthScope',
                 'Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope',
             ],
+        ];
+    }
+
+    #[DataProvider('unreleasedIntermediateNameProvider')]
+    public function test_未リリースの途中名は定義されない(string $intermediate): void
+    {
+        $this->assertFalse(\class_exists($intermediate));
+        $this->assertFalse(\enum_exists($intermediate));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function unreleasedIntermediateNameProvider(): array
+    {
+        return [
+            'Product\\ProductDisplayState' => ['Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState'],
+            'Product\\Advertising\\AdvertisingCondition' => ['Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingCondition'],
+            'Product\\Advertising\\AdvertisingGender' => ['Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingGender'],
+            'Product\\Category\\CategoryDisplayState' => ['Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState'],
+            'Product\\Group\\GroupDisplayState' => ['Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState'],
+            'Product\\Pickup\\PickupType' => ['Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType'],
+            'Delivery\\DeliveryChargeFreeType' => ['Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeFreeType'],
+            'Delivery\\DeliveryChargeType' => ['Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeType'],
+            'Delivery\\DeliveryMethodType' => ['Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType'],
+            'Shop\\ShopState' => ['Shimoning\ColorMeShopApi\Constants\Shop\ShopState'],
+            'Payment\\PaymentType' => ['Shimoning\ColorMeShopApi\Constants\Payment\PaymentType'],
         ];
     }
 }

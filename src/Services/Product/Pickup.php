@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Services\Product;
 
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup as PickupEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -56,11 +56,11 @@ class Pickup extends Service
      * おすすめ商品情報を削除する。
      *
      * 成功すると 200 で削除済みの `pickup` object を返す (2026-09-20)。
-     * int / string の種別は `PickupType` の値 (0 / 1 / 3 / 4) として検証し、それ以外はパスへ載せずに拒否する。
+     * int / string の種別は `Pickup\Type` の値 (0 / 1 / 3 / 4) として検証し、それ以外はパスへ載せずに拒否する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
-     * @throws ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
+     * @throws ParameterException アクセストークンが空、または種別が `Pickup\Type` の値でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
      */
@@ -99,10 +99,10 @@ class Pickup extends Service
     }
 
     /**
-     * ピックアップ種別を `PickupType` のバッキング値へ正規化する。
+     * ピックアップ種別を `Pickup\Type` のバッキング値へ正規化する。
      *
      * 文字列は 10 進整数の表記 (`'3'`) だけを受け付け、`'3.0'` や空文字、パス区切りを含む値は拒否する。
-     * @throws ParameterException `PickupType` に定義のない値の場合
+     * @throws ParameterException `Pickup\Type` に定義のない値の場合
      */
     private static function pickupTypeValue(PickupType|int|string $pickupType): int
     {
@@ -118,7 +118,7 @@ class Pickup extends Service
         }
         if ($case === null) {
             throw new ParameterException(\sprintf(
-                'pickup_type は PickupType の値 (%s) で指定してください (指定値: %s)。',
+                'pickup_type は Pickup\\Type の値 (%s) で指定してください (指定値: %s)。',
                 \implode(' / ', \array_map(static fn(PickupType $type): int => $type->value, PickupType::cases())),
                 \var_export($pickupType, true),
             ));

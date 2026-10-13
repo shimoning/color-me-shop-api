@@ -275,23 +275,23 @@ class AliasesTest extends TestCase
             'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
                 => \Shimoning\ColorMeShopApi\Services\OAuth\Options::class,
             'Shimoning\\ColorMeShopApi\\Constants\\ProductDisplayState'
-                => \Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState::class,
+                => \Shimoning\ColorMeShopApi\Constants\Product\DisplayState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingCondition'
-                => \Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingCondition::class,
+                => \Shimoning\ColorMeShopApi\Constants\Product\Advertising\Condition::class,
             'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingGender'
-                => \Shimoning\ColorMeShopApi\Constants\Product\Advertising\AdvertisingGender::class,
+                => \Shimoning\ColorMeShopApi\Constants\Product\Advertising\Gender::class,
             'Shimoning\\ColorMeShopApi\\Constants\\CategoryDisplayState'
-                => \Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState::class,
+                => \Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\GroupDisplayState'
-                => \Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState::class,
+                => \Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\PickupType'
-                => \Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType::class,
+                => \Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type::class,
             'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeFreeType'
-                => \Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeFreeType::class,
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\ChargeFreeType::class,
             'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeType'
-                => \Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryChargeType::class,
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\ChargeType::class,
             'Shimoning\\ColorMeShopApi\\Constants\\DeliveryMethodType'
-                => \Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType::class,
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\MethodType::class,
             'Shimoning\\ColorMeShopApi\\Constants\\DisplayState'
                 => \Shimoning\ColorMeShopApi\Constants\Delivery\DisplayState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\ContractPlan'
@@ -301,7 +301,7 @@ class AliasesTest extends TestCase
             'Shimoning\\ColorMeShopApi\\Constants\\OpenState'
                 => \Shimoning\ColorMeShopApi\Constants\Shop\OpenState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\ShopState'
-                => \Shimoning\ColorMeShopApi\Constants\Shop\ShopState::class,
+                => \Shimoning\ColorMeShopApi\Constants\Shop\State::class,
             'Shimoning\\ColorMeShopApi\\Constants\\TaxRoundingMethod'
                 => \Shimoning\ColorMeShopApi\Constants\Shop\TaxRoundingMethod::class,
             'Shimoning\\ColorMeShopApi\\Constants\\TaxType'
@@ -309,7 +309,7 @@ class AliasesTest extends TestCase
             'Shimoning\\ColorMeShopApi\\Constants\\KouzaType'
                 => \Shimoning\ColorMeShopApi\Constants\Payment\KouzaType::class,
             'Shimoning\\ColorMeShopApi\\Constants\\PaymentType'
-                => \Shimoning\ColorMeShopApi\Constants\Payment\PaymentType::class,
+                => \Shimoning\ColorMeShopApi\Constants\Payment\Type::class,
             'Shimoning\\ColorMeShopApi\\Constants\\MailState'
                 => \Shimoning\ColorMeShopApi\Constants\Sale\MailState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\PointState'

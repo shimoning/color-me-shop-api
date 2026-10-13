@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Product\Category\Category;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\SmallCategory;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
-use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
@@ -52,7 +52,7 @@ class CategoryTest extends TestCase
 
         $this->assertSame('my-shop', $category->getAccountId());
         $this->assertSame('トップス', $category->getName());
-        $this->assertSame(CategoryDisplayState::SHOWING, $category->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $category->getDisplayState());
     }
 
     public function test_toArrayは具象型に応じたフィールドを返す(): void

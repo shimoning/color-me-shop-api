@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 /**
  * 配送料を無料にする条件。
  */
-enum DeliveryChargeFreeType: string
+enum ChargeFreeType: string
 {
     case NOT_FREE       = 'not_free'; // 有料
     case FREE_TO_LIMIT  = 'free_to_limit'; // 注文金額が一定以上の場合は無料
@@ -32,4 +32,4 @@ enum DeliveryChargeFreeType: string
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(DeliveryChargeFreeType::class);
+Aliases::defineLegacyAlias(ChargeFreeType::class);

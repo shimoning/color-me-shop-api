@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\Delivery\DeliveryMethodType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\MethodType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Date\Date;
@@ -27,7 +27,7 @@ class DeliveryTest extends TestCase
         $this->assertSame(1, $deliveries->count());
         $this->assertContainsOnlyInstancesOf(DeliveryEntity::class, $deliveries->all());
         $this->assertSame('宅急便', $deliveries[0]->getName());
-        $this->assertSame(DeliveryMethodType::YAMATO, $deliveries[0]->getMethodType());
+        $this->assertSame(MethodType::YAMATO, $deliveries[0]->getMethodType());
     }
 
     public function test_配送方法fixtureで欠損する配送料設定は参照時に固有例外になる(): void

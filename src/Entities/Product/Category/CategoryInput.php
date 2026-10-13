@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Category;
 
 use Shimoning\ColorMeShopApi\Aliases;
 
-use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;
@@ -16,7 +16,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
  * 大カテゴリーの作成 (POST /v1/categories) と更新 (PUT /v1/categories/{id}) の `category` 入力。
  *
  * 明示したフィールドだけを送信し、明示した `null` も送信する。`display_state` は
- * `CategoryDisplayState` の3値に限り、`meta_tag` は `MetaTagInput` へ変換する。不正な形状は
+ * `DisplayState` の3値に限り、`meta_tag` は `MetaTagInput` へ変換する。不正な形状は
  * 構築時に `InvalidFieldException` で拒否する。作成時の `name` の必須性は API の検証に委ねる。
  *
  * 公式 OpenAPI との差分: nullable 指定のないフィールドも `null` を指定できる。`expl` は `null` で
@@ -30,14 +30,14 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 class CategoryInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'displayState' => ['enum' => CategoryDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
         'metaTag' => ['allowNull' => true, 'entity' => MetaTagInput::class],
     ];
 
     protected ?string $name;
     protected ?string $expl;
     protected ?int $sort;
-    protected ?CategoryDisplayState $displayState;
+    protected ?DisplayState $displayState;
     protected ?MetaTagInput $metaTag;
 
     /**

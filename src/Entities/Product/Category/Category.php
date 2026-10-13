@@ -8,7 +8,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
@@ -21,7 +21,7 @@ abstract class Category extends Entity
 {
     const FIELD_TYPES = [
         'displayState' => [
-            'enum' => CategoryDisplayState::class,
+            'enum' => DisplayState::class,
         ],
         'metaTag' => [
             'allowNull' => true,
@@ -39,7 +39,7 @@ abstract class Category extends Entity
     protected ?string $expl;
 
     protected ?int $sort;
-    protected CategoryDisplayState $displayState;
+    protected DisplayState $displayState;
 
     protected int $makeDate;
     protected int $updateDate;
@@ -149,9 +149,9 @@ abstract class Category extends Entity
 
     /**
      * 表示状態
-     * @return CategoryDisplayState
+     * @return DisplayState
      */
-    public function getDisplayState(): CategoryDisplayState
+    public function getDisplayState(): DisplayState
     {
         $this->assertFieldInitialized('displayState');
         return $this->displayState;

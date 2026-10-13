@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 /**
  * ショップの利用状態。
  */
-enum ShopState: string
+enum State: string
 {
     case ENABLED    = 'enabled'; // 有効
     case SUSPENDED  = 'suspended'; // 停止
@@ -32,4 +32,4 @@ enum ShopState: string
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(ShopState::class);
+Aliases::defineLegacyAlias(State::class);

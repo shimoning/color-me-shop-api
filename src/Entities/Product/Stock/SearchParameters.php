@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Product\Stock;
 
 use Shimoning\ColorMeShopApi\Aliases;
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Limit;
@@ -23,7 +23,7 @@ use Shimoning\ColorMeShopApi\Values\Product\Stock\Limit as StockLimit;
 class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'displayState' => ['enum' => ProductDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
         'limit' => ['value' => StockLimit::class],
         'ids' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
         'fields' => ['array' => true, 'scalar' => 'string', 'delimiter' => ','],
@@ -35,7 +35,7 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?int $categoryIdSmall;
     protected ?string $modelNumber;
     protected ?string $name;
-    protected ?ProductDisplayState $displayState;
+    protected ?DisplayState $displayState;
     protected ?int $stocks;
     protected ?bool $recentZeroStocks;
     /** @var list<string>|null */
@@ -46,7 +46,7 @@ class SearchParameters extends Entity implements RequestEntity
     /**
      * @deprecated 0.31.0 送信内容は toArrayRecursive() で確かめること。
      */
-    public function getDisplayState(): ?ProductDisplayState
+    public function getDisplayState(): ?DisplayState
     {
         return $this->displayState;
     }

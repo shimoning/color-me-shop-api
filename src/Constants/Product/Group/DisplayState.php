@@ -17,7 +17,7 @@ use Shimoning\ColorMeShopApi\Aliases;
  * @see docs/api-product-structure.md
  * @see docs/enum-openapi-audit.md
  */
-enum GroupDisplayState: string
+enum DisplayState: string
 {
     case SHOWING                = 'showing'; // 掲載
     case HIDDEN                 = 'hidden'; // 非掲載
@@ -44,4 +44,4 @@ enum GroupDisplayState: string
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(GroupDisplayState::class);
+Aliases::defineLegacyAlias(DisplayState::class);

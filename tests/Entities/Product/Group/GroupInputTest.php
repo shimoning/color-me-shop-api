@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Group;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
-use Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState;
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState as CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState as GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState as ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\GroupInput;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;
@@ -73,7 +73,7 @@ class GroupInputTest extends TestCase
     }
 
     /**
-     * 応答用の GroupDisplayState は 5 値だが、公式 OpenAPI の作成・更新 request と実 API の観測 (2026-09-21) は
+     * 応答用の Group\DisplayState は 5 値だが、公式 OpenAPI の作成・更新 request と実 API の観測 (2026-09-21) は
      * showing / hidden / members_only の 3 値なので、送信前に残り 2 値を拒否する。
      */
     public function test_送信できる表示状態は3値に限定する(): void

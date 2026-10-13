@@ -60,10 +60,10 @@ class EnumContractTest extends TestCase
         $this->assertEqualsCanonicalizing(
             [
                 'Customer\\ExternalAccountProvider',
-                'Delivery\\DeliveryMethodType',
+                'Delivery\\MethodType',
                 'ErrorCode',
                 'Payment\\KouzaType',
-                'Payment\\PaymentType',
+                'Payment\\Type',
                 'Sex',
             ],
             $actual,

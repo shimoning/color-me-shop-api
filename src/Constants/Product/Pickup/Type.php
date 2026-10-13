@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Aliases;
  * @see docs/adr/0013-expand-opt-in-enum-fallback.md
  * @see docs/adr/0014-model-product-write-api.md
  */
-enum PickupType: int
+enum Type: int
 {
     case RECOMMENDED    = 0; // おすすめ商品
     case BEST_SELLER    = 1; // 売れ筋商品
@@ -40,4 +40,4 @@ enum PickupType: int
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(PickupType::class);
+Aliases::defineLegacyAlias(Type::class);

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Stock;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Aliases;
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryIds;
 use Shimoning\ColorMeShopApi\Entities\Product\Image;
@@ -20,7 +20,7 @@ class Stock extends Entity
     public const FIELD_TYPES = [
         'category' => ['entity' => CategoryIds::class, 'allowNull' => true],
         'images' => ['array' => true, 'entity' => Image::class],
-        'displayState' => ['enum' => ProductDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
     ];
 
     protected string $accountId;
@@ -33,7 +33,7 @@ class Stock extends Entity
     protected ?string $modelNumber;
     protected ?string $variantModelNumber;
     protected ?CategoryIds $category;
-    protected ProductDisplayState $displayState;
+    protected DisplayState $displayState;
     protected ?int $salesPrice;
     protected ?int $price;
     protected ?int $membersPrice;
@@ -114,7 +114,7 @@ class Stock extends Entity
         return $this->category;
     }
 
-    public function getDisplayState(): ProductDisplayState
+    public function getDisplayState(): DisplayState
     {
         $this->assertFieldInitialized('displayState');
         return $this->displayState;

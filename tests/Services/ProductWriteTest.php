@@ -8,11 +8,11 @@ use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
-use Shimoning\ColorMeShopApi\Constants\Product\Category\CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState as CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ErrorCode;
-use Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType;
-use Shimoning\ColorMeShopApi\Constants\Product\Group\GroupDisplayState;
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState as GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState as ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;
@@ -596,7 +596,7 @@ class ProductWriteTest extends TestCase
     }
 
     #[DataProvider('invalidPickupTypeProvider')]
-    public function test_ピックアップ削除はPickupTypeにない種別を送信前に拒否する(int|string $pickupType): void
+    public function test_ピックアップ削除はPickupのTypeにない種別を送信前に拒否する(int|string $pickupType): void
     {
         $mock = HttpMock::json(200, self::fixture('product_pickup.json'));
 

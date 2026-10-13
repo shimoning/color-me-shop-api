@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 /**
  * 配送料の算出方法。
  */
-enum DeliveryChargeType: string
+enum ChargeType: string
 {
     case FIXED      = 'fixed'; // 固定額
     case BY_PRICE   = 'by_price'; // 注文金額によって決定
@@ -34,4 +34,4 @@ enum DeliveryChargeType: string
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(DeliveryChargeType::class);
+Aliases::defineLegacyAlias(ChargeType::class);

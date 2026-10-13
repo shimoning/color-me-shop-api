@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Services\Shop;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\Shop\ShopState;
+use Shimoning\ColorMeShopApi\Constants\Shop\State;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop as ShopEntity;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -22,7 +22,7 @@ class ShopTest extends TestCase
 
         $this->assertInstanceOf(ShopEntity::class, $shop);
         $this->assertSame('my-shop', $shop->getId());
-        $this->assertSame(ShopState::ENABLED, $shop->getState());
+        $this->assertSame(State::ENABLED, $shop->getState());
     }
 
     public function test_正しいエンドポイントにGETする(): void

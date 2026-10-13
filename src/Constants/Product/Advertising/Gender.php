@@ -10,7 +10,7 @@ use Shimoning\ColorMeShopApi\Aliases;
  * 公式 OpenAPI product_advertisings の enum 定義。
  * @link https://api.shop-pro.jp/v1/spec/open_api.json
  */
-enum AdvertisingGender: string
+enum Gender: string
 {
     case MALE = 'male';
     case FEMALE = 'female';
@@ -19,4 +19,4 @@ enum AdvertisingGender: string
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(AdvertisingGender::class);
+Aliases::defineLegacyAlias(Gender::class);

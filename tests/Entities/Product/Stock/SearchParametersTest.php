@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Stock;
 
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -43,8 +43,8 @@ class SearchParametersTest extends TestCase
             'offset' => 10,
         ], $parameters->toArrayRecursive());
         $this->assertSame(['product_id', 'name', 'stocks'], $parameters->toArray()['fields']);
-        $this->assertSame(ProductDisplayState::SHOWING, $parameters->getDisplayState());
-        $this->assertSame(ProductDisplayState::SHOWING, $parameters->toArray()['display_state']);
+        $this->assertSame(DisplayState::SHOWING, $parameters->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $parameters->toArray()['display_state']);
     }
 
     public function test_未指定と空のidsは送らない(): void

@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
  * UNKNOWN は API 仕様外の応答値を示す番兵。元値は Entity::getRaw() で確認できる。
  * Entity::toArrayRecursive() では元値でなく番兵の -1 になる。
  */
-enum PaymentType: int implements FallbackEnum
+enum Type: int implements FallbackEnum
 {
     case UNKNOWN = -1;
     case COD = 0;  // 商品代引
@@ -70,4 +70,4 @@ enum PaymentType: int implements FallbackEnum
 
 // 0.32.0 の enum 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
 // 次のメジャーバージョンで Aliases::MAP とともに削除する。
-Aliases::defineLegacyAlias(PaymentType::class);
+Aliases::defineLegacyAlias(Type::class);

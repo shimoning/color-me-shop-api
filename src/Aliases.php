@@ -31,23 +31,23 @@ final class Aliases
 
         // 0.32.0 の後方互換措置
         'Shimoning\\ColorMeShopApi\\Constants\\ProductDisplayState'
-            => Constants\Product\ProductDisplayState::class,
+            => Constants\Product\DisplayState::class,
         'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingCondition'
-            => Constants\Product\Advertising\AdvertisingCondition::class,
+            => Constants\Product\Advertising\Condition::class,
         'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingGender'
-            => Constants\Product\Advertising\AdvertisingGender::class,
+            => Constants\Product\Advertising\Gender::class,
         'Shimoning\\ColorMeShopApi\\Constants\\CategoryDisplayState'
-            => Constants\Product\Category\CategoryDisplayState::class,
+            => Constants\Product\Category\DisplayState::class,
         'Shimoning\\ColorMeShopApi\\Constants\\GroupDisplayState'
-            => Constants\Product\Group\GroupDisplayState::class,
+            => Constants\Product\Group\DisplayState::class,
         'Shimoning\\ColorMeShopApi\\Constants\\PickupType'
-            => Constants\Product\Pickup\PickupType::class,
+            => Constants\Product\Pickup\Type::class,
         'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeFreeType'
-            => Constants\Delivery\DeliveryChargeFreeType::class,
+            => Constants\Delivery\ChargeFreeType::class,
         'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeType'
-            => Constants\Delivery\DeliveryChargeType::class,
+            => Constants\Delivery\ChargeType::class,
         'Shimoning\\ColorMeShopApi\\Constants\\DeliveryMethodType'
-            => Constants\Delivery\DeliveryMethodType::class,
+            => Constants\Delivery\MethodType::class,
         'Shimoning\\ColorMeShopApi\\Constants\\DisplayState'
             => Constants\Delivery\DisplayState::class,
         'Shimoning\\ColorMeShopApi\\Constants\\ContractPlan'
@@ -57,7 +57,7 @@ final class Aliases
         'Shimoning\\ColorMeShopApi\\Constants\\OpenState'
             => Constants\Shop\OpenState::class,
         'Shimoning\\ColorMeShopApi\\Constants\\ShopState'
-            => Constants\Shop\ShopState::class,
+            => Constants\Shop\State::class,
         'Shimoning\\ColorMeShopApi\\Constants\\TaxRoundingMethod'
             => Constants\Shop\TaxRoundingMethod::class,
         'Shimoning\\ColorMeShopApi\\Constants\\TaxType'
@@ -65,7 +65,7 @@ final class Aliases
         'Shimoning\\ColorMeShopApi\\Constants\\KouzaType'
             => Constants\Payment\KouzaType::class,
         'Shimoning\\ColorMeShopApi\\Constants\\PaymentType'
-            => Constants\Payment\PaymentType::class,
+            => Constants\Payment\Type::class,
         'Shimoning\\ColorMeShopApi\\Constants\\MailState'
             => Constants\Sale\MailState::class,
         'Shimoning\\ColorMeShopApi\\Constants\\PointState'

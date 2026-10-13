@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Advertising;
 
 use Shimoning\ColorMeShopApi\Aliases;
 
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Limit;
@@ -24,21 +24,21 @@ use Shimoning\ColorMeShopApi\Values\Product\Advertising\Limit as AdvertisingLimi
 class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'displayState' => ['enum' => ProductDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
         'productIds' => ['array' => true, 'scalar' => 'int', 'delimiter' => ','],
         'limit' => ['value' => AdvertisingLimit::class, 'allowNull' => true],
     ];
 
     /** @var list<int>|null */
     protected ?array $productIds;
-    protected ?ProductDisplayState $displayState;
+    protected ?DisplayState $displayState;
     protected ?Limit $limit;
     protected ?int $offset;
 
     /**
      * @deprecated 0.31.0 送信内容は toArrayRecursive() で確かめること。
      */
-    public function getDisplayState(): ?ProductDisplayState
+    public function getDisplayState(): ?DisplayState
     {
         return $this->displayState;
     }

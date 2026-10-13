@@ -8,7 +8,7 @@ use GuzzleHttp\ClientInterface;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
-use Shimoning\ColorMeShopApi\Constants\Product\Pickup\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 
@@ -401,7 +401,7 @@ class Client
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または種別が `PickupType` の値でない場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または種別が `Pickup\Type` の値でない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
      */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Advertising;
 
-use Shimoning\ColorMeShopApi\Constants\Product\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -19,8 +19,8 @@ class SearchParametersTest extends TestCase
         ]);
 
         $this->assertInstanceOf(RequestEntity::class, $parameters);
-        $this->assertSame(ProductDisplayState::SHOWING, $parameters->getDisplayState());
-        $this->assertSame(ProductDisplayState::SHOWING, $parameters->toArray()['display_state']);
+        $this->assertSame(DisplayState::SHOWING, $parameters->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $parameters->toArray()['display_state']);
         $this->assertSame([
             'product_ids' => '101,102', 'display_state' => 'showing', 'limit' => 25, 'offset' => 50,
         ], $parameters->toArrayRecursive());
