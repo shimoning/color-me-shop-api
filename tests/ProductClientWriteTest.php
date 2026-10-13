@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
-use Shimoning\ColorMeShopApi\Constants\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;

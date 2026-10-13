@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Group;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class GroupTest extends TestCase
@@ -46,18 +46,18 @@ class GroupTest extends TestCase
         $this->assertSame(2, $group->getId());
         $this->assertSame('my-shop', $group->getAccountId());
         $this->assertSame('セール', $group->getName());
-        $this->assertSame(GroupDisplayState::SHOWING, $group->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $group->getDisplayState());
     }
 
     /**
-     * 実 API は members_only のグループを返す (2026-09-21 観測)。以前の ProductDisplayState (4値) では
+     * 実 API は members_only のグループを返す (2026-09-21 観測)。以前の Product\DisplayState (4値) では
      * members_only のグループが1件でもあると一覧・単体取得が InvalidFieldException で失敗していた。
      */
     public function test_会員限定のグループを読める(): void
     {
         $group = $this->makeGroup(['display_state' => 'members_only']);
 
-        $this->assertSame(GroupDisplayState::MEMBER_ONLY, $group->getDisplayState());
+        $this->assertSame(DisplayState::MEMBER_ONLY, $group->getDisplayState());
     }
 
     /**
@@ -68,11 +68,11 @@ class GroupTest extends TestCase
     public function test_公式response定義の会員向け表示状態を読める(): void
     {
         $this->assertSame(
-            GroupDisplayState::SHOWING_FOR_MEMBERS,
+            DisplayState::SHOWING_FOR_MEMBERS,
             $this->makeGroup(['display_state' => 'showing_for_members'])->getDisplayState(),
         );
         $this->assertSame(
-            GroupDisplayState::SALE_FOR_MEMBERS,
+            DisplayState::SALE_FOR_MEMBERS,
             $this->makeGroup(['display_state' => 'sale_for_members'])->getDisplayState(),
         );
     }

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Services\Payment;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\Type;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment as PaymentEntity;
 use Shimoning\ColorMeShopApi\Tests\Support\HttpMock;
@@ -24,9 +24,9 @@ class PaymentTest extends TestCase
         $this->assertSame(2, $payments->count());
         $this->assertContainsOnlyInstancesOf(PaymentEntity::class, $payments->all());
         $this->assertSame('カラーミークレジット', $payments[0]->getName());
-        $this->assertSame(PaymentType::CREDIT_COLOR_ME, $payments[0]->getType());
+        $this->assertSame(Type::CREDIT_COLOR_ME, $payments[0]->getType());
         $this->assertSame('代金引換', $payments[1]->getName());
-        $this->assertSame(PaymentType::COD, $payments[1]->getType());
+        $this->assertSame(Type::COD, $payments[1]->getType());
     }
 
     public function test_正しいエンドポイントにGETする(): void

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
-use Shimoning\ColorMeShopApi\Constants\PickupType;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -43,7 +43,7 @@ class PickupInputTest extends TestCase
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('pickup_type');
-        new PickupInput(['pickup_type' => ProductDisplayState::HIDDEN]);
+        new PickupInput(['pickup_type' => DisplayState::HIDDEN]);
     }
 
     public function test_未定義の種別は要求側なので拒否する(): void

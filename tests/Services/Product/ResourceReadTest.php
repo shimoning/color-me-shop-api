@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Services\Product\Category as ProductCategory;
 use Shimoning\ColorMeShopApi\Services\Product\Group as ProductGroup;
 use Shimoning\ColorMeShopApi\Services\Product\Stock as ProductStock;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Group\Group;
@@ -132,7 +132,7 @@ class ResourceReadTest extends TestCase
         $this->assertSame(2, $groups->count());
         $this->assertContainsOnlyInstancesOf(Group::class, $groups->all());
         $this->assertSame('新着商品', $groups[0]->getName());
-        $this->assertSame(GroupDisplayState::SHOWING, $groups[0]->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $groups[0]->getDisplayState());
     }
 
     /**
@@ -149,8 +149,8 @@ class ResourceReadTest extends TestCase
         $groups = (new ProductGroup('my-token', $mock->client()))->all();
 
         $this->assertInstanceOf(Collection::class, $groups);
-        $this->assertSame(GroupDisplayState::MEMBER_ONLY, $groups[0]->getDisplayState());
-        $this->assertSame(GroupDisplayState::SHOWING, $groups[1]->getDisplayState());
+        $this->assertSame(DisplayState::MEMBER_ONLY, $groups[0]->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $groups[1]->getDisplayState());
     }
 
     public function test_会員限定のグループを単体で取得できる(): void
@@ -160,7 +160,7 @@ class ResourceReadTest extends TestCase
         $group = (new ProductGroup('my-token', $mock->client()))->one(1);
 
         $this->assertInstanceOf(Group::class, $group);
-        $this->assertSame(GroupDisplayState::MEMBER_ONLY, $group->getDisplayState());
+        $this->assertSame(DisplayState::MEMBER_ONLY, $group->getDisplayState());
     }
 
     public function test_商品グループは正しいエンドポイントにGETする(): void

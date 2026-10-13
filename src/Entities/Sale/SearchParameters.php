@@ -12,7 +12,7 @@ use Shimoning\ColorMeShopApi\Values\DateTime;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
 use Shimoning\ColorMeShopApi\Values\Sale\Limit as SaleLimit;
-use Shimoning\ColorMeShopApi\Constants\MailState;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailState;
 
 /**
  * 受注一覧 (GET /v1/sales) の検索条件。

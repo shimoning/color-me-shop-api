@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\OAuth;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 
 /**
  * OAuth 認証で発行されたアクセストークン情報。

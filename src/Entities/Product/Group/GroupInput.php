@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Group;
 
 use Shimoning\ColorMeShopApi\Aliases;
 
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTagInput;
@@ -31,7 +31,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 class GroupInput extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'displayState' => ['enum' => GroupDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
         'metaTag' => ['allowNull' => true, 'entity' => MetaTagInput::class],
     ];
 
@@ -44,16 +44,16 @@ class GroupInput extends Entity implements RequestEntity
      * @see docs/api-product-structure.md
      */
     public const WRITABLE_DISPLAY_STATES = [
-        GroupDisplayState::SHOWING,
-        GroupDisplayState::HIDDEN,
-        GroupDisplayState::MEMBER_ONLY,
+        DisplayState::SHOWING,
+        DisplayState::HIDDEN,
+        DisplayState::MEMBER_ONLY,
     ];
 
     private const WRITABLE_DISPLAY_STATE_SHAPE = "'showing'|'hidden'|'members_only'";
 
     protected ?string $name;
     protected ?string $expl;
-    protected ?GroupDisplayState $displayState;
+    protected ?DisplayState $displayState;
     /** @var int|null 作成専用 */
     protected ?int $parentGroupId;
     protected ?MetaTagInput $metaTag;

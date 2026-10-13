@@ -9,8 +9,8 @@ use Shimoning\ColorMeShopApi\Aliases;
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
-use Shimoning\ColorMeShopApi\Constants\MailState;
-use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailState;
+use Shimoning\ColorMeShopApi\Constants\Sale\PointState;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 
 /**

@@ -9,7 +9,7 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Product\Option\Option;
 use Shimoning\ColorMeShopApi\Entities\Product\Pickup\Pickup;
 use Shimoning\ColorMeShopApi\Entities\Product\Variant\Variant;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 
 /**
  * 商品 API 読み取り応答: Product。
@@ -24,7 +24,7 @@ class Product extends Entity
         'options' => ['array' => true, 'entity' => Option::class],
         'variants' => ['array' => true, 'entity' => Variant::class],
         'pickups' => ['array' => true, 'entity' => Pickup::class],
-        'displayState' => ['enum' => ProductDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
         'groupIds' => ['array' => true, 'scalar' => 'int'],
         'unavailablePaymentIds' => ['array' => true, 'scalar' => 'int'],
         'unavailableDeliveryIds' => ['array' => true, 'scalar' => 'int'],
@@ -40,7 +40,7 @@ class Product extends Entity
     protected CategoryIds $category;
     /** @var list<int> */
     protected array $groupIds;
-    protected ProductDisplayState $displayState;
+    protected DisplayState $displayState;
     protected ?int $salesPrice;
     protected int $salesPriceIncludingTax;
     protected int $salesPriceTax;
@@ -186,9 +186,9 @@ class Product extends Entity
      * `hidden` は掲載しない。
      * `showing_for_members` は会員のみに掲載する。
      * `sale_for_members` はすべての人に掲載し、購入は会員のみに許可する。
-     * @return ProductDisplayState
+     * @return DisplayState
      */
-    public function getDisplayState(): ProductDisplayState
+    public function getDisplayState(): DisplayState
     {
         $this->assertFieldInitialized('displayState');
         return $this->displayState;

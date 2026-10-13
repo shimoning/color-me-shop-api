@@ -31,17 +31,17 @@ if (!empty($_ENV['CLIENT_ID']) && !empty($_ENV['CLIENT_SECRET'])) {
     $oAuthOptions = new Services\OAuth\Options(
         $_ENV['CLIENT_ID'],
         $_ENV['CLIENT_SECRET'],
-        $_ENV['REDIRECT_URI'] ?? Constants\AuthRedirectUri::NO_REDIRECT,
+        $_ENV['REDIRECT_URI'] ?? Constants\OAuth\AuthRedirectUri::NO_REDIRECT,
     );
 
 }
 // サンプルの既定は従来の 5 scope。追加の scope は必要に応じて Values\Scopes で明示する。
 $oAuthScopes = new Values\Scopes([
-    Constants\AuthScope::READ_PRODUCTS,
-    Constants\AuthScope::WRITE_PRODUCTS,
-    Constants\AuthScope::READ_SALES,
-    Constants\AuthScope::WRITE_SALES,
-    Constants\AuthScope::READ_SHOP_COUPONS,
+    Constants\OAuth\AuthScope::READ_PRODUCTS,
+    Constants\OAuth\AuthScope::WRITE_PRODUCTS,
+    Constants\OAuth\AuthScope::READ_SALES,
+    Constants\OAuth\AuthScope::WRITE_SALES,
+    Constants\OAuth\AuthScope::READ_SHOP_COUPONS,
 ]);
 
 // - Access token

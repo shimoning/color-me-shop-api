@@ -124,6 +124,7 @@ class AliasesTest extends TestCase
             if (
                 $current === \Shimoning\ColorMeShopApi\Entities\RequestEntity::class
                 || $current === \Shimoning\ColorMeShopApi\Services\OAuth\Options::class
+                || \str_starts_with($legacy, 'Shimoning\\ColorMeShopApi\\Constants\\')
             ) {
                 continue;
             }
@@ -273,6 +274,54 @@ class AliasesTest extends TestCase
                 => \Shimoning\ColorMeShopApi\Services\Sale::class,
             'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
                 => \Shimoning\ColorMeShopApi\Services\OAuth\Options::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\ProductDisplayState'
+                => \Shimoning\ColorMeShopApi\Constants\Product\DisplayState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingCondition'
+                => \Shimoning\ColorMeShopApi\Constants\Product\Advertising\Condition::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingGender'
+                => \Shimoning\ColorMeShopApi\Constants\Product\Advertising\Gender::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\CategoryDisplayState'
+                => \Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\GroupDisplayState'
+                => \Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\PickupType'
+                => \Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeFreeType'
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\ChargeFreeType::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeType'
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\ChargeType::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\DeliveryMethodType'
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\MethodType::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\DisplayState'
+                => \Shimoning\ColorMeShopApi\Constants\Delivery\DisplayState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\ContractPlan'
+                => \Shimoning\ColorMeShopApi\Constants\Shop\ContractPlan::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\DomainPlan'
+                => \Shimoning\ColorMeShopApi\Constants\Shop\DomainPlan::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\OpenState'
+                => \Shimoning\ColorMeShopApi\Constants\Shop\OpenState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\ShopState'
+                => \Shimoning\ColorMeShopApi\Constants\Shop\State::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\TaxRoundingMethod'
+                => \Shimoning\ColorMeShopApi\Constants\Shop\TaxRoundingMethod::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\TaxType'
+                => \Shimoning\ColorMeShopApi\Constants\Shop\TaxType::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\KouzaType'
+                => \Shimoning\ColorMeShopApi\Constants\Payment\KouzaType::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\PaymentType'
+                => \Shimoning\ColorMeShopApi\Constants\Payment\Type::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\MailState'
+                => \Shimoning\ColorMeShopApi\Constants\Sale\MailState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\PointState'
+                => \Shimoning\ColorMeShopApi\Constants\Sale\PointState::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\MailType'
+                => \Shimoning\ColorMeShopApi\Constants\Sale\MailType::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\ExternalAccountProvider'
+                => \Shimoning\ColorMeShopApi\Constants\Customer\ExternalAccountProvider::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\AuthRedirectUri'
+                => \Shimoning\ColorMeShopApi\Constants\OAuth\AuthRedirectUri::class,
+            'Shimoning\\ColorMeShopApi\\Constants\\AuthScope'
+                => \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
                 => \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
             'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'

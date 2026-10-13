@@ -11,6 +11,40 @@
 
 クラス名は、断りがなければ `Shimoning\ColorMeShopApi\Entities\` 以下である。
 
+## 0.32.0: Constants の enum の移動
+
+Entity と同じく、enum を API の URL に合わせた名前空間に置いた（[ADR 0047](adr/0047-nest-constants-by-url.md)）。
+クラス名は Entity と同じ規則（[ADR 0029](adr/0029-drop-parent-prefix-from-entity-names.md)）で、名前空間と重なる接頭辞を除いた。この表の名前は `Shimoning\ColorMeShopApi\` 以下である。
+
+| 旧 enum 名 | 新 enum 名 |
+| --- | --- |
+| `Constants\ProductDisplayState` | `Constants\Product\DisplayState` |
+| `Constants\AdvertisingCondition` | `Constants\Product\Advertising\Condition` |
+| `Constants\AdvertisingGender` | `Constants\Product\Advertising\Gender` |
+| `Constants\CategoryDisplayState` | `Constants\Product\Category\DisplayState` |
+| `Constants\GroupDisplayState` | `Constants\Product\Group\DisplayState` |
+| `Constants\PickupType` | `Constants\Product\Pickup\Type` |
+| `Constants\DeliveryChargeFreeType` | `Constants\Delivery\ChargeFreeType` |
+| `Constants\DeliveryChargeType` | `Constants\Delivery\ChargeType` |
+| `Constants\DeliveryMethodType` | `Constants\Delivery\MethodType` |
+| `Constants\DisplayState` | `Constants\Delivery\DisplayState` |
+| `Constants\ContractPlan` | `Constants\Shop\ContractPlan` |
+| `Constants\DomainPlan` | `Constants\Shop\DomainPlan` |
+| `Constants\OpenState` | `Constants\Shop\OpenState` |
+| `Constants\ShopState` | `Constants\Shop\State` |
+| `Constants\TaxRoundingMethod` | `Constants\Shop\TaxRoundingMethod` |
+| `Constants\TaxType` | `Constants\Shop\TaxType` |
+| `Constants\KouzaType` | `Constants\Payment\KouzaType` |
+| `Constants\PaymentType` | `Constants\Payment\Type` |
+| `Constants\MailState` | `Constants\Sale\MailState` |
+| `Constants\MailType` | `Constants\Sale\MailType` |
+| `Constants\PointState` | `Constants\Sale\PointState` |
+| `Constants\ExternalAccountProvider` | `Constants\Customer\ExternalAccountProvider` |
+| `Constants\AuthRedirectUri` | `Constants\OAuth\AuthRedirectUri` |
+| `Constants\AuthScope` | `Constants\OAuth\AuthScope` |
+
+旧名での `instanceof`、型宣言、case の参照（`Constants\PointState::FIXED` など）、`from()` / `tryFrom()` は動作する。
+
 ## 0.31.0: RequestEntity の移動
 
 基底の型を、属する分類のフォルダに置く規則（`Values\Value`、`Constants\FallbackEnum`、`Entities\Entity`）に揃え、

@@ -95,10 +95,10 @@ require __DIR__ . '/vendor/autoload.php';
 use Shimoning\ColorMeShopApi\Client;
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
-use Shimoning\ColorMeShopApi\Constants\MailType;
-use Shimoning\ColorMeShopApi\Constants\PickupType;
-use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
+use Shimoning\ColorMeShopApi\Constants\Sale\PointState;
 use Shimoning\ColorMeShopApi\Constants\SortDirection;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSearchParameters;
@@ -231,7 +231,7 @@ $furigana->isValid();  // false
 ```
 
 要求側では従来どおり検証され、検証に通らない値は拒否される。例外の型は経路によって異なり、値オブジェクトを直接構築した場合は `ParameterException`、`CustomerCreateInput` などの要求 Entity を経由した場合は `InvalidFieldException` に包まれる。
-* `Values\Scopes`: `Constants\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
+* `Values\Scopes`: `Constants\OAuth\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
 * `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する ([0.27.0 の変更](#0270-の変更))
 * `Values\Sort`: 並び順のカラム名と向き (`Constants\SortDirection`) を分けて持つ。向きを省略すると昇順で、`-` で始まるカラム名 (`'-sales_price'`) を向きなしで渡すと降順になる。`-` で始まるカラム名と向きを一緒に渡すと `ParameterException` になる。カラム名が空、`-` が 2 つ以上続く、カンマや空白を含む場合も拒否する。汎用の `Values\Sort` はカラム名そのものを検証しない。API ごとの子クラス (商品一覧の `Values\Product\Sort`) は、受け付けるカラム名を限る
 
@@ -747,7 +747,7 @@ if (! $groupOrErrors instanceof Errors) {
 
 #### 商品を作成・更新
 作成は `ProductCreateInput`、更新は `ProductUpdateInput` を使う。指定したフィールドだけを送信するため、更新は部分更新として動作する。
-`display_state` は `showing` / `hidden` / `showing_for_members` / `sale_for_members` (`ProductDisplayState` の値、または同 enum のインスタンス) だけを受け付け、
+`display_state` は `showing` / `hidden` / `showing_for_members` / `sale_for_members` (`Constants\Product\DisplayState` の値、または同 enum のインスタンス) だけを受け付け、
 `members_only` は生成時に `InvalidFieldException` になる。読み取り専用の `unlisted` は入力に含められない。
 
 ```php
@@ -823,8 +823,8 @@ $client->deleteProductOption($productId, $optionId); // NoContent|Errors
 その場合は親のオプションを削除する。
 
 #### おすすめ商品情報 (ピックアップ) を作成・更新・削除
-`pickup_type` は `PickupType` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) または `PickupType` のインスタンスで指定する。
-削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。削除の種別に `PickupType` にない値を渡すと送信前に `ParameterException` になる。
+`pickup_type` は `Constants\Product\Pickup\Type` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) または同 enum のインスタンスで指定する。
+削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。削除の種別に `Constants\Product\Pickup\Type` にない値を渡すと送信前に `ParameterException` になる。
 
 ```php
 $pickupOrErrors = $client->createProductPickup($productId, new PickupInput([
@@ -912,8 +912,8 @@ if ($updatedOrErrors instanceof Errors) {
 
 実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定だけが永続化され、以後の更新 (一部キーのみ、全キー `null`、`meta_tag` 自体の `null` を含む) は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。詳細は [商品 API 応答構造の実測記録](docs/api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)。
 
-`display_state` は `showing` / `hidden` / `members_only` (`GroupInput::WRITABLE_DISPLAY_STATES`。`GroupDisplayState` の値、または同 enum のインスタンス) を受け付け、`showing_for_members` / `sale_for_members` は生成時に `InvalidFieldException` になる (実 API の PUT でも 422)。
-応答の `Group::getDisplayState()` は `GroupDisplayState` を返す (0.13.0 で `ProductDisplayState` から変更。実 API が返す `members_only` を読めるようにするため)。`GroupDisplayState` は実測の 3 値に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` / `sale_for_members` も応答の受理のみを目的として持つ (管理画面等で設定された既存グループが返す可能性を否定できないため。読み取りでは未観測)。
+`display_state` は `showing` / `hidden` / `members_only` (`GroupInput::WRITABLE_DISPLAY_STATES`。`Constants\Product\Group\DisplayState` の値、または同 enum のインスタンス) を受け付け、`showing_for_members` / `sale_for_members` は生成時に `InvalidFieldException` になる (実 API の PUT でも 422)。
+応答の `Group::getDisplayState()` は `Constants\Product\Group\DisplayState` を返す (0.13.0 で商品の enum から変更。実 API が返す `members_only` を読めるようにするため)。`Constants\Product\Group\DisplayState` は実測の 3 値に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` / `sale_for_members` も応答の受理のみを目的として持つ (管理画面等で設定された既存グループが返す可能性を否定できないため。読み取りでは未観測)。
 
 ### 商品カテゴリー
 #### 商品カテゴリー一覧を取得
@@ -948,7 +948,7 @@ if ($categoriesOrErrors instanceof Errors) {
 #### 商品カテゴリーを作成・更新
 大カテゴリーは `CategoryInput`、小カテゴリーは `ChildInput` を使い、それぞれ作成と更新で共用する。両者は同じフィールド (`name` / `expl` / `sort` / `display_state` / `meta_tag`) を持つが、応答の `BigCategory` / `SmallCategory` に合わせた別の型で互いに代入できない。
 指定したフィールドだけを送信するため、更新は部分更新として動作し、明示した `null` はそのまま送信される。ただし実 API の観測 (2026-09-21) では、カテゴリーの `expl` は `null` を送っても旧値のまま残り、空文字 `''` は保存された (説明を消すには空文字を送る)。`meta_tag` の部分更新はマージではなく置換で、送らなかったキーは `null` になる。作成では公式 API が `name` を必須とするが、ライブラリは送信前に検証せず API の `422` に委ねる。
-`display_state` は `showing` / `hidden` / `members_only` (`CategoryDisplayState` の値、または同 enum のインスタンス) を受け付ける。
+`display_state` は `showing` / `hidden` / `members_only` (`Constants\Product\Category\DisplayState` の値、または同 enum のインスタンス) を受け付ける。
 
 ```php
 $categoryOrErrors = $client->createProductCategory(new CategoryInput([
@@ -1063,7 +1063,7 @@ if ($stocksOrErrors instanceof Errors) {
         $stock->getStocks();        // 在庫数。未設定なら null
         $stock->getFewNum();        // 残りわずかとなる在庫数
         $stock->getCategory();      // Product\CategoryIds
-        $stock->getDisplayState();  // ProductDisplayState
+        $stock->getDisplayState();  // Constants\Product\DisplayState
     }
 
     $stocksOrErrors->getTotal();
@@ -1167,6 +1167,10 @@ $pagination->getOffset();
 ### すべての PHP ファイルで strict_types を宣言した
 
 src、tests、examples、`client` スクリプトのすべての PHP ファイルで `declare(strict_types=1);` を宣言した ([ADR 0046](docs/adr/0046-declare-strict-types-everywhere.md))。利用者のコードからライブラリを呼ぶときの型の扱いは、利用者のファイルの宣言で決まるため変わらない。`Values\Furigana::validate()` と `Communicator\RequestOptions` の `authorization` は、宣言の前と同じ結果を返す。
+
+### Constants の enum を URL に合わせた名前空間に移した
+
+`Constants` の直下にあった enum のうち 24 個を、Entity と同じく API の URL に合わせた名前空間に移した ([ADR 0047](docs/adr/0047-nest-constants-by-url.md))。クラス名は Entity と同じ規則 ([ADR 0029](docs/adr/0029-drop-parent-prefix-from-entity-names.md)) で、移した先の名前空間と重なる接頭辞を除いた。たとえば `Constants\ProductDisplayState` は `Constants\Product\DisplayState` に、`Constants\ShopState` は `Constants\Shop\State` に、`Constants\PointState` は `Constants\Sale\PointState` になる。旧名は非推奨の別名として残しており、`instanceof`、型宣言、case の参照、`from()` / `tryFrom()` は旧名のままでも動作する ([非推奨のクラス名の対応表](docs/class-aliases.md))。`DisplayState` や `Type` のように同じ名前の enum があるため、1 つのファイルで並べて使うときは `use ... as` で別名を付ける。複数の API で使う `Prefecture`、`Sex`、`ErrorCode`、`SortDirection` と、基底の `FallbackEnum` は直下に残した。
 
 ## 0.31.0 の変更
 
@@ -1396,7 +1400,7 @@ composer oauth:callback
 2. プロジェクト直下の `.env` に `CLIENT_ID` と `CLIENT_SECRET` を設定する
 3. 上記のコマンドを実行し、ブラウザで `http://localhost:8765/` を開いて承認する
 
-要求スコープは環境変数 `OAUTH_CALLBACK_SCOPES` で変更できる (既定は `read_products,read_sales`)。値は `Constants\AuthScope` で検証し、未定義のスコープは起動時に知らせる。
+要求スコープは環境変数 `OAUTH_CALLBACK_SCOPES` で変更できる (既定は `read_products,read_sales`)。値は `Constants\OAuth\AuthScope` で検証し、未定義のスコープは起動時に知らせる。
 
 待ち受けポートは `composer.json` の `oauth:callback` で 8765 に固定している。変更する場合は、そのスクリプトとカラーミーに登録するリダイレクト URI の両方を直すこと。
 

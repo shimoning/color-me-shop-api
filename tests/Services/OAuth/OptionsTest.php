@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Services\OAuth;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options;
-use Shimoning\ColorMeShopApi\Constants\AuthRedirectUri;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthRedirectUri;
 
 class OptionsTest extends TestCase
 {

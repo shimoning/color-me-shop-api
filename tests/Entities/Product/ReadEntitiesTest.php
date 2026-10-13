@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryIds;
 use Shimoning\ColorMeShopApi\Entities\Product\Image as EmbeddedImage;
@@ -30,7 +30,7 @@ class ReadEntitiesTest extends TestCase
 
         $this->assertSame(49, count($product->toArray()));
         $this->assertSame(101, $product->getId());
-        $this->assertSame(ProductDisplayState::SHOWING, $product->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $product->getDisplayState());
         $this->assertSame(501, $product->getCategory()->getIdBig());
         $this->assertSame(0, $product->getCategory()->getIdSmall());
         $this->assertSame([], $product->getGroupIds());

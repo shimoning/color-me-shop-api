@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Category;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\CategoryDisplayState;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState as CategoryDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState as ProductDisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;

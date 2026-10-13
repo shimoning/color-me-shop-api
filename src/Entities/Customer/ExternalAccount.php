@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Entities\Customer;
 
 use DateTimeImmutable;
-use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
+use Shimoning\ColorMeShopApi\Constants\Customer\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 
 /**

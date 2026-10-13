@@ -28,6 +28,57 @@ final class Aliases
             => Services\Sale::class,
         'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
             => Services\OAuth\Options::class,
+
+        // 0.32.0 の後方互換措置
+        'Shimoning\\ColorMeShopApi\\Constants\\ProductDisplayState'
+            => Constants\Product\DisplayState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingCondition'
+            => Constants\Product\Advertising\Condition::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingGender'
+            => Constants\Product\Advertising\Gender::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\CategoryDisplayState'
+            => Constants\Product\Category\DisplayState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\GroupDisplayState'
+            => Constants\Product\Group\DisplayState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\PickupType'
+            => Constants\Product\Pickup\Type::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeFreeType'
+            => Constants\Delivery\ChargeFreeType::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\DeliveryChargeType'
+            => Constants\Delivery\ChargeType::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\DeliveryMethodType'
+            => Constants\Delivery\MethodType::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\DisplayState'
+            => Constants\Delivery\DisplayState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\ContractPlan'
+            => Constants\Shop\ContractPlan::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\DomainPlan'
+            => Constants\Shop\DomainPlan::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\OpenState'
+            => Constants\Shop\OpenState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\ShopState'
+            => Constants\Shop\State::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\TaxRoundingMethod'
+            => Constants\Shop\TaxRoundingMethod::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\TaxType'
+            => Constants\Shop\TaxType::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\KouzaType'
+            => Constants\Payment\KouzaType::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\PaymentType'
+            => Constants\Payment\Type::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\MailState'
+            => Constants\Sale\MailState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\PointState'
+            => Constants\Sale\PointState::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\MailType'
+            => Constants\Sale\MailType::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\ExternalAccountProvider'
+            => Constants\Customer\ExternalAccountProvider::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\AuthRedirectUri'
+            => Constants\OAuth\AuthRedirectUri::class,
+        'Shimoning\\ColorMeShopApi\\Constants\\AuthScope'
+            => Constants\OAuth\AuthScope::class,
+
         'Shimoning\\ColorMeShopApi\\Entities\\Product\\ProductVariantInput'
             => Entities\Product\VariantInput::class,
         'Shimoning\\ColorMeShopApi\\Entities\\Sales\\Sale'

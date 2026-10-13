@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
 use Shimoning\ColorMeShopApi\Client;
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Services\Customer;
 use Shimoning\ColorMeShopApi\Services\Delivery;
 use Shimoning\ColorMeShopApi\Services\Gift;

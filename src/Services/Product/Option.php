@@ -17,7 +17,7 @@ class Option extends Service
     /**
      * オプションを作成する。成功は 201 で、応答の `option` を返す。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -34,7 +34,7 @@ class Option extends Service
     /**
      * オプションを削除する。成功は 204 でボディがないため NoContent を返す。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合

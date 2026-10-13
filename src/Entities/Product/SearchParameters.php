@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Entities\Product;
 
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\DateTime;
@@ -29,7 +29,7 @@ use Shimoning\ColorMeShopApi\Values\Product\Sort;
 class SearchParameters extends Entity implements RequestEntity
 {
     public const FIELD_TYPES = [
-        'displayState' => ['enum' => ProductDisplayState::class],
+        'displayState' => ['enum' => DisplayState::class],
         'makeDateMin' => ['value' => DateTime::class],
         'makeDateMax' => ['value' => DateTime::class],
         'updateDateMin' => ['value' => DateTime::class],
@@ -54,7 +54,7 @@ class SearchParameters extends Entity implements RequestEntity
     protected ?array $groupIds;
     protected ?string $modelNumber;
     protected ?string $name;
-    protected ?ProductDisplayState $displayState;
+    protected ?DisplayState $displayState;
     protected ?int $stocks;
     protected ?bool $stockManaged;
     protected ?bool $recentZeroStocks;
@@ -91,7 +91,7 @@ class SearchParameters extends Entity implements RequestEntity
     /**
      * @deprecated 0.31.0 送信内容は toArrayRecursive() で確かめること。
      */
-    public function getDisplayState(): ?ProductDisplayState
+    public function getDisplayState(): ?DisplayState
     {
         return $this->displayState;
     }

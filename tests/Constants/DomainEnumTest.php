@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Constants;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Constants\ExternalAccountProvider;
+use Shimoning\ColorMeShopApi\Constants\Customer\ExternalAccountProvider;
 use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
-use Shimoning\ColorMeShopApi\Constants\MailType;
-use Shimoning\ColorMeShopApi\Constants\MailState;
-use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailState;
+use Shimoning\ColorMeShopApi\Constants\Sale\PointState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\Sex;
-use Shimoning\ColorMeShopApi\Constants\PaymentType;
-use Shimoning\ColorMeShopApi\Constants\KouzaType;
-use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
+use Shimoning\ColorMeShopApi\Constants\Payment\Type as PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\MethodType as DeliveryMethodType;
 
 /**
  * API のリクエスト・レスポンスに直接現れる enum の値を固定する。

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product\Stock;
 
 use DateTimeImmutable;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Product\CategoryIds;
 use Shimoning\ColorMeShopApi\Entities\Product\Image;
 use Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock;
@@ -24,7 +24,7 @@ class StockTest extends TestCase
         $this->assertInstanceOf(CategoryIds::class, $stock->getCategory());
         $this->assertSame(501, $stock->getCategory()->getIdBig());
         $this->assertContainsOnlyInstancesOf(Image::class, $stock->getImages());
-        $this->assertSame(ProductDisplayState::SHOWING, $stock->getDisplayState());
+        $this->assertSame(DisplayState::SHOWING, $stock->getDisplayState());
         $this->assertInstanceOf(DateTimeImmutable::class, $stock->getMakeDate());
         $this->assertSame(1700000000, $stock->getMakeDate()->getTimestamp());
         $this->assertSame(1700000200, $stock->getUpdateDate()->getTimestamp());

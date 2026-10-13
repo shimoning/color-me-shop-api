@@ -7,8 +7,8 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Advertising;
 use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\AdvertisingCondition;
-use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
+use Shimoning\ColorMeShopApi\Constants\Product\Advertising\Condition;
+use Shimoning\ColorMeShopApi\Constants\Product\Advertising\Gender;
 
 /**
  * GET /product_advertisings の商品広告要素。
@@ -18,8 +18,8 @@ use Shimoning\ColorMeShopApi\Constants\AdvertisingGender;
 class Advertising extends Entity
 {
     public const FIELD_TYPES = [
-        'condition' => ['enum' => AdvertisingCondition::class],
-        'gender' => ['enum' => AdvertisingGender::class],
+        'condition' => ['enum' => Condition::class],
+        'gender' => ['enum' => Gender::class],
         'colors' => ['array' => true, 'scalar' => 'string'],
         'sizes' => ['array' => true, 'scalar' => 'string'],
     ];
@@ -29,9 +29,9 @@ class Advertising extends Entity
     protected ?string $brand;
     /** @var list<string> */
     protected array $colors;
-    protected ?AdvertisingCondition $condition;
+    protected ?Condition $condition;
     protected ?string $description;
-    protected ?AdvertisingGender $gender;
+    protected ?Gender $gender;
     protected ?string $googleProductCategory;
     protected ?string $gtin;
     protected ?string $mpn;
@@ -79,9 +79,9 @@ class Advertising extends Entity
 
     /**
      * 商品の状態 - `new`: 新品 - `used`: 中古品
-     * @return ?AdvertisingCondition
+     * @return ?Condition
      */
-    public function getCondition(): ?AdvertisingCondition
+    public function getCondition(): ?Condition
     {
         return $this->condition;
     }
@@ -97,9 +97,9 @@ class Advertising extends Entity
 
     /**
      * 商品が対象となる性別 - `male`: メンズ - `female`: レディース - `unisex`: ユニセックス
-     * @return ?AdvertisingGender
+     * @return ?Gender
      */
-    public function getGender(): ?AdvertisingGender
+    public function getGender(): ?Gender
     {
         return $this->gender;
     }

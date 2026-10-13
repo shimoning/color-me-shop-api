@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Product;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Constants\ProductDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Product\ProductUpdateInput;
@@ -106,9 +106,9 @@ class ProductCreateInputTest extends TestCase
     #[DataProvider('productInputProvider')]
     public function test_display_stateはenumインスタンスでも指定できバッキング値で送信する(string $class): void
     {
-        $input = new $class(['display_state' => ProductDisplayState::HIDDEN]);
+        $input = new $class(['display_state' => DisplayState::HIDDEN]);
 
-        $this->assertSame(ProductDisplayState::HIDDEN, $input->toArray()['display_state']);
+        $this->assertSame(DisplayState::HIDDEN, $input->toArray()['display_state']);
         $this->assertSame(['display_state' => 'hidden'], $input->toArrayRecursive());
     }
 

@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Product\Group;
 use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\GroupDisplayState;
+use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Common\MetaTag;
 
 /**
@@ -20,7 +20,7 @@ class Group extends Entity
 {
     const FIELD_TYPES = [
         'displayState' => [
-            'enum' => GroupDisplayState::class,
+            'enum' => DisplayState::class,
         ],
         'metaTag' => [
             'allowNull' => true,
@@ -37,7 +37,7 @@ class Group extends Entity
     protected ?string $expl;
 
     protected ?int $sort;
-    protected GroupDisplayState $displayState;
+    protected DisplayState $displayState;
 
     protected ?int $parentGroupId;
     protected ?MetaTag $metaTag;
@@ -106,12 +106,12 @@ class Group extends Entity
      * 表示状態
      *
      * 公式 OpenAPI との差分: 応答定義にない `members_only` も実 API が返す (2026-09-22)。
-     * 応答定義にだけある2値も受理できる `GroupDisplayState` を返す。
+     * 応答定義にだけある2値も受理できる `DisplayState` を返す。
      *
-     * @return GroupDisplayState
+     * @return DisplayState
      * @see docs/api-product-structure.md
      */
-    public function getDisplayState(): GroupDisplayState
+    public function getDisplayState(): DisplayState
     {
         $this->assertFieldInitialized('displayState');
 

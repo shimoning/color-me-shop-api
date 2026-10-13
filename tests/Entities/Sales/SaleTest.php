@@ -6,8 +6,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Sales;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
-use Shimoning\ColorMeShopApi\Constants\MailState;
-use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailState;
+use Shimoning\ColorMeShopApi\Constants\Sale\PointState;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 

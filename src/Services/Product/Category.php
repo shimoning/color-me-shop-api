@@ -58,7 +58,7 @@ class Category extends Service
      *
      * 公式 OpenAPI との差分: `name` は required だがライブラリでは送信前に検証せず、API の検証に委ねる。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws InvalidFieldException 応答の `category` が配列以外、`CategoryEntity::fromArray()` で変換できない、または `BigCategory` でない場合
@@ -76,7 +76,7 @@ class Category extends Service
     /**
      * 大カテゴリーを更新する。明示したフィールドだけを送る部分更新で、応答の `category` を `BigCategory` として返す。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws InvalidFieldException 応答の `category` が配列以外、`CategoryEntity::fromArray()` で変換できない、または `BigCategory` でない場合
@@ -96,7 +96,7 @@ class Category extends Service
      *
      * `name` の required 指定の扱いは大カテゴリーの作成と同じで、API の検証に委ねる。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws InvalidFieldException 応答の `category` が配列以外、`CategoryEntity::fromArray()` で変換できない、または `SmallCategory` でない場合
@@ -117,7 +117,7 @@ class Category extends Service
     /**
      * 小カテゴリーを更新する。明示したフィールドだけを送る部分更新で、応答の `category` を `SmallCategory` として返す。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws InvalidFieldException 応答の `category` が配列以外、`CategoryEntity::fromArray()` で変換できない、または `SmallCategory` でない場合

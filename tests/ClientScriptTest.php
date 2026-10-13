@@ -17,11 +17,11 @@ class ClientScriptTest extends TestCase
             'サンプル CLI の OAuth scope は明示リストで指定する',
         );
 
-        \preg_match_all('/Constants\\\\AuthScope::([A-Z_]+)/', $matches[1], $scopeCases);
+        \preg_match_all('/Constants\\\\OAuth\\\\AuthScope::([A-Z_]+)/', $matches[1], $scopeCases);
         $this->assertSame(
             ['READ_PRODUCTS', 'WRITE_PRODUCTS', 'READ_SALES', 'WRITE_SALES', 'READ_SHOP_COUPONS'],
             $scopeCases[1],
         );
-        $this->assertSame('', \preg_replace('/Constants\\\\AuthScope::[A-Z_]+|[\s,]/', '', $matches[1]));
+        $this->assertSame('', \preg_replace('/Constants\\\\OAuth\\\\AuthScope::[A-Z_]+|[\s,]/', '', $matches[1]));
     }
 }

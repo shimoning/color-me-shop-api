@@ -22,7 +22,7 @@ class Customer extends Service
     /**
      * 顧客データのリストを取得
      *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
      * @param SearchParameters $searchParameters
@@ -55,7 +55,7 @@ class Customer extends Service
     /**
      * 顧客データの取得
      *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_SALES})
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
      * @param int|string $id
@@ -81,7 +81,7 @@ class Customer extends Service
     /**
      * 顧客データの追加
      *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * 顧客専用の scope は存在しない。
      * 公式 OpenAPI が required とする6フィールドは、送信前に明示を確認する。
@@ -116,7 +116,7 @@ class Customer extends Service
      * (2026-09-25)。`address2` は省略すると空になるため必須として扱う (2026-10-09)。消す場合は
      * `null` を明示する。
      *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
      * @param int|string $id
@@ -151,7 +151,7 @@ class Customer extends Service
      * 増減後の `points` をトップレベルに持つ。
      * `points` の未指定は送信前に拒否し、値の範囲は API の検証に委ねる。
      *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_SALES})
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
      * @param int|string $id

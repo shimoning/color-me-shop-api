@@ -6,10 +6,10 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\MethodType as DeliveryMethodType;
 use Shimoning\ColorMeShopApi\Constants\FallbackEnum;
-use Shimoning\ColorMeShopApi\Constants\KouzaType;
-use Shimoning\ColorMeShopApi\Constants\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\Payment\Type as PaymentType;
 use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;

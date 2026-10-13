@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Sale;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Aliases;
-use Shimoning\ColorMeShopApi\Constants\PointState;
+use Shimoning\ColorMeShopApi\Constants\Sale\PointState;
 
 /**
  * 受注更新データ

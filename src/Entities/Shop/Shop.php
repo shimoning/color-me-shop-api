@@ -6,13 +6,13 @@ namespace Shimoning\ColorMeShopApi\Entities\Shop;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\ShopState;
-use Shimoning\ColorMeShopApi\Constants\DomainPlan;
-use Shimoning\ColorMeShopApi\Constants\ContractPlan;
-use Shimoning\ColorMeShopApi\Constants\OpenState;
+use Shimoning\ColorMeShopApi\Constants\Shop\State;
+use Shimoning\ColorMeShopApi\Constants\Shop\DomainPlan;
+use Shimoning\ColorMeShopApi\Constants\Shop\ContractPlan;
+use Shimoning\ColorMeShopApi\Constants\Shop\OpenState;
 use Shimoning\ColorMeShopApi\Constants\Prefecture;
-use Shimoning\ColorMeShopApi\Constants\TaxType;
-use Shimoning\ColorMeShopApi\Constants\TaxRoundingMethod;
+use Shimoning\ColorMeShopApi\Constants\Shop\TaxType;
+use Shimoning\ColorMeShopApi\Constants\Shop\TaxRoundingMethod;
 
 /**
  * 商品グループ
@@ -33,7 +33,7 @@ class Shop extends Entity
 
     const FIELD_TYPES = [
         'state' => [
-            'enum' => ShopState::class,
+            'enum' => State::class,
         ],
         'domainPlan' => [
             'enum' => DomainPlan::class,
@@ -59,7 +59,7 @@ class Shop extends Entity
     ];
 
     protected string $id;
-    protected ShopState $state;
+    protected State $state;
     protected DomainPlan $domainPlan;
     protected ContractPlan $contractPlan;
 
@@ -120,9 +120,9 @@ class Shop extends Entity
 
     /**
      * アカウント状態
-     * @return ShopState
+     * @return State
      */
-    public function getState(): ShopState
+    public function getState(): State
     {
         $this->assertFieldInitialized('state');
         return $this->state;

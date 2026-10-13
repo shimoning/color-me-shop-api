@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Values;
 
-use Shimoning\ColorMeShopApi\Constants\AuthScope;
+use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 /**

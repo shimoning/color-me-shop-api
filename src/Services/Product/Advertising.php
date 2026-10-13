@@ -17,7 +17,7 @@ class Advertising extends Service
     /**
      * 商品広告一覧。
      *
-     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
+     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
      *
      * @return Page<AdvertisingEntity>|Errors
      * @throws ParameterException アクセストークンが空の場合

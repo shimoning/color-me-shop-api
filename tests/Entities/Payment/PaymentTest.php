@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Payment;
 
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Constants\KouzaType;
-use Shimoning\ColorMeShopApi\Constants\PaymentType;
+use Shimoning\ColorMeShopApi\Constants\Payment\KouzaType;
+use Shimoning\ColorMeShopApi\Constants\Payment\Type;
 use Shimoning\ColorMeShopApi\Entities\Payment\Payment;
 
 class PaymentTest extends TestCase
@@ -23,7 +23,7 @@ class PaymentTest extends TestCase
     public function test_完全な決済設定を従来どおり取得できる(): void
     {
         $payment = self::makePayment([
-            'type' => PaymentType::COD->value,
+            'type' => Type::COD->value,
             'cod' => [
                 'changeable' => true,
                 'fees' => [[3000, 100], [5000, 200]],
@@ -47,7 +47,7 @@ class PaymentTest extends TestCase
         $this->assertSame(1, $payment->getId());
         $this->assertSame('my-shop', $payment->getAccountId());
         $this->assertSame('代金引換', $payment->getName());
-        $this->assertSame(PaymentType::COD, $payment->getType());
+        $this->assertSame(Type::COD, $payment->getType());
         $this->assertTrue($payment->getDisplay());
         $this->assertFalse($payment->getUseMobile());
         $this->assertSame(1700000000, $payment->getMakeDate()->getTimestamp());
@@ -80,7 +80,7 @@ class PaymentTest extends TestCase
     public function test_実APIでcodの任意項目が欠損してもnullとして取得できる(): void
     {
         $payment = self::makePayment([
-            'type' => PaymentType::COD->value,
+            'type' => Type::COD->value,
             'cod' => [
                 'changeable' => false,
             ],
@@ -100,7 +100,7 @@ class PaymentTest extends TestCase
             'id' => 1,
             'account_id' => 'my-shop',
             'name' => '代金引換',
-            'type' => PaymentType::OTHER->value,
+            'type' => Type::OTHER->value,
             'display' => true,
             'use_mobile' => false,
             'make_date' => 1700000000,

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Limit;
-use Shimoning\ColorMeShopApi\Constants\MailState;
+use Shimoning\ColorMeShopApi\Constants\Sale\MailState;
 
 /**
  * FIELD_TYPES の各分岐を網羅するためのテストダブル

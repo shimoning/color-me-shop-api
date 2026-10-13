@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Tests\Entities\Shop;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Shop\Shop;
-use Shimoning\ColorMeShopApi\Constants\ShopState;
+use Shimoning\ColorMeShopApi\Constants\Shop\State;
 
 class ShopTest extends TestCase
 {
@@ -47,7 +47,7 @@ class ShopTest extends TestCase
 
         $this->assertNull($shop->getHojin());
         $this->assertNull($shop->getHojinKana());
-        $this->assertSame(ShopState::ENABLED, $shop->getState());
+        $this->assertSame(State::ENABLED, $shop->getState());
     }
 
     /**

@@ -6,7 +6,7 @@ namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Communicator\Errors;
 use Shimoning\ColorMeShopApi\Communicator\NoContent;
-use Shimoning\ColorMeShopApi\Constants\PickupType;
+use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as AdvertisingSearchParameters;
@@ -48,7 +48,7 @@ class Product extends Service
     /**
      * 商品一覧。
      *
-     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
+     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
      *
      * @return Page<ProductEntity>|Errors
      * @throws ParameterException アクセストークンが空の場合
@@ -74,7 +74,7 @@ class Product extends Service
     /**
      * 商品単体。
      *
-     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::READ_PRODUCTS})
+     * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -102,7 +102,7 @@ class Product extends Service
      * 公式 OpenAPI との差分: 作成の request にない更新専用の 4 項目を送っても、実 API はエラーにせず無視する
      * (2026-10-02)。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
@@ -123,7 +123,7 @@ class Product extends Service
      * 空の `ProductUpdateInput` は `{"product":{}}` として送信し、API が 422 (`VALIDATE_ERROR_FIELD`、`field=product`)
      * で拒否して `Errors` が返る。ライブラリ側では事前に拒否しない。
      *
-     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\AuthScope::WRITE_PRODUCTS})
+     * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合

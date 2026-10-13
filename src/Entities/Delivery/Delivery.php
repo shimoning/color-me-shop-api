@@ -6,10 +6,10 @@ namespace Shimoning\ColorMeShopApi\Entities\Delivery;
 
 use DateTimeImmutable;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Constants\DeliveryMethodType;
-use Shimoning\ColorMeShopApi\Constants\DeliveryChargeFreeType;
-use Shimoning\ColorMeShopApi\Constants\DeliveryChargeType;
-use Shimoning\ColorMeShopApi\Constants\DisplayState;
+use Shimoning\ColorMeShopApi\Constants\Delivery\MethodType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\ChargeFreeType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\ChargeType;
+use Shimoning\ColorMeShopApi\Constants\Delivery\DisplayState;
 
 /**
  * 配送方法
@@ -21,13 +21,13 @@ class Delivery extends Entity
 {
     const FIELD_TYPES = [
         'methodType' => [
-            'enum' => DeliveryMethodType::class,
+            'enum' => MethodType::class,
         ],
         'chargeFreeType' => [
-            'enum' => DeliveryChargeFreeType::class,
+            'enum' => ChargeFreeType::class,
         ],
         'chargeType' => [
-            'enum' => DeliveryChargeType::class,
+            'enum' => ChargeType::class,
         ],
         'displayState' => [
             'enum' => DisplayState::class,
@@ -43,12 +43,12 @@ class Delivery extends Entity
 
     protected string $name;
 
-    protected DeliveryMethodType $methodType;
+    protected MethodType $methodType;
     protected ?string $imageUrl;
 
-    protected DeliveryChargeFreeType $chargeFreeType;
+    protected ChargeFreeType $chargeFreeType;
     protected ?int $chargeFreeLimit;
-    protected DeliveryChargeType $chargeType;
+    protected ChargeType $chargeType;
     protected Charge $charge;
     protected bool $taxIncluded;
 
@@ -102,9 +102,9 @@ class Delivery extends Entity
 
     /**
      * 配送方法区分
-     * @return DeliveryMethodType
+     * @return MethodType
      */
-    public function getMethodType(): DeliveryMethodType
+    public function getMethodType(): MethodType
     {
         $this->assertFieldInitialized('methodType');
         return $this->methodType;
@@ -121,9 +121,9 @@ class Delivery extends Entity
 
     /**
      * 配送料が無料になる基準
-     * @return DeliveryChargeFreeType
+     * @return ChargeFreeType
      */
-    public function getChargeFreeType(): DeliveryChargeFreeType
+    public function getChargeFreeType(): ChargeFreeType
     {
         $this->assertFieldInitialized('chargeFreeType');
         return $this->chargeFreeType;
@@ -140,9 +140,9 @@ class Delivery extends Entity
 
     /**
      * 送料の種別
-     * @return DeliveryChargeType
+     * @return ChargeType
      */
-    public function getChargeType(): DeliveryChargeType
+    public function getChargeType(): ChargeType
     {
         $this->assertFieldInitialized('chargeType');
         return $this->chargeType;
