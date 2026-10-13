@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shimoning\ColorMeShopApi\Tests\Constants;
+namespace Shimoning\ColorMeShopApi\Tests\Constants\Product\Group;
 
 use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState as CategoryDisplayState;
