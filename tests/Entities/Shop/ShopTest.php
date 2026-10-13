@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Entities\Shop;
 
 use PHPUnit\Framework\TestCase;

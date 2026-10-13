@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Communicator;
 
 use PHPUnit\Framework\TestCase;
@@ -69,6 +71,13 @@ class RequestOptionsTest extends TestCase
         $options = new RequestOptions(['authorization' => 'my-token']);
 
         $this->assertSame('Bearer my-token', $options->getAuthorization());
+    }
+
+    public function test_数値のアクセストークンを文字列にキャストする(): void
+    {
+        $options = new RequestOptions(['authorization' => 123]);
+
+        $this->assertSame('Bearer 123', $options->getAuthorization());
     }
 
     public function test_すでにBearerが付いている場合は二重に付与しない(): void

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Doubles;
 
 if (\PHP_VERSION_ID >= 80200) {

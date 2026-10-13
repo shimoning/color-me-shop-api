@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Entities\Sale;
 
 use Shimoning\ColorMeShopApi\Aliases;

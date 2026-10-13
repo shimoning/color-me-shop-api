@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Services\OAuth;
 
 use PHPUnit\Framework\TestCase;

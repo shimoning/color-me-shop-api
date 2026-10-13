@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Communicator;
 
 /**
@@ -17,7 +19,7 @@ class RequestOptions
     /**
      * リクエストオプションを生成する。
      *
-     * @param array{timeout?: float|int|string, connect_timeout?: float|int|string, form?: bool, json?: bool, authorization?: string}|null $options
+     * @param array{timeout?: float|int|string, connect_timeout?: float|int|string, form?: bool, json?: bool, authorization?: int|string}|null $options
      * @return void
      */
     public function __construct(?array $options = [])
@@ -35,9 +37,10 @@ class RequestOptions
             $this->_json = (bool)$options['json'];
         }
         if (isset($options['authorization'])) {
-            $authorization = \strpos($options['authorization'], 'Bearer ') === 0
-                ? $options['authorization']
-                : 'Bearer ' . $options['authorization'];
+            $authorization = (string) $options['authorization'];
+            $authorization = \strpos($authorization, 'Bearer ') === 0
+                ? $authorization
+                : 'Bearer ' . $authorization;
             $this->_authorization = $authorization;
         }
     }

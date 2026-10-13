@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * OAuth のコールバックを localhost で受け取り、トークン応答を確認するサンプル。
  *
@@ -27,8 +29,6 @@
  * CSRF 対策として state を生成してセッションに保存し、Services\OAuth::getUrl() へ渡す。
  * コールバックでは、返された state をセッションに保存した値と照合している。
  */
-
-declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Examples\OAuthCallback;
 

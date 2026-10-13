@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Tests\Values;
 
 use PHPUnit\Framework\TestCase;
@@ -65,6 +67,23 @@ class FuriganaTest extends TestCase
         $this->assertTrue($furigana->validate('タロウ'));
         $this->assertTrue($furigana->validate(''));
         $this->assertFalse($furigana->validate('たろう'));
+    }
+
+    public function test_validateはstrict_types宣言前と同じ暗黙変換後の値を判定する(): void
+    {
+        $furigana = new Furigana('ヤマダ');
+        $stringable = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'タロウ';
+            }
+        };
+
+        $this->assertFalse($furigana->validate(123));
+        $this->assertFalse($furigana->validate(true));
+        $this->assertTrue($furigana->validate(null));
+        $this->assertTrue($furigana->validate(false));
+        $this->assertTrue($furigana->validate($stringable));
     }
 
     #[DataProvider('invalidProvider')]

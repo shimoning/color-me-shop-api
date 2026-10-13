@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shimoning\ColorMeShopApi\Values;
 
 /** 応答側で検証に通らない生値の保持を許可する値オブジェクト。 */
