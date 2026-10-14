@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests;
 
-use PHPUnit\Framework\TestCase;
+use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Aliases;
+use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
+use Shimoning\ColorMeShopApi\Communicator\Response;
 
 /**
  * 改名したクラスの旧名が、非推奨の別名として解決できることを固定する。
@@ -19,6 +22,71 @@ use Shimoning\ColorMeShopApi\Aliases;
 #[PreserveGlobalState(false)]
 class AliasesTest extends TestCase
 {
+    /** @return array<string, array{class-string, class-string}> */
+    public static function resultAliasProvider(): array
+    {
+        return [
+            'Errors' => [
+                'Shimoning\\ColorMeShopApi\\Communicator\\Errors',
+                'Shimoning\\ColorMeShopApi\\Results\\Errors',
+            ],
+            'NoContent' => [
+                'Shimoning\\ColorMeShopApi\\Communicator\\NoContent',
+                'Shimoning\\ColorMeShopApi\\Results\\NoContent',
+            ],
+            'OAuth\\ErrorResponse' => [
+                'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\ErrorResponse',
+                'Shimoning\\ColorMeShopApi\\Results\\OAuth\\ErrorResponse',
+            ],
+        ];
+    }
+
+    #[DataProvider('resultAliasProvider')]
+    public function test_API結果の旧名は新名と同じクラスを指す(string $legacy, string $current): void
+    {
+        $this->assertTrue(\class_exists($legacy));
+        $this->assertSame($current, (new \ReflectionClass($legacy))->getName());
+    }
+
+    #[DataProvider('resultAliasProvider')]
+    public function test_API結果は新名で生成しても旧名のinstanceofと型宣言を満たす(
+        string $legacy,
+        string $current,
+    ): void {
+        $instance = self::newResultInstance($current);
+        /** @var callable(object): object $acceptLegacy */
+        $acceptLegacy = eval('return static function (\\' . $legacy . ' $value): object { return $value; };');
+
+        $this->assertInstanceOf($legacy, $instance);
+        $this->assertSame($instance, $acceptLegacy($instance));
+    }
+
+    #[DataProvider('resultAliasProvider')]
+    public function test_API結果は旧名で生成できる(string $legacy, string $current): void
+    {
+        $this->assertInstanceOf($current, self::newResultInstance($legacy));
+    }
+
+    public function test_Errorsは旧名でstaticメソッドを呼べる(): void
+    {
+        $legacy = 'Shimoning\\ColorMeShopApi\\Communicator\\Errors';
+        $errors = $legacy::build(self::makeResponse(422, '{"errors":[]}'));
+
+        $this->assertInstanceOf('Shimoning\\ColorMeShopApi\\Results\\Errors', $errors);
+    }
+
+    #[DataProvider('resultAliasProvider')]
+    public function test_API結果の旧名でserializeされたデータをunserializeできる(
+        string $legacy,
+        string $current,
+    ): void {
+        $serialized = \sprintf('O:%d:"%s":0:{}', \strlen($legacy), $legacy);
+        $result = \unserialize($serialized);
+
+        $this->assertInstanceOf($current, $result);
+        $this->assertInstanceOf($legacy, $result);
+    }
+
     #[DataProvider('aliasProvider')]
     public function test_新名だけで生成しても旧名で型判定できる(
         string $legacy,
@@ -124,6 +192,7 @@ class AliasesTest extends TestCase
             if (
                 $current === \Shimoning\ColorMeShopApi\Entities\RequestEntity::class
                 || $current === \Shimoning\ColorMeShopApi\Services\OAuth\Options::class
+                || \str_starts_with($current, 'Shimoning\\ColorMeShopApi\\Results\\')
                 || \str_starts_with($legacy, 'Shimoning\\ColorMeShopApi\\Constants\\')
             ) {
                 continue;
@@ -274,6 +343,12 @@ class AliasesTest extends TestCase
                 => \Shimoning\ColorMeShopApi\Services\Sale::class,
             'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
                 => \Shimoning\ColorMeShopApi\Services\OAuth\Options::class,
+            'Shimoning\\ColorMeShopApi\\Communicator\\Errors'
+                => \Shimoning\ColorMeShopApi\Results\Errors::class,
+            'Shimoning\\ColorMeShopApi\\Communicator\\NoContent'
+                => \Shimoning\ColorMeShopApi\Results\NoContent::class,
+            'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\ErrorResponse'
+                => \Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse::class,
             'Shimoning\\ColorMeShopApi\\Constants\\ProductDisplayState'
                 => \Shimoning\ColorMeShopApi\Constants\Product\DisplayState::class,
             'Shimoning\\ColorMeShopApi\\Constants\\AdvertisingCondition'
@@ -446,5 +521,25 @@ class AliasesTest extends TestCase
         }
 
         return new $class($data);
+    }
+
+    /** @param class-string $class */
+    private static function newResultInstance(string $class): object
+    {
+        $response = self::makeResponse(400, '{"error":"invalid_request"}');
+
+        if (\is_a($class, 'Shimoning\\ColorMeShopApi\\Results\\OAuth\\ErrorResponse', true)) {
+            return new $class(['error' => 'invalid_request'], $response);
+        }
+
+        return new $class($response);
+    }
+
+    private static function makeResponse(int $status, string $body): Response
+    {
+        return new Response(
+            new Psr7Response($status, [], $body),
+            new RequestMeta('GET', 'https://api.shop-pro.jp/v1/test', []),
+        );
     }
 }

@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi;
 /**
  * 非推奨のクラス名から現行名への対応表。
  *
- * 新しいコードでは現行名を使うこと。旧名で直列化された Entity のデータも復元できる。
+ * 新しいコードでは現行名を使うこと。旧名で直列化された Entity と API 結果型のデータも復元できる。
  * Service は直列化を想定しないため、旧名での復元は対象外である。
  *
  * @see docs/class-aliases.md
@@ -28,6 +28,14 @@ final class Aliases
             => Services\Sale::class,
         'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\Options'
             => Services\OAuth\Options::class,
+
+        // 0.33.0 の後方互換措置
+        'Shimoning\\ColorMeShopApi\\Communicator\\Errors'
+            => Results\Errors::class,
+        'Shimoning\\ColorMeShopApi\\Communicator\\NoContent'
+            => Results\NoContent::class,
+        'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\ErrorResponse'
+            => Results\OAuth\ErrorResponse::class,
 
         // 0.32.0 の後方互換措置
         'Shimoning\\ColorMeShopApi\\Constants\\ProductDisplayState'

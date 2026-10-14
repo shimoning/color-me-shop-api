@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Shimoning\ColorMeShopApi\Communicator;
+namespace Shimoning\ColorMeShopApi\Results;
 
+use Shimoning\ColorMeShopApi\Aliases;
+use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Error;
@@ -194,3 +196,7 @@ class Errors extends Collection
         return $item;
     }
 }
+
+// Errors 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。
+// 次のメジャーバージョンで Aliases::MAP とともに削除する。
+Aliases::defineLegacyAlias(Errors::class);

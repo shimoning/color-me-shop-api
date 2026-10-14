@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Shimoning\ColorMeShopApi\Tests\Communicator;
+namespace Shimoning\ColorMeShopApi\Tests\Results;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Constants\ErrorCode;

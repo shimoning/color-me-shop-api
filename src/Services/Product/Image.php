@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Services\Product;
 
 use Psr\Http\Message\StreamInterface;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Results\Errors;
+use Shimoning\ColorMeShopApi\Results\NoContent;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Product\Image\Image as ImageEntity;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;

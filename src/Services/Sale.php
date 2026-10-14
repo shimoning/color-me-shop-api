@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Services;
 
 use Shimoning\ColorMeShopApi\Aliases;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sale\Sale as SaleEntity;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;

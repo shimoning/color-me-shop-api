@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Services\Product\Category as ProductCategory;
 use Shimoning\ColorMeShopApi\Services\Product\Group as ProductGroup;
 use Shimoning\ColorMeShopApi\Services\Product\Stock as ProductStock;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Constants\Product\Group\DisplayState;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;

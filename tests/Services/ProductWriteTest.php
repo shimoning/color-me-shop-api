@@ -6,8 +6,8 @@ namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Results\Errors;
+use Shimoning\ColorMeShopApi\Results\NoContent;
 use Shimoning\ColorMeShopApi\Constants\Product\Category\DisplayState as CategoryDisplayState;
 use Shimoning\ColorMeShopApi\Constants\ErrorCode;
 use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;

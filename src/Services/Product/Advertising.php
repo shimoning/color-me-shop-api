@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Services\Product;
 
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\Advertising as AdvertisingEntity;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as ProductAdvertisingSearchParameters;

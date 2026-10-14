@@ -6,14 +6,14 @@ namespace Shimoning\ColorMeShopApi\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Client;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
 use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
-use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
+use Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\ChildInput;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\CategoryInput;

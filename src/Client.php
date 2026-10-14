@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi;
 
 use GuzzleHttp\ClientInterface;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Results\Errors;
+use Shimoning\ColorMeShopApi\Results\NoContent;
 use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
 use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Page;
@@ -15,7 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
-use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
+use Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Values\Scopes;
 
 use Shimoning\ColorMeShopApi\Services\Shop;
