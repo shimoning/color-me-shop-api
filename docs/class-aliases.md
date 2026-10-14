@@ -22,7 +22,8 @@ API の呼び出しが返す結果の型を `Results` に集めた（[ADR 0048](
 | `Communicator\NoContent` | `Results\NoContent` |
 | `Entities\OAuth\ErrorResponse` | `Results\OAuth\ErrorResponse` |
 
-旧名での生成、`instanceof`、型宣言、`Errors::build()` は動作する。
+旧名での生成、`instanceof`、型宣言、`Errors::build()` は動作する。0.32.0 以前に `serialize()` したこれらのデータも、
+`unserialize()` で新名のクラスとして復元できる（`allowed_classes` には旧名を渡すこと）。
 
 ## 0.32.0: Constants の enum の移動
 

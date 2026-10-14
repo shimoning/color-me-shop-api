@@ -27,10 +27,15 @@ API の呼び出しは、成功の Entity のほかに、失敗や本文のな�
     `Results` の直下で `Errors` と並ぶと、どちらが何のエラーか名前から分からなくなる。利用者の指定による
   - 名前空間の名前は、HTTP の応答を表す `Communicator\Response` と紛らわしくないよう `Results` にする。利用者の
     指定による
-- **型の中身と継承は変えない。** `Errors` は `Entities\Collection` を、`ErrorResponse` は `Entities\Entity` を継承したまま
+- **型の継承は変えない。** `Errors` は `Entities\Collection` を、`ErrorResponse` は `Entities\Entity` を継承したまま
   にする。エラー 1 件を表す `Entities\Error` は、API の本文から作るデータなので `Entities` に残す。出典: `5aed6b4`。
 - 旧名は [ADR 0016](0016-unify-request-input-entity-names.md) と同じ仕組みで非推奨の別名として残し、次のメジャーな変更で
   削除する。利用者の指定による。出典: `5aed6b4`。
+- 0.32.0 以前に `serialize()` した `Errors`、`NoContent`、`ErrorResponse` も復元できるようにする。PHP の private プロパティの
+  キーには宣言したクラスの名前が入るため、別名だけでは元の `Response` が復元されない。旧名のキーを新名に読み替え、
+  PHP 8.2 以降でも、移動による非推奨警告を新たに出さない。0.18.0 以前の `ErrorResponse` の `state` は、
+  [ADR 0021](0021-drop-state-from-token-error-response.md) のとおり動的プロパティとして復元する。この読み替えも、別名と
+  同じく次のメジャーな変更で削除する。出典: `998750f`。
 
 ## 代替案と却下理由
 
@@ -59,4 +64,4 @@ API の呼び出しが返す型は、成功の Entity を除いて `Results` か
 - [ADR 0016: 要求側入力 Entity の命名を統一し、旧名を非推奨の別名で残す](0016-unify-request-input-entity-names.md)
 - [ADR 0047: Constants の enum を API の URL に合わせた名前空間に移す](0047-nest-constants-by-url.md)
 - [非推奨のクラス名の対応表](../class-aliases.md)
-- 実装とテストの出典コミット: `5aed6b4`
+- 実装とテストの出典コミット: `5aed6b4`、`998750f`
