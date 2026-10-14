@@ -7,6 +7,7 @@ namespace Shimoning\ColorMeShopApi\Results\OAuth;
 use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Results\Concerns\RestoresLegacySerializedResponse;
 
 /**
  * RFC 6749 §5.2 で定義されたトークンエンドポイントのエラー応答。
@@ -14,6 +15,15 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
  */
 class ErrorResponse extends Entity
 {
+    use RestoresLegacySerializedResponse;
+
+    /**
+     * ErrorResponse 移動前の serialize private キーを復元するための後方互換措置。
+     * 次のメジャーバージョンで Aliases::MAP とともに削除する。
+     */
+    private const LEGACY_SERIALIZED_CLASS =
+        'Shimoning\\ColorMeShopApi\\Entities\\OAuth\\ErrorResponse';
+
     protected string $error;
     protected ?string $errorDescription = null;
     protected ?string $errorUri = null;

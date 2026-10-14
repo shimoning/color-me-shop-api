@@ -6,6 +6,7 @@ namespace Shimoning\ColorMeShopApi\Results;
 
 use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Communicator\Response;
+use Shimoning\ColorMeShopApi\Results\Concerns\RestoresLegacySerializedResponse;
 
 /**
  * 204 No Content の成功応答を表す値オブジェクト。
@@ -15,6 +16,14 @@ use Shimoning\ColorMeShopApi\Communicator\Response;
  */
 final class NoContent
 {
+    use RestoresLegacySerializedResponse;
+
+    /**
+     * NoContent 移動前の serialize private キーを復元するための後方互換措置。
+     * 次のメジャーバージョンで Aliases::MAP とともに削除する。
+     */
+    private const LEGACY_SERIALIZED_CLASS = 'Shimoning\\ColorMeShopApi\\Communicator\\NoContent';
+
     public function __construct(private Response $_response)
     {
     }

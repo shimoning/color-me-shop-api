@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Entities\Error;
+use Shimoning\ColorMeShopApi\Results\Concerns\RestoresLegacySerializedResponse;
 
 /**
  * API エラーと元のレスポンスを保持するコレクション。
@@ -21,6 +22,14 @@ use Shimoning\ColorMeShopApi\Entities\Error;
  */
 class Errors extends Collection
 {
+    use RestoresLegacySerializedResponse;
+
+    /**
+     * Errors 移動前の serialize private キーを復元するための後方互換措置。
+     * 次のメジャーバージョンで Aliases::MAP とともに削除する。
+     */
+    private const LEGACY_SERIALIZED_CLASS = 'Shimoning\\ColorMeShopApi\\Communicator\\Errors';
+
     private const ERROR_KEYS = [
         'code' => true,
         'message' => true,
