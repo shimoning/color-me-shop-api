@@ -1162,6 +1162,15 @@ $pagination->getOffset();
 
 `Sale\DeliveryUpdateInput` の `furigana` に空文字 `''` を渡すと、これまでは `null` として送っていた。今後は空文字のまま送る。`'0'` のように falsy でカタカナでない値も、これまではエラーにならずに `null` として送っていたが、今後は生成時に `InvalidFieldException` になる (`'abc'` のような falsy でない不正な値は、これまでも `InvalidFieldException` だった)。顧客の入力 (`CustomerCreateInput`、`CustomerUpdateInput`、`Sale\CustomerCreateInput`) と同じ扱いになる。`null` を渡した場合は、これまでどおり `null` を送る。
 
+### 受注と顧客の応答で、子 Entity の空の配列と falsy な値を null にしない
+
+応答の次の項目が、空の配列 `[]` のときは、これまでは `null` を返していたが、今後は中身の空の Entity を返す (`externalAccounts` は、これまでどおり `[]` を返す)。`''`、`0`、`false`、`'0'` のような `null` 以外の falsy な値は、これまでは `null` を返していたが、今後は生成時に `InvalidFieldException` になる。値が `null` のときと項目がないときは、これまでどおり `null` を返す。実 API でこれまでに観測した値は、`null` か項目なしだけだった。
+
+- `Sale\Sale` の `segment`、`totals`、`application`、`shopCoupon`
+- `Customer\Customer` の `membership`、`externalAccounts`
+- `Customer\Membership\Membership` の `progress`
+- `Customer\Membership\Progress` の `nextMembership`
+
 ## 0.33.0 の変更
 
 ### API の結果を表す型を Results に移した
