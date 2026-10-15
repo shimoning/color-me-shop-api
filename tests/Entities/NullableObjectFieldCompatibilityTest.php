@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer;
 use Shimoning\ColorMeShopApi\Entities\Sale\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 class NullableObjectFieldCompatibilityTest extends TestCase
 {
@@ -16,19 +17,27 @@ class NullableObjectFieldCompatibilityTest extends TestCase
      * @param class-string<Customer|Delivery|DeliveryUpdateInput> $class
      */
     #[DataProvider('nullableFuriganaProvider')]
-    public function test_nullableなFIELD_TYPESは従来どおりfalsy値をnullとして扱う(
+    public function test_furiganaのnullableとallowNullはそれぞれのfalsy値の扱いを保つ(
         string $class,
         mixed $value,
     ): void {
-        $entity = new $class(['furigana' => $value]);
+        if ($class === DeliveryUpdateInput::class) {
+            if ($value === '') {
+                $this->assertSame(
+                    ['furigana' => ''],
+                    (new DeliveryUpdateInput(['furigana' => $value]))->toArrayRecursive(),
+                );
+                return;
+            }
 
-        if ($entity instanceof DeliveryUpdateInput) {
-            $serialized = $entity->toArrayRecursive();
-            $this->assertArrayHasKey('furigana', $serialized);
-            $this->assertNull($serialized['furigana']);
+            $this->expectException(InvalidFieldException::class);
+            $this->expectExceptionMessage('furigana');
+
+            new DeliveryUpdateInput(['furigana' => $value]);
             return;
         }
 
+        $entity = new $class(['furigana' => $value]);
         $this->assertNull($entity->getFurigana());
     }
 
