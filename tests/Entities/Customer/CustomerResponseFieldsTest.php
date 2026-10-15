@@ -17,6 +17,7 @@ use Shimoning\ColorMeShopApi\Entities\Customer\Membership\NextMembership;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
+use Shimoning\ColorMeShopApi\Values\Furigana;
 
 class CustomerResponseFieldsTest extends TestCase
 {
@@ -70,6 +71,16 @@ class CustomerResponseFieldsTest extends TestCase
         $customer = new Customer(['sex' => 'not_applicable']);
 
         $this->assertSame(Sex::NOT_APPLICABLE, $customer->getSex());
+    }
+
+    public function test_furiganaは空文字を値オブジェクトとして保持しnullと欠損をnullとして扱う(): void
+    {
+        $emptyFurigana = (new Customer(['furigana' => '']))->getFurigana();
+
+        $this->assertInstanceOf(Furigana::class, $emptyFurigana);
+        $this->assertSame('', $emptyFurigana->get());
+        $this->assertNull((new Customer(['furigana' => null]))->getFurigana());
+        $this->assertNull((new Customer([]))->getFurigana());
     }
 
     public function test_一覧取得でmembershipのprogressが省略されてもnullとして取得できる(): void
