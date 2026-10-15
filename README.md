@@ -1171,6 +1171,10 @@ $pagination->getOffset();
 - `Customer\Membership\Membership` の `progress`
 - `Customer\Membership\Progress` の `nextMembership`
 
+### 顧客とお届け先の応答で、furigana の空文字を null にしない
+
+`Customer\Customer` と `Sale\Delivery` の `furigana` が空文字 `""` のとき、これまでは `getFurigana()` が `null` を返していたが、今後は `Furigana('')` を返す。実 API は `furigana` の `""` と `null` を別の値として保存して返す (2026-10-15 の観測、[顧客とお届け先の `furigana` の実測記録](docs/api-furigana-observation.md))。値が `null` のときと項目がないときは、これまでどおり `null` を返す。`0`、`false`、`[]` のような文字列でない falsy な値は、これまでは `null` を返していたが、今後は生成時に `InvalidFieldException` になる。`'0'` は、これまでは `null` を返していたが、今後は `'abc'` などの不正な文字列と同じく、`isValid()` が `false` の `Furigana` を返す ([ADR 0049](docs/adr/0049-keep-empty-furigana-in-responses.md))。
+
 ## 0.33.0 の変更
 
 ### API の結果を表す型を Results に移した
