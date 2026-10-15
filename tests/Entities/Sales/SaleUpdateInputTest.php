@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Entities\Sale\Delivery;
 use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
+use Shimoning\ColorMeShopApi\Values\Furigana;
 
 class SaleUpdateInputTest extends TestCase
 {
@@ -111,6 +112,56 @@ class SaleUpdateInputTest extends TestCase
             ['sale_deliveries' => [$data]],
             (new SaleUpdateInput(['sale_deliveries' => [$data]]))->toArrayRecursive(),
         );
+    }
+
+    public function test_お届け先のフリガナは空文字をそのまま送信する(): void
+    {
+        $delivery = new DeliveryUpdateInput(['furigana' => '']);
+
+        $this->assertInstanceOf(Furigana::class, $delivery->toArray()['furigana']);
+        $this->assertSame(['furigana' => ''], $delivery->toArrayRecursive());
+    }
+
+    public function test_お届け先のフリガナは明示したnullを送信する(): void
+    {
+        $delivery = new DeliveryUpdateInput(['furigana' => null]);
+
+        $this->assertSame(['furigana' => null], $delivery->toArrayRecursive());
+    }
+
+    public function test_お届け先のフリガナは文字列で指定しValueへ変換して保持する(): void
+    {
+        $delivery = new DeliveryUpdateInput(['furigana' => 'ヤマダタロウ']);
+
+        $this->assertInstanceOf(Furigana::class, $delivery->toArray()['furigana']);
+        $this->assertSame(['furigana' => 'ヤマダタロウ'], $delivery->toArrayRecursive());
+    }
+
+    public function test_お届け先のフリガナにFuriganaのインスタンスを渡せる(): void
+    {
+        $furigana = new Furigana('ヤマダタロウ');
+        $delivery = new DeliveryUpdateInput(['furigana' => $furigana]);
+
+        $this->assertSame($furigana, $delivery->toArray()['furigana']);
+        $this->assertSame(['furigana' => 'ヤマダタロウ'], $delivery->toArrayRecursive());
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidFuriganaProvider(): array
+    {
+        return [
+            '数字' => ['0'],
+            '英字' => ['abc'],
+        ];
+    }
+
+    #[DataProvider('invalidFuriganaProvider')]
+    public function test_お届け先のフリガナはカタカナでない文字列を構築時に拒否する(string $furigana): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('furigana');
+
+        new DeliveryUpdateInput(['furigana' => $furigana]);
     }
 
     public function test_お届け先更新入力は応答EntityではなくRequestEntityである(): void

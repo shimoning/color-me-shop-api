@@ -20,7 +20,7 @@ class DeliveryUpdateInput extends Entity implements RequestEntity
 {
     const FIELD_TYPES = [
         'furigana' => [
-            'nullable' => true,
+            'allowNull' => true,
             'value' => Furigana::class,
         ],
         'prefId' => [
