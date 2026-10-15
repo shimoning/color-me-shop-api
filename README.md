@@ -1164,7 +1164,7 @@ $pagination->getOffset();
 
 ### 受注と顧客の応答で、子 Entity の空の配列と falsy な値を null にしない
 
-応答の次の項目が、空の配列 `[]` のときは、これまでは `null` を返していたが、今後は中身の空の Entity を返す (`externalAccounts` は、これまでどおり `[]` を返す)。`''`、`0`、`false`、`'0'` のような `null` 以外の falsy な値は、これまでは `null` を返していたが、今後は生成時に `InvalidFieldException` になる。値が `null` のときと項目がないときは、これまでどおり `null` を返す。実 API でこれまでに観測した値は、`null` か項目なしだけだった。
+応答の次の項目が、空の配列 `[]` のときは、これまでは `null` を返していたが、今後は中身の空の Entity を返す (`externalAccounts` は、これまでどおり `[]` を返す)。`''`、`0`、`false`、`'0'` のような `null` 以外の falsy な値は、これまでは `null` (`externalAccounts` は `[]`) を返していたが、今後は生成時に `InvalidFieldException` になる。値が `null` のときと項目がないときは、これまでどおり `null` を返す。実 API でこれまでに観測した値は、`null` か項目なしだけだった。
 
 - `Sale\Sale` の `segment`、`totals`、`application`、`shopCoupon`
 - `Customer\Customer` の `membership`、`externalAccounts`
