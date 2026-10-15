@@ -15,6 +15,7 @@ use Shimoning\ColorMeShopApi\Entities\Sale\Totals;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
+use Shimoning\ColorMeShopApi\Values\Furigana;
 
 class SaleResponseFieldsTest extends TestCase
 {
@@ -74,6 +75,38 @@ class SaleResponseFieldsTest extends TestCase
         $this->assertNull($sale->getTotals());
         $this->assertNull($sale->getApplication());
         $this->assertNull($sale->getShopCoupon());
+    }
+
+    public function test_受注のcustomer経由でfuriganaの空文字とnullと欠損を区別する(): void
+    {
+        $emptyFurigana = (new Sale(['customer' => ['furigana' => '']]))
+            ->getCustomer()
+            ->getFurigana();
+
+        $this->assertInstanceOf(Furigana::class, $emptyFurigana);
+        $this->assertSame('', $emptyFurigana->get());
+        $this->assertNull(
+            (new Sale(['customer' => ['furigana' => null]]))->getCustomer()->getFurigana(),
+        );
+        $this->assertNull((new Sale(['customer' => []]))->getCustomer()->getFurigana());
+    }
+
+    public function test_受注のsale_deliveries経由でfuriganaの空文字とnullと欠損を区別する(): void
+    {
+        $emptyFurigana = (new Sale(['sale_deliveries' => [['furigana' => '']]]))
+            ->getSaleDeliveries()[0]
+            ->getFurigana();
+
+        $this->assertInstanceOf(Furigana::class, $emptyFurigana);
+        $this->assertSame('', $emptyFurigana->get());
+        $this->assertNull(
+            (new Sale(['sale_deliveries' => [['furigana' => null]]]))
+                ->getSaleDeliveries()[0]
+                ->getFurigana(),
+        );
+        $this->assertNull(
+            (new Sale(['sale_deliveries' => [[]]]))->getSaleDeliveries()[0]->getFurigana(),
+        );
     }
 
     #[DataProvider('emptyNestedSaleFieldProvider')]

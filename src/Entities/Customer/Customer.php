@@ -21,7 +21,7 @@ class Customer extends Entity
 {
     const FIELD_TYPES = [
         'furigana' => [
-            'nullable' => true,
+            'allowNull' => true,
             'value' => Furigana::class,
         ],
         'sex' => [
