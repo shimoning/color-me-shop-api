@@ -1156,6 +1156,12 @@ $pagination->getOffset();
 
 -----
 
+## 0.34.0 の変更
+
+### 受注のお届け先の更新で、furigana の空文字と不正な値を null にしない
+
+`Sale\DeliveryUpdateInput` の `furigana` に空文字 `''` を渡すと、これまでは `null` として送っていた。今後は空文字のまま送る。カタカナでない値も、これまではエラーにならずに `null` として送っていたが、今後は生成時に `InvalidFieldException` になる。顧客の入力 (`CustomerCreateInput`、`CustomerUpdateInput`、`Sale\CustomerCreateInput`) と同じ扱いになる。`null` を渡した場合は、これまでどおり `null` を送る。
+
 ## 0.33.0 の変更
 
 ### API の結果を表す型を Results に移した
