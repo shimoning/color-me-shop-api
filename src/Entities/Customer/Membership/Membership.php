@@ -18,7 +18,7 @@ class Membership extends Entity
 {
     const FIELD_TYPES = [
         'progress' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => Progress::class,
         ],
     ];

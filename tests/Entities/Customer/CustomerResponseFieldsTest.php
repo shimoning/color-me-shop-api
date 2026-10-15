@@ -110,6 +110,40 @@ class CustomerResponseFieldsTest extends TestCase
         $this->assertNull($progress->getNextMembership());
     }
 
+    public function test_progressのnext_membershipが欠損していてもnullとして取得できる(): void
+    {
+        $progress = new Progress([]);
+
+        $this->assertNull($progress->getNextMembership());
+    }
+
+    public function test_membershipは空配列を空のEntityとして保持する(): void
+    {
+        $customer = new Customer(['membership' => []]);
+
+        $membership = $customer->getMembership();
+        $this->assertInstanceOf(Membership::class, $membership);
+        $this->assertSame([], $membership->getRaw());
+    }
+
+    public function test_progressは空配列を空のEntityとして保持する(): void
+    {
+        $membership = new Membership(['progress' => []]);
+
+        $progress = $membership->getProgress();
+        $this->assertInstanceOf(Progress::class, $progress);
+        $this->assertSame([], $progress->getRaw());
+    }
+
+    public function test_next_membershipは空配列を空のEntityとして保持する(): void
+    {
+        $progress = new Progress(['next_membership' => []]);
+
+        $nextMembership = $progress->getNextMembership();
+        $this->assertInstanceOf(NextMembership::class, $nextMembership);
+        $this->assertSame([], $nextMembership->getRaw());
+    }
+
     public function test_旧形式のCustomerをunserializeすると新しいnullableフィールドはnullになる(): void
     {
         $customer = \unserialize(self::legacyEmptyCustomerPayload());
@@ -316,6 +350,11 @@ class CustomerResponseFieldsTest extends TestCase
         foreach ($fields as $field => $value) {
             $cases[$field] = [$field, $value];
         }
+        foreach (['membership', 'external_accounts'] as $field) {
+            foreach (self::invalidNonNullFalsyValues() as $label => $value) {
+                $cases[$field . ' / ' . $label] = [$field, $value];
+            }
+        }
 
         return $cases;
     }
@@ -328,6 +367,9 @@ class CustomerResponseFieldsTest extends TestCase
         foreach ($fields as $field => $value) {
             $cases[$field] = [$field, $value];
         }
+        foreach (self::invalidNonNullFalsyValues() as $label => $value) {
+            $cases['progress / ' . $label] = ['progress', $value];
+        }
 
         return $cases;
     }
@@ -335,7 +377,12 @@ class CustomerResponseFieldsTest extends TestCase
     /** @return array<string, array{string, mixed}> */
     public static function invalidMembershipProgressFieldProvider(): array
     {
-        return self::invalidFieldCases('invalid_membership_progress_fields');
+        $cases = self::invalidFieldCases('invalid_membership_progress_fields');
+        foreach (self::invalidNonNullFalsyValues() as $label => $value) {
+            $cases['next_membership / ' . $label] = ['next_membership', $value];
+        }
+
+        return $cases;
     }
 
     /** @return array<string, array{string, mixed}> */
@@ -384,6 +431,17 @@ class CustomerResponseFieldsTest extends TestCase
         }
 
         return $cases;
+    }
+
+    /** @return array<string, int|string|bool> */
+    private static function invalidNonNullFalsyValues(): array
+    {
+        return [
+            '空文字' => '',
+            '整数0' => 0,
+            'false' => false,
+            '文字列0' => '0',
+        ];
     }
 
     private static function legacyEmptyCustomerPayload(): string

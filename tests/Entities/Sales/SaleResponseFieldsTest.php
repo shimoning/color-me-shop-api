@@ -76,6 +76,19 @@ class SaleResponseFieldsTest extends TestCase
         $this->assertNull($sale->getShopCoupon());
     }
 
+    #[DataProvider('emptyNestedSaleFieldProvider')]
+    public function test_受注の子Entityフィールドは空配列を空のEntityとして保持する(
+        string $field,
+        string $getter,
+        string $entityClass,
+    ): void {
+        $sale = new Sale([$field => []]);
+
+        $entity = $sale->{$getter}();
+        $this->assertInstanceOf($entityClass, $entity);
+        $this->assertSame([], $entity->getRaw());
+    }
+
     #[DataProvider('invalidSaleFieldProvider')]
     public function test_受注フィールドの不正型は固有例外になる(string $field, mixed $value): void
     {
@@ -192,8 +205,24 @@ class SaleResponseFieldsTest extends TestCase
         foreach ($fields as $field => $value) {
             $cases[$field] = [$field, $value];
         }
+        foreach (['segment', 'totals', 'application', 'shop_coupon'] as $field) {
+            foreach (self::invalidNonNullFalsyValues() as $label => $value) {
+                $cases[$field . ' / ' . $label] = [$field, $value];
+            }
+        }
 
         return $cases;
+    }
+
+    /** @return array<string, array{string, string, class-string}> */
+    public static function emptyNestedSaleFieldProvider(): array
+    {
+        return [
+            'segment' => ['segment', 'getSegment', Segment::class],
+            'totals' => ['totals', 'getTotals', Totals::class],
+            'application' => ['application', 'getApplication', Application::class],
+            'shop_coupon' => ['shop_coupon', 'getShopCoupon', ShopCoupon::class],
+        ];
     }
 
     /** @return array<string, array{string, class-string, string, mixed}> */
@@ -260,5 +289,16 @@ class SaleResponseFieldsTest extends TestCase
         }
 
         return $data;
+    }
+
+    /** @return array<string, int|string|bool> */
+    private static function invalidNonNullFalsyValues(): array
+    {
+        return [
+            '空文字' => '',
+            '整数0' => 0,
+            'false' => false,
+            '文字列0' => '0',
+        ];
     }
 }
