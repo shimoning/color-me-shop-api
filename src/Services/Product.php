@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Services;
 
-use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Results\Errors;
+use Shimoning\ColorMeShopApi\Results\NoContent;
 use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Page;

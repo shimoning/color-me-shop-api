@@ -11,6 +11,20 @@
 
 クラス名は、断りがなければ `Shimoning\ColorMeShopApi\Entities\` 以下である。
 
+## 0.33.0: API の結果を表す型の移動
+
+API の呼び出しが返す結果の型を `Results` に集めた（[ADR 0048](adr/0048-move-result-types-to-results.md)）。
+この表の名前は `Shimoning\ColorMeShopApi\` 以下である。
+
+| 旧クラス名 | 新クラス名 |
+| --- | --- |
+| `Communicator\Errors` | `Results\Errors` |
+| `Communicator\NoContent` | `Results\NoContent` |
+| `Entities\OAuth\ErrorResponse` | `Results\OAuth\ErrorResponse` |
+
+旧名での生成、`instanceof`、型宣言、`Errors::build()` は動作する。0.32.0 以前に `serialize()` したこれらのデータも、
+`unserialize()` で新名のクラスとして復元できる（`allowed_classes` には旧名を渡すこと）。
+
 ## 0.32.0: Constants の enum の移動
 
 Entity と同じく、enum を API の URL に合わせた名前空間に置いた（[ADR 0047](adr/0047-nest-constants-by-url.md)）。

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Shimoning\ColorMeShopApi\Tests\Communicator;
+namespace Shimoning\ColorMeShopApi\Tests\Results;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\TestCase;
-use Shimoning\ColorMeShopApi\Communicator\NoContent;
+use Shimoning\ColorMeShopApi\Results\NoContent;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Entities\Entity;

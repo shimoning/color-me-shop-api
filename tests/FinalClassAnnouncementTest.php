@@ -7,7 +7,7 @@ namespace Shimoning\ColorMeShopApi\Tests;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Shimoning\ColorMeShopApi\Client;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
@@ -72,7 +72,7 @@ class FinalClassAnnouncementTest extends TestCase
         \Shimoning\ColorMeShopApi\Entities\Gift\Type::class,
         \Shimoning\ColorMeShopApi\Entities\Gift\Wrapping::class,
         \Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken::class,
-        \Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse::class,
+        \Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse::class,
         \Shimoning\ColorMeShopApi\Entities\Page::class,
         \Shimoning\ColorMeShopApi\Entities\Pagination::class,
         \Shimoning\ColorMeShopApi\Entities\Payment\Brand::class,

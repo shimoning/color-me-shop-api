@@ -902,7 +902,7 @@
         "scope",
         "token_type"
     ],
-    "OAuth\\ErrorResponse": [
+    "Results\\OAuth\\ErrorResponse": [
         "error",
         "error_description",
         "error_uri"

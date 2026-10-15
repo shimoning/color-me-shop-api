@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Services;
 
 use GuzzleHttp\ClientInterface;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Communicator\Request;
 use Shimoning\ColorMeShopApi\Communicator\RequestOptions;
 use Shimoning\ColorMeShopApi\Communicator\Response;

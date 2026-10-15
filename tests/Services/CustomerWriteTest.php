@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Entities\Customer\Customer as CustomerEntity;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;

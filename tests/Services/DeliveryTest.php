@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Tests\Services;
 
 use Shimoning\ColorMeShopApi\Services\Delivery;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
+use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Constants\Delivery\MethodType;
 use Shimoning\ColorMeShopApi\Entities\Collection;
 use Shimoning\ColorMeShopApi\Entities\Delivery\Delivery as DeliveryEntity;

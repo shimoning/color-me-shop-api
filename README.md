@@ -93,8 +93,6 @@ API を利用するためには利用登録が必要。
 require __DIR__ . '/vendor/autoload.php';
 
 use Shimoning\ColorMeShopApi\Client;
-use Shimoning\ColorMeShopApi\Communicator\Errors;
-use Shimoning\ColorMeShopApi\Communicator\NoContent;
 use Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope;
 use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type as PickupType;
 use Shimoning\ColorMeShopApi\Constants\Sale\MailType;
@@ -105,7 +103,6 @@ use Shimoning\ColorMeShopApi\Entities\Product\Stock\SearchParameters as StockSea
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
-use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options as OAuthOptions;
 use Shimoning\ColorMeShopApi\Entities\Product\Advertising\SearchParameters as AdvertisingSearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\BigCategory;
@@ -130,6 +127,9 @@ use Shimoning\ColorMeShopApi\Exceptions\ColorMeApiException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
+use Shimoning\ColorMeShopApi\Results\Errors;
+use Shimoning\ColorMeShopApi\Results\NoContent;
+use Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Values\DateTime as ApiDateTime;
 use Shimoning\ColorMeShopApi\Values\Furigana;
 use Shimoning\ColorMeShopApi\Values\Limit;
@@ -144,7 +144,7 @@ $client = new Client($token);
 ```
 
 ### エラーハンドリング
-OAuth を除き、API が 2xx 以外のレスポンスを返した場合、各 API メソッドは `Communicator\Errors` を返す。`Errors` は `Collection` を継承しているため、`foreach` で個々の `Entities\Error` を取得できる。
+OAuth を除き、API が 2xx 以外のレスポンスを返した場合、各 API メソッドは `Results\Errors` を返す。`Errors` は `Collection` を継承しているため、`foreach` で個々の `Entities\Error` を取得できる。
 
 ```php
 $result = $client->getShop();
@@ -329,7 +329,7 @@ if ($result instanceof OAuthErrorResponse) {
 
 OAuth 2.0 のエラーは `{"error":"invalid_client","error_description":"..."}` 形式であり、
 ColorMe API 本体の `{"errors":[{"code":...,"message":...,"status":...}]}` 形式とは異なる。
-前者は `Entities\OAuth\ErrorResponse`、後者は従来どおり `Communicator\Errors` で判定する。
+前者は `Results\OAuth\ErrorResponse`、後者は `Results\Errors` で判定する。
 `error_description` と `error_uri` は省略されることがあり、その場合は各 getter が `null` を返す。
 OAuth の必須・任意フィールドが不正な型の場合や、既知の形式に一致しない非 2xx 応答の場合も
 `Errors` にフォールバックする。この場合の `Errors` は空コレクションになるため、
@@ -1155,6 +1155,12 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.33.0 の変更
+
+### API の結果を表す型を Results に移した
+
+API の呼び出しが返す結果の型を、新しい名前空間 `Results` に集めた ([ADR 0048](docs/adr/0048-move-result-types-to-results.md))。`Communicator\Errors` は `Results\Errors` に、`Communicator\NoContent` は `Results\NoContent` に、`Entities\OAuth\ErrorResponse` は `Results\OAuth\ErrorResponse` になる。旧名は非推奨の別名として残しており、`instanceof`、型宣言、生成、`Errors::build()` は旧名のままでも動作する ([非推奨のクラス名の対応表](docs/class-aliases.md))。`get_class()` などで得るクラス名の文字列は新しい名前になる。エラー 1 件を表す `Entities\Error` は移していない。
 
 ## 0.32.0 の変更
 

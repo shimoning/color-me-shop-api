@@ -13,7 +13,7 @@ use ReflectionClass;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Communicator\Response;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
+use Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
 
 /**
@@ -30,7 +30,7 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
  *   https://api.shop-pro.jp/v1/spec/open_api.json (2026-09-17 取得)
  *   Error::field は docs/api-error-responses.md の実 API 観測結果による。
  *   OAuth\\AccessToken は RFC 6749 §5.1 と tests/Fixtures/oauth_token.json、
- *   OAuth\\ErrorResponse は RFC 6749 §5.2 の error / error_description / error_uri の3フィールドのみで、
+ *   Results\\OAuth\\ErrorResponse は RFC 6749 §5.2 の error / error_description / error_uri の3フィールドのみで、
  *   §5.2 にない state は docs/adr/0021-drop-state-from-token-error-response.md に基づき削除した。
  *
  * 更新するときは同じ仕様から tests/Fixtures/api_field_names.json を作り直し、
@@ -38,6 +38,11 @@ use Shimoning\ColorMeShopApi\Tests\TestCase;
  */
 class ApiFieldNameTest extends TestCase
 {
+    /** @var array<string, class-string<Entity>> Results 配下に移した Entity */
+    private const RESULT_ENTITIES = [
+        'Results\\OAuth\\ErrorResponse' => ErrorResponse::class,
+    ];
+
     /** @var array<string, string> 対象外クラスと理由 */
     private const EXCLUDED_ENTITIES = [
         'Entity' => '共通基底クラスで、API フィールドを宣言しない',
@@ -119,12 +124,12 @@ class ApiFieldNameTest extends TestCase
     private static function entityClasses(array $discovered): array
     {
         return \array_values(\array_filter($discovered, static function (string $relative): bool {
-            $reflection = new ReflectionClass('Shimoning\\ColorMeShopApi\\Entities\\' . $relative);
+            $reflection = new ReflectionClass(self::className($relative));
             return $reflection->isSubclassOf(Entity::class) && ! $reflection->isAbstract();
         }));
     }
 
-    /** @return list<string> src/Entities 配下のクラス名 (Entities 名前空間からの相対名) */
+    /** @return list<string> src/Entities と Results 配下の Entity クラス名 */
     private static function discoveredClasses(): array
     {
         $root = __DIR__ . '/../../src/Entities';
@@ -147,6 +152,8 @@ class ApiFieldNameTest extends TestCase
             $classes[] = \str_replace('/', '\\', $relative);
         }
 
+        $classes = [...$classes, ...\array_keys(self::RESULT_ENTITIES)];
+
         \sort($classes);
         return $classes;
     }
@@ -158,7 +165,7 @@ class ApiFieldNameTest extends TestCase
     {
         $cases = [];
         foreach (self::fixtureArray('api_field_names.json') as $relative => $fields) {
-            $cases[$relative] = ['Shimoning\\ColorMeShopApi\\Entities\\' . $relative, $fields];
+            $cases[$relative] = [self::className($relative), $fields];
         }
         return $cases;
     }
@@ -180,7 +187,7 @@ class ApiFieldNameTest extends TestCase
             $this->assertArrayHasKey($relative, $registrations, $relative . ' が公式フィールド一覧にありません');
             $this->assertNotEmpty($fields, $relative . ' の内部フィールドが空です');
 
-            $class = 'Shimoning\\ColorMeShopApi\\Entities\\' . $relative;
+            $class = self::className($relative);
             $keys = \array_keys(self::newEntity($class, [])->toArray());
 
             foreach ($fields as $field => $reason) {
@@ -314,5 +321,12 @@ class ApiFieldNameTest extends TestCase
         }
 
         return new $class($data);
+    }
+
+    /** @return class-string<Entity> */
+    private static function className(string $relative): string
+    {
+        return self::RESULT_ENTITIES[$relative]
+            ?? 'Shimoning\\ColorMeShopApi\\Entities\\' . $relative;
     }
 }

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Shimoning\ColorMeShopApi\Tests\Entities\OAuth;
+namespace Shimoning\ColorMeShopApi\Tests\Results\OAuth;
 
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Shimoning\ColorMeShopApi\Communicator\RequestMeta;
 use Shimoning\ColorMeShopApi\Communicator\Response;
-use Shimoning\ColorMeShopApi\Entities\OAuth\ErrorResponse;
+use Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Tests\TestCase;
