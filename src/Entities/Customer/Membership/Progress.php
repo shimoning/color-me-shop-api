@@ -21,7 +21,7 @@ class Progress extends Entity
             'entity' => AggregationPeriod::class,
         ],
         'nextMembership' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => NextMembership::class,
         ],
     ];

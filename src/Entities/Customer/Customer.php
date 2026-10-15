@@ -31,12 +31,12 @@ class Customer extends Entity
             'enum' => Prefecture::class,
         ],
         'membership' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => Membership::class,
         ],
         'externalAccounts' => [
             'array' => true,
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => ExternalAccount::class,
         ],
     ];

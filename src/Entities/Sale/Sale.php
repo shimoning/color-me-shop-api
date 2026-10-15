@@ -32,19 +32,19 @@ class Sale extends Entity
             'entity' => Delivery::class,
         ],
         'segment' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => Segment::class,
         ],
         'totals' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => Totals::class,
         ],
         'application' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => Application::class,
         ],
         'shopCoupon' => [
-            'nullable' => true,
+            'allowNull' => true,
             'entity' => ShopCoupon::class,
         ],
         'acceptedMailState' => [
