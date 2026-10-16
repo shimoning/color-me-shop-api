@@ -34,12 +34,20 @@ class CustomerUpdateInputTest extends TestCase
 
     public function test_必須フィールドが欠けているとクラス名と必須一覧と欠落一覧を示して拒否する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(CustomerUpdateInput::class);
-        $this->expectExceptionMessage('必須: name, address1, address2');
-        $this->expectExceptionMessage('未指定: address1, address2');
-
-        new CustomerUpdateInput(['name' => 'カラーミー花子']);
+        try {
+            new CustomerUpdateInput(['name' => 'カラーミー花子']);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(CustomerUpdateInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '必須: name, address1, address2',
+                $error->getMessage(),
+            );
+            self::assertStringContainsString(
+                '未指定: address1, address2',
+                $error->getMessage(),
+            );
+        }
     }
 
     public function test_nullableなフィールドの明示したnullは送信する(): void

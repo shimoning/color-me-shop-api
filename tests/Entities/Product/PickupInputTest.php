@@ -24,12 +24,20 @@ class PickupInputTest extends TestCase
 
     public function test_未指定はクラス名と必須一覧と欠落一覧を示して拒否する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(PickupInput::class);
-        $this->expectExceptionMessage('必須: pickup_type, order_num');
-        $this->expectExceptionMessage('未指定: pickup_type, order_num');
-
-        new PickupInput([]);
+        try {
+            new PickupInput([]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(PickupInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '必須: pickup_type, order_num',
+                $error->getMessage(),
+            );
+            self::assertStringContainsString(
+                '未指定: pickup_type, order_num',
+                $error->getMessage(),
+            );
+        }
     }
 
     public function test_明示したnullは必須指定として扱い送信する(): void

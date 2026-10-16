@@ -15,12 +15,17 @@ class RequestEntityRequiredFieldsTest extends TestCase
 {
     public function test_コンストラクタを持たない要求Entityも必須フィールドを検証する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(AutomaticRequiredFieldsRequestEntity::class);
-        $this->expectExceptionMessage('必須: required_field');
-        $this->expectExceptionMessage('未指定: required_field');
-
-        new AutomaticRequiredFieldsRequestEntity([]);
+        try {
+            new AutomaticRequiredFieldsRequestEntity([]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(
+                AutomaticRequiredFieldsRequestEntity::class,
+                $error->getMessage(),
+            );
+            self::assertStringContainsString('必須: required_field', $error->getMessage());
+            self::assertStringContainsString('未指定: required_field', $error->getMessage());
+        }
     }
 
     public function test_REQUIRED_FIELDSを宣言しない要求Entityは空配列で生成できる(): void

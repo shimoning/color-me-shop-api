@@ -205,47 +205,60 @@ class SaleCreateInputTest extends TestCase
 
     public function test_トップレベル必須フィールドの欠落を拒否する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(SaleCreateInput::class);
-        $this->expectExceptionMessage('必須: payment_id, details');
-        $this->expectExceptionMessage('未指定: payment_id, details');
-
-        new SaleCreateInput([]);
+        try {
+            new SaleCreateInput([]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(SaleCreateInput::class, $error->getMessage());
+            self::assertStringContainsString('必須: payment_id, details', $error->getMessage());
+            self::assertStringContainsString('未指定: payment_id, details', $error->getMessage());
+        }
     }
 
     public function test_detailsは1件以上必要(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('details');
-        $this->expectExceptionMessage('1件以上');
-
-        new SaleCreateInput(['payment_id' => 3, 'details' => []]);
+        try {
+            new SaleCreateInput(['payment_id' => 3, 'details' => []]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString('details', $error->getMessage());
+            self::assertStringContainsString('1件以上', $error->getMessage());
+        }
     }
 
     public function test_明細単体の必須フィールド欠落を拒否する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(DetailCreateInput::class);
-        $this->expectExceptionMessage('必須: product_id, product_num');
-        $this->expectExceptionMessage('未指定: product_num');
-
-        new DetailCreateInput(['product_id' => 101]);
+        try {
+            new DetailCreateInput(['product_id' => 101]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(DetailCreateInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '必須: product_id, product_num',
+                $error->getMessage(),
+            );
+            self::assertStringContainsString('未指定: product_num', $error->getMessage());
+        }
     }
 
     public function test_お届け先単体の必須フィールド欠落を拒否する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(DeliveryCreateInput::class);
-        $this->expectExceptionMessage('未指定: furigana, postal, pref_id, address1, tel');
-
-        new DeliveryCreateInput(['delivery_id' => 1, 'name' => '配送先']);
+        try {
+            new DeliveryCreateInput(['delivery_id' => 1, 'name' => '配送先']);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(DeliveryCreateInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '未指定: furigana, postal, pref_id, address1, tel',
+                $error->getMessage(),
+            );
+        }
     }
 
     public function test_SaleCreateInput経由の明細欠落は要素位置と欠落フィールドを示す(): void
     {
         $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('details[2]');
-        $this->expectExceptionMessage('未指定: product_num');
+        $this->expectExceptionMessageMatches('/details\[2\].*未指定: product_num/u');
 
         new SaleCreateInput(self::required(['details' => [
             ['product_id' => 101, 'product_num' => 1],
@@ -271,8 +284,7 @@ class SaleCreateInputTest extends TestCase
     public function test_SaleCreateInput経由のお届け先欠落は要素位置と欠落フィールドを示す(): void
     {
         $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage('sale_deliveries[1]');
-        $this->expectExceptionMessage('未指定: tel');
+        $this->expectExceptionMessageMatches('/sale_deliveries\[1\].*未指定: tel/u');
 
         $delivery = [
             'delivery_id' => 1,

@@ -44,14 +44,20 @@ class CustomerCreateInputTest extends TestCase
 
     public function test_必須フィールドが欠けているとクラス名と必須一覧と欠落一覧を示して拒否する(): void
     {
-        $this->expectException(InvalidFieldException::class);
-        $this->expectExceptionMessage(CustomerCreateInput::class);
-        $this->expectExceptionMessage('必須: name, mail, pref_id, postal, address1, tel');
-        $this->expectExceptionMessage('未指定: mail, postal');
-
         $data = self::required();
         unset($data['mail'], $data['postal']);
-        new CustomerCreateInput($data);
+
+        try {
+            new CustomerCreateInput($data);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(CustomerCreateInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '必須: name, mail, pref_id, postal, address1, tel',
+                $error->getMessage(),
+            );
+            self::assertStringContainsString('未指定: mail, postal', $error->getMessage());
+        }
     }
 
     public function test_必須フィールドは現在受け付けているcamelCaseでも指定できる(): void
