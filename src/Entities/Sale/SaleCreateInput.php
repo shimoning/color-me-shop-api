@@ -13,7 +13,7 @@ use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 /**
  * 受注データの作成 (POST /v1/sales) の `sale` 入力。
  *
- * 必須フィールドはコンストラクタが構築時に検証する。
+ * 必須フィールドは基底コンストラクタが構築時に検証する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
  * @final 0.32.0 で予告。次のメジャーな版で final にする。
@@ -34,7 +34,6 @@ class SaleCreateInput extends Entity implements RequestEntity
      */
     public function __construct(array $data)
     {
-        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
         parent::__construct($data);
 
         if ($this->details === []) {

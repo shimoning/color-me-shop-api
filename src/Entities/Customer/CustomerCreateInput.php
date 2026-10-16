@@ -9,7 +9,6 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 顧客データの追加 (POST /v1/customers) の `customer` 入力。
@@ -36,19 +35,9 @@ class CustomerCreateInput extends Entity implements RequestEntity
 
     /**
      * 公式 OpenAPI が required とする `customer` の子プロパティ。
-     * コンストラクタが構築時に明示を確認する。
+     * 基底コンストラクタが構築時に明示を確認する。
      */
     public const REQUIRED_FIELDS = ['name', 'mail', 'pref_id', 'postal', 'address1', 'tel'];
-
-    /**
-     * @param array<string, mixed> $data
-     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
-     */
-    public function __construct(array $data)
-    {
-        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
-        parent::__construct($data);
-    }
 
     protected string $name;
     protected string $mail;

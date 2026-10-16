@@ -9,7 +9,6 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 顧客データの更新 (PUT /v1/customers/{customer_id}) の `customer` 入力。
@@ -38,20 +37,10 @@ class CustomerUpdateInput extends Entity implements RequestEntity
     ];
 
     /**
-     * コンストラクタで明示を確認するフィールド。`name` / `address1` は実 API で必須、`address2` は
-     * 省略すると空になるため必須とする。消す場合は `null` を明示する。
+     * 基底コンストラクタで明示を確認するフィールド。`name` / `address1` は実 API で必須、
+     * `address2` は省略すると空になるため必須とする。消す場合は `null` を明示する。
      */
     public const REQUIRED_FIELDS = ['name', 'address1', 'address2'];
-
-    /**
-     * @param array<string, mixed> $data
-     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
-     */
-    public function __construct(array $data)
-    {
-        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
-        parent::__construct($data);
-    }
 
     protected string $name;
     protected string $mail;

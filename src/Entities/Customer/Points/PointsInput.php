@@ -8,7 +8,6 @@ use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
-use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 顧客ショップポイントの増減 (POST /v1/customers/{customer_id}/points) の入力。
@@ -24,19 +23,9 @@ class PointsInput extends Entity implements RequestEntity
 {
     /**
      * 公式 OpenAPI が required とするフィールド。
-     * コンストラクタが構築時に明示を確認する。
+     * 基底コンストラクタが構築時に明示を確認する。
      */
     public const REQUIRED_FIELDS = ['points'];
-
-    /**
-     * @param array<string, mixed> $data
-     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
-     */
-    public function __construct(array $data)
-    {
-        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
-        parent::__construct($data);
-    }
 
     protected int $points;
 }

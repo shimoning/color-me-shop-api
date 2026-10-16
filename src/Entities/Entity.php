@@ -75,9 +75,14 @@ abstract class Entity
      *
      * @param array<string, mixed> $data API レスポンスデータ
      * @return void
+     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
      */
     public function __construct(array $data)
     {
+        if ($this instanceof RequestEntity) {
+            self::assertRequiredFields($data, $this::REQUIRED_FIELDS);
+        }
+
         $this->_raw = $data;
         if ($this instanceof RequestEntity) {
             $this->_requestFields = [];
@@ -108,7 +113,7 @@ abstract class Entity
      * @param list<string> $required
      * @throws InvalidFieldException 必須フィールドが未指定の場合
      */
-    protected static function assertRequiredFields(array $data, array $required): void
+    private static function assertRequiredFields(array $data, array $required): void
     {
         $provided = [];
         foreach (\array_keys($data) as $key) {
