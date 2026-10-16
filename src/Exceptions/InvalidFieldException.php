@@ -17,26 +17,7 @@ class InvalidFieldException extends ColorMeApiException
         string $apiField,
         string $expected,
         \Throwable $previous,
-        ?int $index = null,
     ): self {
-        if ($index !== null && $previous instanceof self) {
-            $exception = new self(
-                \sprintf(
-                    '%s の API フィールド『%s[%d]』が不正です。配列要素を %s に変換できませんでした。原因: %s',
-                    $class,
-                    $apiField,
-                    $index,
-                    $expected,
-                    $previous->getMessage(),
-                ),
-                0,
-                $previous,
-            );
-            $exception->arrayElementContext = true;
-
-            return $exception;
-        }
-
         return new self(
             \sprintf(
                 '%s の API フィールド『%s』が不正です。配列要素を %s に変換できませんでした。原因: %s',
@@ -48,6 +29,30 @@ class InvalidFieldException extends ColorMeApiException
             0,
             $previous,
         );
+    }
+
+    public static function forIndexedArrayElement(
+        string $class,
+        string $apiField,
+        int $index,
+        string $expected,
+        \Throwable $previous,
+    ): self {
+        $exception = new self(
+            \sprintf(
+                '%s の API フィールド『%s[%d]』が不正です。配列要素を %s に変換できませんでした。原因: %s',
+                $class,
+                $apiField,
+                $index,
+                $expected,
+                $previous->getMessage(),
+            ),
+            0,
+            $previous,
+        );
+        $exception->arrayElementContext = true;
+
+        return $exception;
     }
 
     public function hasArrayElementContext(): bool

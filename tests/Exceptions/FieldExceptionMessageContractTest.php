@@ -377,8 +377,8 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 \UnexpectedValueException::class,
             ],
-            'InvalidFieldException::forArrayElement/子Entityの必須欠落' => [
-                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::forArrayElement', 2),
+            'InvalidFieldException::forIndexedArrayElement/子Entityの必須欠落' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::forIndexedArrayElement', 1),
                 static function (): void {
                     new SaleCreateInput([
                         'payment_id' => 3,

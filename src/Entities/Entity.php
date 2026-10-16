@@ -71,6 +71,15 @@ abstract class Entity
     private array $_raw;
 
     /**
+     * build() が変換中の API フィールド名。
+     *
+     * Entity のシリアライズ形式を変えないよう、インスタンスプロパティには持たない。
+     *
+     * @var array<int, string>
+     */
+    private static array $_buildingApiFields = [];
+
+    /**
      * API レスポンスからエンティティを生成する。
      *
      * @param array<string, mixed> $data API レスポンスデータ
@@ -91,7 +100,7 @@ abstract class Entity
         $fieldTypes = static::FIELD_TYPES;
 
         foreach ($data as $key => $value) {
-            $_key = static::propertyName($key);
+            $_key = self::propertyName($key);
             if (self::findProperty(static::class, $_key) !== null) {
                 $this->hydrateField($_key, $key, $value, $fieldTypes[$_key] ?? null);
                 if ($this instanceof RequestEntity) {
@@ -117,7 +126,7 @@ abstract class Entity
     {
         $provided = [];
         foreach (\array_keys($data) as $key) {
-            $property = static::propertyName($key);
+            $property = self::propertyName($key);
             if (self::findProperty(static::class, $property) !== null) {
                 $provided[static::apiFieldName($property)] = true;
             }
@@ -132,7 +141,7 @@ abstract class Entity
         }
     }
 
-    protected static function propertyName(string $field): string
+    private static function propertyName(string $field): string
     {
         $propertyNames = \array_flip(static::FIELD_NAMES);
 
@@ -187,7 +196,9 @@ abstract class Entity
         $this->assertRequestArrayIsList($objectField, $apiField, $value, true);
 
         try {
-            $hydrated = $objectField === null ? $value : $this->build($objectField, $value, $apiField);
+            $hydrated = $objectField === null
+                ? $value
+                : $this->buildWithApiField($objectField, $value, $apiField);
         } catch (\Throwable $error) {
             if ($error instanceof InvalidFieldException && $error->hasArrayElementContext()) {
                 throw $error;
@@ -515,6 +526,24 @@ abstract class Entity
         }
     }
 
+    private function buildWithApiField(mixed $objectField, mixed $value, string $apiField): mixed
+    {
+        $objectId = \spl_object_id($this);
+        $hadPreviousApiField = isset(self::$_buildingApiFields[$objectId]);
+        $previousApiField = self::$_buildingApiFields[$objectId] ?? null;
+        self::$_buildingApiFields[$objectId] = $apiField;
+
+        try {
+            return $this->build($objectField, $value);
+        } finally {
+            if ($hadPreviousApiField) {
+                self::$_buildingApiFields[$objectId] = $previousApiField;
+            } else {
+                unset(self::$_buildingApiFields[$objectId]);
+            }
+        }
+    }
+
     /**
      * オブジェクトのフィールド
      *
@@ -525,7 +554,7 @@ abstract class Entity
      * @param mixed $value
      * @return mixed
      */
-    protected function build(mixed $objectField, mixed $value, ?string $apiField = null): mixed
+    protected function build(mixed $objectField, mixed $value): mixed
     {
         self::assertScalarDeclaration($objectField);
         self::assertOrScalarDeclaration($objectField);
@@ -557,16 +586,17 @@ abstract class Entity
                         try {
                             $entities[$index] = $this->buildEntity($class, $element);
                         } catch (InvalidFieldException $error) {
+                            $apiField = self::$_buildingApiFields[\spl_object_id($this)] ?? null;
                             if ($apiField === null || ! $error->isMissingRequired()) {
                                 throw $error;
                             }
 
-                            throw InvalidFieldException::forArrayElement(
+                            throw InvalidFieldException::forIndexedArrayElement(
                                 static::class,
                                 $apiField,
+                                (int) $index,
                                 $class,
                                 $error,
-                                (int) $index,
                             );
                         }
                     }

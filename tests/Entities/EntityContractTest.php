@@ -244,6 +244,14 @@ class EntityContractTest extends TestCase
         $this->assertGreaterThan(15, \count(self::entityClasses()));
     }
 
+    public function test_buildの引数数は後方互換性のため2つに固定する(): void
+    {
+        $method = new ReflectionMethod(Entity::class, 'build');
+
+        $this->assertSame(2, $method->getNumberOfParameters());
+        $this->assertSame(2, $method->getNumberOfRequiredParameters());
+    }
+
     public function test_全ての検索条件と更新Entityは要求側と宣言される(): void
     {
         $requestClasses = [];
