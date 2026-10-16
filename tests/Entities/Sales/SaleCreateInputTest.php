@@ -17,6 +17,15 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 
 class SaleCreateInputTest extends TestCase
 {
+    /** @return array<string, mixed> */
+    private static function required(array $overrides = []): array
+    {
+        return \array_merge([
+            'payment_id' => 3,
+            'details' => [['product_id' => 101, 'product_num' => 1]],
+        ], $overrides);
+    }
+
     public function test_既存顧客のファクトリは顧客IDだけを送信する(): void
     {
         $customer = CustomerCreateInput::existing(501);
@@ -148,6 +157,30 @@ class SaleCreateInputTest extends TestCase
         ], $input->toArrayRecursive());
     }
 
+    public function test_必須フィールドは現在受け付けているcamelCaseでも指定できる(): void
+    {
+        $input = new SaleCreateInput([
+            'paymentId' => 3,
+            'details' => [['productId' => 101, 'productNum' => 2]],
+            'saleDeliveries' => [[
+                'deliveryId' => 1,
+                'name' => '配送先',
+                'furigana' => 'ハイソウサキ',
+                'postal' => '1508512',
+                'prefId' => 13,
+                'address1' => '渋谷区桜丘町26-1',
+                'tel' => '03-5456-2622',
+            ]],
+        ]);
+
+        $fields = $input->toArrayRecursive();
+        $this->assertSame(3, $fields['payment_id']);
+        $this->assertSame(101, $fields['details'][0]['product_id']);
+        $this->assertSame(2, $fields['details'][0]['product_num']);
+        $this->assertSame(1, $fields['sale_deliveries'][0]['delivery_id']);
+        $this->assertSame(13, $fields['sale_deliveries'][0]['pref_id']);
+    }
+
     public function test_明細の非リストを拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -156,7 +189,7 @@ class SaleCreateInputTest extends TestCase
             . 'list<' . DetailCreateInput::class . '> を期待しましたが array でした。',
         );
 
-        new SaleCreateInput(['details' => [1 => ['product_id' => 2, 'product_num' => 1]]]);
+        new SaleCreateInput(['payment_id' => 3, 'details' => [1 => ['product_id' => 2, 'product_num' => 1]]]);
     }
 
     public function test_お届け先の非リストを拒否する(): void
@@ -167,12 +200,78 @@ class SaleCreateInputTest extends TestCase
             . 'list<' . DeliveryCreateInput::class . '> を期待しましたが array でした。',
         );
 
-        new SaleCreateInput(['sale_deliveries' => [3 => ['name' => 'x']]]);
+        new SaleCreateInput(self::required(['sale_deliveries' => [3 => ['name' => 'x']]]));
     }
 
-    public function test_未指定フィールドを送信しない(): void
+    public function test_トップレベル必須フィールドの欠落を拒否する(): void
     {
-        $this->assertSame([], (new SaleCreateInput([]))->toArrayRecursive());
-        $this->assertSame([], (new CustomerCreateInput([]))->toArrayRecursive());
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(SaleCreateInput::class);
+        $this->expectExceptionMessage('必須: payment_id, details');
+        $this->expectExceptionMessage('未指定: payment_id, details');
+
+        new SaleCreateInput([]);
+    }
+
+    public function test_detailsは1件以上必要(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('details');
+        $this->expectExceptionMessage('1件以上');
+
+        new SaleCreateInput(['payment_id' => 3, 'details' => []]);
+    }
+
+    public function test_明細単体の必須フィールド欠落を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(DetailCreateInput::class);
+        $this->expectExceptionMessage('必須: product_id, product_num');
+        $this->expectExceptionMessage('未指定: product_num');
+
+        new DetailCreateInput(['product_id' => 101]);
+    }
+
+    public function test_お届け先単体の必須フィールド欠落を拒否する(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(DeliveryCreateInput::class);
+        $this->expectExceptionMessage('未指定: furigana, postal, pref_id, address1, tel');
+
+        new DeliveryCreateInput(['delivery_id' => 1, 'name' => '配送先']);
+    }
+
+    public function test_SaleCreateInput経由の明細欠落は要素位置と欠落フィールドを示す(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('details[2]');
+        $this->expectExceptionMessage('未指定: product_num');
+
+        new SaleCreateInput(self::required(['details' => [
+            ['product_id' => 101, 'product_num' => 1],
+            ['product_id' => 102, 'product_num' => 1],
+            ['product_id' => 103],
+        ]]));
+    }
+
+    public function test_SaleCreateInput経由のお届け先欠落は要素位置と欠落フィールドを示す(): void
+    {
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage('sale_deliveries[1]');
+        $this->expectExceptionMessage('未指定: tel');
+
+        $delivery = [
+            'delivery_id' => 1,
+            'name' => '配送先',
+            'furigana' => 'ハイソウサキ',
+            'postal' => '1508512',
+            'pref_id' => 13,
+            'address1' => '渋谷区桜丘町26-1',
+            'tel' => '03-5456-2622',
+        ];
+        $missingTel = $delivery;
+        unset($missingTel['tel']);
+
+        new SaleCreateInput(self::required(['sale_deliveries' => [$delivery, $missingTel]]));
     }
 }

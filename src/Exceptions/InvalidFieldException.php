@@ -5,16 +5,38 @@ declare(strict_types=1);
 namespace Shimoning\ColorMeShopApi\Exceptions;
 
 /**
- * API レスポンスに存在するフィールドの値または型が不正な場合の例外。
+ * API の入力またはレスポンスのフィールドが不正な場合の例外。
  */
 class InvalidFieldException extends ColorMeApiException
 {
+    private bool $arrayElementContext = false;
+    private bool $missingRequired = false;
+
     public static function forArrayElement(
         string $class,
         string $apiField,
         string $expected,
         \Throwable $previous,
+        ?int $index = null,
     ): self {
+        if ($index !== null && $previous instanceof self) {
+            $exception = new self(
+                \sprintf(
+                    '%s の API フィールド『%s[%d]』が不正です。配列要素を %s に変換できませんでした。原因: %s',
+                    $class,
+                    $apiField,
+                    $index,
+                    $expected,
+                    $previous->getMessage(),
+                ),
+                0,
+                $previous,
+            );
+            $exception->arrayElementContext = true;
+
+            return $exception;
+        }
+
         return new self(
             \sprintf(
                 '%s の API フィールド『%s』が不正です。配列要素を %s に変換できませんでした。原因: %s',
@@ -26,6 +48,33 @@ class InvalidFieldException extends ColorMeApiException
             0,
             $previous,
         );
+    }
+
+    public function hasArrayElementContext(): bool
+    {
+        return $this->arrayElementContext;
+    }
+
+    public function isMissingRequired(): bool
+    {
+        return $this->missingRequired;
+    }
+
+    /**
+     * @param list<string> $required
+     * @param list<string> $missing
+     */
+    public static function missingRequired(string $class, array $required, array $missing): self
+    {
+        $exception = new self(\sprintf(
+            '%s の必須 API フィールドが不足しています。必須: %s。未指定: %s。',
+            $class,
+            \implode(', ', $required),
+            \implode(', ', $missing),
+        ));
+        $exception->missingRequired = true;
+
+        return $exception;
     }
 
     private static function arrayElementCause(\Throwable $previous): string

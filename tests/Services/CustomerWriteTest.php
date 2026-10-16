@@ -90,32 +90,6 @@ class CustomerWriteTest extends TestCase
         $this->assertSame(422, $errors->getResponse()->getStatus());
     }
 
-    public function test_必須フィールドが欠けた入力は送信前に拒否する(): void
-    {
-        $mock = HttpMock::json(200, self::fixture('customer.json'));
-        $data = self::requiredFields();
-        unset($data['mail']);
-
-        try {
-            (new Customer('my-token', $mock->client()))->create(new CustomerCreateInput($data));
-            $this->fail('必須フィールドの欠落が拒否されなかった');
-        } catch (ParameterException $e) {
-            $this->assertStringContainsString('未指定: mail', $e->getMessage());
-        }
-
-        $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
-    }
-
-    public function test_欠落した必須フィールドをすべて列挙して拒否する(): void
-    {
-        $mock = HttpMock::json(200, self::fixture('customer.json'));
-
-        $this->expectException(ParameterException::class);
-        $this->expectExceptionMessage('未指定: name, mail, pref_id, postal, address1, tel');
-
-        (new Customer('my-token', $mock->client()))->create(new CustomerCreateInput([]));
-    }
-
     public function test_明示したnullは必須フィールドの指定として扱う(): void
     {
         // 必須フィールドは非 null のプロパティなので、明示した null は型として拒否される。
@@ -181,35 +155,6 @@ class CustomerWriteTest extends TestCase
         ]], $mock->jsonBody());
     }
 
-    public function test_空の更新入力は送信前に拒否する(): void
-    {
-        $mock = HttpMock::json(200, self::fixture('customer.json'));
-
-        try {
-            (new Customer('my-token', $mock->client()))->update(501, new CustomerUpdateInput([]));
-            $this->fail('必須フィールドの欠落が拒否されなかった');
-        } catch (ParameterException $e) {
-            $this->assertStringContainsString('未指定: name, address1, address2', $e->getMessage());
-        }
-        $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
-    }
-
-    public function test_更新の必須フィールドが一つでも欠けると送信前に拒否する(): void
-    {
-        foreach (['name', 'address1', 'address2'] as $missing) {
-            $mock = HttpMock::json(200, self::fixture('customer.json'));
-            $data = ['name' => 'カラーミー花子', 'address1' => '渋谷区', 'address2' => '桜丘町26-1'];
-            unset($data[$missing]);
-            try {
-                (new Customer('my-token', $mock->client()))->update(501, new CustomerUpdateInput($data));
-                $this->fail('必須フィールドの欠落が拒否されなかった');
-            } catch (ParameterException $e) {
-                $this->assertStringContainsString('未指定: ' . $missing, $e->getMessage());
-            }
-            $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
-        }
-    }
-
     public function test_顧客更新の404はErrorsとして返す(): void
     {
         $mock = HttpMock::json(404, '{"errors":[{"code":"404100","message":"データが見つかりません。","status":404}]}');
@@ -258,20 +203,6 @@ class CustomerWriteTest extends TestCase
             ->changePoints(501, new PointsInput(['points' => -100]));
 
         $this->assertSame(['points' => -100], $mock->jsonBody());
-    }
-
-    public function test_ポイント数が未指定の入力は送信前に拒否する(): void
-    {
-        $mock = HttpMock::json(200, '{"customer_id":501,"points":120}');
-
-        try {
-            (new Customer('my-token', $mock->client()))->changePoints(501, new PointsInput([]));
-            $this->fail('points の欠落が拒否されなかった');
-        } catch (ParameterException $e) {
-            $this->assertStringContainsString('points', $e->getMessage());
-        }
-
-        $this->assertSame(0, $mock->countRequests(), 'API へ送信してはいけない');
     }
 
     public function test_ポイント増減の失敗はErrorsとして返す(): void

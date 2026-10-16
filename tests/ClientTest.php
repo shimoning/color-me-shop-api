@@ -137,10 +137,14 @@ class ClientTest extends TestCase
                 $client->deleteProductOptionValue(101, 201, 3, $accessToken);
             }],
             'createProductPickup' => [static function (Client $client, ?string $accessToken): void {
-                $client->createProductPickup(101, new PickupInput(['pickup_type' => 0]), $accessToken);
+                $client->createProductPickup(101, new PickupInput([
+                    'pickup_type' => 0, 'order_num' => 0,
+                ]), $accessToken);
             }],
             'updateProductPickup' => [static function (Client $client, ?string $accessToken): void {
-                $client->updateProductPickup(101, new PickupInput(['pickup_type' => 0]), $accessToken);
+                $client->updateProductPickup(101, new PickupInput([
+                    'pickup_type' => 0, 'order_num' => 0,
+                ]), $accessToken);
             }],
             'deleteProductPickup' => [static function (Client $client, ?string $accessToken): void {
                 $client->deleteProductPickup(101, PickupType::RECOMMENDED, $accessToken);

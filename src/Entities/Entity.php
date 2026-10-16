@@ -85,11 +85,8 @@ abstract class Entity
 
         $fieldTypes = static::FIELD_TYPES;
 
-        $propertyNames = \array_flip(static::FIELD_NAMES);
-
         foreach ($data as $key => $value) {
-            $_key = $propertyNames[$key]
-                ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $_key = static::propertyName($key);
             if (self::findProperty(static::class, $_key) !== null) {
                 $this->hydrateField($_key, $key, $value, $fieldTypes[$_key] ?? null);
                 if ($this instanceof RequestEntity) {
@@ -99,6 +96,43 @@ abstract class Entity
         }
 
         $this->initializeOptionalProperties();
+    }
+
+    /**
+     * 入力に必須 API フィールドが明示されていることを確認する。
+     *
+     * Entity が通常受け付ける API フィールド名とプロパティ名のどちらも指定済みとして扱う。
+     * 値は確認せず、null を受け付けるかどうかは通常の hydrate に委ねる。
+     *
+     * @param array<string, mixed> $data
+     * @param list<string> $required
+     * @throws InvalidFieldException 必須フィールドが未指定の場合
+     */
+    protected static function assertRequiredFields(array $data, array $required): void
+    {
+        $provided = [];
+        foreach (\array_keys($data) as $key) {
+            $property = static::propertyName($key);
+            if (self::findProperty(static::class, $property) !== null) {
+                $provided[static::apiFieldName($property)] = true;
+            }
+        }
+
+        $missing = \array_values(\array_filter(
+            $required,
+            static fn(string $field): bool => ! isset($provided[$field]),
+        ));
+        if ($missing !== []) {
+            throw InvalidFieldException::missingRequired(static::class, $required, $missing);
+        }
+    }
+
+    protected static function propertyName(string $field): string
+    {
+        $propertyNames = \array_flip(static::FIELD_NAMES);
+
+        return $propertyNames[$field]
+            ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $field))));
     }
 
     /**
@@ -148,8 +182,12 @@ abstract class Entity
         $this->assertRequestArrayIsList($objectField, $apiField, $value, true);
 
         try {
-            $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
+            $hydrated = $objectField === null ? $value : $this->build($objectField, $value, $apiField);
         } catch (\Throwable $error) {
+            if ($error instanceof InvalidFieldException && $error->hasArrayElementContext()) {
+                throw $error;
+            }
+
             $elementType = self::arrayElementType($objectField);
             if ($elementType !== null && \is_array($value)) {
                 throw InvalidFieldException::forArrayElement(
@@ -482,7 +520,7 @@ abstract class Entity
      * @param mixed $value
      * @return mixed
      */
-    protected function build(mixed $objectField, mixed $value): mixed
+    protected function build(mixed $objectField, mixed $value, ?string $apiField = null): mixed
     {
         self::assertScalarDeclaration($objectField);
         self::assertOrScalarDeclaration($objectField);
@@ -509,9 +547,26 @@ abstract class Entity
                         // しかし中身は連想配列
                         return [$this->buildEntity($class, $value)];
                     } else {
-                        return array_map(function ($v) use ($class) {
-                            return $this->buildEntity($class, $v);
-                        }, $value);
+                        $entities = [];
+                        foreach ($value as $index => $element) {
+                            try {
+                                $entities[$index] = $this->buildEntity($class, $element);
+                            } catch (InvalidFieldException $error) {
+                                if ($apiField === null || ! $error->isMissingRequired()) {
+                                    throw $error;
+                                }
+
+                                throw InvalidFieldException::forArrayElement(
+                                    static::class,
+                                    $apiField,
+                                    $class,
+                                    $error,
+                                    (int) $index,
+                                );
+                            }
+                        }
+
+                        return $entities;
                     }
                 }
                 return $this->buildEntity($class, $value);

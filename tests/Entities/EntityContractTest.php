@@ -48,7 +48,10 @@ class EntityContractTest extends TestCase
         foreach (self::entityProvider() as $name => $case) {
             if (
                 \is_subclass_of($case[0], RequestEntity::class)
-                && ! isset(self::REQUIRED_CONSTRUCTOR_DATA[$case[0]])
+                && ! \in_array($case[0], [
+                    \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class,
+                    \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class,
+                ], true)
             ) {
                 $cases[$name] = $case;
             }
@@ -59,8 +62,34 @@ class EntityContractTest extends TestCase
 
     /** @var array<class-string<Entity>, array<string, mixed>> */
     private const REQUIRED_CONSTRUCTOR_DATA = [
+        \Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput::class => [
+            'name' => '', 'mail' => '', 'pref_id' => 1, 'postal' => '', 'address1' => '', 'tel' => '',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput::class => [
+            'name' => '', 'address1' => '', 'address2' => null,
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput::class => ['points' => 0],
+        \Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput::class => [
+            'pickup_type' => null, 'order_num' => null,
+        ],
         \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
         \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class => ['stocks' => 0],
+        \Shimoning\ColorMeShopApi\Entities\Sale\DetailCreateInput::class => [
+            'product_id' => 0, 'product_num' => 0,
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryCreateInput::class => [
+            'delivery_id' => 0,
+            'name' => '',
+            'furigana' => '',
+            'postal' => '',
+            'pref_id' => 1,
+            'address1' => '',
+            'tel' => '',
+        ],
+        \Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput::class => [
+            'details' => [['product_id' => 0, 'product_num' => 0]],
+            'payment_id' => 0,
+        ],
     ];
 
     /** @param class-string<Entity> $class */
@@ -230,11 +259,15 @@ class EntityContractTest extends TestCase
     }
 
     #[DataProvider('requestEntityProvider')]
-    public function test_全てのRequestEntityは未設定フィールドをnull含め直列化しない(string $class): void
+    public function test_全てのRequestEntityは最小有効値以外の未設定フィールドを直列化しない(string $class): void
     {
         $entity = self::newEntity($class);
 
-        $this->assertSame([], $entity->toArrayRecursive(false), $class);
+        $this->assertSame(
+            self::REQUIRED_CONSTRUCTOR_DATA[$class] ?? [],
+            $entity->toArrayRecursive(false),
+            $class,
+        );
     }
 
     #[DataProvider('nullableRequestFieldProvider')]
@@ -242,9 +275,18 @@ class EntityContractTest extends TestCase
         string $class,
         string $field,
     ): void {
-        $entity = new $class([$field => null]);
+        $data = self::REQUIRED_CONSTRUCTOR_DATA[$class] ?? [];
+        $data[$field] = null;
+        $entity = new $class($data);
+        $fields = $entity->toArrayRecursive();
 
-        $this->assertSame([$field => null], $entity->toArrayRecursive(), $class);
+        $this->assertArrayHasKey($field, $fields, $class);
+        $this->assertNull($fields[$field], $class);
+        $this->assertEqualsCanonicalizing(
+            \array_keys($data),
+            \array_keys($fields),
+            $class,
+        );
     }
 
     /**

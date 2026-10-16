@@ -9,11 +9,12 @@ use Shimoning\ColorMeShopApi\Constants\Sex;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 顧客データの追加 (POST /v1/customers) の `customer` 入力。
  *
- * 明示したフィールドだけを送信し、明示した `null` も送信する。必須6項目の未指定は送信前に、
+ * 明示したフィールドだけを送信し、明示した `null` も送信する。必須6項目の未指定と、必須項目の
  * `null` は構築時に拒否する。`add_member` は明示した場合だけ送信する。`furigana` は文字列または
  * `Furigana` のインスタンスで指定する。
  *
@@ -35,9 +36,19 @@ class CustomerCreateInput extends Entity implements RequestEntity
 
     /**
      * 公式 OpenAPI が required とする `customer` の子プロパティ。
-     * Services\Customer::create() が送信前に明示を確認する。
+     * コンストラクタが構築時に明示を確認する。
      */
     public const REQUIRED_FIELDS = ['name', 'mail', 'pref_id', 'postal', 'address1', 'tel'];
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
+     */
+    public function __construct(array $data)
+    {
+        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
+        parent::__construct($data);
+    }
 
     protected string $name;
     protected string $mail;

@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Constants\Prefecture;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
 use Shimoning\ColorMeShopApi\Values\Furigana;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 受注作成時のお届け先。
@@ -34,6 +35,16 @@ class DeliveryCreateInput extends Entity implements RequestEntity
         'address1',
         'tel',
     ];
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
+     */
+    public function __construct(array $data)
+    {
+        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
+        parent::__construct($data);
+    }
 
     protected int $deliveryId;
     protected string $name;

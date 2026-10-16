@@ -83,14 +83,13 @@ class Customer extends Service
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
-     * 顧客専用の scope は存在しない。
-     * 公式 OpenAPI が required とする6フィールドは、送信前に明示を確認する。
+     * 顧客専用の scope は存在しない。必須フィールドは CustomerCreateInput の構築時に検証される。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
      * @param CustomerCreateInput $input
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
-     * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/adr/0015-model-customer-write-api.md
      */
@@ -98,7 +97,7 @@ class Customer extends Service
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/customers'),
-            ['customer' => self::requireCreateFields($input)],
+            ['customer' => $input->toArrayRecursive()],
         );
 
         return $this->_handle(
@@ -112,7 +111,7 @@ class Customer extends Service
      *
      * 明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
      *
-     * 公式 OpenAPI との差分: required 指定はないが、`name` / `address1` を送信前に検証する
+     * 公式 OpenAPI との差分: required 指定はないが、`name` / `address1` を入力の構築時に検証する
      * (2026-09-25)。`address2` は省略すると空になるため必須として扱う (2026-10-09)。消す場合は
      * `null` を明示する。
      *
@@ -123,7 +122,7 @@ class Customer extends Service
      * @param CustomerUpdateInput $input
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
-     * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-partial-update-observation.md
      * @see docs/api-customer-structure.md
@@ -135,7 +134,7 @@ class Customer extends Service
     ): CustomerEntity|Errors {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/customers/' . $id),
-            ['customer' => self::requireUpdateFields($input)],
+            ['customer' => $input->toArrayRecursive()],
         );
 
         return $this->_handle(
@@ -149,7 +148,7 @@ class Customer extends Service
      *
      * 正の値が加算、負の値が減算を表す。応答は `customer` などで包まれず、`customer_id` と
      * 増減後の `points` をトップレベルに持つ。
-     * `points` の未指定は送信前に拒否し、値の範囲は API の検証に委ねる。
+     * `points` の未指定は PointsInput の構築時に拒否し、値の範囲は API の検証に委ねる。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
@@ -158,7 +157,7 @@ class Customer extends Service
      * @param PointsInput $input
      * @param string|null $accessToken
      * @return Points|Errors
-     * @throws ParameterException 実効アクセストークンが空文字、または `points` が未指定の場合
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/adr/0015-model-customer-write-api.md
      */
@@ -169,75 +168,10 @@ class Customer extends Service
     ): Points|Errors {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/customers/' . $id . '/points'),
-            self::requirePointsField($input),
+            $input->toArrayRecursive(),
         );
 
         return $this->_handle($response, static fn(?array $data): Points => new Points($data ?? []));
     }
 
-    /**
-     * 顧客更新の入力に、送信前に明示を求めるフィールド (`CustomerUpdateInput::REQUIRED_FIELDS`) が
-     * 明示されていることを確認する。
-     *
-     * @return array<string, mixed>
-     * @throws ParameterException 未指定の必須フィールドがある場合
-     */
-    private static function requireUpdateFields(CustomerUpdateInput $input): array
-    {
-        $fields = $input->toArrayRecursive();
-        $missing = \array_diff(CustomerUpdateInput::REQUIRED_FIELDS, \array_keys($fields));
-        if ($missing !== []) {
-            throw new ParameterException(\sprintf(
-                '顧客データの更新には %s を指定してください (未指定: %s)。',
-                \implode(', ', CustomerUpdateInput::REQUIRED_FIELDS),
-                \implode(', ', $missing),
-            ));
-        }
-
-        return $fields;
-    }
-
-    /**
-     * ポイント増減の入力に `points` が明示されていることを送信前に確認する。
-     *
-     * @return array<string, mixed>
-     * @throws ParameterException `points` が未指定の場合
-     */
-    private static function requirePointsField(PointsInput $input): array
-    {
-        $fields = $input->toArrayRecursive();
-        $missing = \array_diff(PointsInput::REQUIRED_FIELDS, \array_keys($fields));
-        if ($missing !== []) {
-            throw new ParameterException(\sprintf(
-                'ショップポイントの増減には %s を指定してください。',
-                \implode(', ', PointsInput::REQUIRED_FIELDS),
-            ));
-        }
-
-        return $fields;
-    }
-
-    /**
-     * 顧客作成の入力に、公式 OpenAPI が required とする6フィールドが明示されていることを確認する。
-     *
-     * 明示した `null` は CustomerCreateInput の構築時に InvalidFieldException で拒否される。
-     *
-     * @return array<string, mixed>
-     * @throws ParameterException 未指定の必須フィールドがある場合
-     * @see docs/adr/0015-model-customer-write-api.md
-     */
-    private static function requireCreateFields(CustomerCreateInput $input): array
-    {
-        $fields = $input->toArrayRecursive();
-        $missing = \array_diff(CustomerCreateInput::REQUIRED_FIELDS, \array_keys($fields));
-        if ($missing !== []) {
-            throw new ParameterException(\sprintf(
-                '顧客データの追加には %s を指定してください (未指定: %s)。',
-                \implode(', ', CustomerCreateInput::REQUIRED_FIELDS),
-                \implode(', ', $missing),
-            ));
-        }
-
-        return $fields;
-    }
 }

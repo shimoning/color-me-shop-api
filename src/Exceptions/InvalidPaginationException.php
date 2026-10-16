@@ -18,12 +18,14 @@ class InvalidPaginationException extends InvalidFieldException
         string $apiField,
         string $expected,
         \Throwable $previous,
+        ?int $index = null,
     ): self {
         return self::fromParent(parent::forArrayElement(
             $class,
             $apiField,
             $expected,
             $previous,
+            $index,
         ));
     }
 

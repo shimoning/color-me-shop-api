@@ -42,11 +42,25 @@ class CustomerCreateInputTest extends TestCase
         ], $input->toArrayRecursive());
     }
 
-    public function test_必須フィールドが欠けていても構築はできる(): void
+    public function test_必須フィールドが欠けているとクラス名と必須一覧と欠落一覧を示して拒否する(): void
     {
-        // 必須の検証は送信前に Services\Customer::create() が行う (ADR 0015)。
-        // 入力 Entity は他の RequestEntity と同じく、空の構築を許して直列化しない契約を保つ。
-        $this->assertSame([], (new CustomerCreateInput([]))->toArrayRecursive());
+        $this->expectException(InvalidFieldException::class);
+        $this->expectExceptionMessage(CustomerCreateInput::class);
+        $this->expectExceptionMessage('必須: name, mail, pref_id, postal, address1, tel');
+        $this->expectExceptionMessage('未指定: mail, postal');
+
+        $data = self::required();
+        unset($data['mail'], $data['postal']);
+        new CustomerCreateInput($data);
+    }
+
+    public function test_必須フィールドは現在受け付けているcamelCaseでも指定できる(): void
+    {
+        $data = self::required();
+        unset($data['pref_id']);
+        $input = new CustomerCreateInput($data + ['prefId' => 13]);
+
+        $this->assertSame(13, $input->toArrayRecursive()['pref_id']);
     }
 
     public function test_必須フィールドのnullは型として拒否する(): void
@@ -125,24 +139,24 @@ class CustomerCreateInputTest extends TestCase
 
     public function test_性別は文字列で指定でき明示したnullも送信する(): void
     {
-        $input = new CustomerCreateInput(['sex' => 'female']);
+        $input = new CustomerCreateInput(self::required(['sex' => 'female']));
         $this->assertSame(Sex::FEMALE, $input->toArray()['sex']);
-        $this->assertSame(['sex' => 'female'], $input->toArrayRecursive());
-        $this->assertSame(['sex' => null], (new CustomerCreateInput(['sex' => null]))->toArrayRecursive());
+        $this->assertSame('female', $input->toArrayRecursive()['sex']);
+        $this->assertNull((new CustomerCreateInput(self::required(['sex' => null])))->toArrayRecursive()['sex']);
     }
 
     public function test_性別の番兵値は要求側なので拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('sex');
-        new CustomerCreateInput(['sex' => Sex::UNKNOWN]);
+        new CustomerCreateInput(self::required(['sex' => Sex::UNKNOWN]));
     }
 
     public function test_未知の性別は要求側なので拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('sex');
-        new CustomerCreateInput(['sex' => 'unknown-value']);
+        new CustomerCreateInput(self::required(['sex' => 'unknown-value']));
     }
 
     public function test_未定義の都道府県は要求側なので拒否する(): void

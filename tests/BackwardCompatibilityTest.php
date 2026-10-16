@@ -150,7 +150,9 @@ class BackwardCompatibilityTest extends TestCase
     {
         $legacy = 'Shimoning\\ColorMeShopApi\\Contracts\\RequestEntity';
 
-        $this->assertInstanceOf($legacy, new CustomerUpdateInput([]));
+        $this->assertInstanceOf($legacy, new CustomerUpdateInput([
+            'name' => '', 'address1' => '', 'address2' => null,
+        ]));
     }
 
     public function test_Clientはアクセストークンなしでも生成できる(): void

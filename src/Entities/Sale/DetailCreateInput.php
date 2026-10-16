@@ -7,6 +7,7 @@ namespace Shimoning\ColorMeShopApi\Entities\Sale;
 use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 受注作成時の受注明細。
@@ -17,6 +18,16 @@ use Shimoning\ColorMeShopApi\Entities\Entity;
 class DetailCreateInput extends Entity implements RequestEntity
 {
     public const REQUIRED_FIELDS = ['product_id', 'product_num'];
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
+     */
+    public function __construct(array $data)
+    {
+        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
+        parent::__construct($data);
+    }
 
     protected int $productId;
     protected ?string $option1Value;

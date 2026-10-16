@@ -367,7 +367,7 @@ class Client
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createProductPickup(
@@ -383,7 +383,7 @@ class Client
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateProductPickup(
@@ -783,7 +783,7 @@ class Client
      * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
      * @param string|null $accessToken
      * @return Sale|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-sale-create-observation.md
      */
@@ -978,12 +978,12 @@ class Client
     }
 
     /**
-     * 顧客データを追加する。必須フィールドの未指定は Services\Customer::create() 呼び出し時に検証される。
+     * 顧客データを追加する。必須フィールドの未指定は CustomerCreateInput の構築時に検証される。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
@@ -993,12 +993,12 @@ class Client
 
     /**
      * 顧客データを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
-     * `name` / `address1` / `address2` の未指定は送信前に拒否する。
+     * `name` / `address1` / `address2` の未指定は CustomerUpdateInput の構築時に拒否する。
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または必須フィールドが未指定の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function updateCustomer(
@@ -1015,7 +1015,7 @@ class Client
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、または `points` が未指定の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function changeCustomerPoints(

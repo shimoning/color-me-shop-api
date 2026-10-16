@@ -9,6 +9,7 @@ use Shimoning\ColorMeShopApi\Aliases;
 use Shimoning\ColorMeShopApi\Constants\Product\Pickup\Type;
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * おすすめ商品情報の作成・更新 (POST / PUT /v1/products/{product_id}/pickups) の入力。
@@ -26,6 +27,19 @@ class PickupInput extends Entity implements RequestEntity
     public const FIELD_TYPES = [
         'pickupType' => ['enum' => Type::class],
     ];
+
+    /** 作成・更新で明示を必須とする API フィールド。 */
+    public const REQUIRED_FIELDS = ['pickup_type', 'order_num'];
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
+     */
+    public function __construct(array $data)
+    {
+        self::assertRequiredFields($data, self::REQUIRED_FIELDS);
+        parent::__construct($data);
+    }
 
     protected ?Type $pickupType;
     protected ?int $orderNum;
