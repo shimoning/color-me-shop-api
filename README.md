@@ -1173,7 +1173,7 @@ $pagination->getOffset();
 | `Sale\DeliveryCreateInput` | `delivery_id`、`name`、`furigana`、`postal`、`pref_id`、`address1`、`tel` |
 | `Product\Pickup\PickupInput` | `pickup_type`、`order_num` |
 
-`ParameterException` で必須フィールドの欠落を捕捉していたコードは、入力 Entity の生成を囲んで `InvalidFieldException` を捕捉するように変える。両方を捕捉するには、親クラスの `ColorMeApiException` を使う。必須フィールドが欠けた入力は、送信しない場合も生成できなくなる。`PickupInput` には、ほかの入力 Entity と同じく `REQUIRED_FIELDS` を追加した。
+`ParameterException` で必須フィールドの欠落を捕捉していたコードは、入力 Entity の生成を囲んで `InvalidFieldException` を捕捉するように変える。両方を捕捉するには、親クラスの `ColorMeApiException` を使う。必須フィールドが欠けた入力は、送信しない場合も生成できなくなる。`PickupInput` には、ほかの入力 Entity と同じく `REQUIRED_FIELDS` を追加した。検証は基底の `Entity` のコンストラクタが行い、`RequestEntity` に `REQUIRED_FIELDS` の既定値 (空の配列) を追加した。
 
 ## 0.34.0 の変更
 
