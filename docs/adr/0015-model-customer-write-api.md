@@ -151,3 +151,4 @@ TODO コメントだけが残っていた。出典: `bbff143`。
 - 実測に基づく調整の出典コミット: `5086b51`（フリガナ）、`4e6d6c2`（作成の `sex`）、
   `586179a`（更新の `tel_mobile`）、`f2aad6b`（更新の必須検証）、`5958161`（エラーコード）
 - 顧客データの更新で `name` と `address1` だけを必須とした判断は [ADR 0041](0041-require-address2-in-customer-update.md) により更新された。
+- 必須フィールドの送信前検証を Service 側に置く判断は [ADR 0050](0050-validate-required-fields-in-input-entities.md) により更新された。

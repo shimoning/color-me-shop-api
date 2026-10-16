@@ -465,7 +465,7 @@ $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API �
 
 第 2 引数に `false` を渡すと、在庫を引き当てずに受注を作成する (`$client->createSale($input, false)`)。省略または `null` の場合は `reserve_stocks` を送らず、API の既定に従う。
 
-`payment_id` と `details`、`details[]` の `product_id` / `product_num`、`sale_deliveries[]` の `delivery_id` / `name` / `furigana` / `postal` / `pref_id` / `address1` / `tel` は必須で、欠けていると送信前に `Exceptions\ParameterException` を投げる。`sale_deliveries` 自体は、配送不要の商品だけの受注では省略できるため必須にしていない。
+`payment_id` と `details`、`details[]` の `product_id` / `product_num`、`sale_deliveries[]` の `delivery_id` / `name` / `furigana` / `postal` / `pref_id` / `address1` / `tel` は必須で、欠けていると入力 Entity の生成時に `Exceptions\InvalidFieldException` を投げる (0.35.0 から。0.34.0 までは送信前の `ParameterException`)。明細とお届け先の欠落は、`details[1]` のようにどの要素かをメッセージに含める。`sale_deliveries` 自体は、配送不要の商品だけの受注では省略できるため必須にしていない。
 
 入れ子 (`customer` / `sale_deliveries[]` / `details[]`) には、配列のほかに組み立て済みの入力インスタンスも渡せる。インスタンスは複製されず、そのまま保持される。
 
@@ -593,7 +593,7 @@ $customerOrErrors = $client->createCustomer(new CustomerCreateInput([
 ]));
 ```
 
-`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は必須で、いずれかを指定しないと送信前に `ParameterException` が投げられる。`add_member` に `true` を指定すると会員として登録される。
+`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は必須で、いずれかを指定しないと `CustomerCreateInput` の生成時に `InvalidFieldException` が投げられる (0.35.0 から。0.34.0 までは送信前の `ParameterException`)。`add_member` に `true` を指定すると会員として登録される。
 
 `sex` は公式 OpenAPI の作成 request にないが、実 API では作成時にも反映されることを確認している (2026-09-25)。`tel_mobile` は作成・更新とも書き込めないため入力に持たない。
 
@@ -612,7 +612,7 @@ $customerOrErrors = $client->updateCustomer($customerId, new CustomerUpdateInput
 
 明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。ただし `address2` だけは、実 API が省略すると空にするため (2026-10-09 の観測、[更新 API で送らなかった項目の扱いの実測記録](docs/api-partial-update-observation.md))、必須として扱う。`address2` を消す場合は、`null` を明示的にセットする。
 
-公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、`address2` とあわせて、いずれかを指定しないと送信前に `ParameterException` が投げられる (`address2` は 0.30.0 から必須、[ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
+公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、`address2` とあわせて、いずれかを指定しないと `CustomerUpdateInput` の生成時に `InvalidFieldException` が投げられる (0.35.0 から。0.34.0 までは送信前の `ParameterException`。`address2` は 0.30.0 から必須、[ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
 
 `Client::updateCustomer()` は、内部で `Services\Customer::update(int|string $id, CustomerUpdateInput $input, ?string $accessToken = null)` を呼び出す。
 
@@ -824,6 +824,7 @@ $client->deleteProductOption($productId, $optionId); // NoContent|Errors
 
 #### おすすめ商品情報 (ピックアップ) を作成・更新・削除
 `pickup_type` は `Constants\Product\Pickup\Type` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) または同 enum のインスタンスで指定する。
+作成と更新では `pickup_type` と `order_num` が必須で、いずれかを指定しないと `PickupInput` の生成時に `InvalidFieldException` が投げられる (0.35.0 から。0.34.0 までは送信前の `ParameterException`)。
 削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。削除の種別に `Constants\Product\Pickup\Type` にない値を渡すと送信前に `ParameterException` になる。
 
 ```php
@@ -1155,6 +1156,24 @@ $pagination->getOffset();
 ```
 
 -----
+
+## 0.35.0 の変更
+
+### 入力 Entity の必須フィールドを生成時に検証する
+
+必須フィールドの検証を、送信時の Service から、入力 Entity のコンストラクタへ移した ([ADR 0050](docs/adr/0050-validate-required-fields-in-input-entities.md))。必須フィールドが欠けた入力は、送信時の `ParameterException` ではなく、入力 Entity の生成時の `InvalidFieldException` になる。キーがあれば必須を満たしたと扱い、明示した `null` を受け付けるかは、これまでどおり各フィールドの型で決まる。
+
+| 入力 Entity | 必須フィールド |
+| --- | --- |
+| `Customer\CustomerCreateInput` | `name`、`mail`、`pref_id`、`postal`、`address1`、`tel` |
+| `Customer\CustomerUpdateInput` | `name`、`address1`、`address2` |
+| `Customer\Points\PointsInput` | `points` |
+| `Sale\SaleCreateInput` | `payment_id`、`details` (1 件以上) |
+| `Sale\DetailCreateInput` | `product_id`、`product_num` |
+| `Sale\DeliveryCreateInput` | `delivery_id`、`name`、`furigana`、`postal`、`pref_id`、`address1`、`tel` |
+| `Product\Pickup\PickupInput` | `pickup_type`、`order_num` |
+
+`ParameterException` で必須フィールドの欠落を捕捉していたコードは、入力 Entity の生成を囲んで `InvalidFieldException` を捕捉するように変える。両方を捕捉するには、親クラスの `ColorMeApiException` を使う。必須フィールドが欠けた入力は、送信しない場合も生成できなくなる。`PickupInput` には、ほかの入力 Entity と同じく `REQUIRED_FIELDS` を追加した。
 
 ## 0.34.0 の変更
 

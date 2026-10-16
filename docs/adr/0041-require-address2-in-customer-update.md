@@ -58,3 +58,4 @@
 - [更新 API で送らなかった項目の扱いの実測記録](../api-partial-update-observation.md)（出典コミット: `d64e2c7`）
 - 実装とテストの出典コミット: `454326c`
 - README の記載の出典コミット: `55fbafb`
+- `address2` の未指定を `Services\Customer::update()` が送信前に `ParameterException` で拒否する判断は [ADR 0050](0050-validate-required-fields-in-input-entities.md) により更新された。
