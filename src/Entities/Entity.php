@@ -545,29 +545,28 @@ abstract class Entity
                     // 配列指定
                     if (static::isHash($value)) {
                         // しかし中身は連想配列
-                        return [$this->buildEntity($class, $value)];
-                    } else {
-                        $entities = [];
-                        foreach ($value as $index => $element) {
-                            try {
-                                $entities[$index] = $this->buildEntity($class, $element);
-                            } catch (InvalidFieldException $error) {
-                                if ($apiField === null || ! $error->isMissingRequired()) {
-                                    throw $error;
-                                }
-
-                                throw InvalidFieldException::forArrayElement(
-                                    static::class,
-                                    $apiField,
-                                    $class,
-                                    $error,
-                                    (int) $index,
-                                );
-                            }
-                        }
-
-                        return $entities;
+                        $value = [$value];
                     }
+                    $entities = [];
+                    foreach ($value as $index => $element) {
+                        try {
+                            $entities[$index] = $this->buildEntity($class, $element);
+                        } catch (InvalidFieldException $error) {
+                            if ($apiField === null || ! $error->isMissingRequired()) {
+                                throw $error;
+                            }
+
+                            throw InvalidFieldException::forArrayElement(
+                                static::class,
+                                $apiField,
+                                $class,
+                                $error,
+                                (int) $index,
+                            );
+                        }
+                    }
+
+                    return $entities;
                 }
                 return $this->buildEntity($class, $value);
             }

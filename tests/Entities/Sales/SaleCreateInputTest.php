@@ -254,6 +254,20 @@ class SaleCreateInputTest extends TestCase
         ]]));
     }
 
+    public function test_省略形の明細欠落は要素位置と欠落フィールドを示す(): void
+    {
+        try {
+            new SaleCreateInput([
+                'payment_id' => 3,
+                'details' => ['product_id' => 101],
+            ]);
+            $this->fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            $this->assertStringContainsString('details[0]', $error->getMessage());
+            $this->assertStringContainsString('未指定: product_num', $error->getMessage());
+        }
+    }
+
     public function test_SaleCreateInput経由のお届け先欠落は要素位置と欠落フィールドを示す(): void
     {
         $this->expectException(InvalidFieldException::class);
@@ -273,5 +287,52 @@ class SaleCreateInputTest extends TestCase
         unset($missingTel['tel']);
 
         new SaleCreateInput(self::required(['sale_deliveries' => [$delivery, $missingTel]]));
+    }
+
+    public function test_省略形のお届け先欠落は要素位置と欠落フィールドを示す(): void
+    {
+        try {
+            new SaleCreateInput(self::required(['sale_deliveries' => [
+                'delivery_id' => 1,
+                'name' => '配送先',
+                'furigana' => 'ハイソウサキ',
+                'postal' => '1508512',
+                'pref_id' => 13,
+                'address1' => '渋谷区桜丘町26-1',
+            ]]));
+            $this->fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            $this->assertStringContainsString('sale_deliveries[0]', $error->getMessage());
+            $this->assertStringContainsString('未指定: tel', $error->getMessage());
+        }
+    }
+
+    public function test_省略形の明細とお届け先を1要素のリストとして直列化する(): void
+    {
+        $input = new SaleCreateInput([
+            'payment_id' => 3,
+            'details' => ['product_id' => 101, 'product_num' => 2],
+            'sale_deliveries' => [
+                'delivery_id' => 1,
+                'name' => '配送先',
+                'furigana' => 'ハイソウサキ',
+                'postal' => '1508512',
+                'pref_id' => 13,
+                'address1' => '渋谷区桜丘町26-1',
+                'tel' => '03-5456-2622',
+            ],
+        ]);
+
+        $fields = $input->toArrayRecursive();
+        $this->assertSame([['product_id' => 101, 'product_num' => 2]], $fields['details']);
+        $this->assertSame([[
+            'delivery_id' => 1,
+            'name' => '配送先',
+            'furigana' => 'ハイソウサキ',
+            'postal' => '1508512',
+            'pref_id' => 13,
+            'address1' => '渋谷区桜丘町26-1',
+            'tel' => '03-5456-2622',
+        ]], $fields['sale_deliveries']);
     }
 }
