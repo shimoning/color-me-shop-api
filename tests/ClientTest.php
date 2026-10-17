@@ -27,6 +27,9 @@ use Shimoning\ColorMeShopApi\Entities\Product\Variant\VariantUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters as SalesSearchParameters;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput;
 use Shimoning\ColorMeShopApi\Entities\Customer\SearchParameters as CustomerSearchParameters;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
@@ -49,8 +52,14 @@ class ClientTest extends TestCase
             'getSalePage' => [static function (Client $client, ?string $accessToken): void {
                 $client->getSalePage(null, $accessToken);
             }],
+            'getSales' => [static function (Client $client, ?string $accessToken): void {
+                $client->getSales(null, $accessToken);
+            }],
             'getSaleStat' => [static function (Client $client, ?string $accessToken): void {
                 $client->getSaleStat(new \DateTimeImmutable('2024-01-01'), $accessToken);
+            }],
+            'statSales' => [static function (Client $client, ?string $accessToken): void {
+                $client->statSales(new \DateTimeImmutable('2024-01-01'), $accessToken);
             }],
             'getSale' => [static function (Client $client, ?string $accessToken): void {
                 $client->getSale(1001, $accessToken);
@@ -70,6 +79,9 @@ class ClientTest extends TestCase
             'sendSaleMail' => [static function (Client $client, ?string $accessToken): void {
                 $client->sendSaleMail(1001, MailType::PAID, $accessToken);
             }],
+            'sendSalesMail' => [static function (Client $client, ?string $accessToken): void {
+                $client->sendSalesMail(1001, MailType::PAID, $accessToken);
+            }],
             'getPayments' => [static function (Client $client, ?string $accessToken): void {
                 $client->getPayments($accessToken);
             }],
@@ -85,8 +97,31 @@ class ClientTest extends TestCase
             'getCustomerPage' => [static function (Client $client, ?string $accessToken): void {
                 $client->getCustomerPage(null, $accessToken);
             }],
+            'getCustomers' => [static function (Client $client, ?string $accessToken): void {
+                $client->getCustomers(null, $accessToken);
+            }],
             'getCustomer' => [static function (Client $client, ?string $accessToken): void {
                 $client->getCustomer(501, $accessToken);
+            }],
+            'createCustomer' => [static function (Client $client, ?string $accessToken): void {
+                $client->createCustomer(new CustomerCreateInput([
+                    'name' => '顧客',
+                    'mail' => 'customer@example.com',
+                    'pref_id' => 13,
+                    'postal' => '1508512',
+                    'address1' => '渋谷区',
+                    'tel' => '03-0000-0000',
+                ]), $accessToken);
+            }],
+            'updateCustomer' => [static function (Client $client, ?string $accessToken): void {
+                $client->updateCustomer(501, new CustomerUpdateInput([
+                    'name' => '顧客',
+                    'address1' => '渋谷区',
+                    'address2' => '',
+                ]), $accessToken);
+            }],
+            'changeCustomerPoints' => [static function (Client $client, ?string $accessToken): void {
+                $client->changeCustomerPoints(501, new PointsInput(['points' => 1]), $accessToken);
             }],
             'getProductGroups' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductGroups($accessToken);
@@ -97,11 +132,23 @@ class ClientTest extends TestCase
             'getProductPage' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductPage(null, $accessToken);
             }],
+            'getProducts' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProducts(null, $accessToken);
+            }],
+            'getProductStockPage' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductStockPage(null, $accessToken);
+            }],
+            'getStocks' => [static function (Client $client, ?string $accessToken): void {
+                $client->getStocks(null, $accessToken);
+            }],
             'getProduct' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProduct(101, $accessToken);
             }],
             'getProductVariantPage' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductVariantPage(101, null, $accessToken);
+            }],
+            'getProductVariants' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductVariants(101, null, $accessToken);
             }],
             'getProductVariant' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductVariant(101, 301, $accessToken);
@@ -111,6 +158,9 @@ class ClientTest extends TestCase
             }],
             'getProductAdvertisingPage' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductAdvertisingPage(null, $accessToken);
+            }],
+            'getProductAdvertisings' => [static function (Client $client, ?string $accessToken): void {
+                $client->getProductAdvertisings(null, $accessToken);
             }],
             'getProductGroup' => [static function (Client $client, ?string $accessToken): void {
                 $client->getProductGroup(401, $accessToken);
@@ -222,6 +272,41 @@ class ClientTest extends TestCase
         $client = new Client(null, $mock->client());
 
         $this->assertAccessTokenRejectedWithoutHttpRequest($client, $mock, $callApi, null);
+    }
+
+    /**
+     * @param \Closure(Client, ?string): void $callApi
+     */
+    #[DataProvider('accessTokenApiProvider')]
+    public function test_全公開APIで引数のトークンが優先される(\Closure $callApi): void
+    {
+        $mock = HttpMock::json(401, self::fixture('errors_401.json'));
+        $client = new Client('initial-token', $mock->client());
+
+        $callApi($client, 'override-token');
+
+        $this->assertSame(1, $mock->countRequests());
+        $this->assertSame('Bearer override-token', $mock->header('Authorization'));
+    }
+
+    /**
+     * @param \Closure(Client, ?string): void $callApi
+     */
+    #[DataProvider('accessTokenApiProvider')]
+    public function test_全公開APIで引数のトークンが以降の呼び出しに引き継がれる(\Closure $callApi): void
+    {
+        $mock = new HttpMock([
+            new \GuzzleHttp\Psr7\Response(401, [], self::fixture('errors_401.json')),
+            new \GuzzleHttp\Psr7\Response(401, [], self::fixture('errors_401.json')),
+        ]);
+        $client = new Client('initial-token', $mock->client());
+
+        $callApi($client, 'runtime-token');
+        $client->getShop();
+
+        $this->assertSame(2, $mock->countRequests());
+        $this->assertSame('Bearer runtime-token', $mock->header('Authorization', 0));
+        $this->assertSame('Bearer runtime-token', $mock->header('Authorization', 1));
     }
 
     /**
