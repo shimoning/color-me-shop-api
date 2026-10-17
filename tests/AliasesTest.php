@@ -178,7 +178,9 @@ class AliasesTest extends TestCase
         $this->assertTrue(\interface_exists($legacy, false));
         $this->assertSame($current, (new \ReflectionClass($legacy))->getName());
 
-        $input = new \Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput([]);
+        $input = new \Shimoning\ColorMeShopApi\Entities\Customer\CustomerUpdateInput([
+            'name' => '', 'address1' => '', 'address2' => null,
+        ]);
         /** @var callable(object): object $acceptLegacy */
         $acceptLegacy = eval('return static function (\\' . $legacy . ' $value): object { return $value; };');
 
@@ -198,8 +200,28 @@ class AliasesTest extends TestCase
                 continue;
             }
             $data = match ($current) {
+                \Shimoning\ColorMeShopApi\Entities\Customer\Points\PointsInput::class => ['points' => 0],
+                \Shimoning\ColorMeShopApi\Entities\Product\Pickup\PickupInput::class => [
+                    'pickup_type' => null, 'order_num' => null,
+                ],
                 \Shimoning\ColorMeShopApi\Entities\Product\StocksIncrementInput::class => ['increment' => 0],
                 \Shimoning\ColorMeShopApi\Entities\Product\VariantInput::class => ['stocks' => 0],
+                \Shimoning\ColorMeShopApi\Entities\Sale\DetailCreateInput::class => [
+                    'product_id' => 0, 'product_num' => 0,
+                ],
+                \Shimoning\ColorMeShopApi\Entities\Sale\DeliveryCreateInput::class => [
+                    'delivery_id' => 0,
+                    'name' => '',
+                    'furigana' => '',
+                    'postal' => '',
+                    'pref_id' => 1,
+                    'address1' => '',
+                    'tel' => '',
+                ],
+                \Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput::class => [
+                    'payment_id' => 0,
+                    'details' => [['product_id' => 0, 'product_num' => 0]],
+                ],
                 default => [],
             };
             $cases[$legacy] = [$legacy, $current, $data];

@@ -8,11 +8,12 @@ use Shimoning\ColorMeShopApi\Aliases;
 
 use Shimoning\ColorMeShopApi\Entities\RequestEntity;
 use Shimoning\ColorMeShopApi\Entities\Entity;
+use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 
 /**
  * 受注データの作成 (POST /v1/sales) の `sale` 入力。
  *
- * 必須フィールドは Services\Sale::create() が送信前に検証する。
+ * 必須フィールドは基底コンストラクタが構築時に検証する。
  *
  * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
  * @final 0.32.0 で予告。次のメジャーな版で final にする。
@@ -26,6 +27,22 @@ class SaleCreateInput extends Entity implements RequestEntity
     ];
 
     public const REQUIRED_FIELDS = ['payment_id', 'details'];
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws InvalidFieldException 必須フィールドが未指定、details が空、またはフィールド値が不正な場合
+     */
+    public function __construct(array $data)
+    {
+        parent::__construct($data);
+
+        if ($this->details === []) {
+            throw new InvalidFieldException(\sprintf(
+                '%s の API フィールド『details』が不正です。1件以上の配列要素を指定してください (指定件数: 0)。',
+                self::class,
+            ));
+        }
+    }
 
     protected ?CustomerCreateInput $customer;
     /** @var list<DeliveryCreateInput> */

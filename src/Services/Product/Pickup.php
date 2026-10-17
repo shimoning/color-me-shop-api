@@ -17,18 +17,18 @@ class Pickup extends Service
     /**
      * おすすめ商品情報を作成する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
      *
-     * `pickup_type` / `order_num` の未指定は送信前に拒否し、明示した `null` は送信する。
+     * `pickup_type` / `order_num` の未指定は PickupInput の構築時に拒否し、明示した `null` は送信する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
-     * @throws ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
+     * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function create(int|string $productId, PickupInput $input, ?string $accessToken = null): PickupEntity|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->post(
             $this->_endpoint('/products/' . $productId . '/pickups'),
-            self::requirePickupFields($input),
+            $input->toArrayRecursive(),
         );
         return $this->_handle($response, static fn(?array $data): PickupEntity => new PickupEntity($data['pickup'] ?? []));
     }
@@ -36,18 +36,18 @@ class Pickup extends Service
     /**
      * おすすめ商品情報を更新する。入力はトップレベルの `pickup_type` / `order_num` で、応答の `pickup` を返す。
      *
-     * 作成と同じく、`pickup_type` / `order_num` が未指定の入力は送信前に拒否する。
+     * 作成と同じく、`pickup_type` / `order_num` が未指定の入力は PickupInput の構築時に拒否する。
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
-     * @throws ParameterException アクセストークンが空、または `pickup_type` / `order_num` が未指定の場合
+     * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
     public function update(int|string $productId, PickupInput $input, ?string $accessToken = null): PickupEntity|Errors
     {
         $response = $this->_request(['json' => true], $accessToken)->put(
             $this->_endpoint('/products/' . $productId . '/pickups'),
-            self::requirePickupFields($input),
+            $input->toArrayRecursive(),
         );
         return $this->_handle($response, static fn(?array $data): PickupEntity => new PickupEntity($data['pickup'] ?? []));
     }
@@ -74,28 +74,6 @@ class Pickup extends Service
             $this->_endpoint('/products/' . $productId . '/pickups/' . $type),
         );
         return $this->_handle($response, static fn(?array $data): PickupEntity => new PickupEntity($data['pickup'] ?? []));
-    }
-
-    /**
-     * ピックアップ入力の `pickup_type` と `order_num` が明示されていることを送信前に確認する。
-     *
-     * 公式 OpenAPI との差分: 両フィールドに required 指定はないが、ライブラリでは未指定を拒否する。
-     * 明示した `null` は API の検証に委ねる。
-     *
-     * @return array<string, mixed>
-     * @throws ParameterException いずれかが未指定の場合
-     */
-    private static function requirePickupFields(PickupInput $input): array
-    {
-        $fields = $input->toArrayRecursive();
-        $missing = \array_diff(['pickup_type', 'order_num'], \array_keys($fields));
-        if ($missing !== []) {
-            throw new ParameterException(\sprintf(
-                'おすすめ商品情報の入力には pickup_type と order_num を指定してください (未指定: %s)。',
-                \implode(', ', $missing),
-            ));
-        }
-        return $fields;
     }
 
     /**

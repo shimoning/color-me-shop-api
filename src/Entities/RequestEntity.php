@@ -17,6 +17,12 @@ use Shimoning\ColorMeShopApi\Aliases;
  */
 interface RequestEntity
 {
+    /**
+     * コンストラクタで明示を求める API フィールド名。
+     *
+     * @var list<string>
+     */
+    public const REQUIRED_FIELDS = [];
 }
 
 // RequestEntity 移動の後方互換措置として、旧名での instanceof と型宣言を成立させるための副作用。

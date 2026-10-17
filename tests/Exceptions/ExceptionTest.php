@@ -14,6 +14,16 @@ use Shimoning\ColorMeShopApi\Exceptions\ParameterException;
 
 class ExceptionTest extends TestCase
 {
+    public function test_forArrayElementの引数数は後方互換性のため4つに固定する(): void
+    {
+        foreach ([InvalidFieldException::class, InvalidPaginationException::class] as $class) {
+            $method = new \ReflectionMethod($class, 'forArrayElement');
+
+            $this->assertSame(4, $method->getNumberOfParameters(), $class);
+            $this->assertSame(4, $method->getNumberOfRequiredParameters(), $class);
+        }
+    }
+
     public function test_ColorMeApiExceptionはExceptionを継承している(): void
     {
         $this->assertInstanceOf(\Exception::class, new ColorMeApiException());

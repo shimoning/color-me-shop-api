@@ -174,3 +174,4 @@ nullable フィールドを明示的な `null` でクリアできる。既存の
 - 商品の作成と更新の入力を共用する判断は [ADR 0026](0026-split-product-input-into-create-and-update.md) により更新された。
 - `RequestEntity` を `Contracts` に置く判断は [ADR 0042](0042-move-request-entity-to-entities.md) により更新された。
 - `Errors` と `NoContent` を `Communicator` に置く判断は [ADR 0048](0048-move-result-types-to-results.md) により更新された。
+- 必須フィールドの未指定を Service が送信前に `ParameterException` で拒否する判断は [ADR 0050](0050-validate-required-fields-in-input-entities.md) により更新された。

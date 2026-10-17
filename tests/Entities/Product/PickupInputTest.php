@@ -22,12 +22,29 @@ class PickupInputTest extends TestCase
         $this->assertSame(['pickup_type' => 3, 'order_num' => 1], $input->toArrayRecursive());
     }
 
-    public function test_未指定は送信せず明示したnullは送信する(): void
+    public function test_未指定はクラス名と必須一覧と欠落一覧を示して拒否する(): void
     {
-        $this->assertSame([], (new PickupInput([]))->toArrayRecursive());
+        try {
+            new PickupInput([]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(PickupInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '必須: pickup_type, order_num',
+                $error->getMessage(),
+            );
+            self::assertStringContainsString(
+                '未指定: pickup_type, order_num',
+                $error->getMessage(),
+            );
+        }
+    }
+
+    public function test_明示したnullは必須指定として扱い送信する(): void
+    {
         $this->assertSame(
-            ['pickup_type' => 0, 'order_num' => null],
-            (new PickupInput(['pickup_type' => 0, 'order_num' => null]))->toArrayRecursive(),
+            ['pickup_type' => null, 'order_num' => null],
+            (new PickupInput(['pickup_type' => null, 'order_num' => null]))->toArrayRecursive(),
         );
     }
 
@@ -39,24 +56,31 @@ class PickupInputTest extends TestCase
         $this->assertSame(['pickup_type' => 3, 'order_num' => 1], $input->toArrayRecursive());
     }
 
+    public function test_必須フィールドは現在受け付けているcamelCaseでも指定できる(): void
+    {
+        $input = new PickupInput(['pickupType' => 3, 'orderNum' => 1]);
+
+        $this->assertSame(['pickup_type' => 3, 'order_num' => 1], $input->toArrayRecursive());
+    }
+
     public function test_別のenumのインスタンスは拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('pickup_type');
-        new PickupInput(['pickup_type' => DisplayState::HIDDEN]);
+        new PickupInput(['pickup_type' => DisplayState::HIDDEN, 'order_num' => 1]);
     }
 
     public function test_未定義の種別は要求側なので拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('pickup_type');
-        new PickupInput(['pickup_type' => 2]);
+        new PickupInput(['pickup_type' => 2, 'order_num' => 1]);
     }
 
     public function test_不正な型を拒否する(): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('order_num');
-        new PickupInput(['order_num' => '1']);
+        new PickupInput(['pickup_type' => 3, 'order_num' => '1']);
     }
 }

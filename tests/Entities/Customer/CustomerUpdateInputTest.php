@@ -14,22 +14,45 @@ use Shimoning\ColorMeShopApi\Values\Furigana;
 
 class CustomerUpdateInputTest extends TestCase
 {
-    public function test_明示したフィールドだけを送信する(): void
+    /** @return array<string, mixed> */
+    private static function required(array $overrides = []): array
     {
-        $input = new CustomerUpdateInput(['name' => 'カラーミー花子']);
-
-        $this->assertInstanceOf(RequestEntity::class, $input);
-        $this->assertSame(['name' => 'カラーミー花子'], $input->toArrayRecursive());
+        return \array_merge([
+            'name' => 'カラーミー花子',
+            'address1' => '渋谷区',
+            'address2' => '桜丘町26-1',
+        ], $overrides);
     }
 
-    public function test_未指定は送信しない(): void
+    public function test_明示したフィールドだけを送信する(): void
     {
-        $this->assertSame([], (new CustomerUpdateInput([]))->toArrayRecursive());
+        $input = new CustomerUpdateInput(self::required());
+
+        $this->assertInstanceOf(RequestEntity::class, $input);
+        $this->assertSame(self::required(), $input->toArrayRecursive());
+    }
+
+    public function test_必須フィールドが欠けているとクラス名と必須一覧と欠落一覧を示して拒否する(): void
+    {
+        try {
+            new CustomerUpdateInput(['name' => 'カラーミー花子']);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(CustomerUpdateInput::class, $error->getMessage());
+            self::assertStringContainsString(
+                '必須: name, address1, address2',
+                $error->getMessage(),
+            );
+            self::assertStringContainsString(
+                '未指定: address1, address2',
+                $error->getMessage(),
+            );
+        }
     }
 
     public function test_nullableなフィールドの明示したnullは送信する(): void
     {
-        $fields = (new CustomerUpdateInput([
+        $fields = (new CustomerUpdateInput(self::required([
             'address2' => null,
             'fax' => null,
             'sex' => null,
@@ -39,9 +62,11 @@ class CustomerUpdateInputTest extends TestCase
             'other' => null,
             'receive_mail_magazine' => null,
             'answer_free_form1' => null,
-        ]))->toArrayRecursive();
+        ])))->toArrayRecursive();
 
         $this->assertSame([
+            'name' => 'カラーミー花子',
+            'address1' => '渋谷区',
             'furigana' => null,
             'address2' => null,
             'fax' => null,
@@ -61,7 +86,7 @@ class CustomerUpdateInputTest extends TestCase
     {
         foreach (['name', 'mail', 'pref_id', 'postal', 'address1', 'tel'] as $field) {
             try {
-                new CustomerUpdateInput([$field => null]);
+                new CustomerUpdateInput(self::required([$field => null]));
                 $this->fail($field . ' の null が拒否されなかった');
             } catch (InvalidFieldException $e) {
                 $this->assertStringContainsString($field, $e->getMessage());
@@ -71,17 +96,19 @@ class CustomerUpdateInputTest extends TestCase
 
     public function test_性別は送信でき携帯電話番号は送信しない(): void
     {
-        $input = new CustomerUpdateInput(['sex' => 'female', 'tel_mobile' => '090-1234-5678']);
+        $input = new CustomerUpdateInput(self::required([
+            'sex' => 'female', 'tel_mobile' => '090-1234-5678',
+        ]));
 
         $this->assertSame(Sex::FEMALE, $input->toArray()['sex']);
-        $this->assertSame(['sex' => 'female'], $input->toArrayRecursive());
+        $this->assertSame('female', $input->toArrayRecursive()['sex']);
     }
 
     public function test_性別はenumインスタンスでも指定できバッキング値で送信する(): void
     {
-        $input = new CustomerUpdateInput(['sex' => Sex::NOT_APPLICABLE]);
+        $input = new CustomerUpdateInput(self::required(['sex' => Sex::NOT_APPLICABLE]));
 
-        $this->assertSame(['sex' => 'not_applicable'], $input->toArrayRecursive());
+        $this->assertSame('not_applicable', $input->toArrayRecursive()['sex']);
     }
 
     public function test_性別の番兵値は要求側なので拒否する(): void
@@ -89,7 +116,7 @@ class CustomerUpdateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('sex');
 
-        new CustomerUpdateInput(['sex' => Sex::UNKNOWN]);
+        new CustomerUpdateInput(self::required(['sex' => Sex::UNKNOWN]));
     }
 
     public function test_未知の性別は要求側なので拒否する(): void
@@ -97,19 +124,19 @@ class CustomerUpdateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('sex');
 
-        new CustomerUpdateInput(['sex' => 'unknown-value']);
+        new CustomerUpdateInput(self::required(['sex' => 'unknown-value']));
     }
 
     public function test_都道府県はenumインスタンスでも指定できバッキング値で送信する(): void
     {
-        $input = new CustomerUpdateInput(['pref_id' => Prefecture::OSAKA]);
+        $input = new CustomerUpdateInput(self::required(['pref_id' => Prefecture::OSAKA]));
 
-        $this->assertSame(['pref_id' => 29], $input->toArrayRecursive());
+        $this->assertSame(29, $input->toArrayRecursive()['pref_id']);
     }
 
     public function test_フリガナは文字列で指定しValueへ変換して保持する(): void
     {
-        $input = new CustomerUpdateInput(['furigana' => 'カラーミーハナコ']);
+        $input = new CustomerUpdateInput(self::required(['furigana' => 'カラーミーハナコ']));
 
         $this->assertInstanceOf(Furigana::class, $input->toArray()['furigana']);
         $this->assertSame('カラーミーハナコ', $input->toArrayRecursive()['furigana']);
@@ -117,7 +144,7 @@ class CustomerUpdateInputTest extends TestCase
 
     public function test_更新では会員登録フラグを送信しない(): void
     {
-        $fields = (new CustomerUpdateInput(['name' => 'カラーミー花子', 'add_member' => true]))->toArrayRecursive();
+        $fields = (new CustomerUpdateInput(self::required(['add_member' => true])))->toArrayRecursive();
 
         $this->assertArrayNotHasKey('add_member', $fields);
     }
@@ -127,6 +154,6 @@ class CustomerUpdateInputTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('pref_id');
 
-        new CustomerUpdateInput(['pref_id' => '13']);
+        new CustomerUpdateInput(self::required(['pref_id' => '13']));
     }
 }

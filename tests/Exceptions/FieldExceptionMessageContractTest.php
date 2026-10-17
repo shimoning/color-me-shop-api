@@ -15,6 +15,8 @@ use Shimoning\ColorMeShopApi\Entities\Pagination;
 use Shimoning\ColorMeShopApi\Entities\Payment\Cod;
 use Shimoning\ColorMeShopApi\Entities\Product\Category\Category;
 use Shimoning\ColorMeShopApi\Entities\Sale\Sale;
+use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
+use Shimoning\ColorMeShopApi\Entities\Customer\CustomerCreateInput;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException;
 use Shimoning\ColorMeShopApi\Exceptions\InvalidPaginationException;
 use Shimoning\ColorMeShopApi\Exceptions\MissingFieldException;
@@ -361,12 +363,36 @@ class FieldExceptionMessageContractTest extends TestCase
                 },
                 null,
             ],
+            'InvalidFieldException::__construct/受注作成の空明細' => [
+                self::site('src/Entities/Sale/SaleCreateInput.php', InvalidFieldException::class . '::__construct', 1),
+                static function (): void {
+                    new SaleCreateInput(['payment_id' => 3, 'details' => []]);
+                },
+                null,
+            ],
             'InvalidFieldException::forArrayElement/未知enum' => [
                 self::site('src/Entities/Entity.php', InvalidFieldException::class . '::forArrayElement', 1),
                 static function (): void {
                     new ComplexEntity(['states' => ['sent', 'unknown']]);
                 },
                 \UnexpectedValueException::class,
+            ],
+            'InvalidFieldException::forIndexedArrayElement/子Entityの必須欠落' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::forIndexedArrayElement', 1),
+                static function (): void {
+                    new SaleCreateInput([
+                        'payment_id' => 3,
+                        'details' => [['product_id' => 101]],
+                    ]);
+                },
+                InvalidFieldException::class,
+            ],
+            'InvalidFieldException::missingRequired/要求Entityの必須欠落' => [
+                self::site('src/Entities/Entity.php', InvalidFieldException::class . '::missingRequired', 1),
+                static function (): void {
+                    new CustomerCreateInput([]);
+                },
+                null,
             ],
             'InvalidFieldException::forArrayElement/Codのタプル不一致' => [
                 self::site('src/Entities/Payment/Cod.php', InvalidFieldException::class . '::forArrayElement', 1),

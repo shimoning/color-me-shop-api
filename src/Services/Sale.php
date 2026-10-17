@@ -9,8 +9,6 @@ use Shimoning\ColorMeShopApi\Results\Errors;
 use Shimoning\ColorMeShopApi\Entities\Sale\SearchParameters;
 use Shimoning\ColorMeShopApi\Entities\Sale\Sale as SaleEntity;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sale\DeliveryCreateInput;
-use Shimoning\ColorMeShopApi\Entities\Sale\DetailCreateInput;
 use Shimoning\ColorMeShopApi\Entities\Sale\Stat\Stat;
 use Shimoning\ColorMeShopApi\Entities\Sale\SaleUpdateInput;
 use Shimoning\ColorMeShopApi\Entities\Page;
@@ -108,13 +106,14 @@ class Sale extends Service
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す (2026-10-01)。
+     * 必須フィールドと明細件数は SaleCreateInput と子 Entity の構築時に検証される。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
      * @param SaleCreateInput $input
      * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
      * @param string|null $accessToken
      * @return SaleEntity|Errors
-     * @throws ParameterException 実効アクセストークンが空文字、または必須フィールドが未指定の場合
+     * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-sale-create-observation.md
      */
@@ -124,7 +123,7 @@ class Sale extends Service
         ?string $accessToken = null,
     ): SaleEntity|Errors {
         $request = $this->_request(['json' => true], $accessToken);
-        $fields = self::requireCreateFields($input);
+        $fields = $input->toArrayRecursive();
         if (isset($fields['customer']) && \is_array($fields['customer'])) {
             $fields['customer'] = self::_jsonObject($fields['customer']);
         }
@@ -173,56 +172,6 @@ class Sale extends Service
         );
 
         return $this->_handle($response, fn(?array $data): SaleEntity => new SaleEntity($data['sale'] ?? []));
-    }
-
-    /**
-     * 受注作成入力と各子要素の必須フィールドを確認する。
-     *
-     * @return array<string, mixed>
-     * @throws ParameterException 必須フィールドが未指定の場合
-     */
-    private static function requireCreateFields(SaleCreateInput $input): array
-    {
-        $fields = $input->toArrayRecursive();
-        $missing = \array_diff(SaleCreateInput::REQUIRED_FIELDS, \array_keys($fields));
-        if ($missing !== []) {
-            throw new ParameterException(\sprintf(
-                '受注データの作成には %s を指定してください (未指定: %s)。',
-                \implode(', ', SaleCreateInput::REQUIRED_FIELDS),
-                \implode(', ', $missing),
-            ));
-        }
-        if ($fields['details'] === []) {
-            throw new ParameterException(
-                '受注データの作成には details を1件以上指定してください (指定件数: 0)。',
-            );
-        }
-
-        foreach ($fields['details'] as $index => $detail) {
-            $missing = \array_diff(DetailCreateInput::REQUIRED_FIELDS, \array_keys($detail));
-            if ($missing !== []) {
-                throw new ParameterException(\sprintf(
-                    '受注明細 details[%d] には %s を指定してください (未指定: %s)。',
-                    $index,
-                    \implode(', ', DetailCreateInput::REQUIRED_FIELDS),
-                    \implode(', ', $missing),
-                ));
-            }
-        }
-
-        foreach ($fields['sale_deliveries'] ?? [] as $index => $delivery) {
-            $missing = \array_diff(DeliveryCreateInput::REQUIRED_FIELDS, \array_keys($delivery));
-            if ($missing !== []) {
-                throw new ParameterException(\sprintf(
-                    'お届け先 sale_deliveries[%d] には %s を指定してください (未指定: %s)。',
-                    $index,
-                    \implode(', ', DeliveryCreateInput::REQUIRED_FIELDS),
-                    \implode(', ', $missing),
-                ));
-            }
-        }
-
-        return $fields;
     }
 
     /**

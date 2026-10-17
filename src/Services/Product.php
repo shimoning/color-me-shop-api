@@ -451,7 +451,7 @@ class Product extends Service
 
     /**
      * おすすめ商品情報を作成する。
-     * @throws ParameterException アクセストークンが空、または必須フィールドが未指定の場合
+     * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @deprecated 0.26.0 Services\Product\Pickup::create() を使うこと。
      * @see docs/adr/0034-split-product-service.md
@@ -463,7 +463,7 @@ class Product extends Service
 
     /**
      * おすすめ商品情報を更新する。
-     * @throws ParameterException アクセストークンが空、または必須フィールドが未指定の場合
+     * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @deprecated 0.26.0 Services\Product\Pickup::update() を使うこと。
      * @see docs/adr/0034-split-product-service.md

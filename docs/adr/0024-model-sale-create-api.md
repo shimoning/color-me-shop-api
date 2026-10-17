@@ -113,3 +113,4 @@ README の「未実装」はショップクーポンだけになる。
 - README とスコープの突合記録の出典コミット: `d97addd`
 - 要求文脈での組み立て直しの出典コミット: `f6bffec`
 - 空の `details` の拒否の出典コミット: `a63d14f`
+- 必須項目を送信前に確かめ、`ParameterException` にする判断は [ADR 0050](0050-validate-required-fields-in-input-entities.md) により更新された。

@@ -24,9 +24,16 @@ class CustomerPointsInputTest extends TestCase
         $this->assertSame(['points' => -50], (new PointsInput(['points' => -50]))->toArrayRecursive());
     }
 
-    public function test_未指定は送信しない(): void
+    public function test_未指定はクラス名と必須一覧と欠落一覧を示して拒否する(): void
     {
-        $this->assertSame([], (new PointsInput([]))->toArrayRecursive());
+        try {
+            new PointsInput([]);
+            self::fail(InvalidFieldException::class . ' が発生しませんでした。');
+        } catch (InvalidFieldException $error) {
+            self::assertStringContainsString(PointsInput::class, $error->getMessage());
+            self::assertStringContainsString('必須: points', $error->getMessage());
+            self::assertStringContainsString('未指定: points', $error->getMessage());
+        }
     }
 
     /**

@@ -86,7 +86,15 @@ class FallbackValueHydrationTest extends TestCase
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('furigana');
 
-        new CustomerCreateInput(['furigana' => Furigana::fallback(self::RAW)]);
+        new CustomerCreateInput([
+            'name' => '',
+            'mail' => '',
+            'pref_id' => 1,
+            'postal' => '',
+            'address1' => '',
+            'tel' => '',
+            'furigana' => Furigana::fallback(self::RAW),
+        ]);
     }
 
     public static function objectFields(): array
@@ -131,16 +139,22 @@ class FallbackValueHydrationTest extends TestCase
 
     public static function requestClasses(): array
     {
-        return [[SearchParameters::class], [CustomerCreateInput::class], [CustomerUpdateInput::class]];
+        return [
+            [SearchParameters::class, []],
+            [CustomerCreateInput::class, [
+                'name' => '', 'mail' => '', 'pref_id' => 1, 'postal' => '', 'address1' => '', 'tel' => '',
+            ]],
+            [CustomerUpdateInput::class, ['name' => '', 'address1' => '', 'address2' => null]],
+        ];
     }
 
     #[DataProvider('requestClasses')]
-    public function test_顧客の要求では実測値を拒否する(string $class): void
+    public function test_顧客の要求では実測値を拒否する(string $class, array $required): void
     {
         $this->expectException(InvalidFieldException::class);
         $this->expectExceptionMessage('furigana');
 
-        new $class(['furigana' => self::RAW]);
+        new $class($required + ['furigana' => self::RAW]);
     }
 
     public static function invalidFields(): array

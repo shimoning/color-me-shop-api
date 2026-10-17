@@ -71,13 +71,27 @@ abstract class Entity
     private array $_raw;
 
     /**
+     * build() が変換中の API フィールド名。
+     *
+     * Entity のシリアライズ形式を変えないよう、インスタンスプロパティには持たない。
+     *
+     * @var array<int, string>
+     */
+    private static array $_buildingApiFields = [];
+
+    /**
      * API レスポンスからエンティティを生成する。
      *
      * @param array<string, mixed> $data API レスポンスデータ
      * @return void
+     * @throws InvalidFieldException 必須フィールドが未指定、またはフィールド値が不正な場合
      */
     public function __construct(array $data)
     {
+        if ($this instanceof RequestEntity) {
+            self::assertRequiredFields($data, $this::REQUIRED_FIELDS);
+        }
+
         $this->_raw = $data;
         if ($this instanceof RequestEntity) {
             $this->_requestFields = [];
@@ -85,11 +99,8 @@ abstract class Entity
 
         $fieldTypes = static::FIELD_TYPES;
 
-        $propertyNames = \array_flip(static::FIELD_NAMES);
-
         foreach ($data as $key => $value) {
-            $_key = $propertyNames[$key]
-                ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $_key = self::propertyName($key);
             if (self::findProperty(static::class, $_key) !== null) {
                 $this->hydrateField($_key, $key, $value, $fieldTypes[$_key] ?? null);
                 if ($this instanceof RequestEntity) {
@@ -99,6 +110,43 @@ abstract class Entity
         }
 
         $this->initializeOptionalProperties();
+    }
+
+    /**
+     * 入力に必須 API フィールドが明示されていることを確認する。
+     *
+     * Entity が通常受け付ける API フィールド名とプロパティ名のどちらも指定済みとして扱う。
+     * 値は確認せず、null を受け付けるかどうかは通常の hydrate に委ねる。
+     *
+     * @param array<string, mixed> $data
+     * @param list<string> $required
+     * @throws InvalidFieldException 必須フィールドが未指定の場合
+     */
+    private static function assertRequiredFields(array $data, array $required): void
+    {
+        $provided = [];
+        foreach (\array_keys($data) as $key) {
+            $property = self::propertyName($key);
+            if (self::findProperty(static::class, $property) !== null) {
+                $provided[static::apiFieldName($property)] = true;
+            }
+        }
+
+        $missing = \array_values(\array_filter(
+            $required,
+            static fn(string $field): bool => ! isset($provided[$field]),
+        ));
+        if ($missing !== []) {
+            throw InvalidFieldException::missingRequired(static::class, $required, $missing);
+        }
+    }
+
+    private static function propertyName(string $field): string
+    {
+        $propertyNames = \array_flip(static::FIELD_NAMES);
+
+        return $propertyNames[$field]
+            ?? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $field))));
     }
 
     /**
@@ -148,8 +196,14 @@ abstract class Entity
         $this->assertRequestArrayIsList($objectField, $apiField, $value, true);
 
         try {
-            $hydrated = $objectField === null ? $value : $this->build($objectField, $value);
+            $hydrated = $objectField === null
+                ? $value
+                : $this->buildWithApiField($objectField, $value, $apiField);
         } catch (\Throwable $error) {
+            if ($error instanceof InvalidFieldException && $error->hasArrayElementContext()) {
+                throw $error;
+            }
+
             $elementType = self::arrayElementType($objectField);
             if ($elementType !== null && \is_array($value)) {
                 throw InvalidFieldException::forArrayElement(
@@ -472,6 +526,24 @@ abstract class Entity
         }
     }
 
+    private function buildWithApiField(mixed $objectField, mixed $value, string $apiField): mixed
+    {
+        $objectId = \spl_object_id($this);
+        $hadPreviousApiField = isset(self::$_buildingApiFields[$objectId]);
+        $previousApiField = self::$_buildingApiFields[$objectId] ?? null;
+        self::$_buildingApiFields[$objectId] = $apiField;
+
+        try {
+            return $this->build($objectField, $value);
+        } finally {
+            if ($hadPreviousApiField) {
+                self::$_buildingApiFields[$objectId] = $previousApiField;
+            } else {
+                unset(self::$_buildingApiFields[$objectId]);
+            }
+        }
+    }
+
     /**
      * オブジェクトのフィールド
      *
@@ -507,12 +579,29 @@ abstract class Entity
                     // 配列指定
                     if (static::isHash($value)) {
                         // しかし中身は連想配列
-                        return [$this->buildEntity($class, $value)];
-                    } else {
-                        return array_map(function ($v) use ($class) {
-                            return $this->buildEntity($class, $v);
-                        }, $value);
+                        $value = [$value];
                     }
+                    $entities = [];
+                    foreach ($value as $index => $element) {
+                        try {
+                            $entities[$index] = $this->buildEntity($class, $element);
+                        } catch (InvalidFieldException $error) {
+                            $apiField = self::$_buildingApiFields[\spl_object_id($this)] ?? null;
+                            if ($apiField === null || ! $error->isMissingRequired()) {
+                                throw $error;
+                            }
+
+                            throw InvalidFieldException::forIndexedArrayElement(
+                                static::class,
+                                $apiField,
+                                (int) $index,
+                                $class,
+                                $error,
+                            );
+                        }
+                    }
+
+                    return $entities;
                 }
                 return $this->buildEntity($class, $value);
             }

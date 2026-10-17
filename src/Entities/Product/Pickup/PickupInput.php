@@ -27,6 +27,9 @@ class PickupInput extends Entity implements RequestEntity
         'pickupType' => ['enum' => Type::class],
     ];
 
+    /** 作成・更新で明示を必須とする API フィールド。 */
+    public const REQUIRED_FIELDS = ['pickup_type', 'order_num'];
+
     protected ?Type $pickupType;
     protected ?int $orderNum;
 }
