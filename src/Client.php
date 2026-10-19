@@ -14,6 +14,7 @@ use Shimoning\ColorMeShopApi\Entities\Collection;
 
 use Shimoning\ColorMeShopApi\Services\OAuth;
 use Shimoning\ColorMeShopApi\Services\OAuth\Options as OAuthOptions;
+use Shimoning\ColorMeShopApi\Services\Service;
 use Shimoning\ColorMeShopApi\Entities\OAuth\AccessToken;
 use Shimoning\ColorMeShopApi\Results\OAuth\ErrorResponse as OAuthErrorResponse;
 use Shimoning\ColorMeShopApi\Values\Scopes;
@@ -100,7 +101,10 @@ class Client
      */
     public function getProductPage(?ProductSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
-        return $this->productService($accessToken)->page($parameters ?? new ProductSearchParameters([]), $accessToken);
+        return $this->service(Product::class, $accessToken)->page(
+            $parameters ?? new ProductSearchParameters([]),
+            $accessToken,
+        );
     }
 
     /**
@@ -121,7 +125,7 @@ class Client
      */
     public function getProductStockPage(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
-        return $this->productStockService($accessToken)->page(
+        return $this->service(ProductStockService::class, $accessToken)->page(
             $parameters ?? new StockSearchParameters([]),
             $accessToken,
         );
@@ -146,7 +150,7 @@ class Client
      */
     public function getProduct(int|string $id, ?string $accessToken = null): ProductEntity|Errors
     {
-        return $this->productService($accessToken)->one($id, $accessToken);
+        return $this->service(Product::class, $accessToken)->one($id, $accessToken);
     }
 
     /**
@@ -166,7 +170,7 @@ class Client
         ?VariantSearchParameters $parameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
-        return $this->productVariantService($accessToken)->page($productId, $parameters, $accessToken);
+        return $this->service(ProductVariantService::class, $accessToken)->page($productId, $parameters, $accessToken);
     }
 
     /**
@@ -194,7 +198,7 @@ class Client
         int|string $id,
         ?string $accessToken = null,
     ): ProductVariantEntity|Errors {
-        return $this->productVariantService($accessToken)->one($productId, $id, $accessToken);
+        return $this->service(ProductVariantService::class, $accessToken)->one($productId, $id, $accessToken);
     }
 
     /**
@@ -208,7 +212,7 @@ class Client
      */
     public function getProductImages(int|string $productId, ?string $accessToken = null): Collection|Errors
     {
-        return $this->productImageService($accessToken)->all($productId, $accessToken);
+        return $this->service(ProductImageService::class, $accessToken)->all($productId, $accessToken);
     }
 
     /**
@@ -226,7 +230,7 @@ class Client
         ?string $accessToken = null,
     ): Page|Errors
     {
-        return $this->productAdvertisingService($accessToken)->page($parameters, $accessToken);
+        return $this->service(ProductAdvertisingService::class, $accessToken)->page($parameters, $accessToken);
     }
 
     /**
@@ -247,7 +251,7 @@ class Client
      */
     public function getProductGroup(int|string $id, ?string $accessToken = null): GroupEntity|Errors
     {
-        return $this->productGroupService($accessToken)->one($id, $accessToken);
+        return $this->service(ProductGroupService::class, $accessToken)->one($id, $accessToken);
     }
 
     /**
@@ -266,7 +270,7 @@ class Client
      */
     public function createProduct(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
-        return $this->productService($accessToken)->create($input, $accessToken);
+        return $this->service(Product::class, $accessToken)->create($input, $accessToken);
     }
 
     /**
@@ -279,7 +283,7 @@ class Client
      */
     public function updateProduct(int|string $id, ProductUpdateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
-        return $this->productService($accessToken)->update($id, $input, $accessToken);
+        return $this->service(Product::class, $accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -296,7 +300,8 @@ class Client
         ProductVariantUpdateInput $input,
         ?string $accessToken = null,
     ): ProductVariantEntity|Errors {
-        return $this->productVariantService($accessToken)->update($productId, $id, $input, $accessToken);
+        return $this->service(ProductVariantService::class, $accessToken)
+            ->update($productId, $id, $input, $accessToken);
     }
 
     /**
@@ -312,7 +317,7 @@ class Client
         ProductOptionCreateInput $input,
         ?string $accessToken = null,
     ): ProductOptionEntity|Errors {
-        return $this->productOptionService($accessToken)->create($productId, $input, $accessToken);
+        return $this->service(ProductOptionService::class, $accessToken)->create($productId, $input, $accessToken);
     }
 
     /**
@@ -325,7 +330,7 @@ class Client
      */
     public function deleteProductOption(int|string $productId, int|string $id, ?string $accessToken = null): NoContent|Errors
     {
-        return $this->productOptionService($accessToken)->delete($productId, $id, $accessToken);
+        return $this->service(ProductOptionService::class, $accessToken)->delete($productId, $id, $accessToken);
     }
 
     /**
@@ -342,7 +347,8 @@ class Client
         ProductOptionValueCreateInput $input,
         ?string $accessToken = null,
     ): ProductOptionValueEntity|Errors {
-        return $this->productOptionValueService($accessToken)->create($productId, $optionId, $input, $accessToken);
+        return $this->service(ProductOptionValueService::class, $accessToken)
+            ->create($productId, $optionId, $input, $accessToken);
     }
 
     /**
@@ -359,7 +365,8 @@ class Client
         int|string $id,
         ?string $accessToken = null,
     ): NoContent|Errors {
-        return $this->productOptionValueService($accessToken)->delete($productId, $optionId, $id, $accessToken);
+        return $this->service(ProductOptionValueService::class, $accessToken)
+            ->delete($productId, $optionId, $id, $accessToken);
     }
 
     /**
@@ -375,7 +382,7 @@ class Client
         ProductPickupInput $input,
         ?string $accessToken = null,
     ): ProductPickupEntity|Errors {
-        return $this->productPickupService($accessToken)->create($productId, $input, $accessToken);
+        return $this->service(ProductPickupService::class, $accessToken)->create($productId, $input, $accessToken);
     }
 
     /**
@@ -391,7 +398,7 @@ class Client
         ProductPickupInput $input,
         ?string $accessToken = null,
     ): ProductPickupEntity|Errors {
-        return $this->productPickupService($accessToken)->update($productId, $input, $accessToken);
+        return $this->service(ProductPickupService::class, $accessToken)->update($productId, $input, $accessToken);
     }
 
     /**
@@ -410,7 +417,8 @@ class Client
         PickupType|int|string $pickupType,
         ?string $accessToken = null,
     ): ProductPickupEntity|Errors {
-        return $this->productPickupService($accessToken)->delete($productId, $pickupType, $accessToken);
+        return $this->service(ProductPickupService::class, $accessToken)
+            ->delete($productId, $pickupType, $accessToken);
     }
 
     /**
@@ -431,7 +439,8 @@ class Client
         ?string $accessToken = null,
         ?string $filename = null,
     ): ProductImageEntity|Errors {
-        return $this->productImageService($accessToken)->create($productId, $image, $position, $accessToken, $filename);
+        return $this->service(ProductImageService::class, $accessToken)
+            ->create($productId, $image, $position, $accessToken, $filename);
     }
 
     /**
@@ -444,7 +453,7 @@ class Client
      */
     public function deleteProductImage(int|string $productId, int $position, ?string $accessToken = null): NoContent|Errors
     {
-        return $this->productImageService($accessToken)->delete($productId, $position, $accessToken);
+        return $this->service(ProductImageService::class, $accessToken)->delete($productId, $position, $accessToken);
     }
 
     /**
@@ -460,7 +469,7 @@ class Client
      */
     public function createProductGroup(ProductGroupInput $input, ?string $accessToken = null): GroupEntity|Errors
     {
-        return $this->productGroupService($accessToken)->create($input, $accessToken);
+        return $this->service(ProductGroupService::class, $accessToken)->create($input, $accessToken);
     }
 
     /**
@@ -476,7 +485,7 @@ class Client
         ProductGroupInput $input,
         ?string $accessToken = null,
     ): GroupEntity|Errors {
-        return $this->productGroupService($accessToken)->update($id, $input, $accessToken);
+        return $this->service(ProductGroupService::class, $accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -490,7 +499,7 @@ class Client
      */
     public function createProductCategory(ProductCategoryInput $input, ?string $accessToken = null): BigCategoryEntity|Errors
     {
-        return $this->productCategoryService($accessToken)->create($input, $accessToken);
+        return $this->service(ProductCategoryService::class, $accessToken)->create($input, $accessToken);
     }
 
     /**
@@ -507,7 +516,7 @@ class Client
         ProductCategoryInput $input,
         ?string $accessToken = null,
     ): BigCategoryEntity|Errors {
-        return $this->productCategoryService($accessToken)->update($id, $input, $accessToken);
+        return $this->service(ProductCategoryService::class, $accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -524,7 +533,8 @@ class Client
         ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategoryEntity|Errors {
-        return $this->productCategoryService($accessToken)->createChild($categoryId, $input, $accessToken);
+        return $this->service(ProductCategoryService::class, $accessToken)
+            ->createChild($categoryId, $input, $accessToken);
     }
 
     /**
@@ -542,65 +552,31 @@ class Client
         ChildInput $input,
         ?string $accessToken = null,
     ): SmallCategoryEntity|Errors {
-        return $this->productCategoryService($accessToken)->updateChild($categoryId, $id, $input, $accessToken);
+        return $this->service(ProductCategoryService::class, $accessToken)
+            ->updateChild($categoryId, $id, $input, $accessToken);
     }
 
-    private function productService(?string $accessToken): Product
+    /**
+     * @template T of \Shimoning\ColorMeShopApi\Services\Service
+     * @param class-string<T> $class
+     * @return T
+     */
+    private function service(string $class, ?string $accessToken): Service
     {
-        return new Product($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productVariantService(?string $accessToken): ProductVariantService
-    {
-        return new ProductVariantService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productOptionService(?string $accessToken): ProductOptionService
-    {
-        return new ProductOptionService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productOptionValueService(?string $accessToken): ProductOptionValueService
-    {
-        return new ProductOptionValueService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productPickupService(?string $accessToken): ProductPickupService
-    {
-        return new ProductPickupService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productImageService(?string $accessToken): ProductImageService
-    {
-        return new ProductImageService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productGroupService(?string $accessToken): ProductGroupService
-    {
-        return new ProductGroupService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productCategoryService(?string $accessToken): ProductCategoryService
-    {
-        return new ProductCategoryService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productAdvertisingService(?string $accessToken): ProductAdvertisingService
-    {
-        return new ProductAdvertisingService($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function productStockService(?string $accessToken): ProductStockService
-    {
-        return new ProductStockService($this->effectiveAccessToken($accessToken), $this->httpClient);
+        return new $class($this->effectiveAccessToken($accessToken), $this->httpClient);
     }
 
     private function effectiveAccessToken(?string $accessToken): string
     {
+        $this->rememberAccessToken($accessToken);
+        return $this->accessToken ?? '';
+    }
+
+    private function rememberAccessToken(?string $accessToken): void
+    {
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return $this->accessToken ?? '';
     }
 
     /**
@@ -610,9 +586,7 @@ class Client
      */
     public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
+        $this->rememberAccessToken($accessToken);
         $this->httpClient = $httpClient;
     }
 
@@ -673,10 +647,7 @@ class Client
      */
     public function getShop(?string $accessToken = null): ShopEntity|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return (new Shop($this->accessToken ?? '', $this->httpClient))->get();
+        return $this->service(Shop::class, $accessToken)->get();
     }
 
     /**
@@ -690,10 +661,7 @@ class Client
      */
     public function getGift(?string $accessToken = null): GiftEntity|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return (new Gift($this->accessToken ?? '', $this->httpClient))->get();
+        return $this->service(Gift::class, $accessToken)->get();
     }
 
     /**
@@ -713,7 +681,7 @@ class Client
         ?string $accessToken = null,
     ): Page|Errors {
         return $this
-            ->salesService($accessToken)
+            ->service(SaleService::class, $accessToken)
             ->page($searchParameters ?? new SalesSearchParameters([]), $accessToken);
     }
 
@@ -742,7 +710,7 @@ class Client
      */
     public function getSaleStat(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
     {
-        return $this->salesService($accessToken)->stat($dateTime, $accessToken);
+        return $this->service(SaleService::class, $accessToken)->stat($dateTime, $accessToken);
     }
 
     /**
@@ -768,7 +736,7 @@ class Client
      */
     public function getSale(int|string $id, ?string $accessToken = null): Sale|Errors
     {
-        return $this->salesService($accessToken)->one($id, $accessToken);
+        return $this->service(SaleService::class, $accessToken)->one($id, $accessToken);
     }
 
     /**
@@ -792,7 +760,7 @@ class Client
         ?bool $reserveStocks = null,
         ?string $accessToken = null,
     ): Sale|Errors {
-        return $this->salesService($accessToken)->create($input, $reserveStocks, $accessToken);
+        return $this->service(SaleService::class, $accessToken)->create($input, $reserveStocks, $accessToken);
     }
 
     /**
@@ -810,7 +778,7 @@ class Client
      */
     public function updateSale(int|string $id, SaleUpdateInput $input, ?string $accessToken = null): Sale|Errors
     {
-        return $this->salesService($accessToken)->update($id, $input, $accessToken);
+        return $this->service(SaleService::class, $accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -831,7 +799,7 @@ class Client
         ?bool $restock = false,
         ?string $accessToken = null,
     ): Sale|Errors {
-        return $this->salesService($accessToken)->cancel($id, $restock, $accessToken);
+        return $this->service(SaleService::class, $accessToken)->cancel($id, $restock, $accessToken);
     }
 
     /**
@@ -852,7 +820,7 @@ class Client
         MailType $mailType,
         ?string $accessToken = null,
     ): bool|Errors {
-        return $this->salesService($accessToken)->sendMail($id, $mailType, $accessToken);
+        return $this->service(SaleService::class, $accessToken)->sendMail($id, $mailType, $accessToken);
     }
 
     /**
@@ -867,14 +835,6 @@ class Client
         return $this->sendSaleMail($id, $mailType, $accessToken);
     }
 
-    private function salesService(?string $accessToken = null): SaleService
-    {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return new SaleService($this->accessToken ?? '', $this->httpClient);
-    }
-
     /**
      * 決済設定の一覧を取得
      *
@@ -886,10 +846,7 @@ class Client
      */
     public function getPayments(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return (new Payment($this->accessToken ?? '', $this->httpClient))->all();
+        return $this->service(Payment::class, $accessToken)->all();
     }
 
     /**
@@ -903,10 +860,7 @@ class Client
      */
     public function getDeliveries(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return (new Delivery($this->accessToken ?? '', $this->httpClient))->all();
+        return $this->service(Delivery::class, $accessToken)->all();
     }
 
     /**
@@ -920,10 +874,7 @@ class Client
      */
     public function getDeliveryDateSetting(?string $accessToken = null): Date|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return (new Delivery($this->accessToken ?? '', $this->httpClient))->dateSetting();
+        return $this->service(Delivery::class, $accessToken)->dateSetting();
     }
 
     /**
@@ -942,10 +893,7 @@ class Client
         ?CustomerSearchParameters $searchParameters = null,
         ?string $accessToken = null,
     ): Page|Errors {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return (new Customer($this->accessToken ?? '', $this->httpClient))
+        return $this->service(Customer::class, $accessToken)
             ->page($searchParameters ?? new CustomerSearchParameters([]));
     }
 
@@ -974,7 +922,7 @@ class Client
      */
     public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {
-        return $this->customerService($accessToken)->one($id, $accessToken);
+        return $this->service(Customer::class, $accessToken)->one($id, $accessToken);
     }
 
     /**
@@ -988,7 +936,7 @@ class Client
      */
     public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
     {
-        return $this->customerService($accessToken)->create($input, $accessToken);
+        return $this->service(Customer::class, $accessToken)->create($input, $accessToken);
     }
 
     /**
@@ -1006,7 +954,7 @@ class Client
         CustomerUpdateInput $input,
         ?string $accessToken = null,
     ): CustomerEntity|Errors {
-        return $this->customerService($accessToken)->update($id, $input, $accessToken);
+        return $this->service(Customer::class, $accessToken)->update($id, $input, $accessToken);
     }
 
     /**
@@ -1023,18 +971,7 @@ class Client
         PointsInput $input,
         ?string $accessToken = null,
     ): CustomerPoints|Errors {
-        return $this->customerService($accessToken)->changePoints($id, $input, $accessToken);
-    }
-
-    /**
-     * 顧客 API のサービスを、引数のアクセストークンを優先して生成する。
-     */
-    private function customerService(?string $accessToken): Customer
-    {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return new Customer($this->accessToken ?? '', $this->httpClient);
+        return $this->service(Customer::class, $accessToken)->changePoints($id, $input, $accessToken);
     }
 
     /**
@@ -1048,10 +985,7 @@ class Client
      */
     public function getProductGroups(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return $this->productGroupService($accessToken)->all($accessToken);
+        return $this->service(ProductGroupService::class, $accessToken)->all($accessToken);
     }
 
     /**
@@ -1066,9 +1000,6 @@ class Client
      */
     public function getProductCategories(?string $accessToken = null): Collection|Errors
     {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-        return $this->productCategoryService($accessToken)->all($accessToken);
+        return $this->service(ProductCategoryService::class, $accessToken)->all($accessToken);
     }
 }
