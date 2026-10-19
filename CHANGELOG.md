@@ -145,6 +145,12 @@ new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
 
 商品広告の一覧取得 (`GET /v1/product_advertisings`) は、`fields` を指定しても実 API が応答を絞り込まなかった (2026-10-08 の観測) ため、検索条件に `fields` を持たない。
 
+## 0.27.1
+
+### 顧客と受注の一覧で、複数指定の検索条件をカンマ区切りで送る
+
+`ids` / `customer_ids` / `payment_ids` (整数の配列) と `fields` (文字列の配列) を、クエリでカンマ区切りにして送るようにした。0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた (`fields` は中身のない要素を返していた) ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+
 ## 0.27.0
 
 ### 一覧取得の limit の検証
@@ -210,6 +216,34 @@ new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
 
 受注の `Services\Sales` を `Services\Sale` に改名した。旧名は非推奨の別名として残している ([ADR 0031](docs/adr/0031-rename-sales-service-to-sale.md)、[非推奨のクラス名の対応表](docs/class-aliases.md))。在庫一覧の取得は `Services\Product` に統合し、`Services\Stock` を非推奨にした ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
 
+## 0.22.0
+
+### 商品の入力を作成と更新で分けた
+
+作成と更新で共用していた `ProductInput` を `ProductCreateInput` と `ProductUpdateInput` に分け、`ProductInput` は削除した ([ADR 0026](docs/adr/0026-split-product-input-into-create-and-update.md))。更新の呼び出しは `new ProductInput(` を `new ProductUpdateInput(` に、作成の呼び出しは `new ProductCreateInput(` に書き換える。作成で更新専用の 4 項目 (`category_id_small` / `stocks` / `group_ids` / `variants`) を指定していた場合、その指定はもともと反映されていなかった。
+
+### 要求側の配列フィールドに連番でない配列を渡すと例外にした
+
+要求側 Entity の配列フィールドに、キーが 0 から始まる連番でない配列を渡すと、生成時や setter での設定時に `InvalidFieldException` になる ([ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。`array_values()` を通してから渡す。
+
+## 0.20.0
+
+### 受注の更新で、受注 ID を第 1 引数で渡す
+
+0.19.0 までは `$client->updateSale($updater)` のように入力だけを渡し、`SaleUpdateInput` が持つ `id` を path と body の両方に使っていた。受注 ID は第 1 引数で渡し、`SaleUpdateInput` は受注 ID を持たず body にも含めない。`SaleUpdateInput::getId()` は削除したため、受注 ID は取得した受注の `getId()` などから渡す ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。実測では、body の `id` の有無や値 (存在しない ID を含む) で応答と結果に差はなく、path の受注として処理された。ただし観測は値を変えない更新に限られる ([受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
+
+## 0.19.0
+
+### OAuth のトークンのエラー応答から state を外した
+
+`ErrorResponse` から `state` プロパティを削除し、`toArray()` と `toArrayRecursive()` の出力から `state` キーを外した ([ADR 0021](docs/adr/0021-drop-state-from-token-error-response.md))。`getState()` は非推奨として残しており、応答に文字列の `state` があればそれを返し、なければ `null` を返す。
+
+## 0.18.0
+
+### 認可 URL に state を渡せるようにした
+
+`Client::getOAuthUrl()` に、CSRF 対策の `state` を渡せるようにした。
+
 ## 0.14.0
 
 ### 要求側入力クラスの改名
@@ -225,3 +259,15 @@ new ProductSearchParameters(['sort' => ['-sales_price', 'make_date']]);
 `Values\FallbackValue` を導入し、`Values\Furigana` に実装した ([ADR 0017](docs/adr/0017-opt-in-value-fallback.md))。応答側では検証に通らない値でも生の文字列を保持するため、管理画面から入力された数値文字参照を含むフリガナを持つ顧客でも、単体取得と一覧取得が失敗しなくなる。0.13.0 以前は `InvalidFieldException` になっていた。
 
 要求側の厳格さは変わらない。フォールバックは `FallbackValue` を実装した値オブジェクトにだけ適用され、`Values\DateTime` や `Values\Limit` の挙動は変わらない。
+
+## 0.13.0
+
+### 商品グループの表示状態を専用の enum にした
+
+応答の `Group::getDisplayState()` が返す enum を、商品の enum からグループ専用の enum (現在の `Constants\Product\Group\DisplayState`) に変えた。実 API が返す `members_only` を読めるようにするため。
+
+## 0.9.0
+
+### OAuth のエラー応答を専用の型で返す
+
+`Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` (0.25.0 で `exchangeCodeForToken()` に改名) の戻り値が `AccessToken|Errors` から `AccessToken|ErrorResponse|Errors` へ変わった。OAuth エラーを `Errors` だけで判定していたコードには破壊的変更となる。

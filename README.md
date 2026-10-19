@@ -226,12 +226,23 @@ $furigana->isValid();  // false
 
 要求側では従来どおり検証され、検証に通らない値は拒否される。例外の型は経路によって異なり、値オブジェクトを直接構築した場合は `ParameterException`、`CustomerCreateInput` などの要求 Entity を経由した場合は `InvalidFieldException` に包まれる。
 * `Values\Scopes`: `Constants\OAuth\AuthScope` または定義済みスコープ文字列の配列を、OAuth 用のスペース区切り文字列へ変換する
-* `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する ([CHANGELOG の 0.27.0](CHANGELOG.md#0270))
+* `Values\Limit`: 1 以上 100 以下の取得件数を受け付ける。一覧取得の検索条件の `limit` は、API ごとの上限を持つ子クラスで検証する (下の表)
 * `Values\Sort`: 並び順のカラム名と向き (`Constants\SortDirection`) を分けて持つ。向きを省略すると昇順で、`-` で始まるカラム名 (`'-sales_price'`) を向きなしで渡すと降順になる。`-` で始まるカラム名と向きを一緒に渡すと `ParameterException` になる。カラム名が空、`-` が 2 つ以上続く、カンマや空白を含む場合も拒否する。汎用の `Values\Sort` はカラム名そのものを検証しない。API ごとの子クラス (商品一覧の `Values\Product\Sort`) は、受け付けるカラム名を限る
+
+一覧取得の検索条件の `limit` の範囲は次のとおりで、範囲外の値は検索条件の生成時に `InvalidFieldException` になる。上限は実 API で確かめた値である ([ADR 0036](docs/adr/0036-validate-limit-per-api.md)、[ページングの limit の実測記録](docs/api-pagination-limit-observation.md))。
+
+| 検索条件 | 値オブジェクト | 範囲 |
+| --- | --- | --- |
+| `Entities\Product\SearchParameters` | `Values\Product\Limit` | 1 〜 50 |
+| `Entities\Product\Stock\SearchParameters` | `Values\Product\Stock\Limit` | 1 〜 50 |
+| `Entities\Product\Variant\SearchParameters` | `Values\Product\Variant\Limit` | 1 〜 100 |
+| `Entities\Product\Advertising\SearchParameters` | `Values\Product\Advertising\Limit` | 1 〜 250 |
+| `Entities\Sale\SearchParameters` | `Values\Sale\Limit` | 1 〜 100 |
+| `Entities\Customer\SearchParameters` | `Values\Customer\Limit` | 1 〜 100 |
 
 `SaleSearchParameters` や `CustomerSearchParameters` のコンストラクタへ文字列や整数を渡した場合も、対応する値オブジェクトへ内部で変換される。不正な値には `ParameterException` が投げられる。
 
-要求 Entity や検索条件の値オブジェクトのフィールドには、生の値の代わりに値オブジェクトのインスタンスも渡せる (0.29.0 から)。宣言したクラスか、その子クラスのインスタンスはそのまま使う。親クラスのインスタンス (たとえば商品の検索条件に基底の `Values\Limit` や汎用の `Values\Sort`) は、宣言したクラスで作り直して検証し直す。要求側では、検証に通らない値を保持した `Values\FallbackValue` のインスタンス (応答から取り出した `isValid()` が `false` の `Furigana` など) は拒否する ([ADR 0040](docs/adr/0040-accept-value-object-instances.md))。
+要求 Entity や検索条件の値オブジェクトのフィールドには、生の値の代わりに値オブジェクトのインスタンスも渡せる。宣言したクラスか、その子クラスのインスタンスはそのまま使う。親クラスのインスタンス (たとえば商品の検索条件に基底の `Values\Limit` や汎用の `Values\Sort`) は、宣言したクラスで作り直して検証し直す。要求側では、検証に通らない値を保持した `Values\FallbackValue` のインスタンス (応答から取り出した `isValid()` が `false` の `Furigana` など) は拒否する ([ADR 0040](docs/adr/0040-accept-value-object-instances.md))。
 
 各 API に必要なスコープは、`Services` と `Client` の対応するメソッドの PHPDoc に記載している。公式 OpenAPI でスコープの宣言が空の 6 操作 (ショップ・決済・配送の取得、商品グループ一覧・単体、商品カテゴリー一覧) には記載がない。その一覧と推測は [docs/auth-scope-audit.md](docs/auth-scope-audit.md) にまとめている。
 
@@ -259,7 +270,7 @@ $oAuthScopes = new Scopes([
 $oAuthUri = (new Client())->getOAuthUrl($oAuthOptions, $oAuthScopes);
 ```
 
-CSRF 対策の `state` を渡せる (0.18.0 以降)。値の生成と保存はライブラリの責務ではないため、利用者がセッション等に保存し、コールバックで照合する。
+CSRF 対策の `state` を渡せる。値の生成と保存はライブラリの責務ではないため、利用者がセッション等に保存し、コールバックで照合する。
 
 ```php
 session_start(); // フレームワークが開始済みなら不要
@@ -331,11 +342,7 @@ OAuth の必須・任意フィールドが不正な型の場合や、既知の�
 
 トークンエンドポイントのエラー応答 (RFC 6749 §5.2) は `state` を定義しておらず、実 API も返さない (2026-09-30 の観測。[トークンエラー応答の実測記録](docs/api-oauth-token-error-observation.md))。認可リクエストと応答を対応付ける `state` は、上記のとおりコールバックのクエリで受け取って照合するものであり、`ErrorResponse` から取得する値ではない。
 
-0.19.0 で `ErrorResponse` から `state` プロパティを削除し、`toArray()` と `toArrayRecursive()` の出力から `state` キーを外した ([ADR 0021](docs/adr/0021-drop-state-from-token-error-response.md))。`getState()` は非推奨として残しており、応答に文字列の `state` があればそれを返し、なければ `null` を返す。次のメジャーな変更で削除する。応答に含まれた `state` は `getRaw()` から取得できる。
-
-0.9.0 では `Client::exchangeCode2Token()` と `Services\OAuth::exchangeCode2Token()` (0.25.0 で `exchangeCodeForToken()` に改名) の戻り値が
-`AccessToken|Errors` から `AccessToken|ErrorResponse|Errors` へ変わるため、OAuth エラーを
-`Errors` だけで判定していたコードには破壊的変更となる。
+`ErrorResponse` は `state` を持たず、`toArray()` と `toArrayRecursive()` の出力にも `state` キーを含まない ([ADR 0021](docs/adr/0021-drop-state-from-token-error-response.md))。`getState()` は非推奨で、応答に文字列の `state` があればそれを返し、なければ `null` を返す。次のメジャーな変更で削除する。応答に含まれた `state` は `getRaw()` から取得できる。
 
 ここで取得した `$token` は、安全な方法で保存する。アクセストークンの有効期限については公式ドキュメントを確認すること。
 
@@ -361,7 +368,7 @@ if ($shopOrErrors instanceof Errors) {
 #### 受注データのリストを取得
 検索条件とアクセストークンはどちらも省略可能。ただし、`Client` にアクセストークンを設定していない場合は、メソッドの第2引数へ指定する必要がある。
 
-`ids` / `customer_ids` / `payment_ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた (`fields` は中身のない要素を返していた) ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+`ids` / `customer_ids` / `payment_ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
 
 ```php
 $searchParameters = new SaleSearchParameters([
@@ -415,7 +422,7 @@ if ($statOrErrors instanceof Errors) {
 | `getAmountLast7days()` / `getCountLast7days()` | 基準日の 7 日前から基準日の終わりまで (基準日を含む 8 日間) |
 | `getAmountThisMonth()` / `getCountThisMonth()` | 基準日が属する月 |
 
-`last7days` は名前に反して基準日とその前 7 日間の合計 8 日間である。2026-09-29 の実測で、基準日が受注日の 7 日後までは集計に含まれ 8 日後で外れることを確認した (公式 OpenAPI の説明と一致)。
+`last7days` は名前に反して基準日とその前 7 日間の合計 8 日間である。公式 OpenAPI の説明どおりで、実 API でも確かめた (2026-09-29)。
 
 #### 受注データの取得
 ```php
@@ -431,7 +438,7 @@ if ($saleOrErrors instanceof Errors) {
 ```
 
 #### 受注データの作成
-カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る。2026-10-01 に必須項目を欠いた 2 種類の body で観測し、いずれも body の検証より先にこの `401` が返った。成功時の応答の形は公式 OpenAPI に基づいており、実 API では未観測である ([受注作成 API の実測記録](docs/api-sale-create-observation.md))。
+カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る。この `401` は、body の検証より先に返る。成功時の応答の形は公式 OpenAPI に基づいており、実 API では確かめていない ([受注作成 API の実測記録](docs/api-sale-create-observation.md))。
 
 ```php
 $input = new SaleCreateInput([
@@ -459,7 +466,7 @@ $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API �
 
 第 2 引数に `false` を渡すと、在庫を引き当てずに受注を作成する (`$client->createSale($input, false)`)。省略または `null` の場合は `reserve_stocks` を送らず、API の既定に従う。
 
-`payment_id` と `details`、`details[]` の `product_id` / `product_num`、`sale_deliveries[]` の `delivery_id` / `name` / `furigana` / `postal` / `pref_id` / `address1` / `tel` は必須で、欠けていると入力 Entity の生成時に `Exceptions\InvalidFieldException` を投げる (0.35.0 から。0.34.0 までは送信前の `ParameterException`)。明細とお届け先の欠落は、`details[1]` のようにどの要素かをメッセージに含める。`sale_deliveries` 自体は、配送不要の商品だけの受注では省略できるため必須にしていない。
+`payment_id` と `details`、`details[]` の `product_id` / `product_num`、`sale_deliveries[]` の `delivery_id` / `name` / `furigana` / `postal` / `pref_id` / `address1` / `tel` は必須で、欠けていると入力 Entity の生成時に `Exceptions\InvalidFieldException` を投げる。明細とお届け先の欠落は、`details[1]` のようにどの要素かをメッセージに含める。`sale_deliveries` 自体は、配送不要の商品だけの受注では省略できるため必須にしていない。
 
 入れ子 (`customer` / `sale_deliveries[]` / `details[]`) には、配列のほかに組み立て済みの入力インスタンスも渡せる。インスタンスは複製されず、そのまま保持される。
 
@@ -475,7 +482,7 @@ $saleOrErrors = $client->createSale($input); // 在庫を引き当てる (API �
 要求側 Entity は明示したフィールドだけを送信する。JSON ボディの入力 Entity はコンストラクタ配列で
 明示した `null` も送信し、指定しなかったフィールドは送信しない。各種検索条件 Entity も未指定フィールドを
 除外するが、GET クエリでは `http_build_query()` の仕様により明示した `null` も送信されない。
-要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時や setter での設定時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと (0.22.0 以降、[ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。ただし入れ子の入力の配列 (`details` / `sale_deliveries` など) に、すべてのキーが文字列の連想配列を 1 つコンストラクタで渡した場合は、後方互換のため要素 1 件として扱う。setter (`SaleUpdateInput::setSaleDeliveries()` など) ではこの扱いはなく、連番の配列でなければ例外になる。また、商品オプションの作成の `values` (`Product\Option\OptionCreateInput`) は、個別の検証により文字列キーの配列も受け付けない。
+要求側 Entity の配列フィールド (受注の `details` / `sale_deliveries`、検索条件の `ids` など) には、キーが 0 から始まる連番の配列を渡す。`unset()` や絞り込みでキーが飛んだ配列は JSON オブジェクトとして送られてしまうため、生成時や setter での設定時に `InvalidFieldException` になる。`array_values()` を通してから渡すこと ([ADR 0025](docs/adr/0025-reject-non-list-arrays-in-requests.md))。ただし入れ子の入力の配列 (`details` / `sale_deliveries` など) に、すべてのキーが文字列の連想配列を 1 つコンストラクタで渡した場合は、後方互換のため要素 1 件として扱う。setter (`SaleUpdateInput::setSaleDeliveries()` など) ではこの扱いはなく、連番の配列でなければ例外になる。また、商品オプションの作成の `values` (`Product\Option\OptionCreateInput`) は、個別の検証により文字列キーの配列も受け付けない。
 
 ```php
 $updater = new SaleUpdateInput([
@@ -488,14 +495,9 @@ $updater = new SaleUpdateInput([
 $updatedSaleOrErrors = $client->updateSale($saleId, $updater);
 ```
 
-受注 ID は、他の更新 API と同じく第 1 引数で渡す。`SaleUpdateInput` は受注 ID を持たず、body にも
-含めない (0.20.0 以降)。公式 OpenAPI の要求 body に `id` は定義されていない。実測では、body の `id` の
-有無や値 (存在しない ID を含む) で応答と結果に差はなく、path の受注として処理された。ただし観測は値を
-変えない更新に限られる ([受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
-
-0.19.0 までは `$client->updateSale($updater)` のように入力だけを渡し、`SaleUpdateInput` が持つ `id` を
-path と body の両方に使っていた。`SaleUpdateInput::getId()` は削除したため、受注 ID は取得した受注の
-`getId()` などから渡す ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md))。
+受注 ID は、他の更新 API と同じく第 1 引数で渡す。取得した受注の `getId()` などから渡す。`SaleUpdateInput` は受注 ID を持たず、
+body にも含めない。公式 OpenAPI の要求 body に `id` は定義されていない ([ADR 0022](docs/adr/0022-take-sale-id-as-update-argument.md)、
+[受注更新の body に含めた `id` の実測記録](docs/api-sale-update-id-observation.md))。
 
 #### 受注のキャンセル
 第2引数の `$restock` を `true` にすると、キャンセルした商品の在庫を戻す。
@@ -523,7 +525,7 @@ if ($sentOrErrors instanceof Errors) {
 
 ### 顧客
 #### 顧客データの一覧を取得
-`ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。`fields` は公式 OpenAPI に記載がないが、2026-10-08 の観測で実 API が受け付けて応答を絞り込んだ (0.28.0 で追加)。`ids` は 0.27.0 までは配列の形 (`ids[0]=1&ids[1]=2`) で送っており、実 API は HTTP 500 を返していた ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
+`ids` は整数の配列、`fields` は文字列の配列で指定し、クエリではカンマ区切りになる。`fields` は公式 OpenAPI に記載がないが、実 API は受け付けて応答を絞り込む ([検索条件のクエリ形式の実測記録](docs/api-search-query-format-observation.md))。
 
 ```php
 $searchParameters = new CustomerSearchParameters([
@@ -587,7 +589,7 @@ $customerOrErrors = $client->createCustomer(new CustomerCreateInput([
 ]));
 ```
 
-`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は必須で、いずれかを指定しないと `CustomerCreateInput` の生成時に `InvalidFieldException` が投げられる (0.35.0 から。0.34.0 までは送信前の `ParameterException`)。`add_member` に `true` を指定すると会員として登録される。
+`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は必須で、いずれかを指定しないと `CustomerCreateInput` の生成時に `InvalidFieldException` が投げられる。`add_member` に `true` を指定すると会員として登録される。
 
 `sex` は公式 OpenAPI の作成 request にないが、実 API では作成時にも反映されることを確認している (2026-09-25)。`tel_mobile` は作成・更新とも書き込めないため入力に持たない。
 
@@ -606,7 +608,7 @@ $customerOrErrors = $client->updateCustomer($customerId, new CustomerUpdateInput
 
 明示したフィールドだけを送る部分更新で、省略したフィールドは変更されない。明示した `null` はクリア要求として送信される。ただし `address2` だけは、実 API が省略すると空にするため (2026-10-09 の観測、[更新 API で送らなかった項目の扱いの実測記録](docs/api-partial-update-observation.md))、必須として扱う。`address2` を消す場合は、`null` を明示的にセットする。
 
-公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、`address2` とあわせて、いずれかを指定しないと `CustomerUpdateInput` の生成時に `InvalidFieldException` が投げられる (0.35.0 から。0.34.0 までは送信前の `ParameterException`。`address2` は 0.30.0 から必須、[ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
+公式 OpenAPI の更新 request に required 指定はないが、実 API は `name` と `address1` を必須とするため (2026-09-25 の観測)、`address2` とあわせて、いずれかを指定しないと `CustomerUpdateInput` の生成時に `InvalidFieldException` が投げられる ([ADR 0041](docs/adr/0041-require-address2-in-customer-update.md))。`name` / `mail` / `pref_id` / `postal` / `address1` / `tel` は nullable ではないため、明示した `null` は `InvalidFieldException` で拒否される。
 
 `Client::updateCustomer()` は、内部で `Services\Customer::update(int|string $id, CustomerUpdateInput $input, ?string $accessToken = null)` を呼び出す。
 
@@ -772,7 +774,6 @@ if ($updatedOrErrors instanceof Errors) {
 
 `stocks` は整数 (在庫数の絶対値) か、`{"increment": n}` (増減) のどちらかを渡す。増減は `StocksIncrementInput`、`variants` の要素は `VariantInput` で表しており、配列のほかに組み立て済みのインスタンスも渡せる (例: `'stocks' => new StocksIncrementInput(['increment' => 5])`、`'variants' => [new VariantInput(['option1_value' => 'S', 'stocks' => 3])]`)。`increment` 以外のキーや、`variants` の要素の定義にないキー・空の要素・`stocks` の `null` は `InvalidFieldException` になる ([ADR 0027](docs/adr/0027-model-product-stocks-and-variants-as-entities.md))。
 
-0.22.0 で、作成と更新で共用していた `ProductInput` を `ProductCreateInput` と `ProductUpdateInput` に分け、`ProductInput` は削除した ([ADR 0026](docs/adr/0026-split-product-input-into-create-and-update.md))。更新の呼び出しは `new ProductInput(` を `new ProductUpdateInput(` に、作成の呼び出しは `new ProductCreateInput(` に書き換える。作成で更新専用の 4 項目を指定していた場合、その指定はもともと反映されていなかった。
 商品自体を削除する API は公式に存在しない。
 
 #### バリエーションを更新
@@ -818,7 +819,7 @@ $client->deleteProductOption($productId, $optionId); // NoContent|Errors
 
 #### おすすめ商品情報 (ピックアップ) を作成・更新・削除
 `pickup_type` は `Constants\Product\Pickup\Type` の値 (`0` おすすめ / `1` 売れ筋 / `3` 新着 / `4` イチオシ) または同 enum のインスタンスで指定する。
-作成と更新では `pickup_type` と `order_num` が必須で、いずれかを指定しないと `PickupInput` の生成時に `InvalidFieldException` が投げられる (0.35.0 から。0.34.0 までは送信前の `ParameterException`)。
+作成と更新では `pickup_type` と `order_num` が必須で、いずれかを指定しないと `PickupInput` の生成時に `InvalidFieldException` が投げられる。
 削除だけは他の DELETE と異なり `200` で削除済みの `Pickup` を返す。削除の種別に `Constants\Product\Pickup\Type` にない値を渡すと送信前に `ParameterException` になる。
 
 ```php
@@ -905,10 +906,10 @@ if ($updatedOrErrors instanceof Errors) {
 }
 ```
 
-実 API の観測 (2026-09-21) では、グループの `meta_tag` は初回設定だけが永続化され、以後の更新 (一部キーのみ、全キー `null`、`meta_tag` 自体の `null` を含む) は応答には反映されるが GET では初回設定の値のままだった (API 側の挙動と考えられ、未解決)。詳細は [商品 API 応答構造の実測記録](docs/api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)。
+実 API では、グループの `meta_tag` は初回設定だけが保存され、以後の更新は応答には反映されるが、GET では初回設定の値のまま返る (2026-09-21 の観測。API 側の挙動と考えられる)。詳細は [商品 API 応答構造の実測記録](docs/api-product-structure.md#2026-09-21-の追加観測グループカテゴリーの書き込み-smoke-test)。
 
 `display_state` は `showing` / `hidden` / `members_only` (`GroupInput::WRITABLE_DISPLAY_STATES`。`Constants\Product\Group\DisplayState` の値、または同 enum のインスタンス) を受け付け、`showing_for_members` / `sale_for_members` は生成時に `InvalidFieldException` になる (実 API の PUT でも 422)。
-応答の `Group::getDisplayState()` は `Constants\Product\Group\DisplayState` を返す (0.13.0 で商品の enum から変更。実 API が返す `members_only` を読めるようにするため)。`Constants\Product\Group\DisplayState` は実測の 3 値に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` / `sale_for_members` も応答の受理のみを目的として持つ (管理画面等で設定された既存グループが返す可能性を否定できないため。読み取りでは未観測)。
+応答の `Group::getDisplayState()` は `Constants\Product\Group\DisplayState` を返す。グループ専用の enum で、実 API が返す `members_only` も読める。`Constants\Product\Group\DisplayState` は実測の 3 値に加え、公式 OpenAPI の `productGroup` response 定義にある `showing_for_members` / `sale_for_members` も応答の受理のみを目的として持つ (管理画面等で設定された既存グループが返す可能性を否定できないため。読み取りでは未観測)。
 
 ### 商品カテゴリー
 #### 商品カテゴリー一覧を取得
@@ -1071,7 +1072,7 @@ if ($stocksOrErrors instanceof Errors) {
 
 `category` と `images` は商品 API と同じ形のため、`Product\CategoryIds` と `Product\Image` を返す。実測の詳細は [docs/api-stock-structure.md](docs/api-stock-structure.md) にある。
 
-`Client::getProductStockPage()` は、内部で `Services\Product\Stock::page(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。`Services\Stock` は 0.25.0 で非推奨にした。`Services\Stock::page()` は `Services\Product\Stock::page()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
+`Client::getProductStockPage()` は、内部で `Services\Product\Stock::page(SearchParameters $parameters, ?string $accessToken = null)` を呼び出す。非推奨の `Services\Stock::page()` は `Services\Product\Stock::page()` に委譲しており、次のメジャーな変更で削除する ([ADR 0032](docs/adr/0032-merge-stock-service-into-product-service.md))。
 ### ギフト
 #### ギフト設定を取得
 ```php
