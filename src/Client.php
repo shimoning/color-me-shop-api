@@ -91,6 +91,344 @@ class Client
     protected ?ClientInterface $httpClient;
 
     /**
+     * @param string|null $accessToken
+     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
+     * @return void
+     */
+    public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
+    {
+        $this->rememberAccessToken($accessToken);
+        $this->httpClient = $httpClient;
+    }
+
+    /**
+     * OAuthアプリケーションの登録のための URL を取得する
+     *
+     * state の取り扱いの詳細は {@see OAuth::getUrl()} を参照。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86#oauth%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E7%99%BB%E9%8C%B2
+     * @param OAuthOptions $options
+     * @param Scopes $scopes
+     * @param string|null $state CSRF 対策に使用する state (省略時はクエリに含めない)
+     * @return string
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException state に空文字を指定した場合
+     */
+    public function getOAuthUrl(OAuthOptions $options, Scopes $scopes, ?string $state = null): string
+    {
+        return (new OAuth($options, $this->httpClient))->getUrl($scopes, $state);
+    }
+
+    /**
+     * 認可コードをアクセストークンに交換
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86#%E8%AA%8D%E5%8F%AF%E3%82%B3%E3%83%BC%E3%83%89%E3%82%92%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%AB%E4%BA%A4%E6%8F%9B
+     * @param OAuthOptions $options
+     * @param string $code
+     * @return AccessToken|OAuthErrorResponse|Errors
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function exchangeCodeForToken(
+        OAuthOptions $options,
+        string $code,
+    ): AccessToken|OAuthErrorResponse|Errors
+    {
+        return (new OAuth($options, $this->httpClient))->exchangeCodeForToken($code);
+    }
+
+    /**
+     * @deprecated 0.25.0 exchangeCodeForToken() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function exchangeCode2Token(
+        OAuthOptions $options,
+        string $code,
+    ): AccessToken|OAuthErrorResponse|Errors {
+        return $this->exchangeCodeForToken($options, $code);
+    }
+
+    /**
+     * ショップ情報の取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop/operation/getShop
+     * @param string|null $accessToken
+     * @return ShopEntity|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getShop(?string $accessToken = null): ShopEntity|Errors
+    {
+        return $this->service(Shop::class, $accessToken)->get();
+    }
+
+    /**
+     * 受注データのリストを取得
+     *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
+     * @param SalesSearchParameters|null $searchParameters
+     * @param string|null $accessToken
+     * @return Page<Sale>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getSalePage(
+        ?SalesSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this
+            ->service(SaleService::class, $accessToken)
+            ->page($searchParameters ?? new SalesSearchParameters([]), $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getSalePage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function getSales(
+        ?SalesSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->getSalePage($searchParameters, $accessToken);
+    }
+
+    /**
+     * 売上集計の取得
+     *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
+     * @param \DateTimeInterface $dateTime
+     * @param string|null $accessToken
+     * @return SaleStat|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getSaleStat(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
+    {
+        return $this->service(SaleService::class, $accessToken)->stat($dateTime, $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 getSaleStat() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function statSales(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
+    {
+        return $this->getSaleStat($dateTime, $accessToken);
+    }
+
+    /**
+     * 受注データの取得
+     *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
+     * @param integer|string $id
+     * @param string|null $accessToken
+     * @return Sale|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getSale(int|string $id, ?string $accessToken = null): Sale|Errors
+    {
+        return $this->service(SaleService::class, $accessToken)->one($id, $accessToken);
+    }
+
+    /**
+     * 受注データを作成する。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す (2026-10-01)。
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
+     * @param SaleCreateInput $input
+     * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
+     * @param string|null $accessToken
+     * @return Sale|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-sale-create-observation.md
+     */
+    public function createSale(
+        SaleCreateInput $input,
+        ?bool $reserveStocks = null,
+        ?string $accessToken = null,
+    ): Sale|Errors {
+        return $this->service(SaleService::class, $accessToken)->create($input, $reserveStocks, $accessToken);
+    }
+
+    /**
+     * 受注データの更新
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
+     * @param int|string $id
+     * @param SaleUpdateInput $input
+     * @param string|null $accessToken
+     * @return Sale|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateSale(int|string $id, SaleUpdateInput $input, ?string $accessToken = null): Sale|Errors
+    {
+        return $this->service(SaleService::class, $accessToken)->update($id, $input, $accessToken);
+    }
+
+    /**
+     * 受注のキャンセル
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
+     * @param integer|string $id
+     * @param boolean|null $restock
+     * @param string|null $accessToken
+     * @return Sale|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function cancelSale(
+        int|string $id,
+        ?bool $restock = false,
+        ?string $accessToken = null,
+    ): Sale|Errors {
+        return $this->service(SaleService::class, $accessToken)->cancel($id, $restock, $accessToken);
+    }
+
+    /**
+     * メールの送信
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/sendSalesMail
+     * @param integer|string $id
+     * @param MailType $mailType
+     * @param string|null $accessToken
+     * @return true|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function sendSaleMail(
+        int|string $id,
+        MailType $mailType,
+        ?string $accessToken = null,
+    ): bool|Errors {
+        return $this->service(SaleService::class, $accessToken)->sendMail($id, $mailType, $accessToken);
+    }
+
+    /**
+     * @deprecated 0.25.0 sendSaleMail() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function sendSalesMail(
+        int|string $id,
+        MailType $mailType,
+        ?string $accessToken = null,
+    ): bool|Errors {
+        return $this->sendSaleMail($id, $mailType, $accessToken);
+    }
+
+    /**
+     * 顧客データのリストを取得
+     *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
+     * @param CustomerSearchParameters|null $searchParameters
+     * @param string|null $accessToken
+     * @return Page<CustomerEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getCustomerPage(
+        ?CustomerSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->service(Customer::class, $accessToken)
+            ->page($searchParameters ?? new CustomerSearchParameters([]));
+    }
+
+    /**
+     * @deprecated 0.25.0 getCustomerPage() を使うこと。
+     * @see docs/adr/0033-unify-client-and-service-method-names.md
+     */
+    public function getCustomers(
+        ?CustomerSearchParameters $searchParameters = null,
+        ?string $accessToken = null,
+    ): Page|Errors {
+        return $this->getCustomerPage($searchParameters, $accessToken);
+    }
+
+    /**
+     * 顧客データの取得
+     *
+     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
+     * @param integer|string $id
+     * @param string|null $accessToken
+     * @return CustomerEntity|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
+    {
+        return $this->service(Customer::class, $accessToken)->one($id, $accessToken);
+    }
+
+    /**
+     * 顧客データを追加する。必須フィールドの未指定は CustomerCreateInput の構築時に検証される。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
+    {
+        return $this->service(Customer::class, $accessToken)->create($input, $accessToken);
+    }
+
+    /**
+     * 顧客データを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
+     * `name` / `address1` / `address2` の未指定は CustomerUpdateInput の構築時に拒否する。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function updateCustomer(
+        int|string $id,
+        CustomerUpdateInput $input,
+        ?string $accessToken = null,
+    ): CustomerEntity|Errors {
+        return $this->service(Customer::class, $accessToken)->update($id, $input, $accessToken);
+    }
+
+    /**
+     * 顧客のショップポイントを増減する。正の値が加算、負の値が減算。
+     *
+     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function changeCustomerPoints(
+        int|string $id,
+        PointsInput $input,
+        ?string $accessToken = null,
+    ): CustomerPoints|Errors {
+        return $this->service(Customer::class, $accessToken)->changePoints($id, $input, $accessToken);
+    }
+
+    /**
      * 商品一覧を取得する。
      *
      * 必要な scope: `read_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS})
@@ -114,30 +452,6 @@ class Client
     public function getProducts(?ProductSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
     {
         return $this->getProductPage($parameters, $accessToken);
-    }
-
-    /**
-     * 在庫情報一覧を取得する。
-     *
-     * @return Page<\Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getProductStockPage(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
-    {
-        return $this->service(ProductStockService::class, $accessToken)->page(
-            $parameters ?? new StockSearchParameters([]),
-            $accessToken,
-        );
-    }
-
-    /**
-     * @deprecated 0.25.0 getProductStockPage() を使うこと。
-     * @see docs/adr/0033-unify-client-and-service-method-names.md
-     */
-    public function getStocks(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
-    {
-        return $this->getProductStockPage($parameters, $accessToken);
     }
 
     /**
@@ -457,6 +771,20 @@ class Client
     }
 
     /**
+     * 商品グループ一覧を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
+     * @param string|null $accessToken
+     * @return Collection<GroupEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductGroups(?string $accessToken = null): Collection|Errors
+    {
+        return $this->service(ProductGroupService::class, $accessToken)->all($accessToken);
+    }
+
+    /**
      * 商品グループを作成する。
      *
      * `display_state` は `showing` / `hidden` / `members_only` に限り、応答専用の2値は構築時に拒否する。
@@ -486,6 +814,21 @@ class Client
         ?string $accessToken = null,
     ): GroupEntity|Errors {
         return $this->service(ProductGroupService::class, $accessToken)->update($id, $input, $accessToken);
+    }
+
+    /**
+     * 商品カテゴリー一覧を取得
+     *
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
+     * @param string|null $accessToken
+     * @return Collection<BigCategoryEntity|SmallCategoryEntity>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException 実効アクセストークンが空文字、または categories が配列以外の場合
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException Category::fromArray() で API フィールドが不正、または categories の要素が配列以外の場合
+     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     */
+    public function getProductCategories(?string $accessToken = null): Collection|Errors
+    {
+        return $this->service(ProductCategoryService::class, $accessToken)->all($accessToken);
     }
 
     /**
@@ -557,285 +900,6 @@ class Client
     }
 
     /**
-     * @template T of \Shimoning\ColorMeShopApi\Services\Service
-     * @param class-string<T> $class
-     * @return T
-     */
-    private function service(string $class, ?string $accessToken): Service
-    {
-        return new $class($this->effectiveAccessToken($accessToken), $this->httpClient);
-    }
-
-    private function effectiveAccessToken(?string $accessToken): string
-    {
-        $this->rememberAccessToken($accessToken);
-        return $this->accessToken ?? '';
-    }
-
-    private function rememberAccessToken(?string $accessToken): void
-    {
-        if ($accessToken !== null) {
-            $this->accessToken = $accessToken;
-        }
-    }
-
-    /**
-     * @param string|null $accessToken
-     * @param ClientInterface|null $httpClient HTTP クライアント (省略時は Guzzle のデフォルト)
-     * @return void
-     */
-    public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
-    {
-        $this->rememberAccessToken($accessToken);
-        $this->httpClient = $httpClient;
-    }
-
-    /**
-     * OAuthアプリケーションの登録のための URL を取得する
-     *
-     * state の取り扱いの詳細は {@see OAuth::getUrl()} を参照。
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86#oauth%E3%82%A2%E3%83%97%E3%83%AA%E3%82%B1%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E7%99%BB%E9%8C%B2
-     * @param OAuthOptions $options
-     * @param Scopes $scopes
-     * @param string|null $state CSRF 対策に使用する state (省略時はクエリに含めない)
-     * @return string
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException state に空文字を指定した場合
-     */
-    public function getOAuthUrl(OAuthOptions $options, Scopes $scopes, ?string $state = null): string
-    {
-        return (new OAuth($options, $this->httpClient))->getUrl($scopes, $state);
-    }
-
-    /**
-     * 認可コードをアクセストークンに交換
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#section/API/%E5%88%A9%E7%94%A8%E6%89%8B%E9%A0%86#%E8%AA%8D%E5%8F%AF%E3%82%B3%E3%83%BC%E3%83%89%E3%82%92%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%AB%E4%BA%A4%E6%8F%9B
-     * @param OAuthOptions $options
-     * @param string $code
-     * @return AccessToken|OAuthErrorResponse|Errors
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function exchangeCodeForToken(
-        OAuthOptions $options,
-        string $code,
-    ): AccessToken|OAuthErrorResponse|Errors
-    {
-        return (new OAuth($options, $this->httpClient))->exchangeCodeForToken($code);
-    }
-
-    /**
-     * @deprecated 0.25.0 exchangeCodeForToken() を使うこと。
-     * @see docs/adr/0033-unify-client-and-service-method-names.md
-     */
-    public function exchangeCode2Token(
-        OAuthOptions $options,
-        string $code,
-    ): AccessToken|OAuthErrorResponse|Errors {
-        return $this->exchangeCodeForToken($options, $code);
-    }
-
-
-    /**
-     * ショップ情報の取得
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/shop/operation/getShop
-     * @param string|null $accessToken
-     * @return ShopEntity|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getShop(?string $accessToken = null): ShopEntity|Errors
-    {
-        return $this->service(Shop::class, $accessToken)->get();
-    }
-
-    /**
-     * ギフト設定を取得
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/gift/operation/getGift
-     * @param string|null $accessToken
-     * @return GiftEntity|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getGift(?string $accessToken = null): GiftEntity|Errors
-    {
-        return $this->service(Gift::class, $accessToken)->get();
-    }
-
-    /**
-     * 受注データのリストを取得
-     *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSales
-     * @param SalesSearchParameters|null $searchParameters
-     * @param string|null $accessToken
-     * @return Page<Sale>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getSalePage(
-        ?SalesSearchParameters $searchParameters = null,
-        ?string $accessToken = null,
-    ): Page|Errors {
-        return $this
-            ->service(SaleService::class, $accessToken)
-            ->page($searchParameters ?? new SalesSearchParameters([]), $accessToken);
-    }
-
-    /**
-     * @deprecated 0.25.0 getSalePage() を使うこと。
-     * @see docs/adr/0033-unify-client-and-service-method-names.md
-     */
-    public function getSales(
-        ?SalesSearchParameters $searchParameters = null,
-        ?string $accessToken = null,
-    ): Page|Errors {
-        return $this->getSalePage($searchParameters, $accessToken);
-    }
-
-    /**
-     * 売上集計の取得
-     *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/statSale
-     * @param \DateTimeInterface $dateTime
-     * @param string|null $accessToken
-     * @return SaleStat|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getSaleStat(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
-    {
-        return $this->service(SaleService::class, $accessToken)->stat($dateTime, $accessToken);
-    }
-
-    /**
-     * @deprecated 0.25.0 getSaleStat() を使うこと。
-     * @see docs/adr/0033-unify-client-and-service-method-names.md
-     */
-    public function statSales(\DateTimeInterface $dateTime, ?string $accessToken = null): SaleStat|Errors
-    {
-        return $this->getSaleStat($dateTime, $accessToken);
-    }
-
-    /**
-     * 受注データの取得
-     *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/getSale
-     * @param integer|string $id
-     * @param string|null $accessToken
-     * @return Sale|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getSale(int|string $id, ?string $accessToken = null): Sale|Errors
-    {
-        return $this->service(SaleService::class, $accessToken)->one($id, $accessToken);
-    }
-
-    /**
-     * 受注データを作成する。
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す (2026-10-01)。
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
-     * @param SaleCreateInput $input
-     * @param bool|null $reserveStocks 在庫を引き当てるか。null の場合はクエリへ含めない
-     * @param string|null $accessToken
-     * @return Sale|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     * @see docs/api-sale-create-observation.md
-     */
-    public function createSale(
-        SaleCreateInput $input,
-        ?bool $reserveStocks = null,
-        ?string $accessToken = null,
-    ): Sale|Errors {
-        return $this->service(SaleService::class, $accessToken)->create($input, $reserveStocks, $accessToken);
-    }
-
-    /**
-     * 受注データの更新
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/updateSale
-     * @param int|string $id
-     * @param SaleUpdateInput $input
-     * @param string|null $accessToken
-     * @return Sale|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function updateSale(int|string $id, SaleUpdateInput $input, ?string $accessToken = null): Sale|Errors
-    {
-        return $this->service(SaleService::class, $accessToken)->update($id, $input, $accessToken);
-    }
-
-    /**
-     * 受注のキャンセル
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/cancelSale
-     * @param integer|string $id
-     * @param boolean|null $restock
-     * @param string|null $accessToken
-     * @return Sale|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function cancelSale(
-        int|string $id,
-        ?bool $restock = false,
-        ?string $accessToken = null,
-    ): Sale|Errors {
-        return $this->service(SaleService::class, $accessToken)->cancel($id, $restock, $accessToken);
-    }
-
-    /**
-     * メールの送信
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/sendSalesMail
-     * @param integer|string $id
-     * @param MailType $mailType
-     * @param string|null $accessToken
-     * @return true|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function sendSaleMail(
-        int|string $id,
-        MailType $mailType,
-        ?string $accessToken = null,
-    ): bool|Errors {
-        return $this->service(SaleService::class, $accessToken)->sendMail($id, $mailType, $accessToken);
-    }
-
-    /**
-     * @deprecated 0.25.0 sendSaleMail() を使うこと。
-     * @see docs/adr/0033-unify-client-and-service-method-names.md
-     */
-    public function sendSalesMail(
-        int|string $id,
-        MailType $mailType,
-        ?string $accessToken = null,
-    ): bool|Errors {
-        return $this->sendSaleMail($id, $mailType, $accessToken);
-    }
-
-    /**
      * 決済設定の一覧を取得
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/payment/operation/getPayments
@@ -878,128 +942,63 @@ class Client
     }
 
     /**
-     * 顧客データのリストを取得
+     * 在庫情報一覧を取得する。
      *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
-     * @param CustomerSearchParameters|null $searchParameters
-     * @param string|null $accessToken
-     * @return Page<CustomerEntity>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
+     * @return Page<\Shimoning\ColorMeShopApi\Entities\Product\Stock\Stock>|Errors
+     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getCustomerPage(
-        ?CustomerSearchParameters $searchParameters = null,
-        ?string $accessToken = null,
-    ): Page|Errors {
-        return $this->service(Customer::class, $accessToken)
-            ->page($searchParameters ?? new CustomerSearchParameters([]));
+    public function getProductStockPage(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    {
+        return $this->service(ProductStockService::class, $accessToken)->page(
+            $parameters ?? new StockSearchParameters([]),
+            $accessToken,
+        );
     }
 
     /**
-     * @deprecated 0.25.0 getCustomerPage() を使うこと。
+     * @deprecated 0.25.0 getProductStockPage() を使うこと。
      * @see docs/adr/0033-unify-client-and-service-method-names.md
      */
-    public function getCustomers(
-        ?CustomerSearchParameters $searchParameters = null,
-        ?string $accessToken = null,
-    ): Page|Errors {
-        return $this->getCustomerPage($searchParameters, $accessToken);
+    public function getStocks(?StockSearchParameters $parameters = null, ?string $accessToken = null): Page|Errors
+    {
+        return $this->getProductStockPage($parameters, $accessToken);
     }
 
     /**
-     * 顧客データの取得
+     * ギフト設定を取得
      *
-     * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
-     * @param integer|string $id
+     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/gift/operation/getGift
      * @param string|null $accessToken
-     * @return CustomerEntity|Errors
+     * @return GiftEntity|Errors
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      */
-    public function getCustomer(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
+    public function getGift(?string $accessToken = null): GiftEntity|Errors
     {
-        return $this->service(Customer::class, $accessToken)->one($id, $accessToken);
+        return $this->service(Gift::class, $accessToken)->get();
     }
 
     /**
-     * 顧客データを追加する。必須フィールドの未指定は CustomerCreateInput の構築時に検証される。
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomers
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @template T of \Shimoning\ColorMeShopApi\Services\Service
+     * @param class-string<T> $class
+     * @return T
      */
-    public function createCustomer(CustomerCreateInput $input, ?string $accessToken = null): CustomerEntity|Errors
+    private function service(string $class, ?string $accessToken): Service
     {
-        return $this->service(Customer::class, $accessToken)->create($input, $accessToken);
+        return new $class($this->effectiveAccessToken($accessToken), $this->httpClient);
     }
 
-    /**
-     * 顧客データを更新する。明示したフィールドだけを送る部分更新で、明示した `null` はクリア要求として送信する。
-     * `name` / `address1` / `address2` の未指定は CustomerUpdateInput の構築時に拒否する。
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomers
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function updateCustomer(
-        int|string $id,
-        CustomerUpdateInput $input,
-        ?string $accessToken = null,
-    ): CustomerEntity|Errors {
-        return $this->service(Customer::class, $accessToken)->update($id, $input, $accessToken);
-    }
-
-    /**
-     * 顧客のショップポイントを増減する。正の値が加算、負の値が減算。
-     *
-     * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/postCustomerPoints
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function changeCustomerPoints(
-        int|string $id,
-        PointsInput $input,
-        ?string $accessToken = null,
-    ): CustomerPoints|Errors {
-        return $this->service(Customer::class, $accessToken)->changePoints($id, $input, $accessToken);
-    }
-
-    /**
-     * 商品グループ一覧を取得
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductGroups
-     * @param string|null $accessToken
-     * @return Collection<GroupEntity>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが指定されていない場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getProductGroups(?string $accessToken = null): Collection|Errors
+    private function effectiveAccessToken(?string $accessToken): string
     {
-        return $this->service(ProductGroupService::class, $accessToken)->all($accessToken);
+        $this->rememberAccessToken($accessToken);
+        return $this->accessToken ?? '';
     }
 
-    /**
-     * 商品カテゴリー一覧を取得
-     *
-     * @link https://developer.shop-pro.jp/docs/colorme-api#tag/group/operation/getProductCategories
-     * @param string|null $accessToken
-     * @return Collection<BigCategoryEntity|SmallCategoryEntity>|Errors
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException 実効アクセストークンが空文字、または categories が配列以外の場合
-     * @throws \Shimoning\ColorMeShopApi\Exceptions\InvalidFieldException Category::fromArray() で API フィールドが不正、または categories の要素が配列以外の場合
-     * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
-     */
-    public function getProductCategories(?string $accessToken = null): Collection|Errors
+    private function rememberAccessToken(?string $accessToken): void
     {
-        return $this->service(ProductCategoryService::class, $accessToken)->all($accessToken);
+        if ($accessToken !== null) {
+            $this->accessToken = $accessToken;
+        }
     }
 }
