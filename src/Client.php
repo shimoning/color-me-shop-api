@@ -568,10 +568,15 @@ class Client
 
     private function effectiveAccessToken(?string $accessToken): string
     {
+        $this->rememberAccessToken($accessToken);
+        return $this->accessToken ?? '';
+    }
+
+    private function rememberAccessToken(?string $accessToken): void
+    {
         if ($accessToken !== null) {
             $this->accessToken = $accessToken;
         }
-        return $this->accessToken ?? '';
     }
 
     /**
@@ -581,7 +586,7 @@ class Client
      */
     public function __construct(?string $accessToken = null, ?ClientInterface $httpClient = null)
     {
-        $this->effectiveAccessToken($accessToken);
+        $this->rememberAccessToken($accessToken);
         $this->httpClient = $httpClient;
     }
 

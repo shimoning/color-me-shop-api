@@ -334,7 +334,7 @@ class ClientTest extends TestCase
 
     /**
      * 別々の Client インスタンスが、それぞれ自分のアクセストークンで通信すること。
-     * salesService() の内部キャッシュがインスタンスをまたいで共有されないことの回帰テスト。
+     * Client::service() が effectiveAccessToken() で決定したトークンを使うことの回帰テスト。
      */
     public function test_別のClientインスタンスは自分のトークンで通信する(): void
     {
@@ -734,8 +734,8 @@ class ClientTest extends TestCase
     }
 
     /**
-     * getSale() は salesService() と Sale::one() の両方にトークンを渡している。
-     * getCustomer() も同様に Customer のコンストラクタとメソッドの両方に渡している。
+     * getSale() と getCustomer() は Client::service() が effectiveAccessToken() で決定した
+     * トークンをサービスに設定し、サービスのメソッドにも引数のトークンを渡している。
      * 二重に渡していても最終的に使われるトークンが一致することを固定する。
      */
     public function test_トークンを二重に渡す経路でも引数のトークンが使われる(): void
