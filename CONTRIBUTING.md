@@ -84,10 +84,34 @@ composer check
 ```
 
 `composer validate --strict`、PHPStan、PHPUnit をまとめて実行する。個別に動かす場合は
-`composer analyse` と `composer test` を使う。コマンドの一覧は README の「開発者向け」にある。
+`composer analyse` と `composer test` を使う。コマンドの一覧は「開発用のコマンド」の節にある。
 
 CI (`.github/workflows/test.yml`) は `master` への push と PR で動き、PHP 8.1 / 8.2 / 8.3 / 8.4 の
 テスト、静的解析、カバレッジを実行する。
+
+## 開発用のコマンド
+
+リポジトリを `git clone` し、`composer install` を実行した後に以下のコマンドを利用できる。
+
+```bash
+# PHPUnit を実行
+composer test
+
+# PHPStan を実行
+composer analyse
+
+# composer.json の検証、PHPStan、PHPUnit をまとめて実行
+composer check
+
+# HTML のカバレッジレポートを coverage/ に出力
+composer test:coverage
+
+# 対話形式の API クライアントを起動
+composer client
+
+# OAuth のコールバックを受け取るサンプルサーバーを起動
+composer oauth:callback
+```
 
 ## 開発の進め方
 
@@ -143,9 +167,10 @@ PHPDoc は、利用者がそのクラスやメソッドを使うために必要�
 
 ## リリース
 
-1. `release/<バージョン>` ブランチで `composer.json` の `version` を更新し、PR を出す。
-2. マージ後、`master` に同じ名前のタグを打ち、GitHub リリースを作成する。
-3. リリースノートは日本語で、`契約変更 (要注意)` / `追加` / `実 API との差異 (観測に基づく実装)` /
+1. 利用者のコードに影響する変更は、変更を入れる PR で `CHANGELOG.md` の先頭に新しいバージョンの節を足して書く。
+2. `release/<バージョン>` ブランチで `composer.json` の `version` を更新し、PR を出す。
+3. マージ後、`master` に同じ名前のタグを打ち、GitHub リリースを作成する。
+4. リリースノートは日本語で、`契約変更 (要注意)` / `追加` / `実 API との差異 (観測に基づく実装)` /
    `既知の制約` / `設計判断と記録` の構成で書く。破壊的変更は先頭にまとめる。
 
 バージョンは `0.x` のため、破壊的変更はマイナーバージョンの更新で行う。
