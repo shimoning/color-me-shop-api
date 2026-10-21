@@ -75,6 +75,10 @@ API を利用するためには利用登録が必要。
 
 [カラーミーショップ](https://shop-pro.jp/) から、API の動作確認に使うショップを登録しておく。
 
+### 契約プランによる制限
+
+受注データの作成 (`createSale()`) と商品画像の登録 (`createProductImage()`) は、**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`) の `Errors` が返る。商品画像の削除 (`deleteProductImage()`) はプランの制限を受けない。フリープランでは、商品とバリエーションの価格の最低額が 100 円になる。詳しくは [契約プランによる API の制限](docs/api-plan-restrictions.md) にまとめている。
+
 ## How to Use
 
 利用方法。
@@ -438,7 +442,7 @@ if ($saleOrErrors instanceof Errors) {
 ```
 
 #### 受注データの作成
-カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る。この `401` は、body の検証より先に返る。成功時の応答の形は公式 OpenAPI に基づいており、実 API では確かめていない ([受注作成 API の実測記録](docs/api-sale-create-observation.md))。
+カラーミーショップの**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`「現在契約中のプランではご利用いただけません。」) の `Errors` が返る。この `401` は、body の検証より先に返る。成功時の応答の形は公式 OpenAPI に基づいており、実 API では確かめていない ([受注作成 API の実測記録](docs/api-sale-create-observation.md)、[契約プランによる API の制限](docs/api-plan-restrictions.md))。
 
 ```php
 $input = new SaleCreateInput([
@@ -860,8 +864,9 @@ $client->createProductImage($productId, $stream, 1, null, 'image.png'); // ス�
 $client->deleteProductImage($productId, 0); // NoContent|Errors
 ```
 
-**注意**: 画像の作成・削除は契約プランの制限により実 API で成功を検証できていない (実測は `401`)。
-成功時の `201` と応答形 (`position` / `url`) は公式 OpenAPI 定義に基づく。
+`position` は `0` がメイン画像、`1`〜`3` がサブ画像、`4`〜`49` が追加画像である。メイン画像を削除すると、サムネイルも消え、商品の `image_url` と `thumbnail_image_url` は `null` になる。画像を削除しても、ほかの画像の `position` は詰められない (たとえば `2` を削除しても `3` は `3` のまま)。画像は配列の何番目かではなく、`position` の値で指定する。
+
+**注意**: 画像の登録はプレミアムプランでのみ利用でき、それ以外のプランでは `401` (code `401200`) になる ([契約プランによる API の制限](docs/api-plan-restrictions.md))。登録の成功時の `201` と応答形 (`position` / `url`) は公式 OpenAPI 定義に基づき、実 API では確かめていない。削除は、画像の登録が `401` になるショップでも `204` で成功した (2026-10-21、[商品応答構造の実測記録](docs/api-product-structure.md#2026-10-21-の追加観測画像の削除))。
 
 ### 商品グループ
 #### 商品グループ一覧を取得

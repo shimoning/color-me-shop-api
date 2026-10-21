@@ -173,7 +173,7 @@
 | `position` | integer | 要素内に常に存在 | integer / 未指定 |
 | `url` | string | 要素内に常に存在 | string / 未指定 |
 
-商品本体の `product.images[]` は `position`、`src`、`mobile` を持つ追加画像の構造で、画像専用 GET は `position` と `url` を持つ。構造だけでなく内容も一対一には対応しないため、別の画像集合として扱う。
+商品本体の `product.images[]` は `position`、`src`、`mobile` を持つ、サブ画像と追加画像の構造で、画像専用 GET は `position` と `url` を持つ。構造だけでなく内容も一対一には対応しないため、別の画像集合として扱う。
 
 #### 2026-10-05 の追加観測（商品本体の画像との対応）
 
