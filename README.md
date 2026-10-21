@@ -77,7 +77,7 @@ API を利用するためには利用登録が必要。
 
 ### 契約プランによる制限
 
-受注データの作成 (`createSale()`) と商品画像の登録 (`createProductImage()`) は、**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`) の `Errors` が返る。商品画像の削除 (`deleteProductImage()`) はプランの制限を受けない。フリープランでは、商品とバリエーションの価格の最低額が 100 円になる。詳しくは [契約プランによる API の制限](docs/api-plan-restrictions.md) にまとめている。
+受注データの作成 (`createSale()`) と商品画像の登録 (`createProductImage()`) は、**プレミアムプランでのみ**利用できる。それ以外のプランでは `401` (code `401200`) の `Errors` が返る。商品画像の削除 (`deleteProductImage()`) は、公式 OpenAPI にプランの制限の記載がなく、画像の登録が `401` になるショップでも成功した。フリープランでは、商品とバリエーションの価格の最低額が 100 円になる。詳しくは [契約プランによる API の制限](docs/api-plan-restrictions.md) にまとめている。
 
 ## How to Use
 
