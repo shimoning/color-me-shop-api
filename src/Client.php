@@ -338,7 +338,7 @@ class Client
      *
      * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
      *
-     * 会員ランクの項目 (`membership`) と検索条件の `membership_id` は、公式の「会員ランク」アプリの契約が前提。アプリの契約がないため、実 API で未検証。
+     * 会員ランク (`membership`) に値が入る応答と、検索条件の `membership_id` での絞り込みは、公式の「会員ランク」アプリの契約が前提。アプリの契約がないため、実 API で未検証。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
      * @param CustomerSearchParameters|null $searchParameters
@@ -372,7 +372,7 @@ class Client
      *
      * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
      *
-     * 会員ランクの項目 (`membership`) は、公式の「会員ランク」アプリの契約が前提。アプリの契約がないため、実 API で未検証。
+     * 会員ランク (`membership`) に値が入る応答は、公式の「会員ランク」アプリの契約が前提。アプリの契約がないため、実 API で未検証。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
      * @param integer|string $id
