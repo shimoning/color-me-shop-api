@@ -173,7 +173,7 @@
 | `position` | integer | 要素内に常に存在 | integer / 未指定 |
 | `url` | string | 要素内に常に存在 | string / 未指定 |
 
-商品本体の `product.images[]` は `position`、`src`、`mobile` を持つ追加画像の構造で、画像専用 GET は `position` と `url` を持つ。構造だけでなく内容も一対一には対応しないため、別の画像集合として扱う。
+商品本体の `product.images[]` は `position`、`src`、`mobile` を持つ、サブ画像と追加画像の構造で、画像専用 GET は `position` と `url` を持つ。構造だけでなく内容も一対一には対応しないため、別の画像集合として扱う。
 
 #### 2026-10-05 の追加観測（商品本体の画像との対応）
 
@@ -297,7 +297,7 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 
 ### 画像 API
 
-`POST /v1/products/{product_id}/images` へ仕様で許可された PNG と `position` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `errors[]` に `code: 401200`、`message: string`、`status: 401` を持った。画像作成の 201、成功時の `product_image`、画像 DELETE の 204、`position` の成功時動作は未観測であり、公式 OpenAPI 定義だけが根拠である。
+`POST /v1/products/{product_id}/images` へ仕様で許可された PNG と `position` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `errors[]` に `code: 401200`、`message: string`、`status: 401` を持った。画像作成の 201、成功時の `product_image`、`position` の成功時動作は未観測であり、公式 OpenAPI 定義だけが根拠である。画像 DELETE は、この時点では存在しない位置への 422 だけを観測しており（後述）、成功の 204 は [2026-10-21 の追加観測](#2026-10-21-の追加観測画像の削除) で確かめた。
 
 ### エラー応答
 
@@ -395,6 +395,32 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 作成した商品は、削除 API がないためテスト用ショップに非掲載のまま残っている。4 項目を同時に送ったため、
 個々の項目を単独で送った場合の扱いは確かめていない。観測は各 1 回である。
 
+### 2026-10-21 の追加観測（画像の削除）
+
+収集日は **2026-10-21（Asia/Tokyo）**、対象は同じテスト用ショップ。名前が「【検証】」で始まる検証用商品に、利用者が管理画面から消してよい画像を足し、その商品のサブ画像とメイン画像を順に削除した。公式 OpenAPI の画像削除は、`position` の `0` をメイン画像、`1`〜`3` をサブ画像、`4`〜`49` を追加画像とし、`0` の削除ではメイン画像とサムネイルが消えると説明している。実 ID、固有名、画像 URL、ショップ識別子、認証情報は記録しない。テスト用ショップのショップ情報 GET の `contract_plan` は `unknown` で、契約プランは API からは分からない。
+
+サブ画像 (`position: 1`) は、本ライブラリを使わず、Guzzle で `DELETE /v1/products/{product_id}/images/1.json` を送った。メイン画像 (`position: 0`) は、本ライブラリの `Client::deleteProductImage()` で送った（`.json` を付けない `/images/0`）。どちらも 1 回だけ送り、10 秒後に商品本体 GET と画像専用 GET で確かめた。
+
+| 観測 | サブ画像 (`position: 1`) | メイン画像 (`position: 0`) |
+| --- | --- | --- |
+| 削除前 | 商品本体の `images[]` は `position: 1` の 1 件。`image_url` もあった | 画像専用 GET の `product.images[]` は `position: 0` の 1 件。商品本体の `image_url` と `thumbnail_image_url` は文字列 |
+| DELETE | **204**、本文は空 | **204**、本文は空。ライブラリは `NoContent` を返した |
+| 10 秒後の商品本体 GET | `images[]` は空配列。`image_url` は残った | `image_url` と `thumbnail_image_url` は、キーが残ったまま **`null`**（一覧と単体の GET で同じ）。`images[]` は空配列 |
+| 10 秒後の画像専用 GET | `product.images[]` は `position: 0` だけ。要素は `position` と `url` を持った | `product.images[]` は空配列 |
+
+**画像の作成が 401（code 401200）になる同じショップで、サブ画像とメイン画像の削除はどちらも 204 で成功した。** 画像の削除は、作成と違い、公式 OpenAPI にプランの制限の記載がなく、実測でも制限されなかった。メイン画像の削除では、公式 OpenAPI の説明どおり、サムネイル (`thumbnail_image_url`) も消えた。削除した画像は、画像の作成 API が使えないため API では戻せない。
+
+続けて、利用者が同じ商品に管理画面から画像を 4 件登録し（画像専用 GET で `position` の `0`〜`3`）、本ライブラリの `Client::deleteProductImage()` で `position: 2` を 1 回だけ削除した。画像の取り違えを避けるため、画像の URL は記録せず、URL のハッシュで同じ画像かを比べた。
+
+| 観測 | 内容 |
+| --- | --- |
+| 削除前 | 画像専用 GET の `position` は `0`、`1`、`2`、`3`。商品本体の `images[]` は `1`、`2`、`3` |
+| DELETE (`position: 2`) | **204**。ライブラリは `NoContent` を返した |
+| 10 秒後の画像専用 GET | `position` は `0`、`1`、`3`。`position: 3` は削除前の `position: 3` と同じ画像 |
+| 10 秒後の商品本体 GET | `images[]` の `position` は `1`、`3`。メイン画像 (`image_url`) は変わらなかった |
+
+**画像を削除しても、ほかの画像の `position` は詰められず、そのまま残った。** 公式 OpenAPI の「他の画像の position は変化しません」という説明と一致する。`images[]` の配列の何番目かと `position` は一致しなくなるため、画像は `position` の値で指定する。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。カテゴリーを全く持たない商品の表現。
@@ -404,7 +430,8 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 - `fields` に他のキーを指定した場合、`offset` を変えた場合、商品一覧が上限を超える場合の paging。
 - 商品 POST の `name` 以外の field と、商品 PUT で個別に試していない field の受理・無視・検証動作。
 - `sales_price`、`price`、variant の `model_number` 以外の nullable field を明示 `null` でクリアできるか。
-- 画像作成の 201 と `product_image` の実キー、画像 DELETE の 204、`position` の成功時動作。契約プラン制限により未観測で、画像 DELETE は 422 だけを観測。
+- 画像作成の 201 と `product_image` の実キー、`position` の成功時動作。契約プラン制限により未観測。画像 DELETE の 204 は 2026-10-21 に観測した。
+- 追加画像（`position` の `4`〜`49`）の DELETE。
 - 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合。
 - グループの `meta_tag` が初回設定以後の PUT で GET に反映されない原因。
 - グループ・カテゴリーの `image_url` 書き込みと、新規作成の 201 応答。既存の検証用データを再利用したため成功応答は未観測。小カテゴリーの `expl: ""` と `sort` 範囲外も未観測。
