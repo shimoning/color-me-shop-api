@@ -297,7 +297,7 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 
 ### 画像 API
 
-`POST /v1/products/{product_id}/images` へ仕様で許可された PNG と `position` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `errors[]` に `code: 401200`、`message: string`、`status: 401` を持った。画像作成の 201、成功時の `product_image`、画像 DELETE の 204、`position` の成功時動作は未観測であり、公式 OpenAPI 定義だけが根拠である。
+`POST /v1/products/{product_id}/images` へ仕様で許可された PNG と `position` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `errors[]` に `code: 401200`、`message: string`、`status: 401` を持った。画像作成の 201、成功時の `product_image`、画像 DELETE の 204、`position` の成功時動作は未観測であり、公式 OpenAPI 定義だけが根拠である。画像 DELETE の 204 は、のちに [2026-10-21 の追加観測](#2026-10-21-の追加観測画像の削除) で確かめた。
 
 ### エラー応答
 
@@ -395,6 +395,19 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 作成した商品は、削除 API がないためテスト用ショップに非掲載のまま残っている。4 項目を同時に送ったため、
 個々の項目を単独で送った場合の扱いは確かめていない。観測は各 1 回である。
 
+### 2026-10-21 の追加観測（画像の削除）
+
+収集日は **2026-10-21（Asia/Tokyo）**、対象は同じテスト用ショップ。名前が「【検証】」で始まる検証用商品に、利用者が管理画面から消してよい画像を追加画像として 1 枚足し、その画像を削除した。本ライブラリは使わず、Guzzle で `DELETE /v1/products/{product_id}/images/1.json` を 1 回送った（ライブラリの `Services\Product\Image::delete()` は `.json` を付けずに送る）。実 ID、固有名、画像 URL、ショップ識別子、認証情報は記録しない。テスト用ショップのショップ情報 GET の `contract_plan` は `unknown` で、契約プランは API からは分からない。
+
+| 観測 | 内容 |
+| --- | --- |
+| 削除前 | 商品本体の `images[]` は `position: 1` の 1 件。メイン画像 (`image_url`) もあった |
+| DELETE | **204**、本文は空 |
+| 10 秒後の商品本体 GET | `images[]` は空配列。メイン画像 (`image_url`) は残った |
+| 10 秒後の画像専用 GET | トップレベルは `product` で、`product.images[]` の要素は `position` と `url` を持った。残ったのは `position: 0`（メイン画像）だけだった |
+
+**画像の作成が 401（code 401200）になる同じショップで、追加画像の削除は 204 で成功した。** 画像の削除は、作成と違い、公式 OpenAPI にプランの制限の記載がなく、実測でも制限されなかった。削除した画像は、画像の作成 API が使えないため API では戻せない。
+
 ## 観測できなかったこと
 
 - `category: null`、カテゴリーキー欠損、`id_big=0`。カテゴリーを全く持たない商品の表現。
@@ -404,7 +417,8 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 - `fields` に他のキーを指定した場合、`offset` を変えた場合、商品一覧が上限を超える場合の paging。
 - 商品 POST の `name` 以外の field と、商品 PUT で個別に試していない field の受理・無視・検証動作。
 - `sales_price`、`price`、variant の `model_number` 以外の nullable field を明示 `null` でクリアできるか。
-- 画像作成の 201 と `product_image` の実キー、画像 DELETE の 204、`position` の成功時動作。契約プラン制限により未観測で、画像 DELETE は 422 だけを観測。
+- 画像作成の 201 と `product_image` の実キー、`position` の成功時動作。契約プラン制限により未観測。画像 DELETE の 204 は 2026-10-21 に観測した。
+- メイン画像（画像専用 GET の `position: 0`）の DELETE。
 - 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合。
 - グループの `meta_tag` が初回設定以後の PUT で GET に反映されない原因。
 - グループ・カテゴリーの `image_url` 書き込みと、新規作成の 201 応答。既存の検証用データを再利用したため成功応答は未観測。小カテゴリーの `expl: ""` と `sort` 範囲外も未観測。
