@@ -397,16 +397,18 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 
 ### 2026-10-21 の追加観測（画像の削除）
 
-収集日は **2026-10-21（Asia/Tokyo）**、対象は同じテスト用ショップ。名前が「【検証】」で始まる検証用商品に、利用者が管理画面から消してよい画像を追加画像として 1 枚足し、その画像を削除した。本ライブラリは使わず、Guzzle で `DELETE /v1/products/{product_id}/images/1.json` を 1 回送った（ライブラリの `Services\Product\Image::delete()` は `.json` を付けずに送る）。実 ID、固有名、画像 URL、ショップ識別子、認証情報は記録しない。テスト用ショップのショップ情報 GET の `contract_plan` は `unknown` で、契約プランは API からは分からない。
+収集日は **2026-10-21（Asia/Tokyo）**、対象は同じテスト用ショップ。名前が「【検証】」で始まる検証用商品に、利用者が管理画面から消してよい画像を足し、その商品のサブ画像とメイン画像を順に削除した。公式 OpenAPI の画像削除は、`position` の `0` をメイン画像、`1`〜`3` をサブ画像、`4`〜`49` を追加画像とし、`0` の削除ではメイン画像とサムネイルが消えると説明している。実 ID、固有名、画像 URL、ショップ識別子、認証情報は記録しない。テスト用ショップのショップ情報 GET の `contract_plan` は `unknown` で、契約プランは API からは分からない。
 
-| 観測 | 内容 |
-| --- | --- |
-| 削除前 | 商品本体の `images[]` は `position: 1` の 1 件。メイン画像 (`image_url`) もあった |
-| DELETE | **204**、本文は空 |
-| 10 秒後の商品本体 GET | `images[]` は空配列。メイン画像 (`image_url`) は残った |
-| 10 秒後の画像専用 GET | トップレベルは `product` で、`product.images[]` の要素は `position` と `url` を持った。残ったのは `position: 0`（メイン画像）だけだった |
+サブ画像 (`position: 1`) は、本ライブラリを使わず、Guzzle で `DELETE /v1/products/{product_id}/images/1.json` を送った。メイン画像 (`position: 0`) は、本ライブラリの `Client::deleteProductImage()` で送った（`.json` を付けない `/images/0`）。どちらも 1 回だけ送り、10 秒後に商品本体 GET と画像専用 GET で確かめた。
 
-**画像の作成が 401（code 401200）になる同じショップで、追加画像の削除は 204 で成功した。** 画像の削除は、作成と違い、公式 OpenAPI にプランの制限の記載がなく、実測でも制限されなかった。削除した画像は、画像の作成 API が使えないため API では戻せない。
+| 観測 | サブ画像 (`position: 1`) | メイン画像 (`position: 0`) |
+| --- | --- | --- |
+| 削除前 | 商品本体の `images[]` は `position: 1` の 1 件。`image_url` もあった | 画像専用 GET の `product.images[]` は `position: 0` の 1 件。商品本体の `image_url` と `thumbnail_image_url` は文字列 |
+| DELETE | **204**、本文は空 | **204**、本文は空。ライブラリは `NoContent` を返した |
+| 10 秒後の商品本体 GET | `images[]` は空配列。`image_url` は残った | `image_url` と `thumbnail_image_url` は、キーが残ったまま **`null`**（一覧と単体の GET で同じ）。`images[]` は空配列 |
+| 10 秒後の画像専用 GET | `product.images[]` は `position: 0` だけ。要素は `position` と `url` を持った | `product.images[]` は空配列 |
+
+**画像の作成が 401（code 401200）になる同じショップで、サブ画像とメイン画像の削除はどちらも 204 で成功した。** 画像の削除は、作成と違い、公式 OpenAPI にプランの制限の記載がなく、実測でも制限されなかった。メイン画像の削除では、公式 OpenAPI の説明どおり、サムネイル (`thumbnail_image_url`) も消えた。削除した画像は、画像の作成 API が使えないため API では戻せない。
 
 ## 観測できなかったこと
 
@@ -418,7 +420,7 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 - 商品 POST の `name` 以外の field と、商品 PUT で個別に試していない field の受理・無視・検証動作。
 - `sales_price`、`price`、variant の `model_number` 以外の nullable field を明示 `null` でクリアできるか。
 - 画像作成の 201 と `product_image` の実キー、`position` の成功時動作。契約プラン制限により未観測。画像 DELETE の 204 は 2026-10-21 に観測した。
-- メイン画像（画像専用 GET の `position: 0`）の DELETE。
+- 追加画像（`position` の `4`〜`49`）の DELETE。
 - 商品書き込みの別ショップ・別契約プランでの挙動と、同時更新時の競合。
 - グループの `meta_tag` が初回設定以後の PUT で GET に反映されない原因。
 - グループ・カテゴリーの `image_url` 書き込みと、新規作成の 201 応答。既存の検証用データを再利用したため成功応答は未観測。小カテゴリーの `expl: ""` と `sort` 範囲外も未観測。
