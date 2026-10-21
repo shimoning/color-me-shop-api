@@ -104,9 +104,12 @@ class Product extends Service
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * 公式 OpenAPI によると、フリープランでは `sales_price` と `members_price` の最低額が 100 円。
+     *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
+     * @see docs/api-plan-restrictions.md
      */
     public function create(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
@@ -125,9 +128,12 @@ class Product extends Service
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * 公式 OpenAPI によると、フリープランでは `sales_price` と `members_price` の最低額が 100 円。
+     *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
+     * @see docs/api-plan-restrictions.md
      */
     public function update(int|string $id, ProductUpdateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {

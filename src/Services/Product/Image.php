@@ -40,11 +40,15 @@ class Image extends Service
      * 必要な scope: `read_products` と `write_products` の両方
      * ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * プレミアムプランでのみ利用できる。
+     * プランの制限により、成功時の動作は実 API で未検証。
+     *
      * @param string|resource|StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
      * @param string|null $filename multipart で送るファイル名。省略時はパスまたはストリーム URI の末尾
      *   (php://memory などでは拡張子のない `memory`) になるため、ストリーム入力では拡張子付きの名前を指定する
      * @throws ParameterException アクセストークンが空、またはファイル/ストリームを読み取れない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function create(
         int|string $productId,

@@ -24,12 +24,15 @@ class Customer extends Service
      *
      * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
      *
+     * 会員ランク (`membership`) に値が入る応答と、検索条件の `membership_id` での絞り込みは、公式の「会員ランク」アプリの契約が前提。アプリの契約がないため、実 API で未検証。
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomers
      * @param SearchParameters $searchParameters
      * @param string|null $accessToken
      * @return Page<CustomerEntity>|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function page(
         SearchParameters $searchParameters,
@@ -57,12 +60,15 @@ class Customer extends Service
      *
      * 必要な scope: `read_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_SALES})
      *
+     * 会員ランク (`membership`) に値が入る応答は、公式の「会員ランク」アプリの契約が前提。アプリの契約がないため、実 API で未検証。
+     *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/getCustomer
      * @param int|string $id
      * @param string|null $accessToken
      * @return CustomerEntity|Errors
      * @throws ParameterException 実効アクセストークンが空文字の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function one(int|string $id, ?string $accessToken = null): CustomerEntity|Errors
     {
