@@ -41,6 +41,7 @@ class Image extends Service
      * ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * プレミアムプランでのみ利用できる。
+     * プランの制限により、成功時の動作は実 API で未検証。
      *
      * @param string|resource|StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
      * @param string|null $filename multipart で送るファイル名。省略時はパスまたはストリーム URI の末尾

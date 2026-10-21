@@ -106,6 +106,7 @@ class Sale extends Service
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * プレミアムプランでのみ利用できる。
+     * プランの制限により、成功時の動作は実 API で未検証。
      *
      * 必須フィールドと明細件数は SaleCreateInput と子 Entity の構築時に検証される。
      *

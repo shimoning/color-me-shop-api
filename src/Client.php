@@ -241,6 +241,7 @@ class Client
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
      * プレミアムプランでのみ利用できる。
+     * プランの制限により、成功時の動作は実 API で未検証。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
      * @param SaleCreateInput $input
@@ -752,6 +753,7 @@ class Client
      * ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
      * プレミアムプランでのみ利用できる。
+     * プランの制限により、成功時の動作は実 API で未検証。
      *
      * @param string|resource|\Psr\Http\Message\StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
      * @param string|null $filename multipart で送るファイル名。ストリーム入力では拡張子付きの名前を指定する
