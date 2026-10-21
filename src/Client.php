@@ -240,7 +240,7 @@ class Client
      *
      * 必要な scope: `write_sales` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_SALES})
      *
-     * プレミアムプラン限定。対象外のプランでは 401 (code 401200) の Errors を返す (2026-10-01)。
+     * プレミアムプランでのみ利用できる。
      *
      * @link https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createSale
      * @param SaleCreateInput $input
@@ -250,6 +250,7 @@ class Client
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-sale-create-observation.md
+     * @see docs/api-plan-restrictions.md
      */
     public function createSale(
         SaleCreateInput $input,
@@ -578,9 +579,12 @@ class Client
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * フリープランでは `sales_price` と `members_price` の最低額が 100 円。
+     *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
      * @see docs/api-product-structure.md
+     * @see docs/api-plan-restrictions.md
      */
     public function createProduct(ProductCreateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
@@ -592,8 +596,11 @@ class Client
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * フリープランでは `sales_price` と `members_price` の最低額が 100 円。
+     *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function updateProduct(int|string $id, ProductUpdateInput $input, ?string $accessToken = null): ProductEntity|Errors
     {
@@ -605,8 +612,11 @@ class Client
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * フリープランでは `option_price` と `option_members_price` の最低額が 100 円。
+     *
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function updateProductVariant(
         int|string $productId,
@@ -741,10 +751,13 @@ class Client
      * 必要な scope: `read_products` と `write_products` の両方
      * ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::READ_PRODUCTS}、{@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * プレミアムプランでのみ利用できる。
+     *
      * @param string|resource|\Psr\Http\Message\StreamInterface $image 画像ファイルのパス、または読み取り可能なストリーム
      * @param string|null $filename multipart で送るファイル名。ストリーム入力では拡張子付きの名前を指定する
      * @throws \Shimoning\ColorMeShopApi\Exceptions\ParameterException アクセストークンが空、またはファイル/ストリームを読み取れない場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function createProductImage(
         int|string $productId,

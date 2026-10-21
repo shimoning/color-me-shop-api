@@ -62,8 +62,11 @@ class Variant extends Service
      *
      * 必要な scope: `write_products` ({@see \Shimoning\ColorMeShopApi\Constants\OAuth\AuthScope::WRITE_PRODUCTS})
      *
+     * フリープランでは `option_price` と `option_members_price` の最低額が 100 円。
+     *
      * @throws ParameterException アクセストークンが空の場合
      * @throws \GuzzleHttp\Exception\GuzzleException HTTP リクエストに失敗した場合
+     * @see docs/api-plan-restrictions.md
      */
     public function update(
         int|string $productId,
