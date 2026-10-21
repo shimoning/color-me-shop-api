@@ -297,7 +297,7 @@ object の `meta_tag` は `title`、`keywords`、`description` を持ち、各�
 
 ### 画像 API
 
-`POST /v1/products/{product_id}/images` へ仕様で許可された PNG と `position` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `errors[]` に `code: 401200`、`message: string`、`status: 401` を持った。画像作成の 201、成功時の `product_image`、画像 DELETE の 204、`position` の成功時動作は未観測であり、公式 OpenAPI 定義だけが根拠である。画像 DELETE の 204 は、のちに [2026-10-21 の追加観測](#2026-10-21-の追加観測画像の削除) で確かめた。
+`POST /v1/products/{product_id}/images` へ仕様で許可された PNG と `position` を multipart 送信したところ、契約プランの制限により HTTP 401 だった。応答は `errors[]` に `code: 401200`、`message: string`、`status: 401` を持った。画像作成の 201、成功時の `product_image`、`position` の成功時動作は未観測であり、公式 OpenAPI 定義だけが根拠である。画像 DELETE は、この時点では存在しない位置への 422 だけを観測しており（後述）、成功の 204 は [2026-10-21 の追加観測](#2026-10-21-の追加観測画像の削除) で確かめた。
 
 ### エラー応答
 
