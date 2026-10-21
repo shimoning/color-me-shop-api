@@ -1165,7 +1165,25 @@ $pagination->getOffset();
 
 ## 未実装
 
-* [ショップクーポン](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon)
+公式 OpenAPI (2026-10-21 取得) の 58 操作のうち、次の 13 操作は実装していない。
+
+| 区分 | API | 内容 | 備考 |
+| --- | --- | --- | --- |
+| ショップクーポン | `GET /v1/shop_coupons` | [一覧の取得](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon/operation/getCoupons) | |
+| | `GET /v1/shop_coupons/{coupon_id}` | [取得](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon/operation/getCoupon) | |
+| | `POST /v1/shop_coupons` | [作成](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon/operation/createCoupon) | |
+| | `PUT /v1/shop_coupons/{coupon_id}` | [更新](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon/operation/updateCoupon) | |
+| | `DELETE /v1/shop_coupons/{coupon_id}` | [削除](https://developer.shop-pro.jp/docs/colorme-api#tag/shop_coupon/operation/deleteCoupon) | |
+| テンプレート | `GET /v1/templates` | [一覧の取得](https://developer.shop-pro.jp/docs/colorme-api#tag/templates/operation/getTemplates) | |
+| | `GET /v1/templates/{template_id}/preview_url` | [プレビュー用 URL の取得](https://developer.shop-pro.jp/docs/colorme-api#tag/templates/operation/getTemplatePreview) | |
+| | `GET /v1/templates/{template_id}/pages/{page_type}` | [ページの取得](https://developer.shop-pro.jp/docs/colorme-api#tag/templates/operation/getTemplatePage) | |
+| | `PUT /v1/templates/{template_id}/pages/{page_type}` | [ページの更新](https://developer.shop-pro.jp/docs/colorme-api#tag/templates/operation/updateTemplatePage) | |
+| 顧客 | `PUT /v1/customers/{customer_id}/membership` | [会員ランクの更新](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/updateCustomerMembership) | 公式の「会員ランク」アプリの契約が必要 |
+| | `DELETE /v1/customers/{customer_id}/membership` | [会員ランクの解除](https://developer.shop-pro.jp/docs/colorme-api#tag/customer/operation/deleteCustomerGroupMembership) | 公式の「会員ランク」アプリの契約が必要 |
+| 受注 | `POST /v1/sales/{sale_id}/payment_urls` | [決済 URL の発行](https://developer.shop-pro.jp/docs/colorme-api#tag/sale/operation/createPaymentUrls) | |
+| レビュー | `GET /v1/reviews` | [一覧の取得](https://developer.shop-pro.jp/docs/colorme-api#tag/review/operation/getReviews) | |
+
+契約プランやアプリの契約による制限は、[契約プランによる API の制限](docs/api-plan-restrictions.md) にまとめている。
 
 -----
 
